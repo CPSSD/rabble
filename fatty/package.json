@@ -1,0 +1,27 @@
+{
+  "name": "fatty",
+  "version": "0.0.1",
+  "description": "A fat client for Rabble.",
+  "main": "index.tsx",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint src --ext ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cpssd/rabble.git"
+  },
+  "keywords": [
+    "cryptocurrency"
+  ],
+  "bugs": {
+    "url": "https://github.com/cpssd/rabble/issues"
+  },
+  "homepage": "https://github.com/cpssd/rabble#readme",
+  "dependencies": {
+    "eslint": "^5.6.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "typescript": "^3.1.1",
+    "typescript-eslint-parser": "^20.0.0"
+  }
+}
