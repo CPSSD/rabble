@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "outDir": "dist",
-    "sourceMap": true
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "target": "es5",
+    "module": "node",
+    "jsx": "react",
+    "noImplicitAny": true,
+    "strictNullChecks": true
   },
   "include": [
-    "src/**/*.tsx"
+    "./src/**/*"
   ],
   "exclude": [
-    "node_modules"
-  ],
-  "jsx": "React"
+    "node_modules",
+    "dist"
+  ]
 }
