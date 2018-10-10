@@ -1,5 +1,8 @@
 ### Project Structure ##
 
+# Build output
+build_out/
+
 # Fatty compile output
 fatty/dist
 
