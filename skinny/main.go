@@ -1,9 +1,11 @@
 package main
 
 import (
-    "fmt"
+	"fmt"
 )
 
 func main() {
-    fmt.Printf("Starting skinny web server.\n");
+	fmt.Printf("Starting skinny web server.\n")
+	for true {
+	}
 }
