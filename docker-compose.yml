@@ -2,7 +2,7 @@ version: '2'
 services:
   example_microservice:
     build:
-      context: .
-      dockerfile: example_microservice/Dockerfile
+      context: ./example_microservice
+      dockerfile: Dockerfile
     volumes:
       - .:/repo

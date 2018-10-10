@@ -10,7 +10,7 @@ echo "Creating build container image"
 docker build \
   --tag rabble_build:latest \
   --file ./build_container/Dockerfile \
-  .
+  ./build_container
 
 echo "Running build container"
 docker run \
