@@ -11,5 +11,5 @@ echo "Running build"
 # Write your output to the `build_out` directory
 
 echo "Building example binary"
-g++ example_microservice/main.cc -o build_out/example
+g++ example_microservice/main.cc -o build_out/example_ms
 

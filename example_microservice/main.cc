@@ -1,6 +1,7 @@
 #include <cstdio>
 
 int main() {
-  printf("Example microservice");
+  printf("Example microservice\n");
+  fflush(stdout);
   while (true);
 }
