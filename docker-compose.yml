@@ -1,5 +1,12 @@
 version: '2'
+
 services:
+  skinny:
+    build:
+      context: ./skinny
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
   example_microservice:
     build:
       context: ./services/example_microservice
