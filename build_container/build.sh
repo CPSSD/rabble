@@ -15,4 +15,3 @@ go build -o build_out/skinny skinny/*.go
 
 echo "Building example binary"
 g++ services/example_microservice/main.cc -o build_out/example_ms
-
