@@ -46,3 +46,6 @@ typings/
 *.tgz
 # dotenv environment variables file
 .env
+# compiled proto files
+*_pb2.py
+*.pb.go
