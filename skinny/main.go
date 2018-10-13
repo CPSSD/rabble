@@ -29,7 +29,7 @@ type serverWrapper struct {
 func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w,
-            http.StatusText(http.StatusNotImplemented),
+			http.StatusText(http.StatusNotImplemented),
 			http.StatusNotImplemented)
 	}
 }
