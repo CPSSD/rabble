@@ -15,13 +15,13 @@ services:
       - .:/repo
   example_go_microservice:
     build:
-      context: ./services/example_go_python_microservice/go_docker
+      context: ./services/example_go_python_microservice/go
       dockerfile: Dockerfile
     volumes:
       - .:/repo
   example_python_microservice:
     build:
-      context: ./services/example_go_python_microservice/python_docker
+      context: ./services/example_go_python_microservice/python
       dockerfile: Dockerfile
     volumes:
       - .:/repo

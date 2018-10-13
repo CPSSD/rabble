@@ -46,6 +46,8 @@ typings/
 *.tgz
 # dotenv environment variables file
 .env
+# python cache
+__pycache__/
 # compiled proto files
 *_pb2.py
 *_pb2_grpc.py
