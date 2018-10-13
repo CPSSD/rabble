@@ -1,0 +1,15 @@
+html {
+  font-family: sans;
+}
+
+.center-brand {
+  display: block;
+  text-align: center;
+  padding-bottom: 2em;
+}
+
+.brand {
+  font-size: 2em;
+  text-decoration: none;
+  color: black;
+}
