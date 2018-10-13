@@ -2,7 +2,8 @@
 
 set -e
 cd /repo
-mkdir -p build_out
+mkdir -p build_out/
+mkdir -p /go/src/greetingCard
 
 echo "Running build"
 
@@ -13,13 +14,17 @@ echo "Running build"
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
 
-echo "Building example go-python microservice"
+echo "Building example go microservice"
 SRC_DIR=services/example_go_python_microservice
 protoc -I=$SRC_DIR \
---python_out="services/example_go_python_microservice/python_docker" \
---go_out="services/example_go_python_microservice/go_docker" \
+--go_out=plugins=grpc:"/go/src/greetingCard" \
 $SRC_DIR/greetingCard.proto
 go build -o build_out/example_go services/example_go_python_microservice/**/*.go
+
+echo "Building example Protobuf for python"
+PYTHON_OUT_DIR="services/example_go_python_microservice/python_docker"
+python3 -m grpc_tools.protoc -I$SRC_DIR --python_out=$PYTHON_OUT_DIR \
+--grpc_python_out=$PYTHON_OUT_DIR $SRC_DIR/greetingCard.proto
 
 echo "Building example binary"
 g++ services/example_microservice/main.cc -o build_out/example_ms
