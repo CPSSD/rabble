@@ -28,7 +28,9 @@ type serverWrapper struct {
 // Returns a http.HandlerFunc with a 501 Not Implemented error.
 func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		http.Error(w,
+            http.StatusText(http.StatusNotImplemented),
+			http.StatusNotImplemented)
 	}
 }
 
