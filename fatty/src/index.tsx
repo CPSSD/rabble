@@ -1,19 +1,19 @@
 import * as React from "react";
 import { render } from "react-dom";
-import { HashRouter, Route, Switch } from 'react-router-dom';
+import { HashRouter, Route, Switch } from "react-router-dom";
 
-import {Home} from './components/home';
-import {About} from './components/about';
-import {Header} from './components/header';
+import {About} from "./components/about";
+import {Header} from "./components/header";
+import {Home} from "./components/home";
 
-require("./styles/site.css");
+require("./styles/site.css"); // tslint:disable-line
 
 const App = () => (
   <HashRouter>
     <div>
       <Header/>
       <Switch>
-        <Route exact path="/" component={Home}/>
+        <Route exact={true} path="/" component={Home}/>
         <Route path="/about" component={About}/>
       </Switch>
     </div>
