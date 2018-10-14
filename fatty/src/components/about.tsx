@@ -5,7 +5,7 @@ export const About: React.StatelessComponent<{}> = () => {
     <div>
       <div className="pure-u-1-5"></div>
       <div className="pure-u-3-5">
-	<p> Rabble is a federated blogging platform developed at DCU. </p>
+	<p>Rabble is a federated blogging platform developed at DCU.</p>
       </div>
     </div>
   );
