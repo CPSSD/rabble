@@ -34,8 +34,8 @@ module.exports = {
     // assume a corresponding global variable exists and use that instead.
     // This is important because it allows us to avoid bundling all of our
     // dependencies, which allows browsers to cache those libraries between builds.
-    // These also must be defined in the plugins page, to keep them in the generated
-    // index.html.
+    // These also must be defined in the plugins field, to keep them in the
+    // generated index.html.
     externals: {
         "react": "React",
         "react-dom": "ReactDOM"
