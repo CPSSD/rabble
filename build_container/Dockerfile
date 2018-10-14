@@ -17,4 +17,7 @@ RUN go get -u github.com/golang/protobuf/protoc-gen-go
 # Install gRPC protobuf for python
 RUN pip3 install grpcio grpcio-tools googleapis-common-protos
 
+# Dependencies for skinny server
+RUN go get -u github.com/gorilla/mux
+
 CMD ["/repo/build_container/build.sh"]
