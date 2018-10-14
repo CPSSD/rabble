@@ -1,8 +1,20 @@
 FROM alpine:3.7
 
 # Install dependencies then remove the cache
-RUN apk add --no-cache --update g++ go && \
+RUN apk add --no-cache --update g++ go ca-certificates git \
+python3 python3-dev gcc g++ linux-headers make \
+musl-dev protobuf && \
     mkdir -p /repo/
 
-CMD ["/repo/build_container/build.sh"]
 
+# Install gRPC for Go
+RUN mkdir /go/
+ENV GOPATH "/go:/repo:/repo/build_out"
+ENV PATH $PATH:/go/bin
+RUN go get -u google.golang.org/grpc
+RUN go get -u github.com/golang/protobuf/protoc-gen-go
+
+# Install gRPC protobuf for python
+RUN pip3 install grpcio grpcio-tools googleapis-common-protos
+
+CMD ["/repo/build_container/build.sh"]
