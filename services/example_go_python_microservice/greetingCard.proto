@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+// server interface
+service GreetingCards {
+  // Simple rpc
+  // receives a greeting card from a client
+  rpc GetGreetingCard(GreetingCard) returns (AcknowledgmentCard) {}
+}
+
+message GreetingCard {
+  string sender = 1;
+  string letter = 2;
+  int32 money_enclosed = 3;
+}
+
+message AcknowledgmentCard {
+  string letter = 1;
+}
