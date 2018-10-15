@@ -7,7 +7,7 @@
     "build": "webpack --config webpack.config.js --mode development",
     "build:prod": "webpack --config webpack.config.js -d --mode production",
     "start": "webpack-dev-server --mode development --content-base ./dist --hot --inline --colors --port 3000 --open",
-    "lint": "eslint src --ext ts",
+    "lint": "tslint --project .",
     "clean": "rm dist/bundle.js"
   },
   "repository": {
@@ -25,11 +25,20 @@
     "@types/react": "^16.4.16",
     "@types/react-dom": "^16.0.9",
     "react": "^16.5.2",
-    "react-dom": "^16.5.2"
+    "react-dom": "^16.5.2",
+    "react-router-dom": "^4.3.1"
   },
   "devDependencies": {
+    "@types/react-router-dom": "^4.3.1",
     "awesome-typescript-loader": "^5.2.1",
+    "css-loader": "^1.0.0",
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "html-webpack-template": "^6.2.0",
     "source-map-loader": "^0.2.4",
+    "style-loader": "^0.23.1",
+    "tslint": "^5.11.0",
+    "tslint-react": "^3.6.0",
     "typescript": "^3.1.2",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
