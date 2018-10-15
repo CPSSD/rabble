@@ -2,6 +2,14 @@
 
 set -e
 
+if [ -z "$LOCAL_USER_ID" ]
+then
+  echo "ERROR: environment variable LOCAL_USER_ID does not exist."
+  echo "It is needed to preserve the mounted filesystem."
+  echo "See run_build.sh in the root of the project."
+  exit 1
+fi
+
 cd /repo
 mkdir -p build_out/
 mkdir -p /go/src/greetingCard
@@ -40,9 +48,7 @@ echo "Building client"
 cd fatty && npm run build && cd ..
 mv fatty/dist build_out/fatty_dist
 
-
 echo "Fixing permissions"
-USER_ID=${LOCAL_USER_ID:-333}
-adduser -D -u $USER_ID user
+adduser -D -u $LOCAL_USER_ID user
 chown -R user build_out
 chown -R user fatty/node_modules
