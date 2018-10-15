@@ -1,11 +1,12 @@
 FROM alpine:3.7
 
-# Install dependencies then remove the cache
-RUN apk add --no-cache --update g++ go ca-certificates git \
-python3 python3-dev gcc g++ linux-headers make \
-musl-dev protobuf && \
-    mkdir -p /repo/
+RUN mkdir -p /repo/
 
+# Install dependencies
+RUN apk add --no-cache --update musl-dev protobuf
+RUN apk add --no-cache --update nodejs nodejs-npm
+RUN apk add --no-cache --update g++ go ca-certificates git \
+  python3 python3-dev gcc g++ linux-headers make
 
 # Install gRPC for Go
 RUN mkdir /go/

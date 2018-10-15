@@ -1,6 +1,15 @@
 #!/usr/bin/env sh
 
 set -e
+
+if [ -z "$LOCAL_USER_ID" ]
+then
+  echo "ERROR: environment variable LOCAL_USER_ID does not exist."
+  echo "It is needed to preserve the mounted filesystem."
+  echo "See run_build.sh in the root of the project."
+  exit 1
+fi
+
 cd /repo
 mkdir -p build_out/
 mkdir -p /go/src/greetingCard
@@ -31,3 +40,15 @@ cp services/example_go_python_microservice/python/*.py $PYTHON_OUT_DIR
 
 echo "Building example binary"
 g++ services/example_microservice/main.cc -o build_out/example_ms
+
+echo "Installing node.js dependencies"
+cd fatty && npm install && cd ..
+
+echo "Building client"
+cd fatty && npm run build && cd ..
+mv fatty/dist build_out/fatty_dist
+
+echo "Fixing permissions"
+adduser -D -u $LOCAL_USER_ID user
+chown -R user build_out
+chown -R user fatty/node_modules
