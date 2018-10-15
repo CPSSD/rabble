@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	protobuf "greetingCard"
@@ -12,16 +11,17 @@ import (
 type server struct{}
 
 func (s *server) GetGreetingCard(ctx context.Context, in *protobuf.GreetingCard) (*protobuf.AcknowledgmentCard, error) {
-	fmt.Println("Got card from " + in.Sender)
+	log.Printf("Got card from " + in.Sender + "\n")
 	return &protobuf.AcknowledgmentCard{Letter: "Thank you for the card, " + in.Sender}, nil
 }
 
 func main() {
-	lis, err := net.Listen("tcp", "8000")
+	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("Failed to listen: %v\n", err)
 	}
 	grpcServer := grpc.NewServer()
 	protobuf.RegisterGreetingCardsServer(grpcServer, &server{})
+	log.Printf("Listening on port 8000\n")
 	grpcServer.Serve(lis)
 }
