@@ -11,7 +11,7 @@ import (
 type server struct{}
 
 func (s *server) GetGreetingCard(ctx context.Context, in *protobuf.GreetingCard) (*protobuf.AcknowledgmentCard, error) {
-	log.Printf("Got card from " + in.Sender + "\n")
+	log.Println("Got card from " + in.Sender)
 	return &protobuf.AcknowledgmentCard{Letter: "Thank you for the card, " + in.Sender}, nil
 }
 
