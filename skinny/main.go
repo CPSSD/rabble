@@ -2,14 +2,20 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
+)
+
+const (
+	staticAssets = "/repo/build_out/fatty_dist"
 )
 
 // serverWrapper encapsulates the dependencies and config values of the server
@@ -36,6 +42,20 @@ func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleIndex() http.HandlerFunc {
+	indexPath := path.Join(staticAssets, "index.html")
+	b, err := ioutil.ReadFile(indexPath)
+	if err != nil {
+		log.Fatal("could not find index.html: %v", err)
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write(b)
+		if err != nil {
+			log.Printf("handleIndex failed to write: %v\n", err)
+		}
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -43,9 +63,17 @@ func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 // https://www.gorillatoolkit.org/pkg/mux .
 // TODO(iandioch): Move setupRoutes() to its own file if/when it gets too big.
 func (s *serverWrapper) setupRoutes() {
+	const (
+		assetPath = "/assets/"
+	)
 	log.Printf("Setting up routes on skinny server.\n")
+
 	r := s.router
-	r.HandleFunc("/", s.handleNotImplemented())
+	fs := http.StripPrefix(assetPath, http.FileServer(http.Dir(staticAssets)))
+
+	r.PathPrefix(assetPath).Handler(fs)
+	r.HandleFunc("/api/", s.handleNotImplemented())
+	r.HandleFunc("/", s.handleIndex())
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
