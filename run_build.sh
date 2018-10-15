@@ -2,6 +2,8 @@
 
 set -e
 
+USER_ID=`id -u $USER`
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 if [ -z "$REPO_ROOT" ]
 then
@@ -24,6 +26,7 @@ echo "Running build container"
 docker run \
   --rm \
   --volume $REPO_ROOT:/repo \
+  -e LOCAL_USER_ID=$USER_ID \
   rabble_build:latest
 
 echo "Done build"

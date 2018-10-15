@@ -3,6 +3,7 @@ FROM alpine:3.7
 # Install dependencies then remove the cache
 RUN apk add --no-cache --update g++ go ca-certificates git \
 python3 python3-dev gcc g++ linux-headers make \
+nodejs nodejs-npm \
 musl-dev protobuf && \
     mkdir -p /repo/
 

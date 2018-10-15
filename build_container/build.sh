@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 set -e
+
 cd /repo
 mkdir -p build_out/
 mkdir -p /go/src/greetingCard
@@ -31,3 +32,17 @@ cp services/example_go_python_microservice/python/*.py $PYTHON_OUT_DIR
 
 echo "Building example binary"
 g++ services/example_microservice/main.cc -o build_out/example_ms
+
+echo "Installing node.js dependencies"
+cd fatty && npm install && cd ..
+
+echo "Building client"
+cd fatty && npm run build && cd ..
+mv fatty/dist build_out/fatty_dist
+
+
+echo "Fixing permissions"
+USER_ID=${LOCAL_USER_ID:-333}
+adduser -D -u $USER_ID user
+chown -R user build_out
+chown -R user fatty/node_modules

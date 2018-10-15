@@ -2,6 +2,8 @@ version: '2'
 
 services:
   skinny:
+    ports:
+      - "1916:1916"
     build:
       context: ./skinny
       dockerfile: Dockerfile
