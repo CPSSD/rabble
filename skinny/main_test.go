@@ -12,9 +12,9 @@ func newTestServerWrapper() *serverWrapper {
 }
 
 func TestHandleNotImplemented(t *testing.T) {
-    req, _ := http.NewRequest("GET", "/", nil)
+    req, _ := http.NewRequest("GET", "/test", nil)
     res := httptest.NewRecorder()
-    newTestServerWrapper().router.ServeHTTP(res, req);
+    newTestServerWrapper().handleNotImplemented()(res, req)
 
     if res.Code != http.StatusNotImplemented {
         t.Errorf("Expected 501 Not Implemented, got %#v", res.Code)
