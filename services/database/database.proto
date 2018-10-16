@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+message PostsEntry {
+  string global_id = 1;
+  string author = 2;
+  string title = 3;
+  string body = 4;
+  int64 creation_datetime = 5;
+}
+
+enum RequestType {
+  INSERT = 0;
+  FIND   = 1;
+  DELETE = 2;
+  UPDATE = 3;
+}
+
+message PostsRequest {
+  RequestType request_type = 1;
+
+  // Entry used for matching FIND, DELETE and UPDATE queries.
+  PostsEntry match = 2;
+
+  // Entry to INSERT or fields to UPDATE.
+  PostsEntry entry = 3;
+}
+
+enum ResultType {
+  OK = 0;
+  ERROR = 1;
+  // Further types can be specified here.
+}
+
+message PostsResponse {
+  ResultType result_type = 1;
+
+  string error = 2;
+
+  // If the result_type is OK and the query returns some entries then they
+  // are provided here
+  repeated PostsEntry results = 3;
+}
+
+service DatabaseService {
+  rpc Posts(PostsRequest) returns (PostsResponse);
+}
