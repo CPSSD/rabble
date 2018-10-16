@@ -27,3 +27,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+  database_service:
+    build:
+      context: ./services/database
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+
