@@ -25,5 +25,9 @@ services:
     build:
       context: ./services/example_go_python_microservice/python
       dockerfile: Dockerfile
+    depends_on:
+      - "example_go_microservice"
     volumes:
       - .:/repo
+    environment:
+      - GO_SERVER_HOST=example_go_microservice
