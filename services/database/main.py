@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from concurrent import futures
 import argparse
 import grpc
