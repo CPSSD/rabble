@@ -8,14 +8,14 @@ message PostsEntry {
   int64 creation_datetime = 5;
 }
 
-enum RequestType {
-  INSERT = 0;
-  FIND   = 1;
-  DELETE = 2;
-  UPDATE = 3;
-}
-
 message PostsRequest {
+  enum RequestType {
+    INSERT = 0;
+    FIND   = 1;
+    DELETE = 2;
+    UPDATE = 3;
+  }
+
   RequestType request_type = 1;
 
   // Entry used for matching FIND, DELETE and UPDATE queries.
@@ -25,13 +25,13 @@ message PostsRequest {
   PostsEntry entry = 3;
 }
 
-enum ResultType {
-  OK = 0;
-  ERROR = 1;
-  // Further types can be specified here.
-}
-
 message PostsResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+    // Further types can be specified here.
+  }
+
   ResultType result_type = 1;
 
   string error = 2;
@@ -41,6 +41,6 @@ message PostsResponse {
   repeated PostsEntry results = 3;
 }
 
-service DatabaseService {
+service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
 }
