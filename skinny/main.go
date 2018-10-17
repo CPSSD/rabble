@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	staticAssets = "/repo/build_out/fatty_dist"
+	staticAssets = "/repo/build_out/chump_dist"
 )
 
 // serverWrapper encapsulates the dependencies and config values of the server
