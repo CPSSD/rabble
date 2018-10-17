@@ -4,7 +4,7 @@
 build_out/
 
 # Fatty compile output
-fatty/dist
+chump/dist
 
 ### Node ###
 # Logs
