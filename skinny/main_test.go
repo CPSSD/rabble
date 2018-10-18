@@ -4,13 +4,24 @@ import (
     "net/http"
     "net/http/httptest"
     "testing"
+    "time"
 
     "github.com/gorilla/mux"
 )
 
 func newTestServerWrapper() *serverWrapper {
     // TODO(iandioch): Fake/mock instead of using real dependencies
-    return buildServerWrapper()
+    r := mux.NewRouter()
+    srv := &http.Server{}
+    s := &serverWrapper {
+        router: r,
+        server: srv,
+        shutdownWait: 20*time.Second,
+        greetingCardsChannel: nil,
+        greetingCards: nil,
+    }
+    s.setupRoutes()
+    return s
 }
 
 func TestHandleNotImplemented(t *testing.T) {
