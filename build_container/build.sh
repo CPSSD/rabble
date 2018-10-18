@@ -50,13 +50,13 @@ echo "Building example binary"
 g++ services/example_microservice/main.cc -o build_out/example_ms
 
 echo "Installing node.js dependencies"
-cd fatty && npm install && cd ..
+cd chump && npm install && cd ..
 
 echo "Building client"
-cd fatty && npm run build && cd ..
-mv fatty/dist build_out/fatty_dist
+cd chump && npm run build && cd ..
+mv chump/dist build_out/chump_dist
 
 echo "Fixing permissions"
 adduser -D -u $LOCAL_USER_ID user
 chown -R user build_out
-chown -R user fatty/node_modules
+chown -R user chump/node_modules

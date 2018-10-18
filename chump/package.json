@@ -1,7 +1,7 @@
 {
-  "name": "fatty",
+  "name": "chump",
   "version": "0.0.1",
-  "description": "A fat client for Rabble.",
+  "description": "A client for Rabble.",
   "main": "index.tsx",
   "scripts": {
     "build": "webpack --config webpack.config.js --mode development",
