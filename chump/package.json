@@ -8,7 +8,8 @@
     "build:prod": "webpack --config webpack.config.js -d --mode production",
     "start": "webpack-dev-server --mode development --content-base ./dist --hot --inline --colors --port 3000 --open",
     "lint": "tslint --project .",
-    "clean": "rm -rf dist/*"
+    "clean": "rm -rf dist/*",
+    "test": "echo 'testing'"
   },
   "repository": {
     "type": "git",
