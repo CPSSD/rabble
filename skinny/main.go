@@ -82,17 +82,22 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 			log.Fatalf("Skinny server did not connect: %v", err)
 		}
 		defer conn.Close()
+
 		c := protobuf.NewGreetingCardsClient(conn)
+
 		name := mux.Vars(r)["username"]
-		s := fmt.Sprintf("hello %#v", name)
-		gc := &protobuf.GreetingCard{Sender: "skinny-server", Letter: s, MoneyEnclosed: 123}
+		msg := fmt.Sprintf("hello %#v", name)
+		from := fmt.Sprintf("skinny-server-%v", name)
+		gc := &protobuf.GreetingCard{Sender: from, Letter: msg, MoneyEnclosed: 123}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
+
 		ack, err := c.GetGreetingCard(ctx, gc)
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Received ack card: %#v\n", ack)
+		log.Printf("Received ack card: %#v\n", ack.Letter)
+		fmt.Fprintf(w, "Received: %#v", ack.Letter)
 	}
 }
 
