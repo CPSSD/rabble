@@ -33,7 +33,7 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
-    // greetingCards is the RPC client for talking to the GreetingCards service.
+	// greetingCards is the RPC client for talking to the GreetingCards service.
 	greetingCards pb.GreetingCardsClient
 }
 
@@ -76,20 +76,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 // TODO(#91): Remove example code when there are several real services being
 // contacted from this server.
 func (s *serverWrapper) handleGreet() http.HandlerFunc {
-	host := os.Getenv("GO_SERVER_HOST")
-	if host == "" {
-		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
-	}
-	addr := host + ":8000"
 	return func(w http.ResponseWriter, r *http.Request) {
-		conn, err := grpc.Dial(addr, grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("Skinny server did not connect: %v", err)
-		}
-		defer conn.Close()
-
-		c := pb.NewGreetingCardsClient(conn)
-
 		name := mux.Vars(r)["username"]
 		msg := fmt.Sprintf("hello %#v", name)
 		from := fmt.Sprintf("skinny-server-%v", name)
@@ -101,7 +88,7 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		ack, err := c.GetGreetingCard(ctx, gc)
+		ack, err := s.greetingCards.GetGreetingCard(ctx, gc)
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
@@ -139,6 +126,20 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/", s.handleNotImplemented())
 }
 
+func createGreetingCardsClient() pb.GreetingCardsClient {
+	host := os.Getenv("GO_SERVER_HOST")
+	if host == "" {
+		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
+	}
+	addr := host + ":8000"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect: %v", err)
+	}
+	return pb.NewGreetingCardsClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -155,7 +156,7 @@ func buildServerWrapper() *serverWrapper {
 		router:        r,
 		server:        srv,
 		shutdownWait:  20 * time.Second,
-		greetingCards: nil,
+		greetingCards: createGreetingCardsClient(),
 	}
 	s.setupRoutes()
 	return s
