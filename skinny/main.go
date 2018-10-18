@@ -72,8 +72,16 @@ func (s *serverWrapper) setupRoutes() {
 	fs := http.StripPrefix(assetPath, http.FileServer(http.Dir(staticAssets)))
 
 	r.PathPrefix(assetPath).Handler(fs)
-	r.HandleFunc("/api/", s.handleNotImplemented())
+
+	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
+	r.HandleFunc("/@{username}/follow", s.handleNotImplemented())
+
+	// c2s routes
+	r.HandleFunc("/api/", s.handleNotImplemented())
+
+	// ActivityPub routes
+	r.HandleFunc("/ap/", s.handleNotImplemented())
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
