@@ -9,6 +9,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    environment:
+      - GO_SERVER_HOST=example_go_microservice
   example_microservice:
     build:
       context: ./services/example_microservice
