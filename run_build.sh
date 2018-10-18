@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
-
 set -e
+
+# run_build.sh builds all of docker's build using the build_container.
+# if _TEST_RABBLE is set, then it also runs the test script.
 
 USER_ID=`id -u $USER`
 
@@ -27,6 +29,7 @@ docker run \
   --rm \
   --volume $REPO_ROOT:/repo \
   -e LOCAL_USER_ID=$USER_ID \
+  -e TEST_RABBLE=$_TEST_RABBLE \
   rabble_build:latest
 
 echo "Done build"
