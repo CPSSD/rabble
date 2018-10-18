@@ -33,7 +33,11 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
-	// greetingCards is the RPC client for talking to the GreetingCards service.
+	// greetingCards channel is the underlying connection to the GreetingCards
+	// service. This reference must be retained so it can by closed later.
+	greetingCardsChannel grpc.ClientConn
+	// greetingCards is the RPC client for talking to the GreetingCards
+	// service.
 	greetingCards pb.GreetingCardsClient
 }
 
@@ -126,6 +130,16 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/", s.handleNotImplemented())
 }
 
+func (s *serverWrapper) shutdown() {
+	log.Printf("Stopping skinny server.\n")
+	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
+	defer cancel()
+	// Waits for active connections to terminate, or until it hits the timeout.
+	s.server.Shutdown(ctx)
+
+	s.greetingCardsChannel.Close()
+}
+
 func createGreetingCardsClient() pb.GreetingCardsClient {
 	host := os.Getenv("GO_SERVER_HOST")
 	if host == "" {
@@ -186,12 +200,6 @@ func main() {
 
 	// Block until we receive signal.
 	<-c
-	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
-	defer cancel()
-
-	// Waits for active connections to terminate, or until it hits the timeout.
-	s.server.Shutdown(ctx)
-
-	log.Printf("Stopping skinny server.\n")
+	s.shutdown()
 	os.Exit(0)
 }
