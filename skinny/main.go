@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"context"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,9 +14,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	protobuf "greetingCard"
+	pb "greetingCard"
 )
 
 const (
@@ -70,6 +69,10 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+// handleGreet sends an RPC to example_go_microservice with a card for the
+// given name.
+// TODO(#91): Remove example code when there are several real services being
+// contacted from this server.
 func (s *serverWrapper) handleGreet() http.HandlerFunc {
 	host := os.Getenv("GO_SERVER_HOST")
 	if host == "" {
@@ -83,12 +86,16 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 		}
 		defer conn.Close()
 
-		c := protobuf.NewGreetingCardsClient(conn)
+		c := pb.NewGreetingCardsClient(conn)
 
 		name := mux.Vars(r)["username"]
 		msg := fmt.Sprintf("hello %#v", name)
 		from := fmt.Sprintf("skinny-server-%v", name)
-		gc := &protobuf.GreetingCard{Sender: from, Letter: msg, MoneyEnclosed: 123}
+		gc := &pb.GreetingCard{
+			Sender:        from,
+			Letter:        msg,
+			MoneyEnclosed: 123,
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
