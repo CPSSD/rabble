@@ -1,5 +1,6 @@
+import logging
 import sqlite3
-    
+
 class DB:
     def __init__(self, filename):
         self.filename = filename
@@ -24,12 +25,12 @@ class DB:
         cursor.executescript(script)
         cursor.close()
 
-def build_database(schema_path, db_path='rabble.db'):
+def build_database(logger, schema_path, db_path='rabble.db'):
     db = DB(db_path)
     try:
         script = open(schema_path).read()
     except FileNotFoundError:
-        print("Couldn't find schema file at ", schema_path)
+        logger.error("Couldn't find schema file at: '{}'", schema_path)
         raise
     db.execute_script(script)
     return db

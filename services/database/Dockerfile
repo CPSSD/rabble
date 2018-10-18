@@ -6,4 +6,5 @@ RUN apk add --no-cache --update python3 python3-dev gcc g++ linux-headers make m
 RUN pip3 install grpcio
 RUN pip3 install protobuf
 
-CMD ["python3", "-u", "-B", "/repo/build_out/database/main.py"]
+CMD ["python3", "-u", "-B", "/repo/build_out/database/main.py", \
+     "-v", "--schema", "/repo/build_out/database/rabble_schema.sql"]
