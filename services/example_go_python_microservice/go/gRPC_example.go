@@ -1,7 +1,7 @@
 package main
 
 import (
-	"golang.org/x/net/context"
+	"context"
 	"google.golang.org/grpc"
 	protobuf "greetingCard"
 	"log"
