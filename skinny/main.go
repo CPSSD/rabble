@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	//"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,6 +13,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	protobuf "greetingCard"
 )
 
 const (
@@ -66,6 +70,32 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleGreet() http.HandlerFunc {
+	host := os.Getenv("GO_SERVER_HOST")
+	if host == "" {
+		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
+	}
+	addr := host + ":8000"
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := grpc.Dial(addr, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("Skinny server did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := protobuf.NewGreetingCardsClient(conn)
+		name := mux.Vars(r)["username"]
+		s := fmt.Sprintf("hello %#v", name)
+		gc := &protobuf.GreetingCard{Sender: "skinny-server", Letter: s, MoneyEnclosed: 123}
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+		//defer cancel()
+		ack, err := c.GetGreetingCard(ctx, gc)
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Received ack card: %#v\n", ack)
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -86,6 +116,7 @@ func (s *serverWrapper) setupRoutes() {
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
 	r.HandleFunc("/@{username}/follow", s.handleFollow())
+	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
 	r.HandleFunc("/api/", s.handleNotImplemented())
