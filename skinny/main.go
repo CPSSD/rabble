@@ -86,8 +86,8 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 		name := mux.Vars(r)["username"]
 		s := fmt.Sprintf("hello %#v", name)
 		gc := &protobuf.GreetingCard{Sender: "skinny-server", Letter: s, MoneyEnclosed: 123}
-		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-		//defer cancel()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 		ack, err := c.GetGreetingCard(ctx, gc)
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
