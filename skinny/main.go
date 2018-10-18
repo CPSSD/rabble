@@ -33,6 +33,8 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
+    // greetingCards is the RPC client for talking to the GreetingCards service.
+	greetingCards pb.GreetingCardsClient
 }
 
 // handleNotImplemented returns a http.HandlerFunc with a 501 Not Implemented
@@ -149,7 +151,12 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
-	s := &serverWrapper{r, srv, 20 * time.Second}
+	s := &serverWrapper{
+		router:        r,
+		server:        srv,
+		shutdownWait:  20 * time.Second,
+		greetingCards: nil,
+	}
 	s.setupRoutes()
 	return s
 }
