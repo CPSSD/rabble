@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,6 +57,15 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleFollow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		username := vars["username"]
+		log.Printf("Requested to follow user %#v\n", username)
+		fmt.Fprintf(w, "Followed %v\n", username)
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -75,7 +85,7 @@ func (s *serverWrapper) setupRoutes() {
 
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
-	r.HandleFunc("/@{username}/follow", s.handleNotImplemented())
+	r.HandleFunc("/@{username}/follow", s.handleFollow())
 
 	// c2s routes
 	r.HandleFunc("/api/", s.handleNotImplemented())
