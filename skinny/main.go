@@ -35,7 +35,7 @@ type serverWrapper struct {
 	shutdownWait time.Duration
 	// greetingCards channel is the underlying connection to the GreetingCards
 	// service. This reference must be retained so it can by closed later.
-	greetingCardsChannel grpc.ClientConn
+	greetingCardsChannel *grpc.ClientConn
 	// greetingCards is the RPC client for talking to the GreetingCards
 	// service.
 	greetingCards pb.GreetingCardsClient
@@ -140,7 +140,7 @@ func (s *serverWrapper) shutdown() {
 	s.greetingCardsChannel.Close()
 }
 
-func createGreetingCardsClient() pb.GreetingCardsClient {
+func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
 	host := os.Getenv("GO_SERVER_HOST")
 	if host == "" {
 		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
@@ -151,7 +151,7 @@ func createGreetingCardsClient() pb.GreetingCardsClient {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect: %v", err)
 	}
-	return pb.NewGreetingCardsClient(conn)
+	return conn, pb.NewGreetingCardsClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
@@ -166,11 +166,13 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
+	greetingCardsChannel, greetingCardsClient := createGreetingCardsClient()
 	s := &serverWrapper{
-		router:        r,
-		server:        srv,
-		shutdownWait:  20 * time.Second,
-		greetingCards: createGreetingCardsClient(),
+		router:               r,
+		server:               srv,
+		shutdownWait:         20 * time.Second,
+		greetingCardsChannel: greetingCardsChannel,
+		greetingCards:        greetingCardsClient,
 	}
 	s.setupRoutes()
 	return s
