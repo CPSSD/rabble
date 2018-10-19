@@ -23,6 +23,14 @@ echo "Running build"
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
 
+echo "Building database service"
+cp -R services/database build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/database \
+  --grpc_python_out=build_out/database \
+  build_out/database/database.proto
+
 echo "Building example go microservice"
 SRC_DIR=services/example_go_python_microservice
 protoc -I=$SRC_DIR \
