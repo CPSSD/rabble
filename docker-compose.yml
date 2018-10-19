@@ -33,3 +33,10 @@ services:
       - .:/repo
     environment:
       - GO_SERVER_HOST=example_go_microservice
+  database_service:
+    build:
+      context: ./services/database
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+
