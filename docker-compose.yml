@@ -9,12 +9,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
-  example_microservice:
-    build:
-      context: ./services/example_microservice
-      dockerfile: Dockerfile
-    volumes:
-      - .:/repo
   example_go_microservice:
     build:
       context: ./services/example_go_python_microservice/go
