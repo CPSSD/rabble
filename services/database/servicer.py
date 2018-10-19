@@ -1,3 +1,5 @@
+import sqlite3
+
 import database_pb2
 import database_pb2_grpc
 
@@ -24,7 +26,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
                 'VALUES (?, ?, ?, ?, ?)',
                 req.entry.global_id, req.entry.author,
                 req.entry.title, req.entry.body,
-                req.entry.creation_datetime)
+                req.entry.creation_datetime.seconds)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)

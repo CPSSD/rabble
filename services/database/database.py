@@ -17,6 +17,7 @@ class DB:
         cursor = self._get_cursor()
         cursor.execute(statement, params)
         res = cursor.fetchall()
+        cursor.connection.commit()
         cursor.close()
         return res
 
