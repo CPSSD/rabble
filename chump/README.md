@@ -1,6 +1,6 @@
-# Fatty
+# Chump
 
-A fat typescript client for Rabble.
+A typescript client for Rabble.
 
 ## Local Development
 
