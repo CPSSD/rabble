@@ -33,9 +33,9 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
-	// greetingCards channel is the underlying connection to the GreetingCards
+	// greetingCardsConn is the underlying connection to the GreetingCards
 	// service. This reference must be retained so it can by closed later.
-	greetingCardsChannel *grpc.ClientConn
+	greetingCardsConn *grpc.ClientConn
 	// greetingCards is the RPC client for talking to the GreetingCards
 	// service.
 	greetingCards pb.GreetingCardsClient
@@ -137,7 +137,7 @@ func (s *serverWrapper) shutdown() {
 	// Waits for active connections to terminate, or until it hits the timeout.
 	s.server.Shutdown(ctx)
 
-	s.greetingCardsChannel.Close()
+	s.greetingCardsConn.Close()
 }
 
 func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
@@ -166,13 +166,13 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
-	greetingCardsChannel, greetingCardsClient := createGreetingCardsClient()
+	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
 	s := &serverWrapper{
-		router:               r,
-		server:               srv,
-		shutdownWait:         20 * time.Second,
-		greetingCardsChannel: greetingCardsChannel,
-		greetingCards:        greetingCardsClient,
+		router:            r,
+		server:            srv,
+		shutdownWait:      20 * time.Second,
+		greetingCardsConn: greetingCardsConn,
+		greetingCards:     greetingCardsClient,
 	}
 	s.setupRoutes()
 	return s
