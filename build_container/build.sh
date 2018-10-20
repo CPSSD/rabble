@@ -43,9 +43,6 @@ python3 -m grpc_tools.protoc -I$SRC_DIR --python_out=$PYTHON_OUT_DIR \
 echo "Copying python files for example microservice"
 cp services/example_go_python_microservice/python/*.py $PYTHON_OUT_DIR
 
-echo "Building example binary"
-g++ services/example_microservice/main.cc -o build_out/example_ms
-
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
 

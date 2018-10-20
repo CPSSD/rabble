@@ -1,5 +1,11 @@
 ### Project Structure ##
 
+# Vim swapfile
+.*.swp
+
+# Database
+rabble.db
+
 # Build output
 build_out/
 
