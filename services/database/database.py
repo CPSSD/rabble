@@ -26,7 +26,7 @@ class DB:
         cursor.executescript(script)
         cursor.close()
 
-def build_database(logger, schema_path, db_path='rabble.db'):
+def build_database(logger, schema_path, db_path):
     db = DB(db_path)
     try:
         script = open(schema_path).read()

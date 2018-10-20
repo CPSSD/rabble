@@ -15,6 +15,9 @@ def get_args():
         '--schema', required=True,
         help='The path to the schema script for the database.')
     parser.add_argument(
+        '--db_path', default='rabble.db',
+        help='The path to the sqlite database file')
+    parser.add_argument(
         '-v', default='WARNING', action='store_const', const='DEBUG',
         help='Log more verbosely.')
     return parser.parse_args()
@@ -31,7 +34,7 @@ def main():
     args = get_args()
     logger = get_logger(args.v)
     logger.info("Creating DB")
-    database = build_database(logger, args.schema)
+    database = build_database(logger, args.schema, args.db_path)
     logger.info("Creating server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     logger.info("Creating database servicer")
