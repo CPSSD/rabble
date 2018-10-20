@@ -8,6 +8,7 @@
     "build:prod": "webpack --config webpack.config.js -d --mode production",
     "start": "webpack-dev-server --mode development --content-base ./dist --hot --inline --colors --port 3000 --open",
     "lint": "tslint src/**/*.tsx test/**/*.tsx",
+    "fix": "tslint --fix src/**/*.tsx test/**/*.tsx || true",
     "clean": "rm -rf dist/*",
     "test": "karma start"
   },
