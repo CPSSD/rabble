@@ -47,7 +47,14 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     // start these browsers
-    browsers: ['PhantomJS'],
+    browsers: ['RabbleChromium'],
+
+    customLaunchers: {
+      RabbleChromium: {
+        base: 'ChromiumHeadless',
+        flags: ["--no-sandbox"]
+      }
+    },
 
     singleRun: true,
 

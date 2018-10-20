@@ -4,7 +4,7 @@ RUN mkdir -p /repo/
 
 # Install dependencies
 RUN apk add --no-cache --update musl-dev protobuf
-RUN apk add --no-cache --update nodejs nodejs-npm
+RUN apk add --no-cache --update nodejs nodejs-npm chromium nss
 RUN apk add --no-cache --update g++ go ca-certificates git \
   python3 python3-dev gcc g++ linux-headers make
 
