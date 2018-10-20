@@ -20,9 +20,6 @@ echo "Running build"
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
 
-echo "Building skinny server"
-go build -o build_out/skinny skinny/*.go
-
 echo "Building database service"
 cp -R services/database build_out/
 python3 -m grpc_tools.protoc \
@@ -45,6 +42,9 @@ python3 -m grpc_tools.protoc -I$SRC_DIR --python_out=$PYTHON_OUT_DIR \
 
 echo "Copying python files for example microservice"
 cp services/example_go_python_microservice/python/*.py $PYTHON_OUT_DIR
+
+echo "Building skinny server"
+go build -o build_out/skinny skinny/*.go
 
 echo "Installing node.js dependencies"
 cd chump && npm install && cd ..

@@ -13,6 +13,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+
+	"google.golang.org/grpc"
+	pb "greetingCard"
 )
 
 const (
@@ -30,6 +33,12 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
+	// greetingCardsConn is the underlying connection to the GreetingCards
+	// service. This reference must be retained so it can by closed later.
+	greetingCardsConn *grpc.ClientConn
+	// greetingCards is the RPC client for talking to the GreetingCards
+	// service.
+	greetingCards pb.GreetingCardsClient
 }
 
 // handleNotImplemented returns a http.HandlerFunc with a 501 Not Implemented
@@ -66,6 +75,32 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+// handleGreet sends an RPC to example_go_microservice with a card for the
+// given name.
+// TODO(#91): Remove example code when there are several real services being
+// contacted from this server.
+func (s *serverWrapper) handleGreet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := mux.Vars(r)["username"]
+		msg := fmt.Sprintf("hello %#v", name)
+		from := fmt.Sprintf("skinny-server-%v", name)
+		gc := &pb.GreetingCard{
+			Sender:        from,
+			Letter:        msg,
+			MoneyEnclosed: 123,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		ack, err := s.greetingCards.GetGreetingCard(ctx, gc)
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Received ack card: %#v\n", ack.Letter)
+		fmt.Fprintf(w, "Received: %#v", ack.Letter)
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -86,12 +121,37 @@ func (s *serverWrapper) setupRoutes() {
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
 	r.HandleFunc("/@{username}/follow", s.handleFollow())
+	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
 	r.HandleFunc("/api/", s.handleNotImplemented())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
+}
+
+func (s *serverWrapper) shutdown() {
+	log.Printf("Stopping skinny server.\n")
+	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
+	defer cancel()
+	// Waits for active connections to terminate, or until it hits the timeout.
+	s.server.Shutdown(ctx)
+
+	s.greetingCardsConn.Close()
+}
+
+func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
+	host := os.Getenv("GO_SERVER_HOST")
+	if host == "" {
+		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
+	}
+	addr := host + ":8000"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect: %v", err)
+	}
+	return conn, pb.NewGreetingCardsClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
@@ -106,7 +166,14 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
-	s := &serverWrapper{r, srv, 20 * time.Second}
+	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
+	s := &serverWrapper{
+		router:            r,
+		server:            srv,
+		shutdownWait:      20 * time.Second,
+		greetingCardsConn: greetingCardsConn,
+		greetingCards:     greetingCardsClient,
+	}
 	s.setupRoutes()
 	return s
 }
@@ -135,12 +202,6 @@ func main() {
 
 	// Block until we receive signal.
 	<-c
-	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
-	defer cancel()
-
-	// Waits for active connections to terminate, or until it hits the timeout.
-	s.server.Shutdown(ctx)
-
-	log.Printf("Stopping skinny server.\n")
+	s.shutdown()
 	os.Exit(0)
 }
