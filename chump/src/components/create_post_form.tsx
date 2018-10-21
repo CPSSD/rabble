@@ -1,22 +1,20 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-interface CreatePostFormProps { }
-
-interface CreatePostFormState {
-  username: string,
-  title: string,
-  blogText: string
+interface ICreatePostFormState {
+  username: string;
+  title: string;
+  blogText: string;
 }
 
-class CreatePostForm extends React.Component<CreatePostFormProps, CreatePostFormState> {
-  constructor(props: CreatePostFormProps) {
-    super(props)
+class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
+  constructor(props: {}) {
+    super(props);
 
     this.state = {
-      username: "",
+      blogText: "",
       title: "",
-      blogText: ""
+      username: "",
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -24,35 +22,7 @@ class CreatePostForm extends React.Component<CreatePostFormProps, CreatePostForm
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
   }
 
-  handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target;
-
-    this.setState({
-      [target.name]: target.value
-    } as any);
-  }
-
-  handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const target = event.target;
-
-    this.setState({
-      [target.name]: target.value
-    } as any);
-  }
-
-  handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    alert("Posted created");
-
-
-    this.setState({
-      "username":"",
-      "title":"",
-      "blogText": ""
-    })
-  }
-
-  render() {
+  public render() {
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
         <div className="pure-control-group">
@@ -62,7 +32,8 @@ class CreatePostForm extends React.Component<CreatePostFormProps, CreatePostForm
             value={this.state.username}
             onChange={this.handleInputChange}
             className="pure-input-1-2"
-            placeholder="Username" />
+            placeholder="Username"
+          />
         </div>
         <div className="pure-control-group">
           <input
@@ -71,18 +42,52 @@ class CreatePostForm extends React.Component<CreatePostFormProps, CreatePostForm
             value={this.state.title}
             onChange={this.handleInputChange}
             className="pure-input-1-2"
-            placeholder="Title" />
+            placeholder="Title"
+          />
           <textarea
             name="blogText"
             value={this.state.blogText}
             onChange={this.handleTextAreaChange}
             className="pure-input-1 blog-input"
-            placeholder="Start here" />
+            placeholder="Start here"
+          />
         </div>
-        <button type="submit" className="pure-button pure-input-1-3 pure-button-primary">Post</button>
+        <button
+          type="submit"
+          className="pure-button pure-input-1-3 pure-button-primary"
+        >
+          Post
+        </button>
       </form>
-    )
+    );
+  }
+
+  private handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+
+    this.setState({
+      [target.name]: target.value,
+    } as any);
+  }
+
+  private handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const target = event.target;
+
+    this.setState({
+      [target.name]: target.value,
+    } as any);
+  }
+
+  private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    alert("Posted created");
+
+    this.setState({
+      blogText: "",
+      title: "",
+      username: "",
+    });
   }
 }
 
-export default CreatePostForm
+export default CreatePostForm;
