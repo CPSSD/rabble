@@ -39,7 +39,7 @@ def main():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     logger.info("Creating database servicer")
     database_pb2_grpc.add_DatabaseServicer_to_server(
-            DatabaseServicer(database), server)
+            DatabaseServicer(database, logger), server)
     server.add_insecure_port('0.0.0.0:1798')
     logger.info("Starting server")
     server.start()
