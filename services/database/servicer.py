@@ -58,13 +58,13 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
     def _handle_find(self, req, resp):
         fields = req.match.ListFields()
         filter_list = [f.name + ' = ?' for f, _ in fields]
-        filter = ' AND '.join(filter_list)
+        filter_clause = ' AND '.join(filter_list)
         try:
             if not filter_list:
                 res = self._db.execute('SELECT * FROM posts')
             else:
                 res = self._db.execute(
-                    'SELECT * FROM posts WHERE ' + filter,
+                    'SELECT * FROM posts WHERE ' + filter_clause,
                     *[v for _, v in fields])
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
