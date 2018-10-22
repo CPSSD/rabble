@@ -14,6 +14,16 @@ cd /repo
 mkdir -p build_out/
 mkdir -p /go/src/greetingCard
 
+# If when the script exits (because of an error or otherwise) the following
+# function runs. The exit code is preserved.
+function chown_trap {
+  echo "Fixing permissions"
+  adduser -D -u $LOCAL_USER_ID user
+  chown -R user build_out
+  chown -R user chump/node_modules
+}
+trap chown_trap EXIT
+
 echo "Running build"
 
 # Add build commands here.
@@ -53,7 +63,3 @@ echo "Building client"
 cd chump && npm run build && cd ..
 mv chump/dist build_out/chump_dist
 
-echo "Fixing permissions"
-adduser -D -u $LOCAL_USER_ID user
-chown -R user build_out
-chown -R user chump/node_modules
