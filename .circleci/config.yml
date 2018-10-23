@@ -1,0 +1,36 @@
+# Rabble CircleCI 2.0 configuration file
+
+version: 2
+jobs:
+  push_build_container:
+    docker:
+      # The language doesn't really matter, this is only used to make
+      # our container.
+      - image: circleci/python:3.6.4
+      
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false  # Would be great, costs money.
+      - run: './run_build.sh --only-image'
+
+  run_tests:
+    docker:
+      - image: rabblenetwork/rabble_build:latest
+    environment:
+      LOCAL_USER: rabble
+      TEST_RABBLE: true
+    steps:
+      - checkout
+          path: /repo
+      - run: '/repo/build_container/entry.sh'
+
+workflows:
+  version: 2
+  create_image_and_test:
+    jobs:
+      - push_build_containier
+      - run_tests:
+          requires:
+            push_build_container
+
