@@ -17,7 +17,8 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
       username: "",
     };
 
-    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleUsernameInputChange = this.handleUsernameInputChange.bind(this);
+    this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
   }
@@ -30,7 +31,7 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
             type="text"
             name="username"
             value={this.state.username}
-            onChange={this.handleInputChange}
+            onChange={this.handleUsernameInputChange}
             className="pure-input-1-2"
             placeholder="Username"
           />
@@ -40,7 +41,7 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
             type="text"
             name="title"
             value={this.state.title}
-            onChange={this.handleInputChange}
+            onChange={this.handleTitleInputChange}
             className="pure-input-1-2"
             placeholder="Title"
           />
@@ -62,20 +63,28 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
     );
   }
 
-  private handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+  private handleUsernameInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
 
     this.setState({
-      [target.name]: target.value,
-    } as any);
+      ["username"]: target.value,
+    });
+  }
+
+  private handleTitleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+
+    this.setState({
+      ["title"]: target.value,
+    });
   }
 
   private handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const target = event.target;
 
     this.setState({
-      [target.name]: target.value,
-    } as any);
+      ["blogText"]: target.value,
+    });
   }
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
