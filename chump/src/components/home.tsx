@@ -25,7 +25,7 @@ export class Home extends React.Component<{}, IHomeState> {
 
   renderPosts() {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
-      // TODO(aaronpd): Replace dangerouslySetInnerHTML with a safer option
+      // TODO(devoxel): Replace dangerouslySetInnerHTML with a safer option
       return (
         <div className="pure-g" key={i}>
           <div className="pure-u-1-5"/>
