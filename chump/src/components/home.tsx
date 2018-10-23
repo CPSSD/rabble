@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { IBlogPost, GetPublicPosts } from "../api/posts"
+import { GetPublicPosts, IBlogPost } from "../api/posts";
 
 interface IHomeState {
   publicBlog: IBlogPost[];
@@ -13,33 +13,33 @@ export class Home extends React.Component<{}, IHomeState> {
     this.state = { publicBlog: [] };
   }
 
-  componentDidMount() {
-    this.getPosts(); 
+  public componentDidMount() {
+    this.getPosts();
   }
 
-  getPosts() {
+  public getPosts() {
     GetPublicPosts().then((posts: IBlogPost[]) => {
       this.setState({ publicBlog: posts });
     });
   }
 
-  renderPosts() {
+  public renderPosts() {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
       // TODO(devoxel): Replace dangerouslySetInnerHTML with a safer option
       return (
         <div className="pure-g" key={i}>
           <div className="pure-u-1-5"/>
           <div className="pure-u-3-5">
-            <h4> { e.title }, written by: { e.author }. </h4>
-            <p dangerouslySetInnerHTML={{ __html: e.blogText }}/>
+            <h4> {e.title}, written by: {e.author}. </h4>
+            <p dangerouslySetInnerHTML={{ __html: e.body }}/>
           </div>
         </div>
       );
     });
   }
 
-  render() {
-    const blogPosts = this.renderPosts()
+  public render() {
+    const blogPosts = this.renderPosts();
     return (
       <div>
         <div className="pure-g">
@@ -53,4 +53,4 @@ export class Home extends React.Component<{}, IHomeState> {
       </div>
     );
   }
-};
+}
