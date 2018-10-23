@@ -26,6 +26,7 @@ if ! docker pull $IMAGE_NAME; then
   echo "Pulling image failed, building"
   docker build \
     --tag $IMAGE_NAME \
+    --tag rabblenetwork/rabble_build:latest \
     --file $DOCKERFILE \
     $REPO_ROOT/build_container
   if [ -z "$DOCKER_PASS" ]; then
