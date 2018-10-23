@@ -37,6 +37,10 @@ if ! docker pull $IMAGE_NAME; then
   fi
 fi
 
+if [ "$1" = "--only-image" ]; then
+  exit 0
+fi
+
 echo "Running build container"
 docker run \
   --rm \
