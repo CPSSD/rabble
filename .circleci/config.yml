@@ -22,7 +22,7 @@ jobs:
       TEST_RABBLE: true
     steps:
       - checkout
-          path: /repo
+          path: '/repo'
       - run: '/repo/build_container/entry.sh'
 
 workflows:
