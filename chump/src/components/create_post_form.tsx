@@ -67,7 +67,7 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
     const target = event.target;
 
     this.setState({
-      ["username"]: target.value,
+      username: target.value,
     });
   }
 
@@ -75,7 +75,7 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
     const target = event.target;
 
     this.setState({
-      ["title"]: target.value,
+      title: target.value,
     });
   }
 
@@ -83,7 +83,7 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
     const target = event.target;
 
     this.setState({
-      ["blogText"]: target.value,
+      blogText: target.value,
     });
   }
 
