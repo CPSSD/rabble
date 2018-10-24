@@ -1,14 +1,18 @@
-# Chump
+# chump
 
-A typescript client for Rabble.
+A typescript client for rabble.
 
-## Local Development
+## local development
 
 To develop without docker, you'll first need to install the
 dependencies with `npm install`, and you'll need chromium for tests.
 
-After that, you can use the npm scripts to run a local live server,
-or build the javascript.
+Note that currently live development will not work, you'll need to start the
+whole stack in order to access the server side.
+
+Run `./run_build.sh && ./start.sh` and navigate to `localhost:1916`.
+
+## npm scripts
 
 - `npm run start`: Start a live development server that updates on file changes.
 
