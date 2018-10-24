@@ -1,13 +1,14 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { CreateArticle } from "../models/article";
 
-interface ICreatePostFormState {
+interface ICreateArticleFormState {
   username: string;
   title: string;
   blogText: string;
 }
 
-class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
+class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
   constructor(props: {}) {
     super(props);
 
@@ -89,14 +90,15 @@ class CreatePostForm extends React.Component<{}, ICreatePostFormState> {
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    alert("Posted created");
-
-    this.setState({
-      blogText: "",
-      title: "",
-      username: "",
+    const promise = CreateArticle(this.state.username, this.state.title, this.state.blogText);
+    promise
+    .on("error", (err) => {
+      alert("Something went wrong, Please try again.")
+    })
+    .then((res) => {
+      alert("Posted article");
     });
   }
 }
 
-export default CreatePostForm;
+export default CreateArticleForm;
