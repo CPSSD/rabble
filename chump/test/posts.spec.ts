@@ -1,15 +1,26 @@
 import * as Promise from 'bluebird';
 import { expect } from "chai";
+import * as superagent from 'superagent';
+import * as sinon from "sinon";
 
 import { IBlogPost, GetPublicPosts } from "../src/api/posts"
 
 describe("GetPublicPosts", () => {
+  it("should call api", (done) => {
+    const getRequest = sinon.stub(superagent, 'get').returns({
+      set: () => {
+        return ({
+          end: (cb) => {
+            cb(null, {ok: true, body: {}});
+          }
+        });
+      },
+    });
 
-  it("mocks post data", (done) => {
     GetPublicPosts().then((posts: IBlogPost[]) => {
-      expect(posts).to.have.lengthOf(4);
+      expect(getRequest).to.have.property("callCount", 1);
+      expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
       done();
     });
   })
-
 })
