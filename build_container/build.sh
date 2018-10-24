@@ -19,6 +19,7 @@ mkdir -p /go/src/greetingCard
 function chown_trap {
   echo "Fixing permissions"
   adduser -D -u $LOCAL_USER_ID user
+  cd /repo
   chown -R user build_out
   chown -R user chump/node_modules
 }
@@ -37,6 +38,13 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/database \
   --grpc_python_out=build_out/database \
   build_out/database/database.proto
+
+echo "Building go database proto"
+# TODO(devoxel): fix this hell of manually building protos
+
+mkdir -p /go/src/proto/database
+protoc -I=services/database --go_out=plugins=grpc:"/go/src/proto/database" \
+  services/database/*.proto
 
 echo "Building example go microservice"
 SRC_DIR=services/example_go_python_microservice

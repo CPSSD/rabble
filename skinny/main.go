@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,9 +14,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-
 	"google.golang.org/grpc"
+
 	pb "greetingCard"
+	dbpb "proto/database"
 )
 
 const (
@@ -39,6 +41,37 @@ type serverWrapper struct {
 	// greetingCards is the RPC client for talking to the GreetingCards
 	// service.
 	greetingCards pb.GreetingCardsClient
+}
+
+func (s *serverWrapper) handleFeed() http.HandlerFunc {
+	staticBlogs := []dbpb.PostsEntry{
+		{
+			GlobalId: "1",
+			Author:   "aaron",
+			Title:    "jim's hits",
+			Body:     "i saw a great movie once called jim.",
+		},
+		{
+			GlobalId: "2",
+			Author:   "aaron",
+			Title:    "nothing",
+			Body:     "nothing<br>to<br>see<br>here.",
+		},
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+
+		err := enc.Encode(staticBlogs)
+		if err != nil {
+			log.Printf("could not marshal blogs: %v", err)
+			w.WriteHeader(500)
+			return
+		}
+	}
 }
 
 // handleNotImplemented returns a http.HandlerFunc with a 501 Not Implemented
@@ -124,7 +157,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
-	r.HandleFunc("/api/", s.handleNotImplemented())
+	r.HandleFunc("/c2s/feed", s.handleFeed())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
