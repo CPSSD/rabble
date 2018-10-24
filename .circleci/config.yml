@@ -29,7 +29,7 @@ workflows:
   version: 2
   create_image_and_test:
     jobs:
-      - push_build_containier
+      - push_build_container
       - run_tests:
           requires:
             - push_build_container
