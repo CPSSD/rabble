@@ -32,5 +32,5 @@ workflows:
       - push_build_containier
       - run_tests:
           requires:
-            push_build_container
+            - push_build_container
 
