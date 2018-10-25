@@ -139,10 +139,9 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 
 // handleNewUser sends an RPC to example_go_microservice with a card for the
 // given name.
-// TODO(#91): Remove example code when there are several real services being
-// contacted from this server.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("Trying new user.\n")
 		display_name := mux.Vars(r)["display_name"]
 		handle := mux.Vars(r)["handle"]
 		u := &dbpb.UsersEntry{
@@ -223,7 +222,7 @@ func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
 	if host == "" {
 		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
 	}
-	addr := host + ":8000"
+	addr := host + ":1798"
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
