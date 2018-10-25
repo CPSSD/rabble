@@ -14,6 +14,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/@babel/polyfill/dist/polyfill.js',
+      'test/**/*.ts',
       'test/**/*.tsx',
     ],
 
@@ -23,6 +24,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     preprocessors: {
       'test/**/*.tsx': ["webpack"],
+      'test/**/*.ts': ["webpack"],
     },
 
     webpack: {
