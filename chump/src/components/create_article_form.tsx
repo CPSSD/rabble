@@ -22,6 +22,7 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
+    this.alertUser = this.alertUser.bind(this);
   }
 
   public render() {
@@ -66,7 +67,6 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
 
   private handleUsernameInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
-
     this.setState({
       username: target.value,
     });
@@ -74,7 +74,6 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
 
   private handleTitleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
-
     this.setState({
       title: target.value,
     });
@@ -82,21 +81,43 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
 
   private handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const target = event.target;
-
     this.setState({
       blogText: target.value,
     });
+  }
+
+  private alertUser(message: string) {
+    alert(message);
   }
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const promise = CreateArticle(this.state.username, this.state.title, this.state.blogText);
     promise
-    .on("error", (err) => {
-      alert("Something went wrong, Please try again.");
+    .then((res: any) => {
+      let message = "Posted article";
+      if (res.text) {
+        message = res.text;
+      }
+      this.alertUser(message);
+      this.setState({
+        blogText: "",
+        title: "",
+        username: "",
+      });
     })
-    .then((res) => {
-      alert("Posted article");
+    .catch((err: any) => {
+      let status = err.message;
+      if (err.response) {
+        status = err.response.status;
+      }
+      if (status === 403 || status === "403") {
+        this.alertUser("You do not have permission to create a post under this username.");
+      } else if (status === 400 || status === "400") {
+        this.alertUser("Bad request");
+      } else {
+        this.alertUser("Something went wrong, Please try again.");
+      }
     });
   }
 }

@@ -108,6 +108,60 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+type createArticleStruct struct {
+	Author string `json:"author"`
+	Body string `json:"body"`
+	Title string `json:"title"`
+	Creation_datetime string `json:"creation_datetime"`
+}
+
+func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		urlUsername := vars["username"]
+		decoder := json.NewDecoder(r.Body)
+		var t createArticleStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Could not decode JSON.\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON sent\n")
+			return
+		}
+
+		timeParseFormat := "2006-01-02T15:04:05.000Z"
+		creation_datetime, timeErr := time.Parse(timeParseFormat, t.Creation_datetime)
+		if timeErr != nil {
+			log.Printf("Invalid creation time provided.\n")
+			log.Printf("Error: %s\n", timeErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid creation time sent\n")
+			return
+		}
+
+		timeoutDuration, _ := time.ParseDuration("5m")
+		timeSinceRequest := time.Since(creation_datetime)
+		if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
+			log.Printf("Old creation time provided.")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Old creation time sent\n")
+			return
+		}
+
+		if urlUsername != t.Author {
+			log.Printf("Username mix up: %v, %v\n", urlUsername, t.Author)
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "Posting under incorrect username\n")
+			return
+		}
+
+		//article := t.Body
+		log.Printf("User %#v attempted to create a post with title: %v\n", urlUsername, t.Title)
+		fmt.Fprintf(w, "Created blog with title: %v\n", t.Title)
+	}
+}
+
 // handleGreet sends an RPC to example_go_microservice with a card for the
 // given name.
 // TODO(#91): Remove example code when there are several real services being
@@ -158,6 +212,7 @@ func (s *serverWrapper) setupRoutes() {
 
 	// c2s routes
 	r.HandleFunc("/c2s/feed", s.handleFeed())
+	r.HandleFunc("/c2s/@{username}/create_article", s.handleCreateArticle())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
