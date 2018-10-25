@@ -1,10 +1,14 @@
-from google.protobuf.timestamp_pb2 import Timestamp
 import sqlite3
+
+from users_servicer import UsersDatabaseServicer
 
 import database_pb2
 import database_pb2_grpc
+from google.protobuf.timestamp_pb2 import Timestamp
+
 
 class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
+
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
@@ -15,19 +19,12 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
             database_pb2.PostsRequest.UPDATE: self._handle_update,
         }
 
-        self._users_type_handlers = {
-            database_pb2.UsersRequest.INSERT: self._users_handle_insert,
-        }
+        users_servicer = UsersDatabaseServicer(db, logger)
+        self.Users = users_servicer.Users
 
     def Posts(self, request, context):
         response = database_pb2.PostsResponse()
         self._type_handlers[request.request_type](request, response)
-        return response
-
-    def Users(self, request, context):
-        print('USERS REQ')
-        response = database_pb2.UsersResponse()
-        self._users_type_handlers[request.request_type](request, response)
         return response
 
     def _handle_insert(self, req, resp):
@@ -48,8 +45,8 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 5:
             self._logger.warning(
-                    "Error converting tuple to PostsEntry: " +
-                    "Wrong number of elements " + str(tup))
+                "Error converting tuple to PostsEntry: " +
+                "Wrong number of elements " + str(tup))
             return False
         try:
             # You'd think there'd be a better way.
@@ -60,8 +57,8 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
             entry.creation_datetime.seconds = tup[4]
         except Exception as e:
             self._logger.warning(
-                    "Error converting tuple to PostsEntry: " +
-                    str(e))
+                "Error converting tuple to PostsEntry: " +
+                str(e))
             return False
         return True
 
@@ -90,6 +87,3 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
 
     def _handle_update(self, req, resp):
         pass
-
-    def _users_handle_insert(self, req, resp):
-        print(req.ListFields())

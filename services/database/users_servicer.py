@@ -4,7 +4,9 @@ import sqlite3
 import database_pb2
 import database_pb2_grpc
 
+
 class UsersDatabaseServicer(database_pb2_grpc.DatabaseServicer):
+
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
