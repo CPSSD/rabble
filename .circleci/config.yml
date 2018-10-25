@@ -21,16 +21,16 @@ jobs:
       LOCAL_USER: rabble
       TEST_RABBLE: true
     steps:
-      - checkout
-          path: /repo
+      - checkout:
+          path: '/repo'
       - run: '/repo/build_container/entry.sh'
 
 workflows:
   version: 2
   create_image_and_test:
     jobs:
-      - push_build_containier
+      - push_build_container
       - run_tests:
           requires:
-            push_build_container
+            - push_build_container
 

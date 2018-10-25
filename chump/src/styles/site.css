@@ -13,3 +13,7 @@ html {
   text-decoration: none;
   color: black;
 }
+
+.right-menu {
+  float: right;
+}
