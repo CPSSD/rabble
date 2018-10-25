@@ -137,13 +137,13 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 	}
 }
 
-// handleNewUser sends an RPC to example_go_microservice with a card for the
-// given name.
+// handleNewUser sends an RPC to the database service to create a user with the
+// given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        log.Printf("Trying new user.\n")
 		display_name := mux.Vars(r)["display_name"]
 		handle := mux.Vars(r)["handle"]
+		log.Printf("Trying to add new user %#v (%#v).\n", handle, display_name)
 		u := &dbpb.UsersEntry{
 			DisplayName: display_name,
 			Handle:      handle,
@@ -160,6 +160,7 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 			log.Fatalf("could not greet: %v", err)
 		}
 		fmt.Fprintf(w, "Received: %#v", resp.Error)
+		// TODO(iandioch): Return JSON with response status or error.
 	}
 }
 

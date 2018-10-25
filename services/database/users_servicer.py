@@ -19,6 +19,7 @@ class UsersDatabaseServicer:
 
     def _users_handle_insert(self, req, resp):
         self._logger.info('Inserting new user into Users database.')
+        # TODO(iandioch): Ensure we're not overwriting a previous user.
         try:
             self._db.execute(
                 'INSERT INTO users '
