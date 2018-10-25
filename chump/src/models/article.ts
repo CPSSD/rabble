@@ -4,10 +4,10 @@ export function CreateArticle(username: string, title: string, blogText: string)
   const endpoint: string = "/c2s/@" + username + "/create_article";
   const createdTime: string = new Date().toISOString();
   const postBody: object = {
-    attributedTo: username,
-    content: blogText,
+    author: username,
+    body: blogText,
+    creation_datetime: createdTime,
     title,
-    published: createdTime,
   };
   return request.post(endpoint)
     .set("Content-Type", "application/json")

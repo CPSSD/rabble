@@ -93,7 +93,7 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
     const promise = CreateArticle(this.state.username, this.state.title, this.state.blogText);
     promise
     .on("error", (err) => {
-      alert("Something went wrong, Please try again.")
+      alert("Something went wrong, Please try again.");
     })
     .then((res) => {
       alert("Posted article");
