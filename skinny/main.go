@@ -141,11 +141,11 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 // given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		display_name := mux.Vars(r)["display_name"]
+		displayName := mux.Vars(r)["display_name"]
 		handle := mux.Vars(r)["handle"]
 		log.Printf("Trying to add new user %#v (%#v).\n", handle, display_name)
 		u := &dbpb.UsersEntry{
-			DisplayName: display_name,
+			DisplayName: displayName,
 			Handle:      handle,
 		}
 		ur := &dbpb.UsersRequest{
