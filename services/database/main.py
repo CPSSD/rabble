@@ -6,7 +6,7 @@ import logging
 import time
 
 from database import build_database
-from servicer import DatabaseServicer
+from database_servicer import DatabaseServicer
 import database_pb2_grpc
 
 
