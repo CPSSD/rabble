@@ -41,11 +41,42 @@ message PostsResponse {
 
   string error = 2;
 
-  // If the result_type is OK and the query returns some entries then they
-  // are provided here
+  // If the result_type is OK, and the query returns some entries, then those
+  // entries are provided here.
   repeated PostsEntry results = 3;
+}
+
+message UsersEntry {
+  string handle = 1;
+  string display_name = 2;
+}
+
+message UsersRequest {
+    enum RequestType {
+        INSERT = 0;
+    }
+
+    RequestType request_type = 1;
+    UsersEntry entry = 2;
+}
+
+message UsersResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+    // Further types can be specified here.
+  }
+
+  ResultType result_type = 1;
+
+  string error = 2;
+
+  // If the result_type is OK, and the query being responded to requires some
+  // entries in return (eg. a FIND query), then those entries are provided here.
+  repeated UsersEntry results = 3;
 }
 
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
+  rpc Users(UsersRequest) returns (UsersResponse);
 }
