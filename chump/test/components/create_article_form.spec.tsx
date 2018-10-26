@@ -108,7 +108,6 @@ describe("CreateArticleForm", () => {
         expect(alertStub.calledWith(alertMessage)).to.equal(true);
         done();
       }, 200);
-
     });
 
     it("and handle a 400: bad request", (done) => {

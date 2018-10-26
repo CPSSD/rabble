@@ -1,13 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"bytes"
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -83,15 +83,11 @@ func TestHandleFollow(t *testing.T) {
 func TestHandleCreateArticleSuccess(t *testing.T) {
 	timeParseFormat := "2006-01-02T15:04:05.000Z"
 	currentTimeString := time.Now().Format(timeParseFormat)
-	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`;
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-	vars := map[string]string{
-		"username": "testuser",
-	}
-	req = mux.SetURLVars(req, vars)
 	newTestServerWrapper().handleCreateArticle()(res, req)
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
@@ -102,9 +98,9 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 }
 
 func TestHandleCreateArticleBadJSON(t *testing.T) {
-	jsonString := `{ author: "testuser", "body": "test post", "title": "test title" }`;
+	jsonString := `{ author: "testuser", "body": "test post", "title": "test title" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 	vars := map[string]string{
@@ -115,67 +111,55 @@ func TestHandleCreateArticleBadJSON(t *testing.T) {
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
 	}
-	if res.Body.String() != "Invalid JSON sent\n" {
-		t.Errorf("Expected 'Invalid JSON sent' body, got %#v", res.Body.String())
+	if res.Body.String() != "Invalid JSON\n" {
+		t.Errorf("Expected 'Invalid JSON' body, got %#v", res.Body.String())
 	}
 }
 
 func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
-	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "never" }`;
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "never" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-	vars := map[string]string{
-		"username": "testuser",
-	}
-	req = mux.SetURLVars(req, vars)
 	newTestServerWrapper().handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
 	}
-	if res.Body.String() != "Invalid creation time sent\n" {
-		t.Errorf("Expected 'Invalid creation time sent' body, got %#v", res.Body.String())
+	if res.Body.String() != "Invalid creation time\n" {
+		t.Errorf("Expected 'Invalid creation time' body, got %#v", res.Body.String())
 	}
 }
 
 func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
-	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "2006-01-02T15:04:05.000Z" }`;
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "2006-01-02T15:04:05.000Z" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-	vars := map[string]string{
-		"username": "testuser",
-	}
-	req = mux.SetURLVars(req, vars)
 	newTestServerWrapper().handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
 	}
-	if res.Body.String() != "Old creation time sent\n" {
-		t.Errorf("Expected 'Old creation time sent' body, got %#v", res.Body.String())
+	if res.Body.String() != "Old creation time\n" {
+		t.Errorf("Expected 'Old creation time' body, got %#v", res.Body.String())
 	}
 }
 
 func TestHandleCreateArticleUnauthorizedUser(t *testing.T) {
 	timeParseFormat := "2006-01-02T15:04:05.000Z"
 	currentTimeString := time.Now().Format(timeParseFormat)
-	jsonString := `{ "author": "badguy", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`;
+	jsonString := `{ "author": "badguy", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-	vars := map[string]string{
-		"username": "testuser",
-	}
-	req = mux.SetURLVars(req, vars)
 	newTestServerWrapper().handleCreateArticle()(res, req)
 	if res.Code != http.StatusForbidden {
 		t.Errorf("Expected 403, got %#v", res.Code)
 	}
-	if res.Body.String() != "Posting under incorrect username\n" {
-		t.Errorf("Expected 'Posting under incorrect username' body, got %#v", res.Body.String())
+	if res.Body.String() != "Post under incorrect username\n" {
+		t.Errorf("Expected 'Post under incorrect username' body, got %#v", res.Body.String())
 	}
 }
 
