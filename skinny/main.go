@@ -141,8 +141,8 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 // given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        vars := r.URL.Query()
-        // TODO(iandioch): Return error if parameters are missing.
+		vars := r.URL.Query()
+		// TODO(iandioch): Return error if parameters are missing.
 		displayName := vars["display_name"][0]
 		handle := vars["handle"][0]
 		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
@@ -204,6 +204,7 @@ func (s *serverWrapper) shutdown() {
 	s.server.Shutdown(ctx)
 
 	s.greetingCardsConn.Close()
+	s.databaseConn.Close()
 }
 
 func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
