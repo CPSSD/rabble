@@ -56,28 +56,26 @@ type serverWrapper struct {
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
-	staticBlogs := []dbpb.PostsEntry{
-		{
-			GlobalId: "1",
-			Author:   "aaron",
-			Title:    "jim's hits",
-			Body:     "i saw a great movie once called jim.",
-		},
-		{
-			GlobalId: "2",
-			Author:   "aaron",
-			Title:    "nothing",
-			Body:     "nothing<br>to<br>see<br>here.",
-		},
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		pr := &dbpb.PostsRequest{
+			RequestType: dbpb.PostsRequest_FIND,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.database.Posts(ctx, pr)
+		if err != nil {
+			log.Fatalf("Could not get feed: %v", err)
+		}
 
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 
-		err := enc.Encode(staticBlogs)
+		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(500)

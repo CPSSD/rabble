@@ -1,17 +1,38 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 
 	dbpb "proto/database"
 )
+
+const (
+	fakeTitle = "fake"
+)
+
+type DatabaseFake struct {
+	dbpb.DatabaseClient
+
+	// The most recent postRequest
+	rq *dbpb.PostsRequest
+}
+
+func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
+	d.rq = r
+	return &dbpb.PostsResponse{
+		Results: []*dbpb.PostsEntry{{
+			Title: fakeTitle,
+		}},
+	}, nil
+}
 
 func newTestServerWrapper() *serverWrapper {
 	// TODO(iandioch): Fake/mock instead of using real dependencies
@@ -23,6 +44,7 @@ func newTestServerWrapper() *serverWrapper {
 		shutdownWait:      20 * time.Second,
 		greetingCardsConn: nil,
 		greetingCards:     nil,
+		database:          &DatabaseFake{},
 	}
 	s.setupRoutes()
 	return s
@@ -60,8 +82,9 @@ func TestHandleFollow(t *testing.T) {
 func TestFeed(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/c2s/feed", nil)
 	res := httptest.NewRecorder()
-	newTestServerWrapper().handleFeed()(res, req)
+	srv := newTestServerWrapper()
 
+	srv.handleFeed()(res, req)
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
@@ -71,13 +94,11 @@ func TestFeed(t *testing.T) {
 		t.Fatalf("json.Unmarshal(%#v) unexpected error: %v", res.Body.String(), err)
 	}
 
-	// No need to test these in depth right now, will expand tests when
-	// it's talking to the server
-	if len(r) != 2 {
-		t.Fatalf("Expected two results, got %v", len(r))
+	if len(r) != 1 {
+		t.Fatalf("Expected one result, got %v", len(r))
 	}
 
-	if !strings.Contains(res.Body.String(), "<") {
-		t.Fatalf("Expecting %v to unescape angle brackets", res.Body.String())
+	if r[0].Title != fakeTitle {
+		t.Fatalf("Expected faked response, got %v", r[0].Title)
 	}
 }
