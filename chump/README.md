@@ -7,8 +7,8 @@ A typescript client for rabble.
 To develop without docker, you'll first need to install the
 dependencies with `npm install`, and you'll need chromium for tests.
 
-Note that currently live development will not work, you'll need to start the
-whole stack in order to access the server side.
+Note that currently live updating development server script will not work,
+you'll need to start the whole stack in order to access the server side.
 
 Run `./run_build.sh && ./start.sh` and navigate to `localhost:1916`.
 
