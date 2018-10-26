@@ -70,4 +70,3 @@ cd chump && npm install && cd ..
 echo "Building client"
 cd chump && npm run build && cd ..
 mv chump/dist build_out/chump_dist
-
