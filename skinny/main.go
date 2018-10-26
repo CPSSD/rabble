@@ -25,6 +25,13 @@ const (
 	timeParseFormat = "2006-01-02T15:04:05.000Z"
 )
 
+type createArticleStruct struct {
+	Author            string `json:"author"`
+	Body              string `json:"body"`
+	Title             string `json:"title"`
+	Creation_datetime string `json:"creation_datetime"`
+}
+
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
 // access their dependencies through it. See
@@ -110,13 +117,6 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		log.Printf("Requested to follow user %#v\n", username)
 		fmt.Fprintf(w, "Followed %v\n", username)
 	}
-}
-
-type createArticleStruct struct {
-	Author            string `json:"author"`
-	Body              string `json:"body"`
-	Title             string `json:"title"`
-	Creation_datetime string `json:"creation_datetime"`
 }
 
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
