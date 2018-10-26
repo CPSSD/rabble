@@ -35,6 +35,7 @@ if ! docker pull $IMAGE_NAME; then
     docker login -u rabblenetwork -p $DOCKER_PASS
     echo "Logged in to docker hub, pushing"
     docker push $IMAGE_NAME
+    docker push rabblenetwork/rabble_build:latest
   fi
 fi
 
