@@ -95,11 +95,10 @@ describe("CreateArticleForm", () => {
     });
 
     it("and handle a 403: permission denied", (done) => {
-      const alertStatusCode: number = 403;
-      const alertMessage: string = "You do not have permission to create a post under this username.";
+      const alertMessage: string = "403";
       testComponent = mount(<CreateArticleForm/>);
       const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error("403"));
+        reject(new Error(alertMessage));
       });
       createStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
@@ -113,11 +112,10 @@ describe("CreateArticleForm", () => {
     });
 
     it("and handle a 400: bad request", (done) => {
-      const alertStatusCode: number = 400;
-      const alertMessage: string = "Bad request";
+      const alertMessage: string = "400";
       testComponent = mount(<CreateArticleForm/>);
       const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error("400"));
+        reject(new Error(alertMessage));
       });
       createStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
@@ -130,11 +128,10 @@ describe("CreateArticleForm", () => {
     });
 
     it("and handle other error", (done) => {
-      const alertStatusCode: number = 500;
-      const alertMessage: string = "Something went wrong, Please try again.";
+      const alertMessage: string = "500";
       testComponent = mount(<CreateArticleForm/>);
       const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error("unknown"));
+        reject(new Error(alertMessage));
       });
       createStub.returns(promise);
       testComponent.find("form").first().simulate("submit");

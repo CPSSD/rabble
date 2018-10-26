@@ -8,7 +8,7 @@ interface ICreateArticlePostBody {
 }
 
 export function CreateArticle(username: string, title: string, blogText: string) {
-  const endpoint: string = "/c2s/@" + username + "/create_article";
+  const endpoint: string = "/c2s/create_article?username=" + username;
   const createdTime: string = new Date().toISOString();
   const postBody: ICreateArticlePostBody = {
     author: username,

@@ -108,16 +108,12 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
     })
     .catch((err: any) => {
       let status = err.message;
+      let message = err.message;
       if (err.response) {
         status = err.response.status;
+        message = err.response.text;
       }
-      if (status === 403 || status === "403") {
-        this.alertUser("You do not have permission to create a post under this username.");
-      } else if (status === 400 || status === "400") {
-        this.alertUser("Bad request");
-      } else {
-        this.alertUser("Something went wrong, Please try again.");
-      }
+      this.alertUser(message);
     });
   }
 }
