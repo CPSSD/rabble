@@ -1,10 +1,14 @@
-from google.protobuf.timestamp_pb2 import Timestamp
 import sqlite3
+
+from users_servicer import UsersDatabaseServicer
 
 import database_pb2
 import database_pb2_grpc
+from google.protobuf.timestamp_pb2 import Timestamp
 
-class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
+
+class PostsDatabaseServicer:
+
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
@@ -38,8 +42,8 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 5:
             self._logger.warning(
-                    "Error converting tuple to PostsEntry: " +
-                    "Wrong number of elements " + str(tup))
+                "Error converting tuple to PostsEntry: " +
+                "Wrong number of elements " + str(tup))
             return False
         try:
             # You'd think there'd be a better way.
@@ -50,8 +54,8 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
             entry.creation_datetime.seconds = tup[4]
         except Exception as e:
             self._logger.warning(
-                    "Error converting tuple to PostsEntry: " +
-                    str(e))
+                "Error converting tuple to PostsEntry: " +
+                str(e))
             return False
         return True
 

@@ -6,8 +6,9 @@ import logging
 import time
 
 from database import build_database
-from servicer import DatabaseServicer
+from database_servicer import DatabaseServicer
 import database_pb2_grpc
+
 
 def get_args():
     parser = argparse.ArgumentParser('Run the Rabble database microservice')
@@ -22,6 +23,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def get_logger(level):
     # TODO(CianLR): Move to shared package and add ability to send to
     # centralised logging service.
@@ -29,6 +31,7 @@ def get_logger(level):
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(level)
     return logger
+
 
 def main():
     args = get_args()
@@ -39,7 +42,7 @@ def main():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     logger.info("Creating database servicer")
     database_pb2_grpc.add_DatabaseServicer_to_server(
-            DatabaseServicer(database, logger), server)
+        DatabaseServicer(database, logger), server)
     server.add_insecure_port('0.0.0.0:1798')
     logger.info("Starting server")
     server.start()

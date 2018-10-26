@@ -42,6 +42,9 @@ type serverWrapper struct {
 	// greetingCards is the RPC client for talking to the GreetingCards
 	// service.
 	greetingCards pb.GreetingCardsClient
+
+	databaseConn *grpc.ClientConn
+	database     dbpb.DatabaseClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -188,6 +191,35 @@ func (s *serverWrapper) handleGreet() http.HandlerFunc {
 	}
 }
 
+// handleNewUser sends an RPC to the database service to create a user with the
+// given info.
+func (s *serverWrapper) handleNewUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := r.URL.Query()
+		// TODO(iandioch): Return error if parameters are missing.
+		displayName := vars["display_name"][0]
+		handle := vars["handle"][0]
+		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
+		u := &dbpb.UsersEntry{
+			DisplayName: displayName,
+			Handle:      handle,
+		}
+		ur := &dbpb.UsersRequest{
+			Entry:       u,
+			RequestType: dbpb.UsersRequest_INSERT,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.database.Users(ctx, ur)
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		fmt.Fprintf(w, "Received: %#v", resp.Error)
+		// TODO(iandioch): Return JSON with response status or error.
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -213,6 +245,7 @@ func (s *serverWrapper) setupRoutes() {
 	// c2s routes
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
+	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
@@ -226,6 +259,7 @@ func (s *serverWrapper) shutdown() {
 	s.server.Shutdown(ctx)
 
 	s.greetingCardsConn.Close()
+	s.databaseConn.Close()
 }
 
 func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
@@ -242,6 +276,21 @@ func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
 	return conn, pb.NewGreetingCardsClient(conn)
 }
 
+func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
+	host := os.Getenv("DB_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1798"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect: %v", err)
+	}
+	client := dbpb.NewDatabaseClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -255,12 +304,15 @@ func buildServerWrapper() *serverWrapper {
 		Handler:      r,
 	}
 	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
+	databaseConn, databaseClient := createDatabaseClient()
 	s := &serverWrapper{
 		router:            r,
 		server:            srv,
 		shutdownWait:      20 * time.Second,
 		greetingCardsConn: greetingCardsConn,
 		greetingCards:     greetingCardsClient,
+		databaseConn:      databaseConn,
+		database:          databaseClient,
 	}
 	s.setupRoutes()
 	return s

@@ -5,4 +5,10 @@ CREATE TABLE IF NOT EXISTS posts (
   body              text    NOT NULL,
   creation_datetime integer NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS local_users (
+  handle            text    PRIMARY KEY,
+  display_name      text    NOT NULL
+);
+
 /* Add other tables here */

@@ -1,7 +1,9 @@
 import logging
 import sqlite3
 
+
 class DB:
+
     def __init__(self, filename):
         self.filename = filename
 
@@ -26,6 +28,7 @@ class DB:
         cursor.executescript(script)
         cursor.close()
 
+
 def build_database(logger, schema_path, db_path):
     db = DB(db_path)
     try:
@@ -35,4 +38,3 @@ def build_database(logger, schema_path, db_path):
         raise
     db.execute_script(script)
     return db
-

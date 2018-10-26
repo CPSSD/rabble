@@ -11,6 +11,7 @@ services:
       - .:/repo
     environment:
       - GO_SERVER_HOST=example_go_microservice
+      - DB_SERVICE_HOST=database_service
   example_go_microservice:
     build:
       context: ./services/example_go_python_microservice/go
