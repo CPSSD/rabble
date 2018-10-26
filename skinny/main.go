@@ -68,7 +68,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 
 		resp, err := s.database.Posts(ctx, pr)
 		if err != nil {
-			log.Fatalf("could not get feed: %v", err)
+			log.Fatalf("Could not get feed: %v", err)
 		}
 
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
