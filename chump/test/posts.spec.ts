@@ -10,7 +10,7 @@ describe("GetPublicPosts", () => {
     const getRequest = sinon.stub(superagent, 'get').returns({
       set: () => {
         return ({
-          end: (cb) => {
+          end: (cb: any) => {
             cb(null, {ok: true, body: {}});
           }
         });
@@ -22,5 +22,28 @@ describe("GetPublicPosts", () => {
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
       done();
     });
-  })
+
+    getRequest.restore();
+  });
+
+  it("should handle an error", (done) => {
+    const getRequest = sinon.stub(superagent, 'get').returns({
+      set: () => {
+        return ({
+          end: (cb: any) => {
+            cb(new Error("bad!"), {ok: true, body: {}});
+          }
+        });
+      },
+    });
+
+    GetPublicPosts().then(() => {
+      expect.fail();
+      done();
+    }).catch(() => {
+      expect(getRequest).to.have.property("callCount", 1);
+      expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
+      done();
+    });
+  });
 })

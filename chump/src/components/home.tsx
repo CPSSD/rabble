@@ -18,9 +18,15 @@ export class Home extends React.Component<{}, IHomeState> {
   }
 
   public getPosts() {
-    GetPublicPosts().then((posts: IBlogPost[]) => {
-      this.setState({ publicBlog: posts });
-    });
+    GetPublicPosts()
+      .then((posts: IBlogPost[]) => {
+        this.setState({ publicBlog: posts });
+      })
+      .catch(this.handleGetPostsErr);
+  }
+
+  public handleGetPostsErr() {
+    alert("could not communicate with server :(");
   }
 
   public renderPosts() {
