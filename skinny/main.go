@@ -23,14 +23,14 @@ import (
 const (
 	staticAssets    = "/repo/build_out/chump_dist"
 	timeParseFormat = "2006-01-02T15:04:05.000Z"
-			timeoutDuration = time.Minute * 5
+	timeoutDuration = time.Minute * 5
 )
 
 type createArticleStruct struct {
-	Author            string `json:"author"`
-	Body              string `json:"body"`
-	Title             string `json:"title"`
-	CreationDatetime string `json:"CreationDatetime"`
+	Author           string `json:"author"`
+	Body             string `json:"body"`
+	Title            string `json:"title"`
+	CreationDatetime string `json:"creation_datetime"`
 }
 
 // serverWrapper encapsulates the dependencies and config values of the server
