@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -76,6 +77,72 @@ func TestHandleFollow(t *testing.T) {
 	}
 	if res.Body.String() != "Followed testuser\n" {
 		t.Errorf("Expected 'Followed testuser' body, got %#v", res.Body.String())
+	}
+}
+
+func TestHandleCreateArticleSuccess(t *testing.T) {
+	timeParseFormat := "2006-01-02T15:04:05.000Z"
+	currentTimeString := time.Now().Format(timeParseFormat)
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	newTestServerWrapper().handleCreateArticle()(res, req)
+	if res.Code != http.StatusOK {
+		t.Errorf("Expected 200 OK, got %#v", res.Code)
+	}
+	if res.Body.String() != "Created blog with title: test title\n" {
+		t.Errorf("Expected 'Created blog with title: test title' body, got %#v", res.Body.String())
+	}
+}
+
+func TestHandleCreateArticleBadJSON(t *testing.T) {
+	jsonString := `{ author: "testuser", "body": "test post", "title": "test title" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	vars := map[string]string{
+		"username": "testuser",
+	}
+	req = mux.SetURLVars(req, vars)
+	newTestServerWrapper().handleCreateArticle()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400, got %#v", res.Code)
+	}
+	if res.Body.String() != "Invalid JSON\n" {
+		t.Errorf("Expected 'Invalid JSON' body, got %#v", res.Body.String())
+	}
+}
+
+func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "never" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	newTestServerWrapper().handleCreateArticle()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400, got %#v", res.Code)
+	}
+	if res.Body.String() != "Invalid creation time\n" {
+		t.Errorf("Expected 'Invalid creation time' body, got %#v", res.Body.String())
+	}
+}
+
+func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
+	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "2006-01-02T15:04:05.000Z" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	newTestServerWrapper().handleCreateArticle()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400, got %#v", res.Code)
+	}
+	if res.Body.String() != "Old creation time\n" {
+		t.Errorf("Expected 'Old creation time' body, got %#v", res.Body.String())
 	}
 }
 

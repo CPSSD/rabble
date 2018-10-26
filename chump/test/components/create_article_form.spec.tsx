@@ -81,7 +81,7 @@ describe("CreateArticleForm", () => {
     it("and handle success", (done) => {
       const alertMessage: string = "Request went well";
       testComponent = mount(<CreateArticleForm/>);
-      const promise: bluebird.Promise = new bluebird.Promise((resolve) => {
+      const promise = new bluebird.Promise((resolve) => {
         resolve({ text: alertMessage });
       });
       createStub.returns(promise);
@@ -97,7 +97,7 @@ describe("CreateArticleForm", () => {
     it("and handle a 403: permission denied", (done) => {
       const alertMessage: string = "403";
       testComponent = mount(<CreateArticleForm/>);
-      const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
+      const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
@@ -107,14 +107,13 @@ describe("CreateArticleForm", () => {
         expect(alertStub.called).to.equal(true);
         expect(alertStub.calledWith(alertMessage)).to.equal(true);
         done();
-      }, 500);
-
+      }, 200);
     });
 
     it("and handle a 400: bad request", (done) => {
       const alertMessage: string = "400";
       testComponent = mount(<CreateArticleForm/>);
-      const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
+      const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
@@ -124,13 +123,13 @@ describe("CreateArticleForm", () => {
         expect(alertStub.called).to.equal(true);
         expect(alertStub.calledWith(alertMessage)).to.equal(true);
         done();
-      }, 500);
+      }, 200);
     });
 
     it("and handle other error", (done) => {
       const alertMessage: string = "500";
       testComponent = mount(<CreateArticleForm/>);
-      const promise: bluebird.Promise = new bluebird.Promise((resolve, reject) => {
+      const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
@@ -140,7 +139,7 @@ describe("CreateArticleForm", () => {
         expect(alertStub.called).to.equal(true);
         expect(alertStub.calledWith(alertMessage)).to.equal(true);
         done();
-      }, 500);
+      }, 200);
     });
   });
 });
