@@ -85,7 +85,7 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	currentTimeString := time.Now().Format(timeParseFormat)
 	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 	newTestServerWrapper().handleCreateArticle()(res, req)
@@ -100,7 +100,7 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 func TestHandleCreateArticleBadJSON(t *testing.T) {
 	jsonString := `{ author: "testuser", "body": "test post", "title": "test title" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 	vars := map[string]string{
@@ -119,7 +119,7 @@ func TestHandleCreateArticleBadJSON(t *testing.T) {
 func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
 	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "never" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 	newTestServerWrapper().handleCreateArticle()(res, req)
@@ -134,7 +134,7 @@ func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
 func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
 	jsonString := `{ "author": "testuser", "body": "test post", "title": "test title", "creation_datetime": "2006-01-02T15:04:05.000Z" }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
+	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
 	newTestServerWrapper().handleCreateArticle()(res, req)
@@ -143,23 +143,6 @@ func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
 	}
 	if res.Body.String() != "Old creation time\n" {
 		t.Errorf("Expected 'Old creation time' body, got %#v", res.Body.String())
-	}
-}
-
-func TestHandleCreateArticleUnauthorizedUser(t *testing.T) {
-	timeParseFormat := "2006-01-02T15:04:05.000Z"
-	currentTimeString := time.Now().Format(timeParseFormat)
-	jsonString := `{ "author": "badguy", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
-	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test?username=testuser", jsonBuffer)
-	req.Header.Set("Content-Type", "application/json")
-	res := httptest.NewRecorder()
-	newTestServerWrapper().handleCreateArticle()(res, req)
-	if res.Code != http.StatusForbidden {
-		t.Errorf("Expected 403, got %#v", res.Code)
-	}
-	if res.Body.String() != "Post under incorrect username\n" {
-		t.Errorf("Expected 'Post under incorrect username' body, got %#v", res.Body.String())
 	}
 }
 
