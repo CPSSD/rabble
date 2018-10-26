@@ -1,9 +1,16 @@
 import * as request from "superagent";
 
+interface ICreateArticlePostBody {
+  author: string;
+  body: string;
+  creation_datetime: string;
+  title: string,
+}
+
 export function CreateArticle(username: string, title: string, blogText: string) {
-  const endpoint: string = "/c2s/@" + username + "/create_article";
+  const endpoint: string = "/c2s/create_article";
   const createdTime: string = new Date().toISOString();
-  const postBody: object = {
+  const postBody: ICreateArticlePostBody = {
     author: username,
     body: blogText,
     creation_datetime: createdTime,

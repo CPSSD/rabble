@@ -21,8 +21,17 @@ import (
 )
 
 const (
-	staticAssets = "/repo/build_out/chump_dist"
+	staticAssets    = "/repo/build_out/chump_dist"
+	timeParseFormat = "2006-01-02T15:04:05.000Z"
+	timeoutDuration = time.Minute * 5
 )
+
+type createArticleStruct struct {
+	Author           string `json:"author"`
+	Body             string `json:"body"`
+	Title            string `json:"title"`
+	CreationDatetime string `json:"creation_datetime"`
+}
 
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
@@ -111,6 +120,42 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t createArticleStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		CreationDatetime, timeErr := time.Parse(timeParseFormat, t.CreationDatetime)
+		if timeErr != nil {
+			log.Printf("Invalid creation time\n")
+			log.Printf("Error: %s\n", timeErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid creation time\n")
+			return
+		}
+
+		timeSinceRequest := time.Since(CreationDatetime)
+		if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
+			log.Printf("Old creation time")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Old creation time\n")
+			return
+		}
+
+		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
+		fmt.Fprintf(w, "Created blog with title: %v\n", t.Title)
+		// TODO(sailslick) send the response
+	}
+}
+
 // handleGreet sends an RPC to example_go_microservice with a card for the
 // given name.
 // TODO(#91): Remove example code when there are several real services being
@@ -189,6 +234,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
+	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
