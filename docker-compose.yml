@@ -24,3 +24,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service

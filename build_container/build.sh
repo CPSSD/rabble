@@ -45,6 +45,11 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/follows \
   --grpc_python_out=build_out/follows \
   build_out/follows/follows.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/follows \
+  --grpc_python_out=build_out/follows \
+  build_out/database/database.proto
 
 echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos
