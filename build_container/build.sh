@@ -47,12 +47,15 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/follows \
   build_out/follows/follows.proto
 
-echo "Building go database proto"
+echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos
 
 mkdir -p /go/src/proto/database
 protoc -I=services/database --go_out=plugins=grpc:"/go/src/proto/database" \
   services/database/*.proto
+mkdir -p /go/src/proto/follows
+protoc -I=services/follows --go_out=plugins=grpc:"/go/src/proto/follows" \
+  services/follows/*.proto
 
 echo "Building example go microservice"
 SRC_DIR=services/example_go_python_microservice
