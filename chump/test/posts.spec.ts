@@ -8,8 +8,8 @@ import { GetPublicPosts, IBlogPost } from "../src/api/posts";
 
 function createFakeResponse(body: IBlogPost[] | Error | null) {
   const end = (cb: any) => {
-      cb(null, {ok: true, body, });
-  }
+      cb(null, {ok: true, body });
+  };
   const send = () => ({ end });
   const set = () => ({ send });
   const root = { set };
