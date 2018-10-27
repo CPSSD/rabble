@@ -9,5 +9,5 @@ class SendFollowServicer:
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
         self._logger.info('Send  follow request.')
-        resp.result_type = database_pb2.FollowResponse.OK
+        resp.result_type = follows_pb2.FollowResponse.OK
         return response
