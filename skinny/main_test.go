@@ -55,13 +55,11 @@ func newTestServerWrapper() *serverWrapper {
 	r := mux.NewRouter()
 	srv := &http.Server{}
 	s := &serverWrapper{
-		router:            r,
-		server:            srv,
-		shutdownWait:      20 * time.Second,
-		greetingCardsConn: nil,
-		greetingCards:     nil,
-		database:          &DatabaseFake{},
-		follows:           &FollowsFake{},
+		router:       r,
+		server:       srv,
+		shutdownWait: 20 * time.Second,
+		database:     &DatabaseFake{},
+    follows:      &FollowsFake{},
 	}
 	s.setupRoutes()
 	return s
