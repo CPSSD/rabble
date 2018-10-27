@@ -1,25 +1,55 @@
 import * as React from "react";
-import { render } from "react-dom";
-import { HashRouter, Route, Switch } from "react-router-dom";
+import {render} from "react-dom";
+import {Link, Route, HashRouter, Switch} from "react-router-dom";
 
+import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {Header} from "./components/header";
 import {Home} from "./components/home";
 import {Write} from "./components/write";
+import {Login} from "./components/login";
 
 require("./styles/site.css"); // tslint:disable-line
 
-const App = () => (
-  <HashRouter>
-    <div>
-      <Header/>
-      <Switch>
-        <Route exact={true} path="/" component={Home}/>
-        <Route path="/about" component={About}/>
-        <Route path="/write" component={Write}/>
-      </Switch>
-    </div>
-  </HashRouter>
-);
+// IAppState is top level state.
+// Don't put state that might change often here.
+interface IAppState {
+  username: string
+}
+
+export class App extends React.Component<{}, IAppState> {
+  constructor(props: {}) {
+    super(props);
+
+    this.state = {
+      username: "",
+    }
+
+    this.login = this.login.bind(this);
+  }
+
+  login(username: string) {
+    this.setState({username})
+  }
+
+  render() {
+    return (
+      <HashRouter>
+        <div>
+          <Header username={this.state.username} />
+          <Switch>
+            <Route exact={true} path="/" component={Home}/>
+            <Route path="/about" component={About}/>
+            <Route
+              path="/login"
+              render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <PrivateRoute path="/write" username={this.state.username} component={Write}/>
+          </Switch>
+        </div>
+      </HashRouter>
+    );
+  }
+};
 
 render(<App />, document.getElementById("root"));

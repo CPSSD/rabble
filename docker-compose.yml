@@ -10,24 +10,8 @@ services:
     volumes:
       - .:/repo
     environment:
-      - GO_SERVER_HOST=example_go_microservice
       - DB_SERVICE_HOST=database_service
-  example_go_microservice:
-    build:
-      context: ./services/example_go_python_microservice/go
-      dockerfile: Dockerfile
-    volumes:
-      - .:/repo
-  example_python_microservice:
-    build:
-      context: ./services/example_go_python_microservice/python
-      dockerfile: Dockerfile
-    depends_on:
-      - "example_go_microservice"
-    volumes:
-      - .:/repo
-    environment:
-      - GO_SERVER_HOST=example_go_microservice
+      - FOLLOWS_SERVICE_HOST=follows_service
   database_service:
     build:
       context: ./services/database
@@ -40,6 +24,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service
   logger_service:
     build:
       context: ./services/logger
