@@ -46,7 +46,7 @@ func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlePb.NewArticl
 	a.na = r
 	return &articlePb.NewArticleResponse{
 		ResultType: articlePb.NewArticleResponse_OK,
-		GlobalId: "test_id",
+		GlobalId:   "test_id",
 	}, nil
 }
 
@@ -145,7 +145,7 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	}
 	expectedString := "Created blog with title: test title and id: test_id\n"
 	if res.Body.String() != expectedString {
-		t.Errorf("Expected '" + expectedString + "' body, got %#v", res.Body.String())
+		t.Errorf("Expected '"+expectedString+"' body, got %#v", res.Body.String())
 	}
 }
 
