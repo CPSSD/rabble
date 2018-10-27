@@ -2,23 +2,24 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { CreateArticle } from "../models/article";
 
-interface ICreateArticleFormState {
-  username: string;
+interface IFormState {
   title: string;
   blogText: string;
 }
 
-class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
-  constructor(props: {}) {
+export interface IFormProps {
+  username: string;
+}
+
+export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
+  constructor(props: IFormProps) {
     super(props);
 
     this.state = {
       blogText: "",
       title: "",
-      username: "",
     };
 
-    this.handleUsernameInputChange = this.handleUsernameInputChange.bind(this);
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
@@ -28,16 +29,6 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
   public render() {
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
-        <div className="pure-control-group">
-          <input
-            type="text"
-            name="username"
-            value={this.state.username}
-            onChange={this.handleUsernameInputChange}
-            className="pure-input-1-2"
-            placeholder="Username"
-          />
-        </div>
         <div className="pure-control-group">
           <input
             type="text"
@@ -65,13 +56,6 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
     );
   }
 
-  private handleUsernameInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target;
-    this.setState({
-      username: target.value,
-    });
-  }
-
   private handleTitleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
@@ -92,7 +76,7 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const promise = CreateArticle(this.state.username, this.state.title, this.state.blogText);
+    const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText);
     promise
     .then((res: any) => {
       let message = "Posted article";
@@ -103,7 +87,6 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
       this.setState({
         blogText: "",
         title: "",
-        username: "",
       });
     })
     .catch((err: any) => {
@@ -117,5 +100,3 @@ class CreateArticleForm extends React.Component<{}, ICreateArticleFormState> {
     });
   }
 }
-
-export default CreateArticleForm;

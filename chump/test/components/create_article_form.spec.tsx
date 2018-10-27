@@ -3,7 +3,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import CreateArticleForm from "../../src/components/create_article_form";
+import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
 import { mount } from "../enzyme";
 
@@ -20,25 +20,12 @@ describe("CreateArticleForm", () => {
   });
 
   it("can mount", (done) => {
-    testComponent = mount(<CreateArticleForm/>);
-    done();
-  });
-
-  it("can handle username input", (done) => {
-    testComponent = mount(<CreateArticleForm/>);
-    testComponent.find("[name=\"username\"]")
-      .simulate("change", {
-          target: {
-            name: "username",
-            value: "greatusername",
-          },
-        });
-    expect(testComponent.state()).to.have.property("username", "greatusername");
+    testComponent = mount(<CreateArticleForm username={"ross"}/>);
     done();
   });
 
   it("can handle title input", (done) => {
-    testComponent = mount(<CreateArticleForm/>);
+    testComponent = mount(<CreateArticleForm username={"ross"}/>);
     testComponent.find("[name=\"title\"]")
       .simulate("change", {
         target: {
@@ -51,7 +38,7 @@ describe("CreateArticleForm", () => {
   });
 
   it("can handle TextArea input", (done) => {
-    testComponent = mount(<CreateArticleForm/>);
+    testComponent = mount(<CreateArticleForm username={"ross"}/>);
     testComponent.find("[name=\"blogText\"]")
       .simulate("change", {
         target: {
@@ -65,7 +52,7 @@ describe("CreateArticleForm", () => {
 
   it("can submit form", (done) => {
     const submitStub: any = sandbox.stub(CreateArticleForm.prototype, "handleSubmitForm" as any);
-    testComponent = mount(<CreateArticleForm/>);
+    testComponent = mount(<CreateArticleForm username={"ross"}/>);
     testComponent.find("form").first().simulate("submit");
     expect(submitStub.called).to.equal(true);
     done();
@@ -80,7 +67,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle success", (done) => {
       const alertMessage: string = "Request went well";
-      testComponent = mount(<CreateArticleForm/>);
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ text: alertMessage });
       });
@@ -96,7 +83,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle a 403: permission denied", (done) => {
       const alertMessage: string = "403";
-      testComponent = mount(<CreateArticleForm/>);
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -112,7 +99,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle a 400: bad request", (done) => {
       const alertMessage: string = "400";
-      testComponent = mount(<CreateArticleForm/>);
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -128,7 +115,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle other error", (done) => {
       const alertMessage: string = "500";
-      testComponent = mount(<CreateArticleForm/>);
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
