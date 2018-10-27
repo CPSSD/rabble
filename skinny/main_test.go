@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 
 	dbpb "proto/database"
+    followspb "proto/follows"
 )
 
 const (
@@ -26,6 +27,13 @@ type DatabaseFake struct {
 	rq *dbpb.PostsRequest
 }
 
+type FollowsFake struct {
+    followspb.FollowsClient
+
+    // The most recent LocalToAnyFollow
+    rq *followspb.LocalToAnyFollow
+}
+
 func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
 	d.rq = r
 	return &dbpb.PostsResponse{
@@ -33,6 +41,13 @@ func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.
 			Title: fakeTitle,
 		}},
 	}, nil
+}
+
+func (f *FollowsFake) SendFollowRequest(_ context.Context, r *followspb.LocalToAnyFollow, _ ...grpc.CallOption) (*followspb.FollowResponse, error) {
+    f.rq = r
+    return &followspb.FollowResponse {
+        ResultType: followspb.FollowResponse_OK,
+    }, nil
 }
 
 func newTestServerWrapper() *serverWrapper {
@@ -46,6 +61,7 @@ func newTestServerWrapper() *serverWrapper {
 		greetingCardsConn: nil,
 		greetingCards:     nil,
 		database:          &DatabaseFake{},
+        follows:           &FollowsFake{},
 	}
 	s.setupRoutes()
 	return s
