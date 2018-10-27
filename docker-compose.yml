@@ -11,6 +11,7 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+      - FOLLOWS_SERVICE_HOST=follows_service
   database_service:
     build:
       context: ./services/database

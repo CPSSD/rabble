@@ -13,10 +13,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
 	dbpb "proto/database"
+	followspb "proto/follows"
 )
 
 const (
@@ -47,8 +49,11 @@ type serverWrapper struct {
 	// databaseConn is the underlying connection to the Database
 	// service. This reference must be retained so it can by closed later.
 	databaseConn *grpc.ClientConn
-	// database is the RPC client for talking to the database service.
-	database dbpb.DatabaseClient
+  // database is the RPC client for talking to the database service.
+	database     dbpb.DatabaseClient
+
+	followsConn *grpc.ClientConn
+	follows     followspb.FollowsClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -107,10 +112,49 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 
 func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		username := vars["username"]
-		log.Printf("Requested to follow user %#v\n", username)
-		fmt.Fprintf(w, "Followed %v\n", username)
+		decoder := json.NewDecoder(r.Body)
+		var j followspb.LocalToAnyFollow
+		err := decoder.Decode(&j)
+
+		enc := json.NewEncoder(w)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		ts := ptypes.TimestampNow()
+		j.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.follows.SendFollowRequest(ctx, &j)
+		if err != nil {
+			log.Fatalf("Could not send follow request: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal follow result: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+		}
 	}
 }
 
@@ -198,11 +242,11 @@ func (s *serverWrapper) setupRoutes() {
 
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
-	r.HandleFunc("/@{username}/follow", s.handleFollow())
 
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
+	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
 	// ActivityPub routes
@@ -217,6 +261,7 @@ func (s *serverWrapper) shutdown() {
 	s.server.Shutdown(ctx)
 
 	s.databaseConn.Close()
+	s.followsConn.Close()
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -234,6 +279,21 @@ func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
 	return conn, client
 }
 
+func createFollowsClient() (*grpc.ClientConn, followspb.FollowsClient) {
+	host := os.Getenv("FOLLOWS_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("FOLLOWS_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1641"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect: %v", err)
+	}
+	client := followspb.NewFollowsClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -247,12 +307,15 @@ func buildServerWrapper() *serverWrapper {
 		Handler:      r,
 	}
 	databaseConn, databaseClient := createDatabaseClient()
+	followsConn, followsClient := createFollowsClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
 		shutdownWait: 20 * time.Second,
 		databaseConn: databaseConn,
 		database:     databaseClient,
+    followsConn:       followsConn,
+		follows:           followsClient,
 	}
 	s.setupRoutes()
 	return s

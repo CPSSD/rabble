@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 
 	dbpb "proto/database"
+	followspb "proto/follows"
 )
 
 const (
@@ -26,12 +27,26 @@ type DatabaseFake struct {
 	rq *dbpb.PostsRequest
 }
 
+type FollowsFake struct {
+	followspb.FollowsClient
+
+	// The most recent LocalToAnyFollow
+	rq *followspb.LocalToAnyFollow
+}
+
 func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
 	d.rq = r
 	return &dbpb.PostsResponse{
 		Results: []*dbpb.PostsEntry{{
 			Title: fakeTitle,
 		}},
+	}, nil
+}
+
+func (f *FollowsFake) SendFollowRequest(_ context.Context, r *followspb.LocalToAnyFollow, _ ...grpc.CallOption) (*followspb.FollowResponse, error) {
+	f.rq = r
+	return &followspb.FollowResponse{
+		ResultType: followspb.FollowResponse_OK,
 	}, nil
 }
 
@@ -44,6 +59,7 @@ func newTestServerWrapper() *serverWrapper {
 		server:       srv,
 		shutdownWait: 20 * time.Second,
 		database:     &DatabaseFake{},
+    follows:      &FollowsFake{},
 	}
 	s.setupRoutes()
 	return s
@@ -63,18 +79,38 @@ func TestHandleNotImplemented(t *testing.T) {
 }
 
 func TestHandleFollow(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/test", nil)
+	jsonString := `{ "followed": "testuser", "follower": "jose" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("GET", "/c2s/follow", jsonBuffer)
 	res := httptest.NewRecorder()
-	vars := map[string]string{
-		"username": "testuser",
-	}
-	req = mux.SetURLVars(req, vars)
-	newTestServerWrapper().handleFollow()(res, req)
+	srv := newTestServerWrapper()
+
+	srv.handleFollow()(res, req)
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
-	if res.Body.String() != "Followed testuser\n" {
-		t.Errorf("Expected 'Followed testuser' body, got %#v", res.Body.String())
+	var r followspb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != followspb.FollowResponse_OK {
+		t.Errorf("Expected FollowResponse_OK, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleFollowBadRequest(t *testing.T) {
+	jsonString := `{ this is not json }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("GET", "/c2s/follow", jsonBuffer)
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	srv.handleFollow()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	}
+	var r followspb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != followspb.FollowResponse_ERROR {
+		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
 	}
 }
 
