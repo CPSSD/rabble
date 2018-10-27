@@ -8,8 +8,8 @@ class NewArticleServicer:
     def __init__(self, logger):
         self._logger = logger
 
-    def RecieveNewArticle(self, request, context):
+    def CreateNewArticle(self, request, context):
         self._logger.info('Recieved a new article.')
-        resp = article_pb2.newArticleResponse()
-        resp.result_type = article_pb2.newArticleResponse.OK
+        resp = article_pb2.NewArticleResponse()
+        resp.result_type = article_pb2.NewArticleResponse.OK
         return resp

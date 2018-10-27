@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
+	articlePb "proto/article"
 	dbpb "proto/database"
 	followspb "proto/follows"
 )
@@ -54,6 +55,8 @@ type serverWrapper struct {
 
 	followsConn *grpc.ClientConn
 	follows     followspb.FollowsClient
+	articleConn *grpc.ClientConn
+	article     articlePb.ArticleClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -171,8 +174,9 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		CreationDatetime, timeErr := time.Parse(timeParseFormat, t.CreationDatetime)
-		if timeErr != nil {
+		parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, t.CreationDatetime)
+		protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
+		if timeErr != nil || protoTimeErr != nil {
 			log.Printf("Invalid creation time\n")
 			log.Printf("Error: %s\n", timeErr)
 			w.WriteHeader(http.StatusBadRequest)
@@ -180,7 +184,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		timeSinceRequest := time.Since(CreationDatetime)
+		timeSinceRequest := time.Since(parsedCreationDatetime)
 		if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
 			log.Printf("Old creation time")
 			w.WriteHeader(http.StatusBadRequest)
@@ -188,8 +192,24 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
+		na := &articlePb.NewArticle{
+			Author:           t.Author,
+			Body:             t.Body,
+			Title:            t.Title,
+			CreationDatetime: protoTimestamp,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.article.CreateNewArticle(ctx, na)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with request\n")
+			log.Fatalf("Could not create new article: %v", err)
+		}
+
 		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
-		fmt.Fprintf(w, "Created blog with title: %v\n", t.Title)
+		fmt.Fprintf(w, "Created blog with title: %v and id: %v\n", t.Title, resp.GlobalId)
 		// TODO(sailslick) send the response
 	}
 }
@@ -216,7 +236,7 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 
 		resp, err := s.database.Users(ctx, ur)
 		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			log.Fatalf("could not add new user: %v", err)
 		}
 		fmt.Fprintf(w, "Received: %#v", resp.Error)
 		// TODO(iandioch): Return JSON with response status or error.
@@ -261,7 +281,22 @@ func (s *serverWrapper) shutdown() {
 	s.server.Shutdown(ctx)
 
 	s.databaseConn.Close()
+	s.articleConn.Close()
 	s.followsConn.Close()
+}
+
+func createArticleClient() (*grpc.ClientConn, articlePb.ArticleClient) {
+	host := os.Getenv("ARTICLE_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("ARTICLE_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1601"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect to Article: %v", err)
+	}
+	return conn, articlePb.NewArticleClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -308,14 +343,17 @@ func buildServerWrapper() *serverWrapper {
 	}
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
+	articleConn, articleClient := createArticleClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
 		shutdownWait: 20 * time.Second,
 		databaseConn: databaseConn,
 		database:     databaseClient,
-    followsConn:       followsConn,
-		follows:           followsClient,
+		articleConn:  articleConn,
+		article:      articleClient,
+		followsConn:  followsConn,
+		follows:      followsClient,
 	}
 	s.setupRoutes()
 	return s

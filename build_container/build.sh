@@ -11,8 +11,8 @@ then
 fi
 
 cd /repo
-mkdir -p build_out
-mkdir -p /go/src/article
+mkdir -p build_out/
+mkdir -p /go/src/proto/article
 
 # If when the script exits (because of an error or otherwise) the following
 # function runs. The exit code is preserved.
@@ -58,6 +58,9 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/article \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  build_out/article/article.proto
+protoc -I=build_out/article \
+  --go_out=plugins=grpc:"/go/src/proto/article" \
   build_out/article/article.proto
 
 echo "Building protos for Go"
