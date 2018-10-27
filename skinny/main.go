@@ -124,10 +124,16 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		var j c2sFollowStruct
 		err := decoder.Decode(&j)
+
+        enc := json.NewEncoder(w)
 		if err != nil {
 			log.Printf("Invalid JSON. Err = %#v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+            e := &followspb.FollowResponse {
+                ResultType: followspb.FollowResponse_ERROR,
+                Error: "Invalid JSON",
+            }
+            enc.Encode(e)
 			return
 		}
 
@@ -144,17 +150,24 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		resp, err := s.follows.SendFollowRequest(ctx, t)
 		if err != nil {
 			log.Fatalf("Could not send follow request: %#v", err)
+            w.WriteHeader(http.StatusInternalServerError)
+            e := &followspb.FollowResponse {
+                ResultType: followspb.FollowResponse_ERROR,
+                Error: "Invalid JSON",
+            }
+            enc.Encode(e)
+            return
 		}
 
-		enc := json.NewEncoder(w)
-		enc.SetEscapeHTML(false)
 		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("Could not marshal follow result: %#v", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError)
+            w.WriteHeader(http.StatusInternalServerError)
+            e := &followspb.FollowResponse {
+                ResultType: followspb.FollowResponse_ERROR,
+                Error: "Invalid JSON",
+            }
+            enc.Encode(e)
 		}
 	}
 }
