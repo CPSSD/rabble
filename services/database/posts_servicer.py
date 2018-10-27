@@ -59,17 +59,21 @@ class PostsDatabaseServicer:
             return False
         return True
 
-    def _handle_find(self, req, resp):
-        fields = req.match.ListFields()
+    def _entry_to_filter(self, entry):
+        fields = entry.ListFields()
         filter_list = [f.name + ' = ?' for f, _ in fields]
         filter_clause = ' AND '.join(filter_list)
+        return filter_clause, [v for _, v in fields]
+
+    def _handle_find(self, req, resp):
+        filter_clause, values = self._entry_to_filter(req.match)
         try:
-            if not filter_list:
+            if not filter_clause:
                 res = self._db.execute('SELECT * FROM posts')
             else:
                 res = self._db.execute(
                     'SELECT * FROM posts WHERE ' + filter_clause,
-                    *[v for _, v in fields])
+                    *values)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
@@ -80,7 +84,19 @@ class PostsDatabaseServicer:
                 del resp.results[-1]
 
     def _handle_delete(self, req, resp):
-        pass
+        filter_clause, values = self._entry_to_filter(req.match)
+        try:
+            if not filter_clause:
+                res = self._db.execute('DELETE FROM posts')
+            else:
+                res = self._db.execute(
+                    'DELETE FROM posts WHERE ' + filter_clause,
+                    *values)
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return
+        resp.result_type = database_pb2.PostsResponse.OK
 
     def _handle_update(self, req, resp):
         pass
