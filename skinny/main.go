@@ -13,13 +13,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
-    "github.com/golang/protobuf/ptypes"
 
 	pb "greetingCard"
 	dbpb "proto/database"
-    followspb "proto/follows"
+	followspb "proto/follows"
 )
 
 const (
@@ -36,8 +36,8 @@ type createArticleStruct struct {
 }
 
 type c2sFollowStruct struct {
-    Follower        string  `json:"follower"`
-    Followed        string  `json:"followed"`
+	Follower string `json:"follower"`
+	Followed string `json:"followed"`
 }
 
 // serverWrapper encapsulates the dependencies and config values of the server
@@ -61,8 +61,8 @@ type serverWrapper struct {
 	databaseConn *grpc.ClientConn
 	database     dbpb.DatabaseClient
 
-    followsConn *grpc.ClientConn
-    follows     followspb.FollowsClient
+	followsConn *grpc.ClientConn
+	follows     followspb.FollowsClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -121,31 +121,41 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 
 func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        decoder := json.NewDecoder(r.Body)
-        var j c2sFollowStruct
-        err := decoder.Decode(&j)
-        if err != nil {
-            log.Printf("Invalid JSON. Err = %#v", err)
-            w.WriteHeader(http.StatusBadRequest)
-            fmt.Fprintf(w, "Invalid JSON\n")
-            return
-        }
+		decoder := json.NewDecoder(r.Body)
+		var j c2sFollowStruct
+		err := decoder.Decode(&j)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
 
-        ts := ptypes.TimestampNow()
+		ts := ptypes.TimestampNow()
 
-        t := &followspb.LocalToAnyFollow{
-            Follower: j.Follower,
-            Followed: j.Followed,
-            Datetime: ts,
-        }
+		t := &followspb.LocalToAnyFollow{
+			Follower: j.Follower,
+			Followed: j.Followed,
+			Datetime: ts,
+		}
 
-        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-        defer cancel()
-        resp, err := s.follows.SendFollowRequest(ctx, t)
-        if err != nil {
-            log.Fatalf("Could not send follow request: %#v", err)
-        }
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.follows.SendFollowRequest(ctx, t)
+		if err != nil {
+			log.Fatalf("Could not send follow request: %#v", err)
+		}
 
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal follow result: %#v", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -265,7 +275,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
-    r.HandleFunc("/c2s/follow", s.handleFollow())
+	r.HandleFunc("/c2s/follow", s.handleFollow())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
@@ -280,7 +290,7 @@ func (s *serverWrapper) shutdown() {
 
 	s.greetingCardsConn.Close()
 	s.databaseConn.Close()
-    s.followsConn.Close()
+	s.followsConn.Close()
 }
 
 func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
@@ -341,7 +351,7 @@ func buildServerWrapper() *serverWrapper {
 	}
 	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
 	databaseConn, databaseClient := createDatabaseClient()
-    followsConn, followsClient := createFollowsClient()
+	followsConn, followsClient := createFollowsClient()
 	s := &serverWrapper{
 		router:            r,
 		server:            srv,
@@ -350,8 +360,8 @@ func buildServerWrapper() *serverWrapper {
 		greetingCards:     greetingCardsClient,
 		databaseConn:      databaseConn,
 		database:          databaseClient,
-        followsConn:       followsConn,
-        follows:           followsClient,
+		followsConn:       followsConn,
+		follows:           followsClient,
 	}
 	s.setupRoutes()
 	return s
