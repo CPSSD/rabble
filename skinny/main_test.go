@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
+	articlePb "proto/article"
 	dbpb "proto/database"
 	followspb "proto/follows"
 )
@@ -19,6 +20,13 @@ import (
 const (
 	fakeTitle = "fake"
 )
+
+type ArticleFake struct {
+	articlePb.ArticleClient
+
+	// The most recent NewArticle
+	na *articlePb.NewArticle
+}
 
 type DatabaseFake struct {
 	dbpb.DatabaseClient
@@ -32,6 +40,14 @@ type FollowsFake struct {
 
 	// The most recent LocalToAnyFollow
 	rq *followspb.LocalToAnyFollow
+}
+
+func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlePb.NewArticle, _ ...grpc.CallOption) (*articlePb.NewArticleResponse, error) {
+	a.na = r
+	return &articlePb.NewArticleResponse{
+		ResultType: articlePb.NewArticleResponse_OK,
+		GlobalId: "test_id",
+	}, nil
 }
 
 func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
@@ -59,7 +75,8 @@ func newTestServerWrapper() *serverWrapper {
 		server:       srv,
 		shutdownWait: 20 * time.Second,
 		database:     &DatabaseFake{},
-    follows:      &FollowsFake{},
+		article:     	&ArticleFake{},
+		follows:      &FollowsFake{},
 	}
 	s.setupRoutes()
 	return s
@@ -126,8 +143,9 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
-	if res.Body.String() != "Created blog with title: test title\n" {
-		t.Errorf("Expected 'Created blog with title: test title' body, got %#v", res.Body.String())
+	expectedString := "Created blog with title: test title and id: test_id\n"
+	if res.Body.String() != expectedString {
+		t.Errorf("Expected '" + expectedString + "' body, got %#v", res.Body.String())
 	}
 }
 
