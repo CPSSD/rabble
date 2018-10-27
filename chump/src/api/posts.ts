@@ -20,7 +20,12 @@ export function GetPublicPosts() {
           reject(error);
           return;
         }
-        resolve(res!.body)
+        // Feed will respond with an empty response if no blogs are avaiable.
+        let posts = res!.body
+        if (posts === null) {
+          posts = [];
+        }
+        resolve(posts);
       });
   });
 }
