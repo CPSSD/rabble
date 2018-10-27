@@ -10,4 +10,4 @@ class ReceiveFollowServicer:
         resp = follows_pb2.FollowResponse()
         self._logger.info('Receive follow request.')
         resp.result_type = follows_pb2.FollowResponse.OK
-        return response
+        return resp
