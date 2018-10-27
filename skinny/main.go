@@ -15,9 +15,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
+    "github.com/golang/protobuf/ptypes"
 
 	pb "greetingCard"
 	dbpb "proto/database"
+    followspb "proto/follows"
 )
 
 const (
@@ -31,6 +33,11 @@ type createArticleStruct struct {
 	Body             string `json:"body"`
 	Title            string `json:"title"`
 	CreationDatetime string `json:"creation_datetime"`
+}
+
+type c2sFollowStruct struct {
+    Follower        string  `json:"follower"`
+    Followed        string  `json:"followed"`
 }
 
 // serverWrapper encapsulates the dependencies and config values of the server
@@ -111,10 +118,31 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 
 func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		username := vars["username"]
-		log.Printf("Requested to follow user %#v\n", username)
-		fmt.Fprintf(w, "Followed %v\n", username)
+        decoder := json.NewDecoder(r.Body)
+        var j c2sFollowStruct
+        err := decoder.Decode(&j)
+        if err != nil {
+            log.Printf("Invalid JSON. Err = %#v", err)
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintf(w, "Invalid JSON\n")
+            return
+        }
+
+        ts := ptypes.TimestampNow()
+
+        t := &followspb.LocalToAnyFollow{
+            Follower: j.Follower,
+            Followed: j.Followed,
+            Datetime: ts,
+        }
+
+        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+        defer cancel()
+        resp, err := s.follows.SendFollowRequest(ctx, t)
+        if err != nil {
+            log.Fatalf("Could not send follow request: %#v", err)
+        }
+
 	}
 }
 
@@ -228,13 +256,13 @@ func (s *serverWrapper) setupRoutes() {
 
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
-	r.HandleFunc("/@{username}/follow", s.handleFollow())
 	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
+    r.HandleFunc("/c2s/follow", s.handleFollow())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
