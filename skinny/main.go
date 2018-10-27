@@ -60,6 +60,9 @@ type serverWrapper struct {
 
 	databaseConn *grpc.ClientConn
 	database     dbpb.DatabaseClient
+
+    followsConn *grpc.ClientConn
+    follows     followspb.FollowsClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -277,6 +280,7 @@ func (s *serverWrapper) shutdown() {
 
 	s.greetingCardsConn.Close()
 	s.databaseConn.Close()
+    s.followsConn.Close()
 }
 
 func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
@@ -308,6 +312,21 @@ func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
 	return conn, client
 }
 
+func createFollowsClient() (*grpc.ClientConn, followspb.FollowsClient) {
+	host := os.Getenv("FOLLOWS_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("FOLLOWS_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1641"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect: %v", err)
+	}
+	client := followspb.NewFollowsClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -322,6 +341,7 @@ func buildServerWrapper() *serverWrapper {
 	}
 	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
 	databaseConn, databaseClient := createDatabaseClient()
+    followsConn, followsClient := createFollowsClient()
 	s := &serverWrapper{
 		router:            r,
 		server:            srv,
@@ -330,6 +350,8 @@ func buildServerWrapper() *serverWrapper {
 		greetingCards:     greetingCardsClient,
 		databaseConn:      databaseConn,
 		database:          databaseClient,
+        followsConn:       followsConn,
+        follows:           followsClient,
 	}
 	s.setupRoutes()
 	return s
