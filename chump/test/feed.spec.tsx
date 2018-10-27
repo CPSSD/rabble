@@ -6,7 +6,7 @@ import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
 import { IBlogPost } from "../src/api/posts";
-import { Feed } from "../src/components/home";
+import { Feed } from "../src/components/feed";
 import { mount, shallow } from "./enzyme";
 
 describe("Feed", () => {

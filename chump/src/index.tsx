@@ -5,7 +5,7 @@ import {Link, Route, HashRouter, Switch} from "react-router-dom";
 import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {Header} from "./components/header";
-import {Feed} from "./components/home";
+import {Feed} from "./components/feed";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 
