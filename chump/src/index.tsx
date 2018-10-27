@@ -5,7 +5,7 @@ import {Link, Route, HashRouter, Switch} from "react-router-dom";
 import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {Header} from "./components/header";
-import {Home} from "./components/home";
+import {Feed} from "./components/home";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 
@@ -38,7 +38,7 @@ export class App extends React.Component<{}, IAppState> {
         <div>
           <Header username={this.state.username} />
           <Switch>
-            <Route exact={true} path="/" component={Home}/>
+            <Route exact={true} path="/" component={Feed}/>
             <Route path="/about" component={About}/>
             <Route
               path="/login"

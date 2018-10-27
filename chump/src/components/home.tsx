@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 
 import { GetPublicPosts, IBlogPost } from "../api/posts";
 
-interface IHomeState {
+interface IFeedState {
   publicBlog: IBlogPost[];
 }
 
-export class Home extends React.Component<{}, IHomeState> {
+export class Feed extends React.Component<{}, IFeedState> {
   constructor(props: any) {
     super(props);
     this.state = { publicBlog: [] };

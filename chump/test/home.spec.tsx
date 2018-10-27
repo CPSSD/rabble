@@ -6,15 +6,15 @@ import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
 import { IBlogPost } from "../src/api/posts";
-import { Home } from "../src/components/home";
+import { Feed } from "../src/components/home";
 import { mount, shallow } from "./enzyme";
 
-describe("Home", () => {
+describe("Feed", () => {
   it("should call post collecting methods", () => {
-    const getPosts = sinon.spy(Home.prototype, "getPosts");
-    const render = sinon.spy(Home.prototype, "renderPosts");
+    const getPosts = sinon.spy(Feed.prototype, "getPosts");
+    const render = sinon.spy(Feed.prototype, "renderPosts");
 
-    const wrapper = mount(<MemoryRouter><Home/></MemoryRouter>);
+    const wrapper = mount(<MemoryRouter><Feed/></MemoryRouter>);
 
     expect(getPosts).to.have.property("callCount", 1);
     expect(render).to.have.property("callCount", 1);
@@ -25,9 +25,9 @@ describe("Home", () => {
   });
 
   it("should properly render posts", () => {
-    const getPosts = sinon.spy(Home.prototype, "getPosts");
+    const getPosts = sinon.spy(Feed.prototype, "getPosts");
 
-    const wrapper = shallow(<Home/>);
+    const wrapper = shallow(<Feed/>);
     expect(wrapper.find("div")).to.have.lengthOf(4);
 
     wrapper.setState({publicBlog: [
@@ -38,7 +38,7 @@ describe("Home", () => {
       },
     ]});
 
-    expect(Home.prototype.getPosts).to.have.property("callCount", 1);
+    expect(Feed.prototype.getPosts).to.have.property("callCount", 1);
     expect(wrapper.find("div")).to.have.lengthOf(7);
 
     // Cleanup spies
