@@ -5,7 +5,9 @@ import grpc
 import logging
 import time
 
-#from database import build_database
+from servicer import FollowsServicer
+
+import follows_pb2_grpc
 
 
 def get_args():
@@ -28,8 +30,9 @@ def main():
     logger = get_logger(args.v)
     logger.info("Creating server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    # database_pb2_grpc.add_DatabaseServicer_to_server(
-    #    DatabaseServicer(database, logger), server)
+    follows_pb2_grpc.add_FollowsServicer_to_server(FollowsServicer(logger),
+                                                   server)
+
     server.add_insecure_port('0.0.0.0:1641')
     logger.info("Starting server")
     server.start()
