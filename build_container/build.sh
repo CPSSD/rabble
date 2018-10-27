@@ -74,12 +74,20 @@ echo "Building protos for Go"
 mkdir -p /go/src/proto/database
 protoc -I=services/database --go_out=plugins=grpc:"/go/src/proto/database" \
   services/database/*.proto
+
 mkdir -p /go/src/proto/follows
 protoc -I=services/follows --go_out=plugins=grpc:"/go/src/proto/follows" \
   services/follows/*.proto
 protoc -I=build_out/article \
   --go_out=plugins=grpc:"/go/src/proto/article" \
   build_out/article/article.proto
+
+mkdir -p /go/src/proto/feed
+protoc -I=services/feed --go_out=plugins=grpc:"/go/src/proto/feed" \
+  services/feed/feed.proto
+
+echo "Building feed service"
+go build -o build_out/feed services/feed/*.go
 
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
