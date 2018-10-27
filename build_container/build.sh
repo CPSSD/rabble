@@ -11,7 +11,8 @@ then
 fi
 
 cd /repo
-mkdir -p build_out/
+mkdir -p build_out
+mkdir -p /go/src/article
 
 # If when the script exits (because of an error or otherwise) the following
 # function runs. The exit code is preserved.
@@ -51,6 +52,14 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/follows \
   build_out/database/database.proto
 
+echo "Building article service"
+cp -R services/article build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/article \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
+  build_out/article/article.proto
+
 echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos
 
@@ -60,6 +69,9 @@ protoc -I=services/database --go_out=plugins=grpc:"/go/src/proto/database" \
 mkdir -p /go/src/proto/follows
 protoc -I=services/follows --go_out=plugins=grpc:"/go/src/proto/follows" \
   services/follows/*.proto
+protoc -I=build_out/article \
+  --go_out=plugins=grpc:"/go/src/article" \
+  build_out/article/article.proto
 
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
