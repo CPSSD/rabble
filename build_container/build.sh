@@ -39,6 +39,14 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   build_out/database/database.proto
 
+echo "Building follows service"
+cp -R services/follows build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/follows \
+  --python_out=build_out/follows \
+  --grpc_python_out=build_out/follows \
+  build_out/follows/follows.proto
+
 echo "Building go database proto"
 # TODO(devoxel): fix this hell of manually building protos
 

@@ -34,4 +34,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+  follows_service:
+    build:
+      context: ./services/follows
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
 
