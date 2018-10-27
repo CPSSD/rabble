@@ -277,8 +277,8 @@ func (s *serverWrapper) setupRoutes() {
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
-	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
+	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
