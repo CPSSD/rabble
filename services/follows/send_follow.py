@@ -16,11 +16,11 @@ class SendFollowServicer:
         from_handle, from_instance = self._util.parse_username(
             request.follower)
         to_handle, to_instance = self._util.parse_username(request.followed)
-        logger.info('%s@%s has requested to follow %s@%s.',
-                    from_handle,
-                    from_instance,
-                    to_handle,
-                    to_instance)
+        self._logger.info('%s@%s has requested to follow %s@%s.',
+                          from_handle,
+                          from_instance,
+                          to_handle,
+                          to_instance)
         if to_instance is None and to_handle is None:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = 'Could not parse followed username'
@@ -29,8 +29,6 @@ class SendFollowServicer:
         if to_instance is None:
             # TODO(iandioch): Handle local follows
             resp.result_type = follows_pb2.FollowResponse.OK
-            follow = database_pb2.LocalFollow()
-            self._database_stub.Follows(follow)
             return resp
 
         # TODO(iandioch): Handle remote follows.
