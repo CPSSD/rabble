@@ -16,7 +16,6 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
-	pb "greetingCard"
 	dbpb "proto/database"
 )
 
@@ -44,15 +43,12 @@ type serverWrapper struct {
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
-	// greetingCardsConn is the underlying connection to the GreetingCards
-	// service. This reference must be retained so it can by closed later.
-	greetingCardsConn *grpc.ClientConn
-	// greetingCards is the RPC client for talking to the GreetingCards
-	// service.
-	greetingCards pb.GreetingCardsClient
 
+	// databaseConn is the underlying connection to the Database
+	// service. This reference must be retained so it can by closed later.
 	databaseConn *grpc.ClientConn
-	database     dbpb.DatabaseClient
+	// database is the RPC client for talking to the database service.
+	database dbpb.DatabaseClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -154,32 +150,6 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	}
 }
 
-// handleGreet sends an RPC to example_go_microservice with a card for the
-// given name.
-// TODO(#91): Remove example code when there are several real services being
-// contacted from this server.
-func (s *serverWrapper) handleGreet() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := mux.Vars(r)["username"]
-		msg := fmt.Sprintf("hello %#v", name)
-		from := fmt.Sprintf("skinny-server-%v", name)
-		gc := &pb.GreetingCard{
-			Sender:        from,
-			Letter:        msg,
-			MoneyEnclosed: 123,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-
-		ack, err := s.greetingCards.GetGreetingCard(ctx, gc)
-		if err != nil {
-			log.Fatalf("could not greet: %v", err)
-		}
-		log.Printf("Received ack card: %#v\n", ack.Letter)
-		fmt.Fprintf(w, "Received: %#v", ack.Letter)
-	}
-}
-
 // handleNewUser sends an RPC to the database service to create a user with the
 // given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
@@ -229,7 +199,6 @@ func (s *serverWrapper) setupRoutes() {
 	// User-facing routes
 	r.HandleFunc("/", s.handleIndex())
 	r.HandleFunc("/@{username}/follow", s.handleFollow())
-	r.HandleFunc("/@{username}/greet", s.handleGreet())
 
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
@@ -247,22 +216,7 @@ func (s *serverWrapper) shutdown() {
 	// Waits for active connections to terminate, or until it hits the timeout.
 	s.server.Shutdown(ctx)
 
-	s.greetingCardsConn.Close()
 	s.databaseConn.Close()
-}
-
-func createGreetingCardsClient() (*grpc.ClientConn, pb.GreetingCardsClient) {
-	host := os.Getenv("GO_SERVER_HOST")
-	if host == "" {
-		log.Fatal("GO_SERVER_HOST env var not set for skinny server.")
-	}
-	addr := host + ":8000"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
-	}
-	return conn, pb.NewGreetingCardsClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -292,16 +246,13 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
-	greetingCardsConn, greetingCardsClient := createGreetingCardsClient()
 	databaseConn, databaseClient := createDatabaseClient()
 	s := &serverWrapper{
-		router:            r,
-		server:            srv,
-		shutdownWait:      20 * time.Second,
-		greetingCardsConn: greetingCardsConn,
-		greetingCards:     greetingCardsClient,
-		databaseConn:      databaseConn,
-		database:          databaseClient,
+		router:       r,
+		server:       srv,
+		shutdownWait: 20 * time.Second,
+		databaseConn: databaseConn,
+		database:     databaseClient,
 	}
 	s.setupRoutes()
 	return s
