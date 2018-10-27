@@ -31,5 +31,9 @@ services:
     build:
       context: ./services/article
       dockerfile: Dockerfile
+    depends_on:
+      - "database_service"
     volumes:
       - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service
