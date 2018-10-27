@@ -8,6 +8,7 @@ import sys
 import time
 
 from servicer import FollowsServicer
+from util import Util
 
 import database_pb2_grpc
 import follows_pb2_grpc
@@ -27,6 +28,7 @@ def get_logger(level):
     logger.setLevel(level)
     return logger
 
+
 def get_database_service_address():
     host = os.environ['DB_SERVICE_HOST']
     if not host:
@@ -41,10 +43,12 @@ def main():
     logger = get_logger(args.v)
     logger.info('Creating server')
 
+    util = Util(logger)
+
     with grpc.insecure_channel(get_database_service_address()) as chan:
         stub = database_pb2_grpc.DatabaseStub(chan)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        follows_pb2_grpc.add_FollowsServicer_to_server(FollowsServicer(logger, stub),
+        follows_pb2_grpc.add_FollowsServicer_to_server(FollowsServicer(logger, util, stub),
                                                        server)
 
         server.add_insecure_port('0.0.0.0:1641')

@@ -3,8 +3,9 @@ import follows_pb2
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, database_stub):
+    def __init__(self, logger, util, database_stub):
         self._logger = logger
+        self._util = util
         self._database_stub = database_stub
 
     def ReceiveFollowRequest(self, request, context):
