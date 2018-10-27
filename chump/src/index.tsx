@@ -36,16 +36,14 @@ export class App extends React.Component<{}, IAppState> {
     return (
       <HashRouter>
         <div>
-          <Header/>
+          <Header username={this.state.username} />
           <Switch>
             <Route exact={true} path="/" component={Home}/>
             <Route path="/about" component={About}/>
-
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
             />
-
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>
         </div>
