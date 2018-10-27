@@ -4,7 +4,7 @@ interface ICreateArticlePostBody {
   author: string;
   body: string;
   creation_datetime: string;
-  title: string,
+  title: string;
 }
 
 export function CreateArticle(username: string, title: string, blogText: string) {
@@ -20,4 +20,4 @@ export function CreateArticle(username: string, title: string, blogText: string)
     .set("Content-Type", "application/json")
     .send(postBody)
     .retry(2);
-};
+}
