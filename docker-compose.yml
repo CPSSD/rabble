@@ -40,4 +40,17 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+  logger_service:
+    build:
+      context: ./services/logger
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+  logger_test_service:
+    build:
+      context: ./services/logger
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    command: ['python3', '-u', '-B', '/repo/build_out/logger/logtest.py']
 
