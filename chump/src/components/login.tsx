@@ -1,5 +1,5 @@
 import * as React from "react";
-import {RouteProps, Redirect} from "react-router-dom";
+import {Redirect, RouteProps} from "react-router-dom";
 
 interface ILoginProps extends RouteProps {
   loginCallback(username: string): void;
@@ -15,36 +15,29 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
     super(props);
 
     this.state = {
-      username: "",
       redirect: false,
+      username: "",
     };
 
     this.handleUsername = this.handleUsername.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
   }
 
-  private handleUsername(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target;
-    this.setState({
-      username: target.value,
-    });
-  }
-
-  handleLogin(event: React.FormEvent<HTMLFormElement>) {
+  public handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // TODO: Add authentication here
     if (this.state.username !== "") {
       this.props.loginCallback(this.state.username);
       this.setState({
         redirect: true,
-      })
+      });
     }
   }
 
-  render() {
+  public render() {
     if (this.state.redirect) {
       // TODO: Add smarter redirect
-      return <Redirect to={{ pathname: "/" }}/>
+      return <Redirect to={{ pathname: "/" }}/>;
     }
 
     return (
@@ -62,7 +55,8 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
                 placeholder="Username"
               />
             </div>
-            <button type="submit"
+            <button
+              type="submit"
               className="pure-button pure-input-1-3 pure-button-primary"
             >
               Login
@@ -72,4 +66,11 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
       </div>
     );
   }
-};
+
+  private handleUsername(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+    this.setState({
+      username: target.value,
+    });
+  }
+}
