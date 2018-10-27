@@ -35,11 +35,6 @@ type createArticleStruct struct {
 	CreationDatetime string `json:"creation_datetime"`
 }
 
-type c2sFollowStruct struct {
-	Follower string `json:"follower"`
-	Followed string `json:"followed"`
-}
-
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
 // access their dependencies through it. See
@@ -122,7 +117,7 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
-		var j c2sFollowStruct
+		var j followspb.LocalToAnyFollow
 		err := decoder.Decode(&j)
 
 		enc := json.NewEncoder(w)
@@ -138,16 +133,11 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		}
 
 		ts := ptypes.TimestampNow()
-
-		t := &followspb.LocalToAnyFollow{
-			Follower: j.Follower,
-			Followed: j.Followed,
-			Datetime: ts,
-		}
+		j.Datetime = ts
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		resp, err := s.follows.SendFollowRequest(ctx, t)
+		resp, err := s.follows.SendFollowRequest(ctx, &j)
 		if err != nil {
 			log.Fatalf("Could not send follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
