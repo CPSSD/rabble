@@ -6,10 +6,10 @@ import follows_pb2_grpc
 
 class FollowsServicer(follows_pb2_grpc.FollowsServicer):
 
-    def __init__(self, logger):
+    def __init__(self, logger, database_stub):
         self._logger = logger
 
-        send_servicer = SendFollowServicer(logger)
+        send_servicer = SendFollowServicer(logger, database_stub)
         self.SendFollowRequest = send_servicer.SendFollowRequest
-        rec_servicer = ReceiveFollowServicer(logger)
+        rec_servicer = ReceiveFollowServicer(logger, database_stub)
         self.ReceiveFollowRequest = rec_servicer.ReceiveFollowRequest
