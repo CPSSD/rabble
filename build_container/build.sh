@@ -59,9 +59,6 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
   build_out/article/article.proto
-protoc -I=build_out/article \
-  --go_out=plugins=grpc:"/go/src/proto/article" \
-  build_out/article/article.proto
 
 echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos
@@ -73,7 +70,7 @@ mkdir -p /go/src/proto/follows
 protoc -I=services/follows --go_out=plugins=grpc:"/go/src/proto/follows" \
   services/follows/*.proto
 protoc -I=build_out/article \
-  --go_out=plugins=grpc:"/go/src/article" \
+  --go_out=plugins=grpc:"/go/src/proto/article" \
   build_out/article/article.proto
 
 echo "Building skinny server"

@@ -17,7 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
-	articlePb "proto/article"
+	articlepb "proto/article"
 	dbpb "proto/database"
 	followspb "proto/follows"
 )
@@ -56,7 +56,7 @@ type serverWrapper struct {
 	followsConn *grpc.ClientConn
 	follows     followspb.FollowsClient
 	articleConn *grpc.ClientConn
-	article     articlePb.ArticleClient
+	article     articlepb.ArticleClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -192,7 +192,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		na := &articlePb.NewArticle{
+		na := &articlepb.NewArticle{
 			Author:           t.Author,
 			Body:             t.Body,
 			Title:            t.Title,
@@ -203,9 +203,10 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 
 		resp, err := s.article.CreateNewArticle(ctx, na)
 		if err != nil {
+			log.Printf("Could not create new article: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with request\n")
-			log.Fatalf("Could not create new article: %v", err)
+			fmt.Fprintf(w, "Issue with creating article\n")
+			return
 		}
 
 		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
@@ -285,7 +286,7 @@ func (s *serverWrapper) shutdown() {
 	s.followsConn.Close()
 }
 
-func createArticleClient() (*grpc.ClientConn, articlePb.ArticleClient) {
+func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
 	host := os.Getenv("ARTICLE_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("ARTICLE_SERVICE_HOST env var not set for skinny server.")
@@ -296,7 +297,7 @@ func createArticleClient() (*grpc.ClientConn, articlePb.ArticleClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect to Article: %v", err)
 	}
-	return conn, articlePb.NewArticleClient(conn)
+	return conn, articlepb.NewArticleClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {

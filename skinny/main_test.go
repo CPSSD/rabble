@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
-	articlePb "proto/article"
+	articlepb "proto/article"
 	dbpb "proto/database"
 	followspb "proto/follows"
 )
@@ -22,10 +22,10 @@ const (
 )
 
 type ArticleFake struct {
-	articlePb.ArticleClient
+	articlepb.ArticleClient
 
 	// The most recent NewArticle
-	na *articlePb.NewArticle
+	na *articlepb.NewArticle
 }
 
 type DatabaseFake struct {
@@ -42,10 +42,10 @@ type FollowsFake struct {
 	rq *followspb.LocalToAnyFollow
 }
 
-func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlePb.NewArticle, _ ...grpc.CallOption) (*articlePb.NewArticleResponse, error) {
+func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlepb.NewArticle, _ ...grpc.CallOption) (*articlepb.NewArticleResponse, error) {
 	a.na = r
-	return &articlePb.NewArticleResponse{
-		ResultType: articlePb.NewArticleResponse_OK,
+	return &articlepb.NewArticleResponse{
+		ResultType: articlepb.NewArticleResponse_OK,
 		GlobalId:   "test_id",
 	}, nil
 }
