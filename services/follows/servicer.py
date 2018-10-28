@@ -1,3 +1,4 @@
+from get_followers import GetFollowersReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 
@@ -14,3 +15,6 @@ class FollowsServicer(follows_pb2_grpc.FollowsServicer):
         self.SendFollowRequest = send_servicer.SendFollowRequest
         rec_servicer = ReceiveFollowServicer(logger, util, database_stub)
         self.ReceiveFollowRequest = rec_servicer.ReceiveFollowRequest
+
+        get_followers_receiver = GetFollowersReceiver(logger, util, database_stub)
+        self.GetFollowers = get_followers_receiver.GetFollowers
