@@ -76,5 +76,5 @@ service Follows {
   rpc SendFollowRequest(LocalToAnyFollow) returns (FollowResponse);
   rpc ReceiveFollowRequest(ForeignToLocalFollow) returns (FollowResponse);
   rpc GetFollowers(GetFollowsRequest) returns (GetFollowsResponse);
-  rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse)
+  rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);
 }

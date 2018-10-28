@@ -29,7 +29,7 @@ class SendFollowServicer:
             resp.error = 'Could not parse queried username'
             return resp
 
-        # Get user obj associated with given user handle & host from database 
+        # Get user obj associated with given user handle & host from database
         user_entry = self._util.get_user_from_db(handle, host)
         if user_entry is None:
             error = 'Could not find or create user {}@{}'.format(from_handle,
@@ -49,7 +49,7 @@ class SendFollowServicer:
 
         # Convert other following users and add to output proto.
         for _id in following_ids:
-            user = self._util.get_user_from_db(global_id = _id)
+            user = self._util.get_user_from_db(global_id=_id)
             if user is None:
                 self._logger.warning('Could not find user for id %d',
                                      _id)

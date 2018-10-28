@@ -62,7 +62,7 @@ class Util:
                 return None
             self._create_user_in_db(user_entry)
             return self.get_user_from_db(handle, host,
-                                         attempt_number=attempt_number+1)
+                                         attempt_number=attempt_number + 1)
         elif len(find_resp.results) == 1:
             self._logger.debug('Found user %s@%s (id %s) from database',
                                handle, host, global_id)
@@ -94,15 +94,15 @@ class Util:
         self._logger.debug('Finding follows <User ID %s following User ID %s>',
                            ('*' if follower_id is None else str(follower_id))
                            ('*' if followed_id is None else str(followed_id))
-        follow_entry = database_pb2.Follow(
+        follow_entry=database_pb2.Follow(
             follower=follower_id,
             followed=followed_id
         )
-        follow_req = database_pb2.DbFollowRequest(
+        follow_req=database_pb2.DbFollowRequest(
             request_type=database_pb2.DbFollowRequest.FIND,
             entry=follow_entry
         )
-        follow_resp = self._db.Follow(follow_req)
+        follow_resp=self._db.Follow(follow_req)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Could not add follow to database: %s',
                                follow_resp.error)
@@ -110,9 +110,9 @@ class Util:
 
     def convert_db_user_to_follow_user(self, db_user, follow_user):
         try:
-            follow_user.handle = db_user.handle
-            follow_user.host = db_user.host
-            follow_user.display_name = db_user.display_name
+            follow_user.handle=db_user.handle
+            follow_user.host=db_user.host
+            follow_user.display_name=db_user.display_name
         except Exception as e:
             self._logger.warning('Error converting db user to follow user: ' +
                                  str(e))
