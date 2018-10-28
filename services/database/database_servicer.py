@@ -1,3 +1,4 @@
+from follow_servicer import FollowDatabaseServicer
 from posts_servicer import PostsDatabaseServicer
 from users_servicer import UsersDatabaseServicer
 
@@ -14,3 +15,5 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.Posts = posts_servicer.Posts
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
+        follow_servicer = FollowDatabaseServicer(db, logger)
+        self.Follow = follow_servicer.Follow

@@ -43,10 +43,9 @@ def main():
     logger = get_logger(args.v)
     logger.info('Creating server')
 
-    util = Util(logger)
-
     with grpc.insecure_channel(get_database_service_address()) as chan:
         stub = database_pb2_grpc.DatabaseStub(chan)
+        util = Util(logger, stub)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         follows_pb2_grpc.add_FollowsServicer_to_server(FollowsServicer(logger, util, stub),
                                                        server)

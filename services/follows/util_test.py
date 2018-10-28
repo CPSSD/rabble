@@ -3,7 +3,9 @@ import unittest
 
 from util import Util
 
+
 class UtilTest(unittest.TestCase):
+
     def setUp(self):
         self.logger = logging.getLogger(__name__)
         self.util = Util(self.logger)
@@ -33,6 +35,10 @@ class UtilTest(unittest.TestCase):
             a, b = self.util.parse_username('a@b@c')
             self.assertIsNone(a)
             self.assertIsNone(b)
+
+    def test_get_user_from_db_too_many_attempts(self):
+        resp = self.util.get_user_from_db(None, None, attempt_number=100)
+        self.assertIsNone(resp)
 
 
 if __name__ == '__main__':
