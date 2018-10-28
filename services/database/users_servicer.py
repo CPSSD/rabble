@@ -22,10 +22,11 @@ class UsersDatabaseServicer:
                 "Wrong number of elements " + str(tup))
             return False
         try:
-            entry.handle = tup[0]
-            entry.display_name = tup[1]
+            # Tuple items are in order of columns of Users table in db.
+            entry.global_id = tup[0]
+            entry.handle = tup[1]
             entry.host = tup[2]
-            entry.global_id = tup[3]
+            entry.display_name = tup[3]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -45,7 +46,7 @@ class UsersDatabaseServicer:
             self._db.execute(
                 'INSERT INTO users '
                 '(handle, host, display_name) '
-                'VALUES (?, ?)',
+                'VALUES (?, ?, ?)',
                 req.entry.handle,
                 req.entry.host,
                 req.entry.display_name)
