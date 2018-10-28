@@ -50,8 +50,8 @@ type serverWrapper struct {
 	// databaseConn is the underlying connection to the Database
 	// service. This reference must be retained so it can by closed later.
 	databaseConn *grpc.ClientConn
-  // database is the RPC client for talking to the database service.
-	database     dbpb.DatabaseClient
+	// database is the RPC client for talking to the database service.
+	database dbpb.DatabaseClient
 
 	followsConn *grpc.ClientConn
 	follows     followspb.FollowsClient
