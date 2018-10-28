@@ -36,7 +36,9 @@ export class Feed extends React.Component<{}, IFeedState> {
         <div className="pure-g" key={i}>
           <div className="pure-u-1-5"/>
           <div className="pure-u-3-5">
-            <h3> {e.title} by: {e.author} </h3>
+            <h3 className="title">
+              {e.title} <div className="byline"> by {e.author} </div>
+            </h3>
             <p dangerouslySetInnerHTML={{ __html: e.body }}/>
           </div>
         </div>

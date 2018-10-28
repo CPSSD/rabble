@@ -21,3 +21,9 @@ html {
 .right-menu {
   float: right;
 }
+
+.byline {
+  font-size: .9em;
+  text-align: left;
+  font-weight: normal;
+}

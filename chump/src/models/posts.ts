@@ -16,6 +16,13 @@ export function SortPosts(b: IBlogPost[]) {
   b.reverse();
 }
 
+export function FixNewlines(b: IBlogPost[]) {
+  // TODO: Remove this once we handle body text better
+  for (let i = 0; i < b.length; i++) {
+    b[i].body = b[i].body.replace(/(?:\r\n|\r|\n)/g, '<br>');
+  }
+}
+
 export function GetPublicPosts(username= "") {
   const url = username === "" ? apiURL : `${apiURL}/${username}`;
   return new Promise<IBlogPost[]>((resolve, reject) => {
@@ -32,6 +39,7 @@ export function GetPublicPosts(username= "") {
         if (posts === null) {
           posts = [];
         }
+        FixNewlines(posts);
         SortPosts(posts);
         resolve(posts);
       });
