@@ -19,6 +19,7 @@ import (
 
 	articlepb "proto/article"
 	dbpb "proto/database"
+	feedpb "proto/feed"
 	followspb "proto/follows"
 )
 
@@ -57,10 +58,19 @@ type serverWrapper struct {
 	follows     followspb.FollowsClient
 	articleConn *grpc.ClientConn
 	article     articlepb.ArticleClient
+	feedConn    *grpc.ClientConn
+	feed        feedpb.FeedClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fr := &feedpb.FeedRequest{Username: "us"}
+		f, err := s.feed.Get(context.Background(), fr)
+		if err != nil {
+			log.Print("feed.Get(%v) error: %v", *fr, f)
+		}
+		log.Print(f)
+
 		w.Header().Set("Content-Type", "application/json")
 
 		pr := &dbpb.PostsRequest{
@@ -330,6 +340,22 @@ func createFollowsClient() (*grpc.ClientConn, followspb.FollowsClient) {
 	return conn, client
 }
 
+func createFeedClient() (*grpc.ClientConn, feedpb.FeedClient) {
+	const env = "FEED_SERVICE_HOST"
+	host := os.Getenv(env)
+	if host == "" {
+		log.Fatalf("%s env var not set for skinny server", env)
+	}
+	addr := host + ":2012"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
+	}
+	client := feedpb.NewFeedClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -345,6 +371,7 @@ func buildServerWrapper() *serverWrapper {
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
+	feedConn, feedClient := createFeedClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
@@ -355,6 +382,8 @@ func buildServerWrapper() *serverWrapper {
 		article:      articleClient,
 		followsConn:  followsConn,
 		follows:      followsClient,
+		feedConn:     feedConn,
+		feed:         feedClient,
 	}
 	s.setupRoutes()
 	return s

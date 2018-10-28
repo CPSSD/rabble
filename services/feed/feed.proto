@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 message FeedRequest {
   string username = 1;
@@ -24,4 +25,5 @@ message FeedResponse {
 
 service Feed {
   rpc Get(FeedRequest) returns (FeedResponse);
+  rpc GetAll(google.protobuf.Empty) returns (FeedResponse);
 }

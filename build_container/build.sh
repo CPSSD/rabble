@@ -87,7 +87,7 @@ protoc -I=services/feed --go_out=plugins=grpc:"/go/src/proto/feed" \
   services/feed/feed.proto
 
 echo "Building feed service"
-go build -o build_out/feed services/feed/*.go
+go build -o build_out/services/feed services/feed/*.go
 
 echo "Building skinny server"
 go build -o build_out/skinny skinny/*.go
