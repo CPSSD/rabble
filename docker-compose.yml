@@ -12,6 +12,7 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - FOLLOWS_SERVICE_HOST=follows_service
+      - ARTICLE_SERVICE_HOST=article_service
   database_service:
     build:
       context: ./services/database
@@ -22,6 +23,16 @@ services:
     build:
       context: ./services/follows
       dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service
+  article_service:
+    build:
+      context: ./services/article
+      dockerfile: Dockerfile
+    depends_on:
+      - "database_service"
     volumes:
       - .:/repo
     environment:
