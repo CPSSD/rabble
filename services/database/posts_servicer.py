@@ -1,6 +1,6 @@
 import sqlite3
 
-from users_servicer import UsersDatabaseServicer
+import util
 
 import database_pb2
 import database_pb2_grpc
@@ -59,14 +59,8 @@ class PostsDatabaseServicer:
             return False
         return True
 
-    def _entry_to_filter(self, entry):
-        fields = entry.ListFields()
-        filter_list = [f.name + ' = ?' for f, _ in fields]
-        filter_clause = ' AND '.join(filter_list)
-        return filter_clause, [v for _, v in fields]
-
     def _handle_find(self, req, resp):
-        filter_clause, values = self._entry_to_filter(req.match)
+        filter_clause, values = util.entry_to_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('SELECT * FROM posts')
@@ -84,7 +78,7 @@ class PostsDatabaseServicer:
                 del resp.results[-1]
 
     def _handle_delete(self, req, resp):
-        filter_clause, values = self._entry_to_filter(req.match)
+        filter_clause, values = util.entry_to_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('DELETE FROM posts')
