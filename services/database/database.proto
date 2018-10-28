@@ -53,12 +53,12 @@ message UsersEntry {
 }
 
 message UsersRequest {
-    enum RequestType {
-        INSERT = 0;
-    }
+  enum RequestType {
+    INSERT = 0;
+  }
 
-    RequestType request_type = 1;
-    UsersEntry entry = 2;
+  RequestType request_type = 1;
+  UsersEntry entry = 2;
 }
 
 message UsersResponse {
@@ -77,7 +77,32 @@ message UsersResponse {
   repeated UsersEntry results = 3;
 }
 
+message Follow {
+  int64 follower = 1;
+  int64 followed = 2;
+}
+
+message FollowRequest {
+  enum RequestType {
+    INSERT = 0;
+  }
+
+  RequestType request_type = 1;
+  Follow entry = 2;
+}
+
+message FollowResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+  string error = 2;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
+  rpc Follows(FollowRequest) returns (FollowResponse);
 }
