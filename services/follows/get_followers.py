@@ -4,13 +4,13 @@ import database_pb2
 import follows_pb2
 
 
-class SendFollowServicer:
+class GetFollowsReceiver:
 
     def __init__(self, logger, util, database_stub):
         self._logger = logger
         self._util = util
         self._database_stub = database_stub
-        self.RequestType = Enum('FOLLOWING', 'FOLLOWER')
+        self.RequestType = Enum('RequestType', 'FOLLOWING FOLLOWERS')
 
     def _get_follows(self, request, context, request_type):
         if request_type == self.RequestType.FOLLOWERS:
@@ -19,7 +19,7 @@ class SendFollowServicer:
         else:
             self._logger.debug('List of users %s is following requested',
                                request.username)
-        resp = follows_pb2.GetFollowsReponse()
+        resp = follows_pb2.GetFollowsResponse()
 
         # Parse input username
         handle, host = self._util.parse_username(
@@ -43,27 +43,34 @@ class SendFollowServicer:
         # Get followers/followings for this user.
         following_ids = None
         if request_type == self.RequestType.FOLLOWERS:
-            following_ids = util.get_follows(followed_id=user_id)
+            following_ids = self._util.get_follows(followed_id=user_id).results
         else:
-            following_ids = util.get_follows(follower_id=user_id)
+            following_ids = self._util.get_follows(follower_id=user_id).results
 
         # Convert other following users and add to output proto.
-        for _id in following_ids:
+        for following_id in following_ids:
+            _id = following_id.follower
+            if request_type == self.RequestType.FOLLOWERS:
+                _id = following_id.followed
             user = self._util.get_user_from_db(global_id=_id)
             if user is None:
                 self._logger.warning('Could not find user for id %d',
                                      _id)
                 continue
-            if self._util.convert_db_user_to_follow_user(user,
-                                                         resp.results.add()):
-                self._logger.warning('Could not conver user %s@%s to ' +
+
+            ok = self._util.convert_db_user_to_follow_user(user,
+                                                           resp.results.add())
+            if not ok:
+                self._logger.warning('Could not convert user %s@%s to ' +
                                      'FollowUser', user.handle, user.host)
 
         resp.result_type = follows_pb2.GetFollowsResponse.OK
         return resp
 
     def GetFollowing(self, request, context):
+        self._logger.debug('GetFollowing, username = %s', request.username)
         return self._get_follows(request, context, self.RequestType.FOLLOWING)
 
     def GetFollowers(self, request, context):
-        return self._get_follows(request, context, self.RequestType.FOLLOWER)
+        self._logger.debug('GetFollowers, username = %s', request.username)
+        return self._get_follows(request, context, self.RequestType.FOLLOWERS)
