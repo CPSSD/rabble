@@ -19,7 +19,6 @@ class FollowDatabaseServicer:
 
     def _follow_handle_insert(self, req, resp):
         self._logger.info('Inserting new follow into Follow database.')
-        # TODO(iandioch): Ensure we're not overwriting a previous user.
         try:
             self._db.execute(
                 'INSERT INTO follows '
