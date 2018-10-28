@@ -28,7 +28,7 @@ class SendFollowServicer:
 
         # Get user IDs for follow.
         follower_entry = self._util.get_user_from_db(
-            from_handle, from_instance)
+            handle=from_handle, host=from_instance)
         if follower_entry is None:
             error = 'Could not find or create user {}@{}'.format(from_handle,
                                                                  from_instance)
@@ -36,7 +36,8 @@ class SendFollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = error
             return resp
-        followed_entry = self._util.get_user_from_db(to_handle, to_instance)
+        followed_entry = self._util.get_user_from_db(handle=to_handle,
+                                                     host=to_instance)
         if followed_entry is None:
             error = 'Could not find or create user {}@{}'.format(to_handle,
                                                                  to_instance)
