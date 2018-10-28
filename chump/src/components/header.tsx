@@ -22,7 +22,7 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
   }
 
   return (
-    <div className="pure-g">
+    <div className="pure-g topnav">
       <div className="pure-u-1-3"/>
       <div className="pure-u-1-3 centre-brand">
         <Link to="/" className="brand">Rabble</Link>

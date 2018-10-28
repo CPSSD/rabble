@@ -2,10 +2,14 @@ html {
   font-family: sans;
 }
 
+.topnav {
+  padding-top: 1em;
+  padding-bottom: 2em;
+}
+
 .centre-brand {
   display: block;
   text-align: center;
-  padding-bottom: 2em;
 }
 
 .brand {
