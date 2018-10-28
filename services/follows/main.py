@@ -2,11 +2,11 @@
 from concurrent import futures
 import argparse
 import grpc
-import logging
 import os
 import sys
 import time
 
+from logger import get_logger
 from servicer import FollowsServicer
 from util import Util
 
@@ -22,13 +22,6 @@ def get_args():
     return parser.parse_args()
 
 
-def get_logger(level):
-    logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(level)
-    return logger
-
-
 def get_database_service_address():
     host = os.environ['DB_SERVICE_HOST']
     if not host:
@@ -40,7 +33,7 @@ def get_database_service_address():
 
 def main():
     args = get_args()
-    logger = get_logger(args.v)
+    logger = get_logger('follows_service', args.v)
     logger.info('Creating server')
 
     util = Util(logger)
