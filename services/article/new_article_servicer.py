@@ -13,6 +13,7 @@ class NewArticleServicer:
             author=req.author,
             title=req.title,
             body=req.body,
+            creation_datetime=req.creation_datetime,
             global_id= global_id
         )
         pr = database_pb2.PostsRequest(
