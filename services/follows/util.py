@@ -1,5 +1,6 @@
 import database_pb2
 
+
 class Util:
 
     def __init__(self, logger, db_stub):
@@ -20,23 +21,25 @@ class Util:
         return None, None
 
     def _create_user_in_db(self, entry):
-        self._logger('Creating user %s@%s in database', entry.handle, entry.host)
+        self._logger.debug('Creating user %s@%s in database',
+                           entry.handle, entry.host)
         insert_req = database_pb2.UsersRequest(
-            request_type = database_pb2.UsersRequest.INSERT,
-            entry = entry
+            request_type=database_pb2.UsersRequest.INSERT,
+            entry=entry
         )
         insert_resp = self._db.Users(insert_req)
         # TODO(iandioch): Respond to errors.
+        return insert_resp
 
     def get_user_from_db(self, handle, host):
         self._logger.debug('User %s@%s requested from database', handle, host)
         user_entry = database_pb2.UsersEntry(
-            handle = handle,
-            host = host
+            handle=handle,
+            host=host
         )
         find_req = database_pb2.UsersRequest(
             request_type=database_pb2.UsersRequest.FIND,
-            match = user_entry
+            match=user_entry
         )
         find_resp = self._db.Users(find_req)
         if len(find_resp.results) == 0:
@@ -47,6 +50,6 @@ class Util:
             self._logger.debug('Found user %s@%s from database', handle, host)
             return find_resp.results[0]
         else:
-            self._logger.error('> 1 user found in database for %s@%s' + \
+            self._logger.error('> 1 user found in database for %s@%s' +
                                ', returning first one.', handle, host)
             return find_resp.results[0]

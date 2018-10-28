@@ -3,7 +3,9 @@ import unittest
 
 from util import Util
 
+
 class UtilTest(unittest.TestCase):
+
     def setUp(self):
         self.logger = logging.getLogger(__name__)
         self.util = Util(self.logger)
