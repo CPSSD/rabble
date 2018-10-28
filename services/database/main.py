@@ -2,9 +2,9 @@
 from concurrent import futures
 import argparse
 import grpc
-import logging
 import time
 
+from logger import get_logger
 from database import build_database
 from database_servicer import DatabaseServicer
 import database_pb2_grpc
@@ -24,18 +24,9 @@ def get_args():
     return parser.parse_args()
 
 
-def get_logger(level):
-    # TODO(CianLR): Move to shared package and add ability to send to
-    # centralised logging service.
-    logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(level)
-    return logger
-
-
 def main():
     args = get_args()
-    logger = get_logger(args.v)
+    logger = get_logger("database_service", args.v)
     logger.info("Creating DB")
     database = build_database(logger, args.schema, args.db_path)
     logger.info("Creating server")

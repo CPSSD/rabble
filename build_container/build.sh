@@ -39,14 +39,6 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   build_out/database/database.proto
 
-echo "Building logger service"
-cp -R services/logger build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/logger \
-  --python_out=build_out/logger \
-  --grpc_python_out=build_out/logger \
-  build_out/logger/logger.proto
-
 echo "Building follows service"
 cp -R services/follows build_out/
 python3 -m grpc_tools.protoc \
@@ -67,6 +59,19 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
   build_out/article/article.proto
+
+echo "Building logger service and lib"
+cp -R services/logger build_out/
+cp -R services/utils build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/logger \
+  --python_out=build_out/utils \
+  --grpc_python_out=build_out/utils \
+  build_out/logger/logger.proto
+# Manually copy the needed files into the dirs, this is horrible.
+cp build_out/utils/* build_out/logger/
+cp build_out/utils/* build_out/follows/
+cp build_out/utils/* build_out/database/
 
 echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos

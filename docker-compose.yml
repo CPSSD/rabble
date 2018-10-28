@@ -28,6 +28,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
   follows_service:
     build:
       context: ./services/follows
@@ -36,6 +38,7 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
   logger_service:
     build:
       context: ./services/logger
