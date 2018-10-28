@@ -20,10 +20,11 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, r := range p.Results {
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
-			Author:   r.Author,
-			Title:    r.Title,
-			Body:     r.Body,
+			GlobalId:         r.GlobalId,
+			Author:           r.Author,
+			Title:            r.Title,
+			Body:             r.Body,
+			CreationDatetime: r.CreationDatetime,
 		}
 		fp.Results = append(fp.Results, np)
 	}
