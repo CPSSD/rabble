@@ -49,9 +49,9 @@ class GetFollowsReceiver:
 
         # Convert other following users and add to output proto.
         for following_id in following_ids:
-            _id = following_id.follower
+            _id = following_id.followed
             if request_type == self.RequestType.FOLLOWERS:
-                _id = following_id.followed
+                _id = following_id.follower
             user = self._util.get_user_from_db(global_id=_id)
             if user is None:
                 self._logger.warning('Could not find user for id %d',
