@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   handle            text    NOT NULL,
   /* host should be null if user is local */
   host              text,
-  display_name      text    NOT NULL,
+  display_name      text    NOT NULL
 );
 
 /* follower and followed both match global_id in entries in users table. */
