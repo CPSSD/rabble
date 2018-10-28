@@ -64,31 +64,21 @@ type serverWrapper struct {
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fr := &feedpb.FeedRequest{Username: "us"}
-		f, err := s.feed.Get(context.Background(), fr)
-		if err != nil {
-			log.Print("feed.Get(%v) error: %v", *fr, f)
-		}
-		log.Print(f)
-
-		w.Header().Set("Content-Type", "application/json")
-
-		pr := &dbpb.PostsRequest{
-			RequestType: dbpb.PostsRequest_FIND,
-		}
-
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		resp, err := s.database.Posts(ctx, pr)
+		v := mux.Vars(r)
+
+		fr := &feedpb.FeedRequest{Username: v["username"]}
+		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
-			log.Fatalf("Could not get feed: %v", err)
+			log.Print("Error in feed.Get(%v): %v", *fr, err)
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-
 		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
@@ -277,6 +267,7 @@ func (s *serverWrapper) setupRoutes() {
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
+	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 

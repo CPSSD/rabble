@@ -14,6 +14,7 @@ import (
 
 	articlepb "proto/article"
 	dbpb "proto/database"
+	feedpb "proto/feed"
 	followspb "proto/follows"
 )
 
@@ -21,18 +22,20 @@ const (
 	fakeTitle = "fake"
 )
 
-type ArticleFake struct {
-	articlepb.ArticleClient
-
-	// The most recent NewArticle
-	na *articlepb.NewArticle
-}
-
-type DatabaseFake struct {
-	dbpb.DatabaseClient
+type FeedFake struct {
+	feedpb.FeedClient
 
 	// The most recent postRequest
-	rq *dbpb.PostsRequest
+	rq *feedpb.FeedRequest
+}
+
+func (d *FeedFake) Get(_ context.Context, r *feedpb.FeedRequest, _ ...grpc.CallOption) (*feedpb.FeedResponse, error) {
+	d.rq = r
+	return &feedpb.FeedResponse{
+		Results: []*feedpb.Post{{
+			Title: fakeTitle,
+		}},
+	}, nil
 }
 
 type FollowsFake struct {
@@ -42,12 +45,25 @@ type FollowsFake struct {
 	rq *followspb.LocalToAnyFollow
 }
 
+type ArticleFake struct {
+	articlepb.ArticleClient
+
+	// The most recent NewArticle
+	na *articlepb.NewArticle
+}
+
 func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlepb.NewArticle, _ ...grpc.CallOption) (*articlepb.NewArticleResponse, error) {
 	a.na = r
 	return &articlepb.NewArticleResponse{
 		ResultType: articlepb.NewArticleResponse_OK,
 		GlobalId:   "test_id",
 	}, nil
+}
+
+type DatabaseFake struct {
+	dbpb.DatabaseClient
+
+	rq *dbpb.PostsRequest
 }
 
 func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
@@ -75,7 +91,8 @@ func newTestServerWrapper() *serverWrapper {
 		server:       srv,
 		shutdownWait: 20 * time.Second,
 		database:     &DatabaseFake{},
-		article:     	&ArticleFake{},
+		article:      &ArticleFake{},
+		feed:         &FeedFake{},
 		follows:      &FollowsFake{},
 	}
 	s.setupRoutes()
@@ -208,7 +225,7 @@ func TestFeed(t *testing.T) {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
 
-	var r []dbpb.PostsEntry
+	var r []feedpb.Post
 	if err := json.Unmarshal(res.Body.Bytes(), &r); err != nil {
 		t.Fatalf("json.Unmarshal(%#v) unexpected error: %v", res.Body.String(), err)
 	}

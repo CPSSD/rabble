@@ -1,14 +1,14 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
+// Request a feed for the given user.
 message FeedRequest {
+  // To request all posts on this instance, send a blank username.
   string username = 1;
 }
 
-
-// This responses will eventually be database.PostsResponse or at least use
+// These responses will eventually be database.PostsResponse or at least use
 // PostsEntry. Right now our builds don't allow for importing proto files
 // between services. For that reason we'll keep it simple and ignore errors.
 message Post {
@@ -25,5 +25,4 @@ message FeedResponse {
 
 service Feed {
   rpc Get(FeedRequest) returns (FeedResponse);
-  rpc GetAll(google.protobuf.Empty) returns (FeedResponse);
 }
