@@ -1,5 +1,7 @@
 import database_pb2
 
+MAX_FIND_RETRIES = 3
+
 
 class Util:
 
@@ -31,7 +33,10 @@ class Util:
         # TODO(iandioch): Respond to errors.
         return insert_resp
 
-    def get_user_from_db(self, handle, host):
+    def get_user_from_db(self, handle, host, attempt_number=0):
+        if attempt_number > MAX_FIND_RETRIES:
+            self._logger.error('Retried query too many times.')
+            return None
         self._logger.debug('User %s@%s requested from database', handle, host)
         user_entry = database_pb2.UsersEntry(
             handle=handle,
@@ -45,7 +50,7 @@ class Util:
         if len(find_resp.results) == 0:
             self._logger.warning('No user %s@%s found', handle, host)
             self._create_user_in_db(user_entry)
-            return self.get_user_from_db(handle, host)
+            return self.get_user_from_db(handle, host, attempt_number=attempt_number+1)
         elif len(find_resp.results) == 1:
             self._logger.debug('Found user %s@%s from database', handle, host)
             return find_resp.results[0]

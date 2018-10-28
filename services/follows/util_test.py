@@ -36,6 +36,10 @@ class UtilTest(unittest.TestCase):
             self.assertIsNone(a)
             self.assertIsNone(b)
 
+    def test_get_user_from_db_too_many_attempts(self):
+        resp = self.util.get_user_from_db(None, None, attempt_number=100)
+        self.assertIsNone(resp)
+
 
 if __name__ == '__main__':
     unittest.main()
