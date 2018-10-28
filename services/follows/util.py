@@ -1,3 +1,4 @@
+import follows_pb2
 import database_pb2
 
 MAX_FIND_RETRIES = 3
@@ -106,3 +107,14 @@ class Util:
             self._logger.error('Could not add follow to database: %s',
                                follow_resp.error)
         return follow_resp
+
+    def convert_db_user_to_follow_user(self, db_user, follow_user):
+        try:
+            follow_user.handle = db_user.handle
+            follow_user.host = db_user.host
+            follow_user.display_name = db_user.display_name
+        except Exception as e:
+            self._logger.warning('Error converting db user to follow user: ' +
+                                 str(e))
+            return False
+        return True

@@ -10,7 +10,8 @@ class SendFollowServicer:
         self._database_stub = database_stub
 
     def GetFollowers(self, request, context):
-        self._logger.debug('List of followers of %s requested', request.username)
+        self._logger.debug('List of followers of %s requested',
+                           request.username)
         resp = follows_pb2.GetFollowersReponse()
 
         handle, host = self._util.parse_username(
@@ -20,27 +21,18 @@ class SendFollowServicer:
             resp.error = 'Could not parse queried username'
             return resp
 
-        # Get user IDs for follow.
-        user_entry = self._util.get_user_from_db(handle, host)
-        if user_entry is None:
-            error = 'Could not find or create user {}@{}'.format(from_handle,
-                                                                 from_instance)
-            self._logger.error(error)
-            resp.result_type = follows_pb2.GetFollowersResponse.ERROR
-            resp.error = error
-            return resp
+        following_ids = util.get_follows(followed_id)
 
-        user_id = user_entry.global_id
-
-        follow_resp = self._util.create_follow_in_db(follower_entry.global_id,
-                                                     followed_entry.global_id)
-        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
-            self._logger.error('Error creating follow: %s', follow_resp.error)
-            resp.result_type = follows_pb2.FollowResponse.ERROR
-            resp.error = 'Could not add requested follow to database'
-            return resp
-
-        # TODO(#61): Send Follow activity if followed user is not local.
+        for _id in following_ids:
+            user = self._util.get_user_from_db(global_id = _id)
+            if user is None:
+                self._logger.warning('Could not find following user for id %d',
+                                     _id)
+                continue
+            if self._util.convert_db_user_to_follow_user(user,
+                                                         resp.results.add()):
+                self._logger.warning('Could not conver user %s@%s to ' +
+                                     'FollowUser', user.handle, user.host)
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
