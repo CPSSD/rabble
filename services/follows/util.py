@@ -53,3 +53,20 @@ class Util:
             self._logger.error('> 1 user found in database for %s@%s' +
                                ', returning first one.', handle, host)
             return find_resp.results[0]
+
+    def create_follow_in_db(self, follower_id, followed_id):
+        self._logger.debug('Adding <User ID %d following User ID %d> to db.',
+                           follower_id, followed_id)
+        follow_entry = database_pb2.Follow(
+            follower=follower_id,
+            followed=followed_id
+        )
+        follow_req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.INSERT,
+            entry=follow_entry
+        )
+        follow_resp = self._db.Follow(follow_req)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Could not add follow to database: %s', follow_resp.error)
+        return follow_resp
+

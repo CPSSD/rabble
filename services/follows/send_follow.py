@@ -26,11 +26,18 @@ class SendFollowServicer:
             resp.error = 'Could not parse followed username'
             return resp
 
+        # Get user IDs for follow.
         follower_entry = self._util.get_user_from_db(
             from_handle, from_instance)
         followed_entry = self._util.get_user_from_db(to_handle, to_instance)
         self._logger.info('User ID %d has requested to follow User ID %d',
                           follower_entry.global_id,
                           followed_entry.global_id)
+
+        self._util.create_follow_in_db(follower_entry.global_id,
+                                       followed_entry.global_id)
+
+        # TODO(#61): Send Follow activity if followed user is not local.
+
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
