@@ -53,7 +53,7 @@ message FollowUser {
 
 message GetFollowsRequest {
     /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
-    string username;
+    string username = 1;
 }
 
 message GetFollowsResponse {
@@ -69,7 +69,7 @@ message GetFollowsResponse {
     string error = 2;
 
     /* Should only be set if result_type is OK. */
-    repeated FollowUser users = 3;
+    repeated FollowUser results = 3;
 }
 
 service Follows {
