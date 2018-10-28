@@ -6,13 +6,15 @@ import * as superagent from "superagent";
 
 import { GetPublicPosts, IBlogPost } from "../src/api/posts";
 
+const sandbox: sinon.SinonSandbox = sinon.createSandbox();
+
 function createFakeResponse(body: IBlogPost[] | Error | null) {
   const end = (cb: any) => {
       cb(null, {ok: true, body });
   };
   const set = () => ({ end });
   const root = { set };
-  return sinon.stub(superagent, "get").returns(root);
+  return sandbox.stub(superagent, "get").returns(root);
 }
 
 const validBody: IBlogPost[] = [{
@@ -23,6 +25,11 @@ const validBody: IBlogPost[] = [{
 }];
 
 describe("GetPublicPosts", () => {
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should call api", (done) => {
     const getRequest = createFakeResponse(validBody);
     GetPublicPosts().then((posts: IBlogPost[]) => {
@@ -31,7 +38,6 @@ describe("GetPublicPosts", () => {
       expect(posts).to.eql(validBody);
       done();
     });
-    getRequest.restore();
   });
 
   it("should handle a username", (done) => {
@@ -42,7 +48,6 @@ describe("GetPublicPosts", () => {
       expect(posts).to.eql(validBody);
       done();
     });
-    getRequest.restore();
   });
 
   it("should handle a null response", (done) => {
@@ -53,7 +58,6 @@ describe("GetPublicPosts", () => {
       expect(posts).to.eql([]);
       done();
     });
-    getRequest.restore();
   });
 
   it("should handle an error", (done) => {
