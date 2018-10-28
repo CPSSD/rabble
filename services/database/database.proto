@@ -50,15 +50,20 @@ message UsersEntry {
   string handle = 1;
   string display_name = 2;
   string host = 3;
+  int64 global_id = 4;
 }
 
 message UsersRequest {
   enum RequestType {
     INSERT = 0;
+    FIND = 1;
   }
 
   RequestType request_type = 1;
-  UsersEntry entry = 2;
+  // Equivalent of PostsRequest.match.
+  UsersEntry match = 2;
+  // Equivalent of PostsRequests.entry.
+  UsersEntry entry = 3;
 }
 
 message UsersResponse {
