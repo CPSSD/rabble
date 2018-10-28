@@ -109,7 +109,7 @@ class Util:
         return follow_resp
 
     def convert_db_user_to_follow_user(self, db_user, follow_user):
-        self._logger.warning('Trying to convert %s %s',
+        self._logger.warning('Converting db user %s@%s to follow user.',
                              db_user.handle, db_user.host)
         try:
             follow_user.handle = db_user.handle

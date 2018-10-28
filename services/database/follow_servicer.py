@@ -75,3 +75,5 @@ class FollowDatabaseServicer:
         for tup in res:
             if not self._db_tuple_to_entry(tup, resp.results.add()):
                 del resp.results[-1]
+
+        self._logger.debug('%d results of follower query.', len(resp.results))
