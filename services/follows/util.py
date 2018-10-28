@@ -19,6 +19,15 @@ class Util:
         self._logger.warning('Couldn\'t parse username %s', username)
         return None, None
 
+    def _create_user_in_db(self, entry):
+        self._logger('Creating user %s@%s in database', entry.handle, entry.host)
+        insert_req = database_pb2.UsersRequest(
+            request_type = database_pb2.UsersRequest.INSERT,
+            entry = entry
+        )
+        insert_resp = self._db.Users(insert_req)
+        # TODO(iandioch): Respond to errors.
+
     def get_user_from_db(self, handle, host):
         self._logger.debug('User %s@%s requested from database', handle, host)
         user_entry = database_pb2.UsersEntry(
@@ -27,11 +36,13 @@ class Util:
         )
         find_req = database_pb2.UsersRequest(
             request_type=database_pb2.UsersRequest.FIND,
-            entry = user_entry
+            match = user_entry
         )
         find_resp = self._db.Users(find_req)
         if len(find_resp.results) == 0:
             self._logger.warning('No user %s@%s found', handle, host)
+            self._create_user_in_db(user_entry)
+            return self.get_user_from_db(handle, host)
         elif len(find_resp.results) == 1:
             self._logger.debug('Found user %s@%s from database', handle, host)
             return find_resp.results[0]
