@@ -17,20 +17,17 @@ class LoggerServicer(logger_pb2_grpc.LoggerServicer):
 
     def _format_log(self, timestamp, source, level, message):
         return ' | '.join([
-            datetime.utcfromtimestamp(timestamp.seconds).strftime(
-                '%Y-%m-%d %H:%M:%S'),
+            datetime.utcfromtimestamp(timestamp.seconds)
+                .strftime('%Y-%m-%d %H:%M:%S'),
             source,
             logging.getLevelName(level),
             message])
 
     def WriteLog(self, request, context):
         py_level = self._log_levels[request.severity]
-        self._logger.log(
-            py_level, 
-            self._format_log(
-                request.timestamp,
-                request.source,
-                py_level,
-                request.message))
+        log_message = self._format_log(
+            request.timestamp, request.source,
+            py_level, request.message)
+        self._logger.log(py_level, log_message)
         return lpb2.WriteLogResponse(response_type=lpb2.WriteLogResponse.OK)
 

@@ -42,10 +42,6 @@ def main():
     local_logger.info("Creating logger servicer")
     logger_pb2_grpc.add_LoggerServicer_to_server(
         LoggerServicer(logger), server)
-    # > A total of twelve people were killed across the country on the day.
-    # > When it became apparent that the co-ordinated rising that had been
-    # > planned was not transpiring, most rebels simply went home.
-    # https://en.wikipedia.org/wiki/Fenian_Rising
     server.add_insecure_port('0.0.0.0:1867')
     local_logger.info("Starting server")
     server.start()
