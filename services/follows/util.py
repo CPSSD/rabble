@@ -50,7 +50,8 @@ class Util:
         if len(find_resp.results) == 0:
             self._logger.warning('No user %s@%s found', handle, host)
             self._create_user_in_db(user_entry)
-            return self.get_user_from_db(handle, host, attempt_number=attempt_number+1)
+            return self.get_user_from_db(handle, host,
+                                         attempt_number=attempt_number+1)
         elif len(find_resp.results) == 1:
             self._logger.debug('Found user %s@%s from database', handle, host)
             return find_resp.results[0]
@@ -72,6 +73,24 @@ class Util:
         )
         follow_resp = self._db.Follow(follow_req)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
-            self._logger.error('Could not add follow to database: %s', follow_resp.error)
+            self._logger.error('Could not add follow to database: %s',
+                               follow_resp.error)
         return follow_resp
 
+    def get_follows(self, follower_id=None, followed_id=None):
+        self._logger.debug('Finding follows <User ID %s following User ID %s>',
+                           ('*' if follower_id is None else str(follower_id))
+                           ('*' if followed_id is None else str(followed_id))
+        follow_entry = database_pb2.Follow(
+            follower=follower_id,
+            followed=followed_id
+        )
+        follow_req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.FIND,
+            entry=follow_entry
+        )
+        follow_resp = self._db.Follow(follow_req)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Could not add follow to database: %s',
+                               follow_resp.error)
+        return follow_Resp
