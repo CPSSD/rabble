@@ -16,5 +16,6 @@ class FollowsServicer(follows_pb2_grpc.FollowsServicer):
         rec_servicer = ReceiveFollowServicer(logger, util, database_stub)
         self.ReceiveFollowRequest = rec_servicer.ReceiveFollowRequest
 
-        get_followers_receiver = GetFollowersReceiver(logger, util, database_stub)
-        self.GetFollowers = get_followers_receiver.GetFollowers
+        get_follows_receiver = GetFollowsReceiver(logger, util, database_stub)
+        self.GetFollowers = get_follows_receiver.GetFollowers
+        self.GetFollowing = get_follows_receiver.GetFollowing
