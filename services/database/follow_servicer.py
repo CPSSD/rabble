@@ -9,7 +9,7 @@ class FollowDatabaseServicer:
         self._db = db
         self._logger = logger
         self._follow_type_handlers = {
-            database_pb2.FollowRequest.INSERT: self._follow_handle_insert,
+            database_pb2.DbFollowRequest.INSERT: self._follow_handle_insert,
         }
 
     def Follow(self, request, context):

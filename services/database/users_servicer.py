@@ -12,7 +12,7 @@ class UsersDatabaseServicer:
         self._logger = logger
         self._users_type_handlers = {
             database_pb2.UsersRequest.INSERT: self._users_handle_insert,
-            database_pb2.UsersRequest.FIND: self._users_handle_find.
+            database_pb2.UsersRequest.FIND: self._users_handle_find,
         }
 
     def _db_tuple_to_entry(self, tup, entry):
@@ -22,7 +22,6 @@ class UsersDatabaseServicer:
                 "Wrong number of elements " + str(tup))
             return False
         try:
-            # You'd think there'd be a better way.
             entry.handle = tup[0]
             entry.display_name = tup[1]
             entry.host = tup[2]
@@ -33,7 +32,6 @@ class UsersDatabaseServicer:
                 str(e))
             return False
         return True
-
 
     def Users(self, request, context):
         response = database_pb2.UsersResponse()
