@@ -30,6 +30,8 @@ message ForeignToLocalFollow {
     google.protobuf.Timestamp datetime = 3;
 }
 
+/* TODO(iandioch): Consider merging with DbFollowResponse in
+ * services/database/database.proto */
 message FollowResponse {
     enum ResultType {
         OK = 0;

@@ -82,7 +82,7 @@ message Follow {
   int64 followed = 2;
 }
 
-message FollowRequest {
+message DbFollowRequest {
   enum RequestType {
     INSERT = 0;
   }
@@ -91,7 +91,7 @@ message FollowRequest {
   Follow entry = 2;
 }
 
-message FollowResponse {
+message DbFollowResponse {
   enum ResultType {
     OK = 0;
     ERROR = 1;
@@ -104,5 +104,5 @@ message FollowResponse {
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
-  rpc Follows(FollowRequest) returns (FollowResponse);
+  rpc Follows(DbFollowRequest) returns (DbFollowResponse);
 }
