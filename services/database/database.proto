@@ -49,6 +49,7 @@ message PostsResponse {
 message UsersEntry {
   string handle = 1;
   string display_name = 2;
+  string host = 3;
 }
 
 message UsersRequest {

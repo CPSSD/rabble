@@ -23,9 +23,10 @@ class UsersDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO users '
-                '(handle, display_name) '
+                '(handle, host, display_name) '
                 'VALUES (?, ?)',
                 req.entry.handle,
+                req.entry.host,
                 req.entry.display_name)
         except sqlite3.Error as e:
             self._logger.error(str(e))
