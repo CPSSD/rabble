@@ -35,10 +35,10 @@ class Util:
         return insert_resp
 
     def get_user_from_db(self,
-                        handle=None,
-                        host=None,
-                        global_id=None,
-                        attempt_number=0):
+                         handle=None,
+                         host=None,
+                         global_id=None,
+                         attempt_number=0):
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
@@ -94,26 +94,27 @@ class Util:
         self._logger.debug('Finding follows <User ID %s following User ID %s>',
                            ('*' if (follower_id is None) else str(follower_id)),
                            ('*' if (followed_id is None) else str(followed_id)))
-        follow_entry=database_pb2.Follow(
+        follow_entry = database_pb2.Follow(
             follower=follower_id,
             followed=followed_id
         )
-        follow_req=database_pb2.DbFollowRequest(
+        follow_req = database_pb2.DbFollowRequest(
             request_type=database_pb2.DbFollowRequest.FIND,
             match=follow_entry
         )
-        follow_resp=self._db.Follow(follow_req)
+        follow_resp = self._db.Follow(follow_req)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Could not add follow to database: %s',
                                follow_resp.error)
         return follow_resp
 
     def convert_db_user_to_follow_user(self, db_user, follow_user):
-        self._logger.warning('Trying to convert %s %s', db_user.handle, db_user.host)
+        self._logger.warning('Trying to convert %s %s',
+                             db_user.handle, db_user.host)
         try:
-            follow_user.handle=db_user.handle
-            follow_user.host=db_user.host
-            follow_user.display_name=db_user.display_name
+            follow_user.handle = db_user.handle
+            follow_user.host = db_user.host
+            follow_user.display_name = db_user.display_name
         except Exception as e:
             self._logger.warning('Error converting db user to follow user: ' +
                                  str(e))

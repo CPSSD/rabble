@@ -1,4 +1,4 @@
-from get_followers import GetFollowersReceiver
+from get_followers import GetFollowsReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 
