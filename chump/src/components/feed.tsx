@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { GetPublicPosts, IBlogPost } from "../api/posts";
+import { GetPublicPosts, IBlogPost } from "../models/posts";
 
 interface IFeedState {
   publicBlog: IBlogPost[];
@@ -36,7 +36,9 @@ export class Feed extends React.Component<{}, IFeedState> {
         <div className="pure-g" key={i}>
           <div className="pure-u-1-5"/>
           <div className="pure-u-3-5">
-            <h4> {e.title}, written by: {e.author}. </h4>
+            <h3 className="title">
+              {e.title} <div className="byline"> by {e.author} </div>
+            </h3>
             <p dangerouslySetInnerHTML={{ __html: e.body }}/>
           </div>
         </div>
@@ -51,7 +53,7 @@ export class Feed extends React.Component<{}, IFeedState> {
         <div className="pure-g">
           <div className="pure-u-1-5"/>
           <div className="pure-u-3-5">
-            <h4>Your blog post could be here!</h4>
+            <h3>Your blog post could be here!</h3>
             <p>Check out our <Link to="/about">about</Link> page for more info!</p>
           </div>
         </div>

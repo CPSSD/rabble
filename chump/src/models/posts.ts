@@ -10,6 +10,18 @@ export interface IBlogPost {
 
 const apiURL = "/c2s/feed";
 
+export function SortPosts(b: IBlogPost[]) {
+  // TODO: Once creation_datetime is working, sort by that (or global_id)
+  b.reverse();
+}
+
+export function FixNewlines(b: IBlogPost[]) {
+  // TODO: Remove this once we handle body text better
+  for (const p of b) {
+    p.body = p.body.replace(/(?:\r\n|\r|\n)/g, "<br>");
+  }
+}
+
 export function GetPublicPosts(username= "") {
   const url = username === "" ? apiURL : `${apiURL}/${username}`;
   return new Promise<IBlogPost[]>((resolve, reject) => {
@@ -26,6 +38,8 @@ export function GetPublicPosts(username= "") {
         if (posts === null) {
           posts = [];
         }
+        FixNewlines(posts);
+        SortPosts(posts);
         resolve(posts);
       });
   });

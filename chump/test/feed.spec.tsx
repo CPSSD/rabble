@@ -5,7 +5,7 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { IBlogPost } from "../src/api/posts";
+import { IBlogPost } from "../src/models/posts";
 import { Feed } from "../src/components/feed";
 import { mount, shallow } from "./enzyme";
 
@@ -39,7 +39,7 @@ describe("Feed", () => {
     ]});
 
     expect(Feed.prototype.getPosts).to.have.property("callCount", 1);
-    expect(wrapper.find("div")).to.have.lengthOf(7);
+    expect(wrapper.find("div")).to.have.lengthOf(8);
 
     // Cleanup spies
     getPosts.restore();
