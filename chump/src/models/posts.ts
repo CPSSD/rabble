@@ -6,9 +6,15 @@ export interface IBlogPost {
   author: string;
   title: string;
   body: string;
+  creation_datetime: string;
 }
 
 const apiURL = "/c2s/feed";
+
+export function SortPosts(b: IBlogPost[]) {
+  // TODO: Once creation_datetime is working, sort by that (or global_id)
+  b.reverse();
+}
 
 export function GetPublicPosts(username= "") {
   const url = username === "" ? apiURL : `${apiURL}/${username}`;
@@ -26,6 +32,7 @@ export function GetPublicPosts(username= "") {
         if (posts === null) {
           posts = [];
         }
+        SortPosts(posts);
         resolve(posts);
       });
   });
