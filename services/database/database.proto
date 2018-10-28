@@ -104,5 +104,5 @@ message DbFollowResponse {
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
-  rpc Follows(DbFollowRequest) returns (DbFollowResponse);
+  rpc Follow(DbFollowRequest) returns (DbFollowResponse);
 }
