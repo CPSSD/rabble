@@ -2,7 +2,6 @@
 from concurrent import futures
 import argparse
 import grpc
-import logging
 import time
 import os
 import sys
