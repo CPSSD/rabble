@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message Log {
+  // Modeled on Python's levels
+  // https://docs.python.org/2/library/logging.html#levels
+  enum Severity {
+    DEBUG    = 0;
+    INFO     = 1;
+    WARNING  = 2;
+    ERROR    = 3;
+    CRITICAL = 4;
+  }
+
+  // The application sending the message.
+  string source = 1;
+
+  // How severe the message is.
+  Severity severity = 2;
+
+  // The time of the log's creation.
+  google.protobuf.Timestamp timestamp = 3;
+
+  // The contents of the log (note: not to be confused with massage).
+  string message = 4;
+}
+
+message WriteLogResponse {
+  enum ResponseType {
+    OK    = 0;
+    ERROR = 1;
+  }
+
+  // Can likely be ignored.
+  ResponseType response_type = 1;
+}
+
+service Logger {
+  rpc WriteLog(Log) returns (WriteLogResponse);
+}
+

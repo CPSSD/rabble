@@ -39,6 +39,14 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   build_out/database/database.proto
 
+echo "Building logger service"
+cp -R services/logger build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/logger \
+  --python_out=build_out/logger \
+  --grpc_python_out=build_out/logger \
+  build_out/logger/logger.proto
+
 echo "Building follows service"
 cp -R services/follows build_out/
 python3 -m grpc_tools.protoc \

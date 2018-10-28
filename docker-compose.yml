@@ -27,6 +27,12 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+  logger_service:
+    build:
+      context: ./services/logger
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
   article_service:
     build:
       context: ./services/article
@@ -37,3 +43,4 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+
