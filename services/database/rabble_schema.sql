@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 /* follower and followed both match global_id in entries in users table. */
 CREATE TABLE IF NOT EXISTS follows (
   follower          integer NOT NULL,
-  followed          integer NOT NULL
+  followed          integer NOT NULL,
+  PRIMARY KEY (follower, followed)
 );
 /* Add other tables here */
