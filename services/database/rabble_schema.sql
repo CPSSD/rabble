@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-  global_id         text    PRIMARY KEY,
+  global_id         integer PRIMARY KEY,
   handle            text    NOT NULL,
   /* host should be null if user is local */
   host              text,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 /* follower and followed both match global_id in entries in users table. */
 CREATE TABLE IF NOT EXISTS follows (
-  follower          text    PRIMARY KEY,
-  followed          text    NOT NULL
+  follower          integer PRIMARY KEY,
+  followed          integer NOT NULL
 );
 /* Add other tables here */
