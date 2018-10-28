@@ -6,7 +6,6 @@ export interface IBlogPost {
   author: string;
   title: string;
   body: string;
-  creation_datetime: string;
 }
 
 const apiURL = "/c2s/feed";
@@ -18,8 +17,8 @@ export function SortPosts(b: IBlogPost[]) {
 
 export function FixNewlines(b: IBlogPost[]) {
   // TODO: Remove this once we handle body text better
-  for (let i = 0; i < b.length; i++) {
-    b[i].body = b[i].body.replace(/(?:\r\n|\r|\n)/g, '<br>');
+  for (const p of b) {
+    p.body = p.body.replace(/(?:\r\n|\r|\n)/g, "<br>");
   }
 }
 
