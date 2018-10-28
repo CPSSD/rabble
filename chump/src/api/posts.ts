@@ -11,11 +11,11 @@ export interface IBlogPost {
 const apiURL = "/c2s/feed";
 
 export function GetPublicPosts(username= "") {
+  const url = username === "" ? apiURL : `${apiURL}/${username}`;
   return new Promise<IBlogPost[]>((resolve, reject) => {
     superagent
-      .get(apiURL)
+      .get(url)
       .set("Accept", "application/json")
-      .send(`username=${username}`)
       .end((error, res) => {
         if (error) {
           reject(error);

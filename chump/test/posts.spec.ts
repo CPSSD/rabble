@@ -10,25 +10,36 @@ function createFakeResponse(body: IBlogPost[] | Error | null) {
   const end = (cb: any) => {
       cb(null, {ok: true, body });
   };
-  const send = () => ({ end });
-  const set = () => ({ send });
+  const set = () => ({ end });
   const root = { set };
   return sinon.stub(superagent, "get").returns(root);
 }
 
+const validBody: IBlogPost[] = [{
+  author: "aaron",
+  body: "rm -rf steely/",
+  global_id: "2",
+  title: "how to write a plugin",
+}];
+
 describe("GetPublicPosts", () => {
   it("should call api", (done) => {
-    const fakeBody: IBlogPost[] = [{
-      author: "aaron",
-      body: "rm -rf steely/",
-      global_id: "2",
-      title: "how to write a plugin",
-    }];
-    const getRequest = createFakeResponse(fakeBody);
+    const getRequest = createFakeResponse(validBody);
     GetPublicPosts().then((posts: IBlogPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
-      expect(posts).to.eql(fakeBody);
+      expect(posts).to.eql(validBody);
+      done();
+    });
+    getRequest.restore();
+  });
+
+  it("should handle a username", (done) => {
+    const getRequest = createFakeResponse(validBody);
+    GetPublicPosts("username").then((posts: IBlogPost[]) => {
+      expect(getRequest).to.have.property("callCount", 1);
+      expect(getRequest.calledWith("/c2s/feed/username")).to.be.ok;
+      expect(posts).to.eql(validBody);
       done();
     });
     getRequest.restore();
