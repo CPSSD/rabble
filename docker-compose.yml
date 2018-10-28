@@ -13,6 +13,15 @@ services:
       - DB_SERVICE_HOST=database_service
       - FOLLOWS_SERVICE_HOST=follows_service
       - ARTICLE_SERVICE_HOST=article_service
+      - FEED_SERVICE_HOST=feed_service
+  feed_service:
+    build:
+      context: ./services/feed
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service
   database_service:
     build:
       context: ./services/database
