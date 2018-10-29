@@ -72,6 +72,7 @@ python3 -m grpc_tools.protoc \
 cp build_out/utils/* build_out/logger/
 cp build_out/utils/* build_out/follows/
 cp build_out/utils/* build_out/database/
+cp build_out/utils/* build_out/article/
 
 echo "Building protos for Go"
 # TODO(devoxel): fix this hell of manually building protos

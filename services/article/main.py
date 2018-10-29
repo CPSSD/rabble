@@ -2,11 +2,11 @@
 from concurrent import futures
 import argparse
 import grpc
-import logging
 import time
 import os
 import sys
 
+from logger import get_logger
 from servicer import ArticleServicer
 import article_pb2_grpc
 import database_pb2_grpc
@@ -20,12 +20,6 @@ def get_args():
     return parser.parse_args()
 
 
-def get_logger(level):
-    logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(level)
-    return logger
-
 def get_db_channel():
     db_service_host = os.environ["DB_SERVICE_HOST"]
     if not db_service_host:
@@ -34,9 +28,10 @@ def get_db_channel():
     db_service_address = db_service_host + ":1798"
     return grpc.insecure_channel(db_service_address)
 
+
 def main():
     args = get_args()
-    logger = get_logger(args.v)
+    logger = get_logger("articles_service", args.v)
     logger.info("Creating db connection")
     db_channel = get_db_channel()
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)

@@ -55,4 +55,5 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
 
