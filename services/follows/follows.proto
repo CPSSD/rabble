@@ -45,7 +45,36 @@ message FollowResponse {
     string error = 2;
 }
 
+message FollowUser {
+    string handle = 1;
+    string host = 2;
+    string display_name = 3;
+}
+
+message GetFollowsRequest {
+    /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
+    string username = 1;
+}
+
+message GetFollowsResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+        // More types can be added here.
+    }
+
+    ResultType result_type = 1;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 2;
+
+    /* Should only be set if result_type is OK. */
+    repeated FollowUser results = 3;
+}
+
 service Follows {
   rpc SendFollowRequest(LocalToAnyFollow) returns (FollowResponse);
   rpc ReceiveFollowRequest(ForeignToLocalFollow) returns (FollowResponse);
+  rpc GetFollowers(GetFollowsRequest) returns (GetFollowsResponse);
+  rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);
 }

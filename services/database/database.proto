@@ -90,10 +90,23 @@ message Follow {
 message DbFollowRequest {
   enum RequestType {
     INSERT = 0;
+    FIND = 1;
   }
 
   RequestType request_type = 1;
+
   Follow entry = 2;
+
+  /* If request_type is FIND:
+   *   - If match.followed is set, then the service will return all followers
+   *     for this user's ID.
+   *   - If match.follower is set, the service will return all users this
+   *     person follows.
+   *   - If both match.followed and match.follower are set, the service will
+   *     return an entry if this follow exists, and none otherwise.
+   *   - If neither are set, all follows in the database will be returned.
+   */
+  Follow match = 3;
 }
 
 message DbFollowResponse {
@@ -104,6 +117,8 @@ message DbFollowResponse {
 
   ResultType result_type = 1;
   string error = 2;
+
+  repeated Follow results = 3;
 }
 
 service Database {
