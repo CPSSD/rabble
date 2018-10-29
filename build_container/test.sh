@@ -13,6 +13,12 @@ cd chump/ && npm run lint && npm run test && cd ..
 go test skinny/*.go
 
 echo "Running tests for follows microservice"
-cd services/follows
-python3 -m unittest
+cd build_out/follows
+python3 -m unittest discover
 cd ../../
+
+echo "Running tests for database microservice"
+cd build_out/database
+python3 -m unittest discover
+cd ../../
+

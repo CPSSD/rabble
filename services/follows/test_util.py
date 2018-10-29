@@ -8,7 +8,7 @@ class UtilTest(unittest.TestCase):
 
     def setUp(self):
         self.logger = logging.getLogger(__name__)
-        self.util = Util(self.logger)
+        self.util = Util(self.logger, None)
 
     def test_parse_local_username(self):
         a, b = self.util.parse_username('admin')
