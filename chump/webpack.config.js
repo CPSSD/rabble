@@ -50,7 +50,10 @@ module.exports = {
             appMountId: "root",
             // Provide cachable browser links to well known dependencies.
             // This keeps the bundle size and loading speed down.
-            links: ["https://unpkg.com/purecss@1.0.0/build/pure-min.css"],
+            links: [
+                "https://unpkg.com/purecss@1.0.0/build/pure-min.css",
+                "https://fonts.googleapis.com/css?family=Lato",
+            ],
             scripts: [
                 "https://unpkg.com/react@16/umd/react.development.js",
                 "https://unpkg.com/react-dom@16/umd/react-dom.development.js",

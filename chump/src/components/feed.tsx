@@ -34,9 +34,9 @@ export class Feed extends React.Component<{}, IFeedState> {
       // TODO(devoxel): Replace dangerouslySetInnerHTML with a safer option
       return (
         <div className="pure-g" key={i}>
-          <div className="pure-u-1-5"/>
-          <div className="pure-u-3-5">
-            <h3 className="title">
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <h3 className="article-title">
               {e.title} <div className="byline"> by {e.author} </div>
             </h3>
             <p dangerouslySetInnerHTML={{ __html: e.body }}/>
@@ -51,9 +51,9 @@ export class Feed extends React.Component<{}, IFeedState> {
     return (
       <div>
         <div className="pure-g">
-          <div className="pure-u-1-5"/>
-          <div className="pure-u-3-5">
-            <h3>Your blog post could be here!</h3>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <h3 className="article-title">Your blog post could be here!</h3>
             <p>Check out our <Link to="/about">about</Link> page for more info!</p>
           </div>
         </div>

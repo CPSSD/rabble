@@ -10,6 +10,19 @@ html, button, input, select, textarea,
     line-height: 1.5;
 }
 
+.pure-menu-link {
+    margin: 0.2em;
+    padding: 0;
+    height: 100%;
+    text-align: center;
+    color: #fff;
+}
+
+.pure-menu-link:hover {
+    background-color: rgb(255, 255, 255, 0.5);
+    color: #0097a7;
+}
+
 .topnav {
     padding-top: 0.2em;
     padding-bottom: 0.2em;
@@ -45,15 +58,12 @@ html, button, input, select, textarea,
   font-weight: normal;
 }
 
-.pure-menu-link {
-    margin: 0.2em;
-    padding: 0;
-    height: 100%;
-    text-align: center;
-    color: #fff;
-}
-
-.pure-menu-link:hover {
-    background-color: rgb(255, 255, 255, 0.5);
-    color: #0097a7;
+.article-title {
+  font-family: Lato;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 2.6em;
+  line-height: 1.1em;
 }
