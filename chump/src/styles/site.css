@@ -52,10 +52,13 @@ html, button, input, select, textarea,
   float: right;
 }
 
-.byline {
-  font-size: .9em;
+.article-byline {
+  margin-top: 1em;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  font-size: 0.8em;
   text-align: left;
-  font-weight: normal;
+  color: #666;
 }
 
 .article-title {
@@ -66,4 +69,8 @@ html, button, input, select, textarea,
   padding-bottom: 0;
   font-size: 2.6em;
   line-height: 1.1em;
+}
+
+.article-body {
+  padding-bottom: 1em;
 }
