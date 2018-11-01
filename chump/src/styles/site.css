@@ -1,21 +1,38 @@
 html {
   font-family: sans;
+
+}
+
+html, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+    font-family: Georgia, Times, "Times New Roman", serif;
+    font-size: 21px;
+    line-height: 1.5;
 }
 
 .topnav {
-  padding-top: 1em;
-  padding-bottom: 2em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin-bottom: 1em;
+    background-color: #0097a7;
+    color: #FFF;
+}
+
+.topnav p {
+    padding: 0;
+    margin: 0;
 }
 
 .centre-brand {
   display: block;
-  text-align: center;
+  margin: 0;
 }
 
 .brand {
-  font-size: 2em;
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: bold;
   text-decoration: none;
-  color: black;
 }
 
 .right-menu {
@@ -26,4 +43,17 @@ html {
   font-size: .9em;
   text-align: left;
   font-weight: normal;
+}
+
+.pure-menu-link {
+    margin: 0.2em;
+    padding: 0;
+    height: 100%;
+    text-align: center;
+    color: #fff;
+}
+
+.pure-menu-link:hover {
+    background-color: rgb(255, 255, 255, 0.5);
+    color: #0097a7;
 }
