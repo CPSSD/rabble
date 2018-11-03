@@ -1,8 +1,8 @@
 import os
 import grpc
 import logging
-import logger_pb2
-import logger_pb2_grpc
+from proto import logger_pb2
+from proto import logger_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
 

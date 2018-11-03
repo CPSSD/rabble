@@ -8,8 +8,8 @@ import sys
 
 from logger import get_logger
 from servicer import ArticleServicer
-import article_pb2_grpc
-import database_pb2_grpc
+from proto import article_pb2_grpc
+from proto import database_pb2_grpc
 
 
 def get_args():

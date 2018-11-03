@@ -1,5 +1,5 @@
-import follows_pb2
-import database_pb2
+from proto import follows_pb2
+from proto import database_pb2
 
 MAX_FIND_RETRIES = 3
 

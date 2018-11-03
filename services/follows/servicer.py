@@ -2,7 +2,7 @@ from get_followers import GetFollowsReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 
-import follows_pb2_grpc
+from proto import follows_pb2_grpc
 
 
 class FollowsServicer(follows_pb2_grpc.FollowsServicer):
