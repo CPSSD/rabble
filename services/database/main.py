@@ -7,7 +7,7 @@ import time
 from logger import get_logger
 from database import build_database
 from database_servicer import DatabaseServicer
-import database_pb2_grpc
+from proto import database_pb2_grpc
 
 
 def get_args():

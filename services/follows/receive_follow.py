@@ -1,4 +1,4 @@
-import follows_pb2
+from proto import follows_pb2
 
 
 class ReceiveFollowServicer:

@@ -10,8 +10,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	dbpb "proto/database"
-	pb "proto/feed"
+	dbpb "github.com/cpssd/rabble/services/database/proto"
+	pb "github.com/cpssd/rabble/services/feed/proto"
 )
 
 // convertDBToFeed converts PostsResponses to FeedResponses.

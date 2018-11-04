@@ -6,8 +6,7 @@ import logging
 import time
 
 from logger_servicer import LoggerServicer
-import logger_pb2_grpc
-
+from proto import logger_pb2_grpc
 
 def get_args():
     parser = argparse.ArgumentParser('Run the Rabble logger microservice')

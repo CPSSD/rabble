@@ -1,7 +1,7 @@
 from enum import Enum
 
-import database_pb2
-import follows_pb2
+from proto import database_pb2
+from proto import follows_pb2
 
 
 class GetFollowsReceiver:
