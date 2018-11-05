@@ -21,7 +21,7 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	for _, r := range p.Results {
 		np := &pb.Post{
 			GlobalId:         r.GlobalId,
-			Author:           r.Author,
+			AuthorId:         r.AuthorId,
 			Title:            r.Title,
 			Body:             r.Body,
 			CreationDatetime: r.CreationDatetime,
