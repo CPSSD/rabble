@@ -6,6 +6,6 @@ RUN apk add --no-cache --update python3 python3-dev gcc g++ linux-headers make m
 RUN pip3 install grpcio
 RUN pip3 install protobuf
 
-ENV PYTHONPATH $PYTHONPATH:/repo/build_out/database
+ENV PYTHONPATH="/repo/build_out"
 
 CMD ["python3", "-u", "-B", "/repo/build_out/article/main.py", "-v"]
