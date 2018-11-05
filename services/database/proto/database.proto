@@ -51,6 +51,10 @@ message UsersEntry {
   string display_name = 2;
   string host = 3;
   int64 global_id = 4;
+  // An encrypted version of the user's password.
+  string password = 5;
+  // Plaintext biography of the user
+  string bio = 6;
 }
 
 message UsersRequest {
