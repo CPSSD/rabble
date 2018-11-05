@@ -8,7 +8,9 @@ interface IHeaderProps {
 export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
 
   let Login = (
-    <li className="pure-menu-item"><Link to="/login" className="pure-menu-link">Login</Link></li>
+    <li className="pure-menu-item">
+      <Link to="/login" className="pure-menu-link">Login</Link>
+    </li>
   );
 
   if (props.username !== "") {
