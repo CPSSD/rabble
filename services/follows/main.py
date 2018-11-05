@@ -6,7 +6,7 @@ import os
 import sys
 import time
 
-from logger import get_logger
+from utils.logger import get_logger
 from servicer import FollowsServicer
 from util import Util
 
