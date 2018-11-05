@@ -16,20 +16,21 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
   if (props.username !== "") {
     Login = (
       <li className="pure-menu-item">
-        <p className="pure-menu-link"> {props.username} </p>
+        <Link to="#" className="pure-menu-link">{props.username}</Link>
       </li>
     );
   }
 
   return (
     <div className="pure-g topnav">
-      <div className="pure-u-1-3"/>
-      <div className="pure-u-1-3 centre-brand">
+      <div className="pure-u-5-24"/>
+      <div className="pure-u-10-24 centre-brand">
         <Link to="/" className="brand">Rabble</Link>
       </div>
-      <div className="pure-u-1-3">
+      <div className="pure-u-1-24"/>
+      <div className="pure-u-3-24">
         <div className="pure-menu pure-menu-horizontal">
-          <ul className="pure-menu-list right-menu">
+          <ul className="pure-menu-list">
             <li className="pure-menu-item">
               <Link to="/write" className="pure-menu-link">Write</Link>
             </li>

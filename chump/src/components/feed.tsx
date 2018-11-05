@@ -34,12 +34,24 @@ export class Feed extends React.Component<{}, IFeedState> {
       // TODO(devoxel): Replace dangerouslySetInnerHTML with a safer option
       return (
         <div className="pure-g" key={i}>
-          <div className="pure-u-1-5"/>
-          <div className="pure-u-3-5">
-            <h3 className="title">
-              {e.title} <div className="byline"> by {e.author} </div>
-            </h3>
-            <p dangerouslySetInnerHTML={{ __html: e.body }}/>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <p className="article-byline">Published 1st January 1970</p>
+            <h3 className="article-title">{e.title}</h3>
+            <p className="article-body" dangerouslySetInnerHTML={{ __html: e.body }}/>
+          </div>
+          <div className="pure-u-1-24"/>
+          <div className="pure-u-3-24">
+            <div className="author-about">
+              <img
+                src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+                className="author-thumbnail"
+              />
+              <Link to="/" className="author-displayname">{e.author}</Link><br/>
+              <Link to="/" className="author-handle">@{e.author}</Link>
+              <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
+              But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+            </div>
           </div>
         </div>
       );
@@ -51,9 +63,9 @@ export class Feed extends React.Component<{}, IFeedState> {
     return (
       <div>
         <div className="pure-g">
-          <div className="pure-u-1-5"/>
-          <div className="pure-u-3-5">
-            <h3>Your blog post could be here!</h3>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <h3 className="article-title">Your blog post could be here!</h3>
             <p>Check out our <Link to="/about">about</Link> page for more info!</p>
           </div>
         </div>

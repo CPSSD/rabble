@@ -39,7 +39,7 @@ describe("Feed", () => {
     ]});
 
     expect(Feed.prototype.getPosts).to.have.property("callCount", 1);
-    expect(wrapper.find("div")).to.have.lengthOf(8);
+    expect(wrapper.find("div")).to.have.lengthOf(10);
 
     // Cleanup spies
     getPosts.restore();
