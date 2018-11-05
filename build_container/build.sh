@@ -71,13 +71,15 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/logger \
   --python_out=build_out/utils \
   --grpc_python_out=build_out/utils \
+  --python_out=build_out/logger \
+  --grpc_python_out=build_out/logger \
+  --python_out=build_out/follows \
+  --grpc_python_out=build_out/follows \
+  --python_out=build_out/database \
+  --grpc_python_out=build_out/database \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
   build_out/logger/proto/logger.proto
-
-# Manually copy the needed files into the dirs, this is horrible.
-cp -R build_out/utils/* build_out/logger/
-cp -R build_out/utils/* build_out/follows/
-cp -R build_out/utils/* build_out/database/
-cp -R build_out/utils/* build_out/article/
 
 echo "Building protos for Go"
 # This generate compiled protos and place them in the repo.

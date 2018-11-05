@@ -4,7 +4,7 @@ import argparse
 import grpc
 import time
 
-from logger import get_logger
+from utils.logger import get_logger
 from database import build_database
 from database_servicer import DatabaseServicer
 from proto import database_pb2_grpc
