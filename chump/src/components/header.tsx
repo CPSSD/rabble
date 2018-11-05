@@ -13,7 +13,9 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
 
   if (props.username !== "") {
     Login = (
-      <li className="pure-menu-item"><Link to="#" className="pure-menu-link">{props.username}</Link></li>
+      <li className="pure-menu-item">
+        <Link to="#" className="pure-menu-link">{props.username}</Link>
+      </li>
     );
   }
 
