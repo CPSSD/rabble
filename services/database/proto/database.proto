@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 message PostsEntry {
   string global_id = 1;
   // TODO(#87): Update referenced author name if user changed accounts.
-  string author = 2;
+  int64 author_id = 2;
   string title = 3;
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
