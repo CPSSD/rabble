@@ -14,9 +14,10 @@ class SendFollowServicer:
         resp = follows_pb2.FollowResponse()
         self._logger.info('Send follow request.')
 
-        from_handle, from_instance = self._util.parse_username(
+        from_handle, from_instance = self._users_util.parse_username(
             request.follower)
-        to_handle, to_instance = self._util.parse_username(request.followed)
+        to_handle, to_instance = \
+            self._users_util.parse_username(request.followed)
         self._logger.info('%s@%s has requested to follow %s@%s.',
                           from_handle,
                           from_instance,
@@ -38,7 +39,7 @@ class SendFollowServicer:
             resp.error = error
             return resp
         followed_entry = self._users_util.get_user_from_db(handle=to_handle,
-                                                     host=to_instance)
+                                                           host=to_instance)
         if followed_entry is None:
             error = 'Could not find or create user {}@{}'.format(to_handle,
                                                                  to_instance)
