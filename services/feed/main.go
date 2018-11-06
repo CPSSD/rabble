@@ -20,10 +20,10 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, r := range p.Results {
 		np := &pb.Post{
-			GlobalId:         r.GlobalId,
-			Author:           r.Author,
-			Title:            r.Title,
-			Body:             r.Body,
+			GlobalId:		  r.GlobalId,
+			Author:		      r.Author,
+			Title:			  r.Title,
+			Body:			  r.Body,
 			CreationDatetime: r.CreationDatetime,
 		}
 		fp.Results = append(fp.Results, np)
@@ -38,6 +38,14 @@ type server struct {
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
+	}
+	if r.Username != "" {
+		pr = &dbpb.PostsRequest{
+			RequestType: dbpb.PostsRequest_FIND,
+			Match: &dbpb.PostsEntry{
+				Author: r.Username,
+			},
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
