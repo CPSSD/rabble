@@ -7,13 +7,13 @@ import os
 import sys
 
 from utils.logger import get_logger
-from servicer import ArticleServicer
-from proto import article_pb2_grpc
+from servicer import CreateServicer
+from proto import create_pb2_grpc
 from proto import database_pb2_grpc
 
 
 def get_args():
-    parser = argparse.ArgumentParser('Run the rabble article microservice')
+    parser = argparse.ArgumentParser('Run the rabble create microservice')
     parser.add_argument(
         '-v', default='WARNING', action='store_const', const='DEBUG',
         help='Log more verbosely.')
@@ -31,18 +31,18 @@ def get_db_channel():
 
 def main():
     args = get_args()
-    logger = get_logger("article_service", args.v)
+    logger = get_logger("create_service", args.v)
     logger.info("Creating db connection")
     db_channel = get_db_channel()
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
-    logger.info("Creating article server")
+    logger.info("Creating create server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    article_pb2_grpc.add_ArticleServicer_to_server(
-        ArticleServicer(db_stub, logger),
+    create_pb2_grpc.add_CreateServicer_to_server(
+        CreateServicer(db_stub, logger),
         server
         )
-    server.add_insecure_port('0.0.0.0:1601')
-    logger.info("Starting article server on port 1601")
+    server.add_insecure_port('0.0.0.0:1922')
+    logger.info("Starting create server on port 1922")
     server.start()
     try:
         while True:

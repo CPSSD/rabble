@@ -14,6 +14,7 @@ services:
       - FOLLOWS_SERVICE_HOST=follows_service
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
+      - CREATE_SERVICE_HOST=create_service
   feed_service:
     build:
       context: ./services/feed
@@ -51,6 +52,16 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - "database_service"
+    volumes:
+      - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
+      - CREATE_SERVICE_HOST=create_service
+  create_service:
+    build:
+      context: ./services/activities/create
+      dockerfile: Dockerfile
     volumes:
       - .:/repo
     environment:
