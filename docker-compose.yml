@@ -56,4 +56,9 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
-
+  markdown_service:
+    build:
+      context: ./services/mdc
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
