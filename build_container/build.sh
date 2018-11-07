@@ -94,6 +94,7 @@ protoc -I. --go_out=plugins=grpc:"." services/database/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/follows/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/article/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
 
 echo "Creating go workspace"
 mkdir -p /go/src/github.com/cpssd/

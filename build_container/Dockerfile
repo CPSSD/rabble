@@ -19,7 +19,8 @@ RUN go get -u github.com/golang/protobuf/protoc-gen-go
 RUN pip3 install grpcio grpcio-tools googleapis-common-protos
 
 # Dependencies for skinny server
-RUN go get -u github.com/gorilla/mux
+RUN go get -u github.com/gorilla/mux github.com/gomarkdown/markdown \
+  github.com/microcosm-cc/bluemonday
 
 RUN apk add --no-cache --update protobuf-dev
 
