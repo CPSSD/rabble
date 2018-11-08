@@ -22,7 +22,7 @@ func newMDServer() *MDServer {
 
 func (s *MDServer) MarkdownToHTML(ctx context.Context, r *pb.MDRequest) (*pb.MDResponse, error) {
 	unsafe := markdown.ToHTML([]byte(r.MdBody), nil, nil)
-	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+	html := s.sanitizer.SanitizeBytes(unsafe)
 	return &pb.MDResponse{HtmlBody: string(html)}, nil
 }
 
