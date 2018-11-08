@@ -1,14 +1,14 @@
 import logging
 import unittest
 
-from util import Util
+from users import UsersUtil
 
 
-class UtilTest(unittest.TestCase):
+class UsersUtilTest(unittest.TestCase):
 
     def setUp(self):
         self.logger = logging.getLogger(__name__)
-        self.util = Util(self.logger, None)
+        self.util = UsersUtil(self.logger, None)
 
     def test_parse_local_username(self):
         a, b = self.util.parse_username('admin')

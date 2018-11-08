@@ -80,6 +80,11 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
   build_out/logger/proto/logger.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/utils \
+  --grpc_python_out=build_out/utils \
+  build_out/database/proto/database.proto
 
 echo "Building protos for Go"
 # This generate compiled protos and place them in the repo.

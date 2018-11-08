@@ -6,9 +6,10 @@ from proto import follows_pb2
 
 class GetFollowsReceiver:
 
-    def __init__(self, logger, util, database_stub):
+    def __init__(self, logger, util, users_util, database_stub):
         self._logger = logger
         self._util = util
+        self._users_util = users_util
         self._database_stub = database_stub
         self.RequestType = Enum('RequestType', 'FOLLOWING FOLLOWERS')
 
@@ -22,7 +23,7 @@ class GetFollowsReceiver:
         resp = follows_pb2.GetFollowsResponse()
 
         # Parse input username
-        handle, host = self._util.parse_username(
+        handle, host = self._users_util.parse_username(
             request.username)
         if handle is None and host is None:
             resp.result_type = follows_pb2.GetFollowsResponse.ERROR
@@ -30,7 +31,7 @@ class GetFollowsReceiver:
             return resp
 
         # Get user obj associated with given user handle & host from database
-        user_entry = self._util.get_user_from_db(handle, host)
+        user_entry = self._users_util.get_user_from_db(handle, host)
         if user_entry is None:
             error = 'Could not find or create user {}@{}'.format(from_handle,
                                                                  from_instance)
@@ -52,7 +53,7 @@ class GetFollowsReceiver:
             _id = following_id.followed
             if request_type == self.RequestType.FOLLOWERS:
                 _id = following_id.follower
-            user = self._util.get_user_from_db(global_id=_id)
+            user = self._users_util.get_user_from_db(global_id=_id)
             if user is None:
                 self._logger.warning('Could not find user for id %d',
                                      _id)
