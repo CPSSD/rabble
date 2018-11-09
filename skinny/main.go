@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,14 +14,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/gorilla/mux"
-	"google.golang.org/grpc"
-
 	articlepb "github.com/cpssd/rabble/services/article/proto"
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
 	followspb "github.com/cpssd/rabble/services/follows/proto"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -72,7 +72,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		fr := &feedpb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
-			log.Print("Error in feed.Get(%v): %v", *fr, err)
+			log.Printf("Error in feed.Get(%v): %v\n", *fr, err)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -99,12 +99,23 @@ func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 	}
 }
 
-func (s *serverWrapper) handleIndex() http.HandlerFunc {
+func (s *serverWrapper) getIndexFile() []byte {
+	// This flag is used in "go test", so we can use that to check if we're
+	// in a test.
+	if flag.Lookup("test.v") != nil {
+		return []byte("testing html")
+	}
+
 	indexPath := path.Join(staticAssets, "index.html")
 	b, err := ioutil.ReadFile(indexPath)
 	if err != nil {
-		log.Fatal("could not find index.html: %v", err)
+		log.Fatalf("could not find index.html: %v", err)
 	}
+	return b
+}
+
+func (s *serverWrapper) handleIndex() http.HandlerFunc {
+	b := s.getIndexFile()
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write(b)
 		if err != nil {
