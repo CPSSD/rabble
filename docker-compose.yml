@@ -64,6 +64,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    depends_on:
+      - "database_service"
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
