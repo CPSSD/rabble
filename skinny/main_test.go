@@ -12,10 +12,10 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 
-	articlepb "proto/article"
-	dbpb "proto/database"
-	feedpb "proto/feed"
-	followspb "proto/follows"
+	articlepb "github.com/cpssd/rabble/services/article/proto"
+	dbpb "github.com/cpssd/rabble/services/database/proto"
+	feedpb "github.com/cpssd/rabble/services/feed/proto"
+	followspb "github.com/cpssd/rabble/services/follows/proto"
 )
 
 const (

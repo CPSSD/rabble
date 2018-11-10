@@ -12,7 +12,6 @@ fi
 
 cd /repo
 mkdir -p build_out/
-mkdir -p /go/src/proto/article
 
 # If when the script exits (because of an error or otherwise) the following
 # function runs. The exit code is preserved.
@@ -37,7 +36,7 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
   --python_out=build_out/database \
   --grpc_python_out=build_out/database \
-  build_out/database/database.proto
+  build_out/database/proto/database.proto
 
 echo "Building follows service"
 cp -R services/follows build_out/
@@ -45,12 +44,12 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/follows \
   --python_out=build_out/follows \
   --grpc_python_out=build_out/follows \
-  build_out/follows/follows.proto
+  build_out/follows/proto/follows.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
   --python_out=build_out/follows \
   --grpc_python_out=build_out/follows \
-  build_out/database/database.proto
+  build_out/database/proto/database.proto
 
 echo "Building article service"
 cp -R services/article build_out/
@@ -58,7 +57,12 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/article \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
-  build_out/article/article.proto
+  build_out/article/proto/article.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
+  build_out/database/proto/database.proto
 
 echo "Building logger service and lib"
 cp -R services/logger build_out/
@@ -67,36 +71,39 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/logger \
   --python_out=build_out/utils \
   --grpc_python_out=build_out/utils \
-  build_out/logger/logger.proto
-# Manually copy the needed files into the dirs, this is horrible.
-cp build_out/utils/* build_out/logger/
-cp build_out/utils/* build_out/follows/
-cp build_out/utils/* build_out/database/
-cp build_out/utils/* build_out/article/
+  --python_out=build_out/logger \
+  --grpc_python_out=build_out/logger \
+  --python_out=build_out/follows \
+  --grpc_python_out=build_out/follows \
+  --python_out=build_out/database \
+  --grpc_python_out=build_out/database \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
+  build_out/logger/proto/logger.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/utils \
+  --grpc_python_out=build_out/utils \
+  build_out/database/proto/database.proto
 
 echo "Building protos for Go"
-# TODO(devoxel): fix this hell of manually building protos
+# This generate compiled protos and place them in the repo.
+# For example: services/database/database.proto when build, would
+# create a new file in the same directory: database.pb.go
+protoc -I. --go_out=plugins=grpc:"." services/database/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/follows/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/article/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
 
-mkdir -p /go/src/proto/database
-protoc -I=services/database --go_out=plugins=grpc:"/go/src/proto/database" \
-  services/database/*.proto
+echo "Creating go workspace"
+mkdir -p /go/src/github.com/cpssd/
+cp -R /repo /go/src/github.com/cpssd/rabble
 
-mkdir -p /go/src/proto/follows
-protoc -I=services/follows --go_out=plugins=grpc:"/go/src/proto/follows" \
-  services/follows/*.proto
-protoc -I=build_out/article \
-  --go_out=plugins=grpc:"/go/src/proto/article" \
-  build_out/article/article.proto
-
-mkdir -p /go/src/proto/feed
-protoc -I=services/feed --go_out=plugins=grpc:"/go/src/proto/feed" \
-  services/feed/feed.proto
-
-echo "Building feed service"
-go build -o build_out/services/feed services/feed/*.go
-
-echo "Building skinny server"
-go build -o build_out/skinny skinny/*.go
+echo "Building all go binaries"
+rm /go/bin/*
+go install github.com/cpssd/rabble/...
+mv /go/bin/* build_out
 
 echo "Installing node.js dependencies"
 cd chump && npm install && cd ..

@@ -1,11 +1,12 @@
-import follows_pb2
+from proto import follows_pb2
 
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, util, database_stub):
+    def __init__(self, logger, util, users_util, database_stub):
         self._logger = logger
         self._util = util
+        self._users_util = users_util
         self._database_stub = database_stub
 
     def ReceiveFollowRequest(self, request, context):

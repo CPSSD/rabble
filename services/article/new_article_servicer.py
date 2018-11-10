@@ -1,5 +1,5 @@
-import article_pb2
-import database_pb2
+from proto import article_pb2
+from proto import database_pb2
 
 
 class NewArticleServicer:

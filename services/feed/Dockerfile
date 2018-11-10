@@ -1,3 +1,3 @@
 FROM alpine:3.7
 
-CMD ["/repo/build_out/services/feed"]
+CMD ["/repo/build_out/feed"]

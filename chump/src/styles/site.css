@@ -1,29 +1,108 @@
 html {
   font-family: sans;
+
+}
+
+html, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+    font-family: Georgia, Times, "Times New Roman", serif;
+    font-size: 21px;
+    line-height: 1.5;
+}
+
+.pure-menu-link {
+    margin: 0.2em;
+    padding: 0;
+    height: 100%;
+    text-align: center;
+    color: #fff;
+}
+
+.pure-menu-link:hover {
+    background-color: rgb(255, 255, 255, 0.5);
+    color: #0097a7;
 }
 
 .topnav {
-  padding-top: 1em;
-  padding-bottom: 2em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin-bottom: 1em;
+    background-color: #0097a7;
+    color: #FFF;
+}
+
+.topnav p {
+    padding: 0;
+    margin: 0;
 }
 
 .centre-brand {
   display: block;
-  text-align: center;
+  margin: 0;
 }
 
 .brand {
-  font-size: 2em;
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: bold;
   text-decoration: none;
-  color: black;
 }
 
 .right-menu {
   float: right;
 }
 
-.byline {
-  font-size: .9em;
+.article-byline {
+  margin-top: 1em;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  font-size: 0.8em;
   text-align: left;
-  font-weight: normal;
+  color: #666;
+}
+
+.article-title {
+  font-family: Lato;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 2.6em;
+  line-height: 1.1em;
+}
+
+.article-body {
+  padding-bottom: 1em;
+}
+
+.author-about {
+  color: #666;
+  font-size: 0.75em;
+  margin-top: 1em;
+}
+
+.author-thumbnail {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.author-displayname {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.15em;
+  color: #666;
+  text-decoration: none;
+}
+
+.author-displayname:hover {
+  color: #888;
+}
+
+.author-handle {
+  font-style: italic;
+  color: #888;
+}
+
+.author-handle:hover {
+  color: #AAA;
 }

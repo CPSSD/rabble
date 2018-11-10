@@ -2,7 +2,7 @@ import sqlite3
 
 import util
 
-import database_pb2
+from proto import database_pb2
 
 
 class UsersDatabaseServicer:
@@ -16,7 +16,7 @@ class UsersDatabaseServicer:
         }
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 4:
+        if len(tup) != 6:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -27,6 +27,8 @@ class UsersDatabaseServicer:
             entry.handle = tup[1]
             entry.host = tup[2]
             entry.display_name = tup[3]
+            entry.password = tup[4]
+            entry.bio = tup[5]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -45,11 +47,13 @@ class UsersDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO users '
-                '(handle, host, display_name) '
+                '(handle, host, display_name, password, bio) '
                 'VALUES (?, ?, ?)',
                 req.entry.handle,
                 req.entry.host,
-                req.entry.display_name)
+                req.entry.display_name,
+                req.entry.password,
+                req.entry.bio)
         except sqlite3.Error as e:
             self._logger.error(str(e))
             resp.result_type = database_pb2.UsersResponse.ERROR

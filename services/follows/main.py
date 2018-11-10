@@ -6,12 +6,13 @@ import os
 import sys
 import time
 
-from logger import get_logger
+from utils.logger import get_logger
+from utils.users import UsersUtil
 from servicer import FollowsServicer
 from util import Util
 
-import database_pb2_grpc
-import follows_pb2_grpc
+from proto import database_pb2_grpc
+from proto import follows_pb2_grpc
 
 
 def get_args():
@@ -39,8 +40,10 @@ def main():
     with grpc.insecure_channel(get_database_service_address()) as chan:
         stub = database_pb2_grpc.DatabaseStub(chan)
         util = Util(logger, stub)
+        users_util = UsersUtil(logger, stub)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        follows_pb2_grpc.add_FollowsServicer_to_server(FollowsServicer(logger, util, stub),
+        follows_servicer = FollowsServicer(logger, util, users_util, stub)
+        follows_pb2_grpc.add_FollowsServicer_to_server(follows_servicer,
                                                        server)
 
         server.add_insecure_port('0.0.0.0:1641')
