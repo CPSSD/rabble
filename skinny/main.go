@@ -18,6 +18,7 @@ import (
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
 	followspb "github.com/cpssd/rabble/services/follows/proto"
+	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -60,6 +61,8 @@ type serverWrapper struct {
 	article     articlepb.ArticleClient
 	feedConn    *grpc.ClientConn
 	feed        feedpb.FeedClient
+	createConn  *grpc.ClientConn
+	create      createpb.CreateClient
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -221,8 +224,20 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		}
 
 		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
-		fmt.Fprintf(w, "Created blog with title: %v and id: %v\n", t.Title, resp.GlobalId)
+		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
 		// TODO(sailslick) send the response
+	}
+}
+
+func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+
+		log.Printf("User %v received a create activity\n", recipient)
+
+		log.Println("Activity was alright :+1:")
+		fmt.Fprintf(w, "Created blog with title\n")
 	}
 }
 
@@ -234,10 +249,14 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		// TODO(iandioch): Return error if parameters are missing.
 		displayName := vars["display_name"][0]
 		handle := vars["handle"][0]
+		password := vars["password"][0]
 		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
 		u := &dbpb.UsersEntry{
 			DisplayName: displayName,
 			Handle:      handle,
+			Host: s.server.Addr,
+			Password: password,
+			Bio: "nothing",
 		}
 		ur := &dbpb.UsersRequest{
 			Entry:       u,
@@ -250,7 +269,7 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		if err != nil {
 			log.Fatalf("could not add new user: %v", err)
 		}
-		fmt.Fprintf(w, "Received: %#v", resp.Error)
+		fmt.Fprintf(w, "Received: %#v\n", resp.Error)
 		// TODO(iandioch): Return JSON with response status or error.
 	}
 }
@@ -284,6 +303,7 @@ func (s *serverWrapper) setupRoutes() {
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
+	r.HandleFunc("/ap/{username}/inbox", s.handleCreateActivity())
 }
 
 func (s *serverWrapper) shutdown() {
@@ -296,6 +316,8 @@ func (s *serverWrapper) shutdown() {
 	s.databaseConn.Close()
 	s.articleConn.Close()
 	s.followsConn.Close()
+	s.createConn.Close()
+	s.feedConn.Close()
 }
 
 func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
@@ -310,6 +332,20 @@ func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
 		log.Fatalf("Skinny server did not connect to Article: %v", err)
 	}
 	return conn, articlepb.NewArticleClient(conn)
+}
+
+func createCreateClient() (*grpc.ClientConn, createpb.CreateClient) {
+	host := os.Getenv("CREATE_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("CREATE_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1922"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect to Create: %v", err)
+	}
+	return conn, createpb.NewCreateClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -362,8 +398,14 @@ func createFeedClient() (*grpc.ClientConn, feedpb.FeedClient) {
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
 	r := mux.NewRouter()
+	env := "SKINNY_SERVER_PORT"
+	port := os.Getenv(env)
+	if port == "" {
+		log.Fatalf("%s env var not set for skinny server", env)
+	}
+	addr := "0.0.0.0:" + port
 	srv := &http.Server{
-		Addr: "0.0.0.0:1916",
+		Addr: addr,
 		// Important to specify timeouts in order to prevent Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
@@ -374,6 +416,7 @@ func buildServerWrapper() *serverWrapper {
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
 	feedConn, feedClient := createFeedClient()
+	createConn, createClient := createCreateClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
@@ -386,6 +429,8 @@ func buildServerWrapper() *serverWrapper {
 		follows:      followsClient,
 		feedConn:     feedConn,
 		feed:         feedClient,
+		createConn:   createConn,
+		create:       createClient,
 	}
 	s.setupRoutes()
 	return s
