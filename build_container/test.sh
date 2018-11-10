@@ -14,11 +14,11 @@ go test skinny/*.go
 
 echo "Running tests for follows microservice"
 cd build_out/follows
-python3 -m unittest discover
+python3 -B -m unittest discover
 cd ../../
 
 echo "Running tests for database microservice"
 cd build_out/database
-python3 -m unittest discover
+python3 -B -m unittest discover
 cd ../../
 

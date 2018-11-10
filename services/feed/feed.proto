@@ -25,4 +25,5 @@ message FeedResponse {
 
 service Feed {
   rpc Get(FeedRequest) returns (FeedResponse);
+  rpc PerUser(FeedRequest) returns (FeedResponse);
 }

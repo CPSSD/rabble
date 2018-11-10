@@ -39,14 +39,6 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
 	}
-	if r.Username != "" {
-		pr = &dbpb.PostsRequest{
-			RequestType: dbpb.PostsRequest_FIND,
-			Match: &dbpb.PostsEntry{
-				Author: r.Username,
-			},
-		}
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -56,6 +48,25 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
 	}
 
+	return convertDBToFeed(resp), nil
+}
+
+func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	if r.Username == "" {
+		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
+	}
+	pr := &dbpb.PostsRequest{
+		RequestType: dbpb.PostsRequest_FIND,
+		Match: &dbpb.PostsEntry{
+			Author: r.Username,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	resp, err := s.db.Posts(ctx, pr)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
+	}
 	return convertDBToFeed(resp), nil
 }
 
