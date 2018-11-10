@@ -10,13 +10,12 @@ class NewArticleServicer:
         self._db_stub = db_stub
         self._logger = logger
 
-    def send_insert_request(self, req, global_id):
+    def send_insert_request(self, req):
         pe = database_pb2.PostsEntry(
             author=req.author,
             title=req.title,
             body=req.body,
-            creation_datetime=req.creation_datetime,
-            global_id= global_id
+            creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,
@@ -41,14 +40,12 @@ class NewArticleServicer:
 
     def CreateNewArticle(self, req, context):
         self._logger.info('Recieved a new article.')
-        global_id = req.title + str(req.creation_datetime.seconds)
-        success = self.send_insert_request(req, global_id)
+        success = self.send_insert_request(req)
 
         resp = article_pb2.NewArticleResponse()
-        resp.global_id = global_id
         if success == database_pb2.PostsResponse.OK:
             resp.result_type = article_pb2.NewArticleResponse.OK
-            #create_success = self.send_create_activity_request(req)
+            create_success = self.send_create_activity_request(req)
         else:
             resp.result_type = article_pb2.NewArticleResponse.ERROR
         return resp
