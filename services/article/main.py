@@ -21,19 +21,19 @@ def get_args():
     return parser.parse_args()
 
 
-def get_db_channel():
+def get_db_channel(logger):
     db_service_host = os.environ["DB_SERVICE_HOST"]
     if not db_service_host:
-        print("Please set DB_SERVICE_HOST env variable")
+        logger.error("Please set DB_SERVICE_HOST env variable")
         sys.exit(1)
     db_service_address = db_service_host + ":1798"
     return grpc.insecure_channel(db_service_address)
 
 
-def get_create_channel():
+def get_create_channel(logger):
     create_service_host = os.environ["CREATE_SERVICE_HOST"]
     if not create_service_host:
-        print("Please set CREATE_SERVICE_HOST env variable")
+        logger.error("Please set CREATE_SERVICE_HOST env variable")
         sys.exit(1)
     create_service_address = create_service_host + ":1922"
     return grpc.insecure_channel(create_service_address)
@@ -43,10 +43,10 @@ def main():
     args = get_args()
     logger = get_logger("article_service", args.v)
     logger.info("Creating db connection")
-    db_channel = get_db_channel()
+    db_channel = get_db_channel(logger)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
     logger.info("Creating create connection")
-    create_channel = get_create_channel()
+    create_channel = get_create_channel(logger)
     create_stub = create_pb2_grpc.CreateStub(create_channel)
     logger.info("Creating article server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

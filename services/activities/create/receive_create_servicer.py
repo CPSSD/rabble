@@ -10,7 +10,6 @@ class ReceiveCreateServicer:
 
     def ReceiveCreate(self, req, context):
         self._logger.info('Recieved a new create notification.')
-
         resp = create_pb2.CreateResponse()
         resp.result_type = create_pb2.CreateResponse.OK
         return resp
