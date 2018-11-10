@@ -94,9 +94,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		log.Print("USERNAME: " + v["username"])
 		fr := &feedpb.FeedRequest{Username: v["username"]}
-		log.Print(fr.Username)
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
 			log.Print("Error in feed.PerUser(%v): %v", *fr, err)
