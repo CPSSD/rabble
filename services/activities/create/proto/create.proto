@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-// ArticleDetails has the same contents as request from client with timestamp
+// ArticleDetails holds content from a c2s request with timestamp
 // converted to protobuf format.
 // Also same contents as database PostsEntry without global_id
 message ArticleDetails {
@@ -12,9 +12,8 @@ message ArticleDetails {
   google.protobuf.Timestamp creation_datetime = 4;
 }
 
-// NewForeignArticle
-// converted to protobuf format.
-// Also same contents as database PostsEntry without global_id
+// NewForeignArticle is the message generated from a s2s call received
+// by our server
 message NewForeignArticle {
   string attributedTo = 1;
   string title = 2;
@@ -23,7 +22,6 @@ message NewForeignArticle {
   google.protobuf.Timestamp published = 5;
 }
 
-// CreateResponse is a simple response.
 message CreateResponse {
     enum ResultType {
         OK = 0;
