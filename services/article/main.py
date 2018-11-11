@@ -11,6 +11,7 @@ from servicer import ArticleServicer
 from proto import article_pb2_grpc
 from proto import database_pb2_grpc
 from proto import create_pb2_grpc
+from proto import mdc_pb2_grpc
 
 
 def get_args():
@@ -39,6 +40,15 @@ def get_create_channel(logger):
     return grpc.insecure_channel(create_service_address)
 
 
+def get_mdc_channel(logger):
+    mdc_service_host = os.environ["MDC_SERVICE_HOST"]
+    if not mdc_service_host:
+        logger.error("Please set MDC_SERVICE_HOST env variable")
+        sys.exit(1)
+    mdc_service_address = mdc_service_host + ":1937"
+    return grpc.insecure_channel(mdc_service_address)
+
+
 def main():
     args = get_args()
     logger = get_logger("article_service", args.v)
@@ -49,9 +59,11 @@ def main():
     create_channel = get_create_channel(logger)
     create_stub = create_pb2_grpc.CreateStub(create_channel)
     logger.info("Creating article server")
+    mdc_channel = get_mdc_channel(logger)
+    mdc_stub = mdc_pb2_grpc.ConverterStub(mdc_channel)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     article_pb2_grpc.add_ArticleServicer_to_server(
-        ArticleServicer(create_stub, db_stub, logger),
+        ArticleServicer(create_stub, db_stub, mdc_stub, logger),
         server
         )
     server.add_insecure_port('0.0.0.0:1601')
