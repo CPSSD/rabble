@@ -54,8 +54,8 @@ class SendCreateServicer:
 
     # follower_tuple is (host, handle)
     def _post_create_req(self, follower_tuple, req):
-        # Target format is host/handle e.g. banana.com/banana
-        target = follower_tuple[0] + "/" + follower_tuple[1]
+        # Target format is host/@handle e.g. banana.com/banana
+        target = follower_tuple[0] + "/@" + follower_tuple[1]
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
             "@context": "https://www.w3.org/ns/activitystreams",
@@ -73,8 +73,8 @@ class SendCreateServicer:
         }
         headers = { "Content-Type": "application/json" }
 
-        # s2s inbox for user. Format banana.com/ap/banana/inbox
-        target_inbox = follower_tuple[0] + "/ap/" + follower_tuple[1] + "/inbox"
+        # s2s inbox for user. Format banana.com/ap/@banana/inbox
+        target_inbox = follower_tuple[0] + "/ap/@" + follower_tuple[1] + "/inbox"
         encoded_body = json.dumps(create_activity).encode('utf-8')
         self._logger.info(target_inbox)
 

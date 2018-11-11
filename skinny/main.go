@@ -301,7 +301,7 @@ func (s *serverWrapper) setupRoutes() {
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
-	r.HandleFunc("/ap/{username}/inbox", s.handleCreateActivity())
+	r.HandleFunc("/ap/@{username}/inbox", s.handleCreateActivity())
 }
 
 func (s *serverWrapper) shutdown() {
