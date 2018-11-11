@@ -3,7 +3,6 @@ from concurrent import futures
 import argparse
 import grpc
 import time
-import os
 
 from utils.logger import get_logger
 from database import build_database
@@ -27,9 +26,6 @@ def get_args():
 
 def main():
     args = get_args()
-    db_filename = os.environ["DB_FILENAME"]
-    if db_filename:
-        args.db_path = db_filename
     logger = get_logger("database_service", args.v)
     logger.info("Creating DB")
     database = build_database(logger, args.schema, args.db_path)

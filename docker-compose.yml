@@ -32,13 +32,14 @@ services:
     build:
       context: ./services/database
       dockerfile: Dockerfile
+      args:
+        - DBPATH=/repo/rabble.db
     volumes:
       - .:/repo
     depends_on:
       - "logger_service"
     environment:
       - LOGGER_SERVICE_HOST=logger_service
-      - DB_FILENAME=/repo/rabble.db
   follows_service:
     build:
       context: ./services/follows

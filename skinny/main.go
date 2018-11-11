@@ -236,7 +236,6 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		log.Printf("User %v received a create activity\n", recipient)
 
-		log.Println("Activity was alright :+1:")
 		fmt.Fprintf(w, "Created blog with title\n")
 	}
 }
@@ -254,7 +253,6 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		u := &dbpb.UsersEntry{
 			DisplayName: displayName,
 			Handle:      handle,
-			Host: s.server.Addr,
 			Password: password,
 			Bio: "nothing",
 		}

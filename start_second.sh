@@ -10,7 +10,7 @@ fi
 
 export SKINNY_SERVER_PORT=1917
 echo "Building docker-compose images"
-docker-compose -p two -f secondServer.yml build
+docker-compose -p two -f second-server.yml build
 
 echo "Starting docker-compose"
-docker-compose -p two -f secondServer.yml up
+docker-compose -p two -f second-server.yml up
