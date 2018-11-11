@@ -54,7 +54,7 @@ class SendCreateServicer:
 
     # follower_tuple is (host, handle)
     def _post_create_req(self, follower_tuple, req):
-        # Target format is host/@handle e.g. banana.com/banana
+        # Target format is host/@handle e.g. banana.com/@banana
         target = follower_tuple[0] + "/@" + follower_tuple[1]
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
