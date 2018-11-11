@@ -12,12 +12,13 @@ class NewArticleServicer:
         self._md_stub = md_stub
         self._logger = logger
 
-    def get_html_body(self, html_body):
-        convert_req = mdc_pb2.MDRequest(html_body)
+    def get_html_body(self, body):
+        convert_req = mdc_pb2.MDRequest(md_body=body)
         res = self._md_stub.MarkdownToHTML(convert_req)
-        return res.md_body
+        return res.html_body
 
     def send_insert_request(self, req):
+        html_body = self.get_html_body(req.body)
         pe = database_pb2.PostsEntry(
             author=req.author,
             title=req.title,
@@ -35,7 +36,7 @@ class NewArticleServicer:
         return posts_resp.result_type
 
     def send_create_activity_request(self, req):
-        html_body = get_html_body(req.body)
+        html_body = self.get_html_body(req.body)
         ad = create_pb2.ArticleDetails(
             author=req.author,
             title=req.title,
