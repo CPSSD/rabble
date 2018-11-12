@@ -28,10 +28,10 @@ class PostsDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO posts '
-                '(global_id, author, title, body, creation_datetime) '
-                'VALUES (?, ?, ?, ?, ?)',
-                req.entry.global_id, req.entry.author,
-                req.entry.title, req.entry.body,
+                '(author, title, body, creation_datetime) '
+                'VALUES (?, ?, ?, ?)',
+                req.entry.author, req.entry.title,
+                req.entry.body,
                 req.entry.creation_datetime.seconds)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR

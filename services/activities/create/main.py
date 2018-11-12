@@ -7,6 +7,7 @@ import os
 import sys
 
 from utils.logger import get_logger
+from utils.users import UsersUtil
 from servicer import CreateServicer
 from proto import create_pb2_grpc
 from proto import database_pb2_grpc
@@ -37,8 +38,9 @@ def main():
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
     logger.info("Creating create server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    users_util = UsersUtil(logger, db_stub)
     create_pb2_grpc.add_CreateServicer_to_server(
-        CreateServicer(db_stub, logger),
+        CreateServicer(db_stub, logger, users_util),
         server
         )
     server.add_insecure_port('0.0.0.0:1922')

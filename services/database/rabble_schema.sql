@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS posts (
-  global_id         text    PRIMARY KEY,
+  global_id         integer PRIMARY KEY,
   author            text    NOT NULL,
   title             text    NOT NULL,
   body              text    NOT NULL,

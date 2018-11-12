@@ -160,7 +160,7 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
-	expectedString := "Created blog with title: test title and id: test_id\n"
+	expectedString := "Created blog with title: test title and result type: 0\n"
 	if res.Body.String() != expectedString {
 		t.Errorf("Expected '"+expectedString+"' body, got %#v", res.Body.String())
 	}
