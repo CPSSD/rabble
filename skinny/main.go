@@ -94,6 +94,10 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(400)  // Bad Request
+			return
+		}
 		fr := &feedpb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
@@ -304,7 +308,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
-	r.HandleFunc("/c2s/feed/per_user/{username}", s.handleFeedPerUser())
+	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
