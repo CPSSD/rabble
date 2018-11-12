@@ -54,8 +54,6 @@ python3 -m grpc_tools.protoc \
 
 echo "Building article service"
 cp -R services/article build_out/
-# article service is only python service that needs mdc
-cp -R services/mdc build_out/
 python3 -m grpc_tools.protoc \
   -Ibuild_out/article \
   --python_out=build_out/article \
@@ -67,13 +65,10 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/article \
   build_out/database/proto/database.proto
 python3 -m grpc_tools.protoc \
-  -Ibuild_out/mdc \
+  -Iservices/mdc \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
-  build_out/mdc/proto/mdc.proto
-# HACK: we need to remove the top level directory mdc since a go binary is
-# built in the directory with the same name.
-rm -rf build_out/mdc 
+  services/mdc/proto/mdc.proto
 
 echo "Building create service"
 cp -R services/activities/create build_out/activities/
