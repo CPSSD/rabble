@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
 import { Post } from "./post";
-import { GetPublicPosts, IBlogPost } from "../models/posts";
+import { GetUsersPosts, IBlogPost } from "../models/posts";
 
 interface IUserState {
   publicBlog: IBlogPost[];
@@ -28,7 +28,7 @@ export class User extends React.Component<IUserProps, IUserState> {
 
   public getPosts() {
     alert("User = " + this.props.match.params.user)
-    GetPublicPosts(this.props.match.params.user)
+    GetUsersPosts(this.props.match.params.user)
       .then((posts: IBlogPost[]) => {
         this.setState({
           publicBlog: posts,
@@ -46,6 +46,16 @@ export class User extends React.Component<IUserProps, IUserState> {
     if (this.props.match.params.user !== this.state.user) {
       this.getPosts();
     }
+    if (this.state.publicBlog.length == 0) {
+      return (
+        <div>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <p>User has no posts or does not exist</p>
+          </div>
+        </div>
+      );
+    }
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
       return (<Post blogPost={e} index={i} />);
     });
@@ -58,7 +68,7 @@ export class User extends React.Component<IUserProps, IUserState> {
         <div className="pure-g">
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
-            <h3 className="article-title">Posts by {this.props.match.params.user}</h3>
+            <h3 className="article-title">{this.props.match.params.user}</h3>
           </div>
         </div>
         {blogPosts}
