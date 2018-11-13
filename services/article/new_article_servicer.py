@@ -22,7 +22,7 @@ class NewArticleServicer:
         pe = database_pb2.PostsEntry(
             author=req.author,
             title=req.title,
-            body=req.body,
+            body=html_body,
             creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
