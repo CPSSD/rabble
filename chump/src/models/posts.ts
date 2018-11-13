@@ -50,7 +50,7 @@ export function GetUsersPosts(username: string) {
   return PostsAPIPromise(url);
 }
 
-export function GetPublicPosts(username="") {
+export function GetPublicPosts(username= "") {
   const url = username === "" ? feedApiURL : `${feedApiURL}/${username}`;
   return PostsAPIPromise(url);
 }

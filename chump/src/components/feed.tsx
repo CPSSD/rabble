@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { Post } from "./post";
 import { GetPublicPosts, IBlogPost } from "../models/posts";
+import { Post } from "./post";
 
 interface IFeedState {
   publicBlog: IBlogPost[];
@@ -32,7 +32,11 @@ export class Feed extends React.Component<{}, IFeedState> {
 
   public renderPosts() {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
-      return (<Post blogPost={e} index={i} />);
+      return (
+        <div className="pure-g" key={i}>
+          <Post blogPost={e}/>
+        </div>
+      );
     });
   }
 

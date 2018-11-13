@@ -1,20 +1,20 @@
 import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
-import { Post } from "./post";
 import { GetUsersPosts, IBlogPost } from "../models/posts";
+import { Post } from "./post";
 
 interface IUserState {
   publicBlog: IBlogPost[];
-  user: string
+  user: string;
 }
 
 interface IUserProps extends RouteProps {
   match: {
     params: {
-      user: string
-    }
-  }
+      user: string,
+    },
+  };
 }
 
 export class User extends React.Component<IUserProps, IUserState> {
@@ -27,7 +27,7 @@ export class User extends React.Component<IUserProps, IUserState> {
   }
 
   public getPosts() {
-    alert("User = " + this.props.match.params.user)
+    alert("User = " + this.props.match.params.user);
     GetUsersPosts(this.props.match.params.user)
       .then((posts: IBlogPost[]) => {
         this.setState({
@@ -46,7 +46,7 @@ export class User extends React.Component<IUserProps, IUserState> {
     if (this.props.match.params.user !== this.state.user) {
       this.getPosts();
     }
-    if (this.state.publicBlog.length == 0) {
+    if (this.state.publicBlog.length === 0) {
       return (
         <div>
           <div className="pure-u-5-24"/>
@@ -57,7 +57,11 @@ export class User extends React.Component<IUserProps, IUserState> {
       );
     }
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
-      return (<Post blogPost={e} index={i} />);
+      return (
+        <div className="pure-g" key={i}>
+          <Post blogPost={e}/>
+        </div>
+      );
     });
   }
 

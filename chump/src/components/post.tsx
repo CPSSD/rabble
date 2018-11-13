@@ -5,7 +5,6 @@ import { IBlogPost } from "../models/posts";
 
 interface IPostProps {
   blogPost: IBlogPost;
-  index: number;
 }
 
 export class Post extends React.Component<IPostProps, {}> {
@@ -17,7 +16,7 @@ export class Post extends React.Component<IPostProps, {}> {
   public render() {
     // TODO(devoxel): Replace dangerouslySetInnerHTML with a safer option
     return (
-      <div className="pure-g" key={this.props.index}>
+      <div>
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
           <p className="article-byline">Published 1st January 1970</p>
@@ -31,8 +30,12 @@ export class Post extends React.Component<IPostProps, {}> {
               src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
               className="author-thumbnail"
             />
-            <Link to={"/u/@" + this.props.blogPost.author} className="author-displayname">{this.props.blogPost.author}</Link><br/>
-            <Link to={"/u/@" + this.props.blogPost.author} className="author-handle">@{this.props.blogPost.author}</Link>
+            <Link to={"/u/@" + this.props.blogPost.author} className="author-displayname">
+              {this.props.blogPost.author}
+            </Link><br/>
+            <Link to={"/u/@" + this.props.blogPost.author} className="author-handle">
+              @{this.props.blogPost.author}
+            </Link>
             <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
             But nothing comes out when they move their lips; just a bunch of gibberish.</p>
           </div>
