@@ -9,6 +9,7 @@ message PostsEntry {
   string title = 3;
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
+  // TODO(#138): Add md_body field
 }
 
 message PostsRequest {

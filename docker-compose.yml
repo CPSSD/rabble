@@ -69,6 +69,7 @@ services:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
       - CREATE_SERVICE_HOST=create_service
+      - MDC_SERVICE_HOST=markdown_service
   create_service:
     build:
       context: ./services/activities/create
