@@ -27,7 +27,6 @@ export class User extends React.Component<IUserProps, IUserState> {
   }
 
   public getPosts() {
-    alert("User = " + this.props.match.params.user);
     GetUsersPosts(this.props.match.params.user)
       .then((posts: IBlogPost[]) => {
         this.setState({
