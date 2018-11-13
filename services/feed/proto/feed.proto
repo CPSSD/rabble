@@ -12,8 +12,8 @@ message FeedRequest {
 // PostsEntry. Right now our builds don't allow for importing proto files
 // between services. For that reason we'll keep it simple and ignore errors.
 message Post {
-  string global_id = 1;
-  int64 author_id = 2;
+  int64 global_id = 1;
+  string author = 2;
   string title = 3;
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
@@ -25,4 +25,5 @@ message FeedResponse {
 
 service Feed {
   rpc Get(FeedRequest) returns (FeedResponse);
+  rpc PerUser(FeedRequest) returns (FeedResponse);
 }

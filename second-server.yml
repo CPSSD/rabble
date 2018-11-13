@@ -1,11 +1,11 @@
 version: '2'
 
 networks:
-  testnetwork:
-    driver: bridge
+  rabble_testnetwork:
+    external: true
 
 services:
-  skinny:
+  skinny2:
     ports:
       - "${SKINNY_SERVER_PORT}:${SKINNY_SERVER_PORT}"
     build:
@@ -13,6 +13,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - rabble_testnetwork
+      - default
     environment:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
       - DB_SERVICE_HOST=database_service
@@ -33,7 +36,7 @@ services:
       context: ./services/database
       dockerfile: Dockerfile
       args:
-        - DBPATH=/repo/rabble.db
+        - DBPATH=/repo/rabble2.db
     volumes:
       - .:/repo
     depends_on:
@@ -77,9 +80,6 @@ services:
       - .:/repo
     depends_on:
       - "database_service"
-    networks:
-      - testnetwork
-      - default
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service

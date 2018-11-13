@@ -51,6 +51,25 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 	return convertDBToFeed(resp), nil
 }
 
+func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	if r.Username == "" {
+		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
+	}
+	pr := &dbpb.PostsRequest{
+		RequestType: dbpb.PostsRequest_FIND,
+		Match: &dbpb.PostsEntry{
+			Author: r.Username,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	resp, err := s.db.Posts(ctx, pr)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
+	}
+	return convertDBToFeed(resp), nil
+}
+
 func newServer(c *grpc.ClientConn) *server {
 	db := dbpb.NewDatabaseClient(c)
 	return &server{db: db}

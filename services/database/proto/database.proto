@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 message PostsEntry {
-  string global_id = 1;
+  int64 global_id = 1;
   // TODO(#87): Update referenced author name if user changed accounts.
   int64 author_id = 2;
   string title = 3;

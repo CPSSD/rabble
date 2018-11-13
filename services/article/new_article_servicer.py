@@ -1,38 +1,51 @@
 from proto import article_pb2
 from proto import database_pb2
+from proto import create_pb2
 
 
 class NewArticleServicer:
 
-    def __init__(self, db_stub, logger):
+    def __init__(self, create_stub, db_stub, logger):
+        self._create_stub = create_stub
         self._db_stub = db_stub
         self._logger = logger
 
-    def send_insert_request(self, req, global_id):
+    def send_insert_request(self, req):
         pe = database_pb2.PostsEntry(
             author=req.author,
             title=req.title,
             body=req.body,
-            creation_datetime=req.creation_datetime,
-            global_id= global_id
+            creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,
             entry=pe
         )
-        posts_response = self._db_stub.Posts(pr)
+        posts_resp = self._db_stub.Posts(pr)
+        if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
+            self._logger.error('Could not insert into db: %s', posts_resp.error)
 
-        return posts_response.result_type
+        return posts_resp.result_type
 
-    def CreateNewArticle(self, request, context):
+    def send_create_activity_request(self, req):
+        ad = create_pb2.ArticleDetails(
+            author=req.author,
+            title=req.title,
+            body=req.body,
+            creation_datetime=req.creation_datetime
+        )
+        create_resp = self._create_stub.SendCreate(ad)
+
+        return create_resp.result_type
+
+    def CreateNewArticle(self, req, context):
         self._logger.info('Recieved a new article.')
-        global_id = request.title + str(request.creation_datetime.seconds)
-        success = self.send_insert_request(request, global_id)
+        success = self.send_insert_request(req)
 
         resp = article_pb2.NewArticleResponse()
-        resp.global_id = global_id
-        if success:
+        if success == database_pb2.PostsResponse.OK:
             resp.result_type = article_pb2.NewArticleResponse.OK
+            create_success = self.send_create_activity_request(req)
         else:
             resp.result_type = article_pb2.NewArticleResponse.ERROR
         return resp

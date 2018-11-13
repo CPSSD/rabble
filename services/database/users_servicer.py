@@ -48,13 +48,14 @@ class UsersDatabaseServicer:
             self._db.execute(
                 'INSERT INTO users '
                 '(handle, host, display_name, password, bio) '
-                'VALUES (?, ?, ?)',
+                'VALUES (?, ?, ?, ?, ?)',
                 req.entry.handle,
                 req.entry.host,
                 req.entry.display_name,
                 req.entry.password,
                 req.entry.bio)
         except sqlite3.Error as e:
+            self._logger.info("Error inserting")
             self._logger.error(str(e))
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)

@@ -8,9 +8,9 @@ then
   exit 1
 fi
 
-export SKINNY_SERVER_PORT=1916
+export SKINNY_SERVER_PORT=1917
 echo "Building docker-compose images"
-docker-compose -p rabble build
+docker-compose -p two -f second-server.yml build
 
 echo "Starting docker-compose"
-docker-compose -p rabble up
+docker-compose -p two -f second-server.yml up

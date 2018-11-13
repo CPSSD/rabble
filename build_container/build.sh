@@ -12,6 +12,7 @@ fi
 
 cd /repo
 mkdir -p build_out/
+mkdir -p build_out/activities/
 
 # If when the script exits (because of an error or otherwise) the following
 # function runs. The exit code is preserved.
@@ -64,6 +65,21 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/article \
   build_out/database/proto/database.proto
 
+echo "Building create service"
+cp -R services/activities/create build_out/activities/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/activities/create \
+  --python_out=build_out/activities/create \
+  --grpc_python_out=build_out/activities/create \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
+  build_out/activities/create/proto/create.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/activities/create \
+  --grpc_python_out=build_out/activities/create \
+  build_out/database/proto/database.proto
+
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/
@@ -79,6 +95,8 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  --python_out=build_out/activities/create \
+  --grpc_python_out=build_out/activities/create \
   build_out/logger/proto/logger.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
@@ -94,6 +112,8 @@ protoc -I. --go_out=plugins=grpc:"." services/database/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/follows/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/article/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/activities/create/proto/*.proto
 
 echo "Creating go workspace"
 mkdir -p /go/src/github.com/cpssd/

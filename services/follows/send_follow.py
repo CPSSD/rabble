@@ -12,7 +12,7 @@ class SendFollowServicer:
 
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
-        self._logger.info('Send follow request.')
+        self._logger.info('Sending follow request.')
 
         from_handle, from_instance = self._users_util.parse_username(
             request.follower)
