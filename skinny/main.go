@@ -91,6 +91,35 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(400)  // Bad Request
+			return
+		}
+		fr := &feedpb.FeedRequest{Username: v["username"]}
+		resp, err := s.feed.PerUser(ctx, fr)
+		if err != nil {
+			log.Print("Error in feed.PerUser(%v): %v", *fr, err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Results)
+		if err != nil {
+			log.Printf("could not marshal blogs: %v", err)
+			w.WriteHeader(500)
+			return
+		}
+	}
+}
+
 // handleNotImplemented returns a http.HandlerFunc with a 501 Not Implemented
 // error.
 func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
@@ -296,6 +325,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
+	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 
