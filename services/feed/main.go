@@ -16,12 +16,19 @@ import (
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
-func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, r := range p.Results {
+		// TODO(iandioch): Find a way to avoid or cache these requests.
+		author, err := s.getAuthorFromDb("", "", r.AuthorId)
+		if err != nil {
+			// Error has already been logged.
+			continue
+		}
 		np := &pb.Post{
-			GlobalId:         r.GlobalId,
-			AuthorId:         r.AuthorId,
+			GlobalId: r.GlobalId,
+			// TODO(iandioch): Consider what happens for foreign users.
+			Author:           author.Handle,
 			Title:            r.Title,
 			Body:             r.Body,
 			CreationDatetime: r.CreationDatetime,
@@ -32,12 +39,13 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 }
 
 func (s *server) getAuthorFromDb(handle string,
-	host string) (*dbpb.UsersEntry, error) {
+	host string, globalId int64) (*dbpb.UsersEntry, error) {
 	r := &dbpb.UsersRequest{
 		RequestType: dbpb.UsersRequest_FIND,
 		Match: &dbpb.UsersEntry{
-			Handle: handle,
-			Host:   host,
+			Handle:   handle,
+			Host:     host,
+			GlobalId: globalId,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -68,7 +76,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
 	}
 
-	return convertDBToFeed(resp), nil
+	return s.convertDBToFeed(resp), nil
 }
 
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
@@ -76,7 +84,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
 
-	author, err := s.getAuthorFromDb(r.Username, "")
+	author, err := s.getAuthorFromDb(r.Username, "", 0)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +102,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
-	return convertDBToFeed(resp), nil
+	return s.convertDBToFeed(resp), nil
 }
 
 func newServer(c *grpc.ClientConn) *server {
