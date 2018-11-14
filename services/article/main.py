@@ -7,6 +7,7 @@ import os
 import sys
 
 from utils.logger import get_logger
+from utils.users import UsersUtil
 from servicer import ArticleServicer
 from proto import article_pb2_grpc
 from proto import database_pb2_grpc
@@ -62,8 +63,9 @@ def main():
     mdc_channel = get_mdc_channel(logger)
     mdc_stub = mdc_pb2_grpc.ConverterStub(mdc_channel)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    users_util = UsersUtil(logger, db_stub)
     article_pb2_grpc.add_ArticleServicer_to_server(
-        ArticleServicer(create_stub, db_stub, mdc_stub, logger),
+        ArticleServicer(create_stub, db_stub, mdc_stub, logger, users_util),
         server
         )
     server.add_insecure_port('0.0.0.0:1601')
