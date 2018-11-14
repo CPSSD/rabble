@@ -29,6 +29,7 @@ describe("Feed", () => {
 
     const wrapper = shallow(<Feed/>);
     expect(wrapper.find("div")).to.have.lengthOf(4);
+    expect(wrapper.find("Post")).to.have.lengthOf(0);
 
     wrapper.setState({publicBlog: [
       {
@@ -40,6 +41,7 @@ describe("Feed", () => {
 
     expect(Feed.prototype.getPosts).to.have.property("callCount", 1);
     expect(wrapper.find("div")).to.have.lengthOf(5);
+    expect(wrapper.find("Post")).to.have.lengthOf(1);
 
     // Cleanup spies
     getPosts.restore();

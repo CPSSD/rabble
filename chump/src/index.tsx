@@ -42,7 +42,7 @@ export class App extends React.Component<{}, IAppState> {
             <Route exact={true} path="/" component={Feed}/>
             <Route path="/about" component={About}/>
             <Route
-              path="/u/@:user"
+              path="/@:user"
               component={User}
             />
             <Route

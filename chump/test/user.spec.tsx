@@ -36,8 +36,6 @@ describe("User", () => {
   });
 
   it("should properly render posts", () => {
-    const getPosts = sinon.spy(User.prototype, "getPosts");
-
     const userProps = {
       match: {
         params: {
@@ -47,6 +45,7 @@ describe("User", () => {
     };
     const wrapper = shallow(<User {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(7);
+    expect(wrapper.find("Post")).to.have.lengthOf(0);
 
     wrapper.setState({publicBlog: [
       {
@@ -57,8 +56,6 @@ describe("User", () => {
     ]});
 
     expect(wrapper.find("div")).to.have.lengthOf(5);
-
-    // Cleanup spies
-    getPosts.restore();
+    expect(wrapper.find("Post")).to.have.lengthOf(1);
   });
 });
