@@ -69,12 +69,6 @@ export class User extends React.Component<IUserProps, IUserState> {
     const blogPosts = this.renderPosts();
     return (
       <div>
-        <div className="pure-g">
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-10-24">
-            <h3 className="article-title">{this.props.match.params.user}</h3>
-          </div>
-        </div>
         {blogPosts}
       </div>
     );
