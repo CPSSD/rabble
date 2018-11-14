@@ -28,9 +28,9 @@ class PostsDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO posts '
-                '(author, title, body, creation_datetime) '
+                '(author_id, title, body, creation_datetime) '
                 'VALUES (?, ?, ?, ?)',
-                req.entry.author, req.entry.title,
+                req.entry.author_id, req.entry.title,
                 req.entry.body,
                 req.entry.creation_datetime.seconds)
         except sqlite3.Error as e:
