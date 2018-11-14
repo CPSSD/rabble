@@ -22,6 +22,16 @@ class UsersUtil:
         self._logger.warning('Couldn\'t parse username %s', username)
         return None, None
 
+    def parse_actor(self, actor_uri):
+        actor_uri = actor_uri.lstrip('/@')
+        p = actor_uri.split('/@')
+        if len(p) == 2:
+            # Foreign user like 'rabbleinstance.com/@admin'
+            return tuple(p)
+        # Username is incorrect/malicious/etc.
+        self._logger.warning('Couldn\'t parse actor %s', actor_uri)
+        return None, None
+
     def _create_user_in_db(self, entry):
         self._logger.debug('Creating user %s@%s in database',
                            entry.handle, entry.host)
@@ -33,7 +43,7 @@ class UsersUtil:
         # TODO(iandioch): Respond to errors.
         return insert_resp
 
-    def get_user_from_db(self,
+    def get_or_create_user_from_db(self,
                          handle=None,
                          host=None,
                          global_id=None,
@@ -41,6 +51,28 @@ class UsersUtil:
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
+
+        user = self.get_user_from_db(handle, host, global_id)
+
+        if user == None:
+            if global_id is not None:
+                # Should not try to create a user and hope it has this ID.
+                return None
+            user_entry = database_pb2.UsersEntry(
+                handle=handle,
+                host=host,
+                global_id=global_id
+            )
+            self._create_user_in_db(user_entry)
+            return self.get_or_create_user_from_db(handle, host,
+                                         attempt_number=attempt_number + 1)
+        else:
+            return user
+
+    def get_user_from_db(self,
+                         handle=None,
+                         host=None,
+                         global_id=None):
         self._logger.debug('User %s@%s (id %s) requested from database',
                            handle, host, global_id)
         user_entry = database_pb2.UsersEntry(
@@ -56,12 +88,7 @@ class UsersUtil:
         if len(find_resp.results) == 0:
             self._logger.warning('No user %s@%s (id %s) found',
                                  handle, host, global_id)
-            if global_id is not None:
-                # Should not try to create a user and hope it has this ID.
-                return None
-            self._create_user_in_db(user_entry)
-            return self.get_user_from_db(handle, host,
-                                         attempt_number=attempt_number + 1)
+            return None
         elif len(find_resp.results) == 1:
             self._logger.debug('Found user %s@%s (id %s) from database',
                                handle, host, global_id)
