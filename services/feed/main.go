@@ -31,6 +31,26 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	return fp
 }
 
+func (s *server) getAuthorFromDb(handle string,
+	host string) (*dbpb.UsersEntry, error) {
+	r := &dbpb.UsersRequest{
+		RequestType: dbpb.UsersRequest_FIND,
+		Match: &dbpb.UsersEntry{
+			Handle: handle,
+			Host:   host,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	resp, err := s.db.Users(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf("Could not find user %v@%v. error: %v",
+			handle, host, err)
+	}
+	return resp.Results[0], nil
+}
+
 type server struct {
 	db dbpb.DatabaseClient
 }
@@ -55,10 +75,17 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if r.Username == "" {
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
+
+	author, err := s.getAuthorFromDb(r.Username, "")
+	if err != nil {
+		return nil, err
+	}
+	authorId := author.GlobalId
+
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
 		Match: &dbpb.PostsEntry{
-			Author: r.Username,
+			AuthorId: authorId,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)

@@ -13,7 +13,7 @@ message FeedRequest {
 // between services. For that reason we'll keep it simple and ignore errors.
 message Post {
   int64 global_id = 1;
-  string author = 2;
+  int64 author_id = 2;
   string title = 3;
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
