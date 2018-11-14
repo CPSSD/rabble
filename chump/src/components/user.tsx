@@ -46,6 +46,7 @@ export class User extends React.Component<IUserProps, IUserState> {
       this.getPosts();
     }
     if (this.state.publicBlog.length === 0) {
+      // TODO(CianLR): Detect which case this is and serve different messages.
       return (
         <div>
           <div className="pure-u-5-24"/>
