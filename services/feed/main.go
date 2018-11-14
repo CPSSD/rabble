@@ -8,10 +8,9 @@ import (
 	"os"
 	"time"
 
-	"google.golang.org/grpc"
-
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	pb "github.com/cpssd/rabble/services/feed/proto"
+	"google.golang.org/grpc"
 )
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
@@ -38,6 +37,15 @@ func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb
 	return fp
 }
 
+func (s *server) convertManyToFeed(p []*dbpb.PostsResponse) *pb.FeedResponse {
+	fp := &pb.FeedResponse{}
+	for _, p := range p {
+		r := s.covertDbToFeed(p)
+		fp.Results = append(fp, r.Results)
+	}
+	return fp
+}
+
 func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*dbpb.UsersEntry, error) {
 	r := &dbpb.UsersRequest{
 		RequestType: dbpb.UsersRequest_FIND,
@@ -60,7 +68,83 @@ type server struct {
 	db dbpb.DatabaseClient
 }
 
+func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Follow, error) {
+	const errorFmt = "Could not get follows for user %#v: %v"
+
+	r := &dbpb.DbFollowRequest{
+		RequestType: dbpb.DbFollowRequest_FIND,
+		Match:       &dbpb.Follow{Follower: u.GlobalId},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	resp, err := s.db.Follow(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf(errorFmt, *u, err)
+	}
+
+	if resp.ResultType != dbpb.DbFollowResponse_OK {
+		return nil, fmt.Errorf(errorFmt, *u, resp.Error)
+	}
+
+	return resp.Results, nil
+}
+
+func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	const feedErr = "feed.GetUserFeed(%v) failed: %v"
+
+	author, err := s.getAuthorFromDb(r.Username, "", 0)
+	if err != nil {
+		err := fmt.Errorf(feedErr, r.Username, err)
+		log.Print(err)
+		return nil, err
+	}
+
+	follows, err := s.getFollows(ctx, author)
+	if err != nil {
+		err := fmt.Errorf(feedErr, r.Username, err)
+		log.Print(err)
+		return nil, err
+	}
+
+	posts := []*dbpb.PostsResponse{}
+	for _, f := range follows {
+		// HACK because we currently can't request posts by id
+		u, err := s.getAuthorFromDb("", "", f.Followed)
+		if err != nil {
+			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+
+		pr := &dbpb.PostsRequest{
+			RequestType: dbpb.PostsRequest_FIND,
+			Match:       &dbpb.PostsEntry{Author: u.Handle},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.db.Posts(ctx, pr)
+		if err != nil {
+			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+
+		posts = append(posts, resp)
+	}
+
+	return convertManyToFeed(posts), nil
+}
+
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	log.Print(r.Username)
+	if r.Username != "" {
+		return s.GetUserFeed(ctx, r)
+	}
+
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
 	}
