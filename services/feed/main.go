@@ -37,16 +37,17 @@ func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb
 	return fp
 }
 
-func (s *server) convertManyToFeed(p []*dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertManyToFeed(ctx context.Context, p []*dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range p {
-		r := s.convertDBToFeed(p)
+		r := s.convertDBToFeed(ctx, p)
 		fp.Results = append(fp.Results, r.Results...)
 	}
 	return fp
 }
 
 func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*dbpb.UsersEntry, error) {
+	const errFmt = "Could not find user %v@%v. error: %v"
 	r := &dbpb.UsersRequest{
 		RequestType: dbpb.UsersRequest_FIND,
 		Match: &dbpb.UsersEntry{
@@ -58,9 +59,17 @@ func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string
 
 	resp, err := s.db.Users(ctx, r)
 	if err != nil {
-		return nil, fmt.Errorf("Could not find user %v@%v. error: %v",
-			handle, host, err)
+		return nil, fmt.Errorf(errFmt, handle, host, err)
 	}
+
+	if resp.ResultType != dbpb.UsersResponse_OK {
+		return nil, fmt.Errorf(errFmt, handle, host, resp.Error)
+	}
+
+	if len(resp.Results) == 0 {
+		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
+	}
+
 	return resp.Results[0], nil
 }
 
@@ -94,7 +103,7 @@ func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Fo
 func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	const feedErr = "feed.GetUserFeed(%v) failed: %v"
 
-	author, err := s.getAuthorFromDb(r.Username, "", 0)
+	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
 	if err != nil {
 		err := fmt.Errorf(feedErr, r.Username, err)
 		log.Print(err)
@@ -110,17 +119,10 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 
 	posts := []*dbpb.PostsResponse{}
 	for _, f := range follows {
-		// HACK because we currently can't request posts by id
-		u, err := s.getAuthorFromDb("", "", f.Followed)
-		if err != nil {
-			err := fmt.Errorf(feedErr, r.Username, err)
-			log.Print(err)
-			return nil, err
-		}
 
 		pr := &dbpb.PostsRequest{
 			RequestType: dbpb.PostsRequest_FIND,
-			Match:       &dbpb.PostsEntry{Author: u.Handle},
+			Match:       &dbpb.PostsEntry{GlobalId: f.Followed},
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -136,7 +138,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 		posts = append(posts, resp)
 	}
 
-	return convertManyToFeed(posts), nil
+	return s.convertManyToFeed(ctx, posts), nil
 }
 
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
