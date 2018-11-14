@@ -38,7 +38,11 @@ export class App extends React.Component<{}, IAppState> {
         <div>
           <Header username={this.state.username} />
           <Switch>
-            <Route exact={true} path="/" component={Feed}/>
+            <Route
+              exact={true}
+              path="/"
+              render={(props) => <Feed {...props} username={this.state.username}/>}
+            />
             <Route path="/about" component={About}/>
             <Route
               path="/login"

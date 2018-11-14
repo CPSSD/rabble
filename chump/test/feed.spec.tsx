@@ -14,7 +14,7 @@ describe("Feed", () => {
     const getPosts = sinon.spy(Feed.prototype, "getPosts");
     const render = sinon.spy(Feed.prototype, "renderPosts");
 
-    const wrapper = mount(<MemoryRouter><Feed/></MemoryRouter>);
+    const wrapper = mount(<MemoryRouter><Feed username=""/></MemoryRouter>);
 
     expect(getPosts).to.have.property("callCount", 1);
     expect(render).to.have.property("callCount", 1);
@@ -27,7 +27,7 @@ describe("Feed", () => {
   it("should properly render posts", () => {
     const getPosts = sinon.spy(Feed.prototype, "getPosts");
 
-    const wrapper = shallow(<Feed/>);
+    const wrapper = shallow(<Feed username=""/>);
     expect(wrapper.find("div")).to.have.lengthOf(4);
 
     wrapper.setState({publicBlog: [
