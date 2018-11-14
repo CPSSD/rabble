@@ -40,8 +40,8 @@ func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb
 func (s *server) convertManyToFeed(p []*dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range p {
-		r := s.covertDbToFeed(p)
-		fp.Results = append(fp, r.Results)
+		r := s.convertDBToFeed(p)
+		fp.Results = append(fp.Results, r.Results...)
 	}
 	return fp
 }
