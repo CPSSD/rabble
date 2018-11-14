@@ -33,7 +33,7 @@ follow() {
   #   follow localhost:1916 admin@skinny.com:1917 user
   $debug curl --header "Content-Type: application/json" \
     --request POST \
-    --data '{"follower":"'"$1"'", "followed":"'"$2"'"}' \
+    --data '{"follower":"'"$2"'", "followed":"'"$3"'"}' \
     "$1/c2s/follow"
 }
 
