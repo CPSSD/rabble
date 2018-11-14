@@ -2,7 +2,7 @@
 
 set -e
 
-# _debug is used in order to find out what we're sending, in the case we're
+# $debug is used in order to find out what we're sending, in the case we're
 # not getting expected results. To use it, just uncomment the debug line.
 debug= 
 # debug=echo
