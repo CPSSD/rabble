@@ -64,6 +64,11 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
   build_out/database/proto/database.proto
+python3 -m grpc_tools.protoc \
+  -Iservices/mdc \
+  --python_out=build_out/article \
+  --grpc_python_out=build_out/article \
+  services/mdc/proto/mdc.proto
 
 echo "Building create service"
 cp -R services/activities/create build_out/activities/
