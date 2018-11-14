@@ -31,7 +31,7 @@ class GetFollowsReceiver:
             return resp
 
         # Get user obj associated with given user handle & host from database
-        user_entry = self._users_util.get_user_from_db(handle, host)
+        user_entry = self._users_util.get_or_create_user_from_db(handle, host)
         if user_entry is None:
             error = 'Could not find or create user {}@{}'.format(from_handle,
                                                                  from_instance)
@@ -53,7 +53,7 @@ class GetFollowsReceiver:
             _id = following_id.followed
             if request_type == self.RequestType.FOLLOWERS:
                 _id = following_id.follower
-            user = self._users_util.get_user_from_db(global_id=_id)
+            user = self._users_util.get_or_create_user_from_db(global_id=_id)
             if user is None:
                 self._logger.warning('Could not find user for id %d',
                                      _id)
