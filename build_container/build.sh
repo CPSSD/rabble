@@ -85,6 +85,19 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/activities/create \
   build_out/database/proto/database.proto
 
+echo "Building users service"
+cp -R services/users build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/users \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
+  build_out/users/proto/users.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
+  build_out/database/proto/database.proto
+
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/
@@ -100,6 +113,8 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
   --python_out=build_out/activities/create \
   --grpc_python_out=build_out/activities/create \
   build_out/logger/proto/logger.proto

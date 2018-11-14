@@ -31,6 +31,17 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+  users_service:
+    build:
+      context: ./services/users
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
   database_service:
     build:
       context: ./services/database
