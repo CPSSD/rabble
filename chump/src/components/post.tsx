@@ -10,7 +10,7 @@ interface IPostProps {
 export class Post extends React.Component<IPostProps, {}> {
   constructor(props: IPostProps) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   public render() {
