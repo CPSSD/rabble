@@ -5,14 +5,20 @@ from proto import create_pb2
 
 class NewArticleServicer:
 
-    def __init__(self, create_stub, db_stub, logger):
+    def __init__(self, create_stub, db_stub, logger, users_util):
         self._create_stub = create_stub
         self._db_stub = db_stub
         self._logger = logger
+        self._users_util = users_util
 
     def send_insert_request(self, req):
+        author = self._users_util.get_user_from_db(handle=req.author,
+                                                   host=None)
+        if author is None:
+            self._logger.error('Could not find user in db: ' + str(req.author))
+            return database_pb2.PostsResponse.error
         pe = database_pb2.PostsEntry(
-            author=req.author,
+            author_id=author.global_id,
             title=req.title,
             body=req.body,
             creation_datetime=req.creation_datetime
