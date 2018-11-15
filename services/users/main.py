@@ -19,7 +19,8 @@ def get_db_stub(logger):
         sys.exit(1)
     db_address = db_host + ":1798"
     logger.info("Connecting to database at %s", db_address)
-    return grpc.insecure_channel(db_address)
+    chan = grpc.insecure_channel(db_address)
+    return database_pb2_grpc.DatabaseStub(chan)
 
 
 def get_args():
@@ -39,7 +40,7 @@ def main():
     users_pb2_grpc.add_UsersServicer_to_server(
         UsersServicer(logger, get_db_stub(logger)),
         server)
-    server.add_insecure_port('0.0.0.0:1798')
+    server.add_insecure_port('0.0.0.0:1534')
     logger.info("Starting users server")
     server.start()
     try:

@@ -26,12 +26,12 @@ class CreateHandler:
         if db_resp.result_type != database_pb2.UsersResponse.OK:
             self._logger.warning("Error inserting user into db: %s",
                                  db_resp.error)
-            return users_pb2.CreateResponse(
-                result_type=users_pb2.CreateResponse.ERROR,
+            return users_pb2.CreateUserResponse(
+                result_type=users_pb2.CreateUserResponse.ERROR,
                 error_details=db_resp.error,
             )
-        return users_pb2.CreateResponse(
-            result_type=users_pb2.CreateResponse.OK,
+        return users_pb2.CreateUserResponse(
+            result_type=users_pb2.CreateUserResponse.OK,
         )
 
 

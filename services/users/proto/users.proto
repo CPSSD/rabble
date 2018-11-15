@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-message CreateRequest {
+message CreateUserRequest {
   string handle = 1;
   string password = 2;
   string display_name = 3;
   string bio = 4;
 }
 
-message CreateResponse {
+message CreateUserResponse {
   enum ResultType {
     OK    = 0;
     ERROR = 1;
@@ -55,6 +55,6 @@ message TokenResponse {
 
 service Users {
   rpc Login(LoginRequest) returns (LoginResponse);
-  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Create(CreateUserRequest) returns (CreateUserResponse);
   rpc CheckToken(Token) returns (TokenResponse);
 }

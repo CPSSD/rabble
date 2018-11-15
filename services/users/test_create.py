@@ -19,7 +19,7 @@ class CreateHandlerTest(unittest.TestCase):
         self.create_handler = CreateHandler(self.logger, self.db_stub)
 
     def _make_request(self, handle):
-        return users_pb2.CreateRequest(
+        return users_pb2.CreateUserRequest(
             handle=handle,
             password="123",
             display_name="myname",
@@ -34,7 +34,7 @@ class CreateHandlerTest(unittest.TestCase):
             error=err,
         )
         resp = self.create_handler.Create(req, None)
-        self.assertEqual(resp.result_type, users_pb2.CreateResponse.ERROR)
+        self.assertEqual(resp.result_type, users_pb2.CreateUserResponse.ERROR)
         self.assertEqual(resp.error_details, err)
 
     def test_send_db_request(self):
@@ -43,7 +43,7 @@ class CreateHandlerTest(unittest.TestCase):
             result_type=database_pb2.UsersResponse.OK,
         )
         resp = self.create_handler.Create(req, None)
-        self.assertEqual(resp.result_type, users_pb2.CreateResponse.OK)
+        self.assertEqual(resp.result_type, users_pb2.CreateUserResponse.OK)
         self.assertNotEqual(self.db_stub.Users.call_args, None)
         db_req = self.db_stub.Users.call_args[0][0]
         self.assertEqual(db_req.entry.handle, "CianLR")

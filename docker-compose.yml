@@ -15,6 +15,7 @@ services:
       - .:/repo
     environment:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
+      - USERS_SERVICE_HOST=users_service
       - DB_SERVICE_HOST=database_service
       - FOLLOWS_SERVICE_HOST=follows_service
       - ARTICLE_SERVICE_HOST=article_service
