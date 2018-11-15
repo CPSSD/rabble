@@ -14,7 +14,6 @@ class ReceiveCreateServicer:
     def _get_actor_ids(self, author, follower):
         # parse_actor parses form host/@actor and returns (host, actor)
         author_user = self._users_util.parse_actor(author)
-        follower_user = self._users_util.parse_actor(follower)
 
         author_entry = self._users_util.get_user_from_db(
             handle=author_user[1],
@@ -25,7 +24,7 @@ class ReceiveCreateServicer:
             return None, None, None
 
         follower_entry = self._users_util.get_user_from_db(
-            handle=follower_user[1]
+            handle=follower
         )
         if follower_entry is None:
             self._logger.error("Could not find local follower user in db")
