@@ -24,7 +24,7 @@ def get_args():
 
 
 def get_db_channel(logger):
-    db_service_host = os.environ["DB_SERVICE_HOST"]
+    db_service_host = os.environ.get("DB_SERVICE_HOST")
     if not db_service_host:
         logger.error("Please set DB_SERVICE_HOST env variable")
         sys.exit(1)
@@ -33,7 +33,7 @@ def get_db_channel(logger):
 
 
 def get_create_channel(logger):
-    create_service_host = os.environ["CREATE_SERVICE_HOST"]
+    create_service_host = os.environ.get("CREATE_SERVICE_HOST")
     if not create_service_host:
         logger.error("Please set CREATE_SERVICE_HOST env variable")
         sys.exit(1)
@@ -42,7 +42,7 @@ def get_create_channel(logger):
 
 
 def get_mdc_channel(logger):
-    mdc_service_host = os.environ["MDC_SERVICE_HOST"]
+    mdc_service_host = os.environ.get("MDC_SERVICE_HOST")
     if not mdc_service_host:
         logger.error("Please set MDC_SERVICE_HOST env variable")
         sys.exit(1)

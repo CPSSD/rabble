@@ -24,7 +24,7 @@ def get_args():
 
 
 def get_database_service_address():
-    host = os.environ['DB_SERVICE_HOST']
+    host = os.environ.get('DB_SERVICE_HOST')
     if not host:
         logger.error('DB_SERVICE_HOST env var not set.')
         sys.exit(1)

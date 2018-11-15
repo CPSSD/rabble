@@ -22,7 +22,7 @@ def get_args():
 
 
 def get_db_channel():
-    db_service_host = os.environ["DB_SERVICE_HOST"]
+    db_service_host = os.environ.get("DB_SERVICE_HOST")
     if not db_service_host:
         print("Please set DB_SERVICE_HOST env variable")
         sys.exit(1)
