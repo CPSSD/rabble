@@ -1,3 +1,5 @@
+import bcrypt
+
 from proto import users_pb2
 from proto import database_pb2
 
@@ -6,15 +8,18 @@ class CreateHandler:
         self._logger = logger
         self._db_stub = db_stub
 
+    def _hash_password(self, password):
+        return bcrypt.hashpw(password.encode('utf-8'),
+                             bcrypt.gensalt())
+
     def Create(self, request, context):
         insert_request = database_pb2.UsersRequest(
             request_type=database_pb2.UsersRequest.INSERT,
             entry=database_pb2.UsersEntry(
-                handle="",
-                display_name="",
-                host="",
-                password="",
-                bio="",
+                handle=request.handle,
+                display_name=request.display_name,
+                password=self._hash_password(request.password),
+                bio=request.bio,
             ),
         )
         db_resp = self._db_stub.Users(insert_request)
