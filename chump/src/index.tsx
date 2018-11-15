@@ -41,12 +41,17 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               exact={true}
               path="/"
-              render={(props) => <Feed {...props} username={this.state.username}/>}
+              render={(props) => <Feed {...props} username=""/>}
             />
             <Route path="/about" component={About}/>
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <PrivateRoute
+              path="/feed"
+              username={this.state.username}
+              component={Feed}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>
