@@ -28,7 +28,7 @@ class UsersUtil:
         actor_uri = actor_uri.lstrip('/@')
         p = actor_uri.split('/@')
         if len(p) == 2:
-            # Foreign user like 'rabbleinstance.com/@admin'
+            # Actor uri like 'rabbleinstance.com/@admin'
             return tuple(p)
         # Username is incorrect/malicious/etc.
         self._logger.warning('Couldn\'t parse actor %s', actor_uri)
