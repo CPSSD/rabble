@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
+	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 	articlepb "github.com/cpssd/rabble/services/article/proto"
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
 	followspb "github.com/cpssd/rabble/services/follows/proto"
-	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
@@ -34,20 +34,20 @@ const (
 )
 
 type createActivityObjectStruct struct {
-	Content string `json:"content"`
-	Name string `json:"name"`
-	Published string `json:"published"`
-	AttributedTo string `json:"attributedTo"`
-	Recipient []string `json:"to"`
-	Type string `json:"type"`
+	Content      string   `json:"content"`
+	Name         string   `json:"name"`
+	Published    string   `json:"published"`
+	AttributedTo string   `json:"attributedTo"`
+	Recipient    []string `json:"to"`
+	Type         string   `json:"type"`
 }
 
 type createActivityStruct struct {
-	Actor string `json:"actor"`
-	Context string `json:"@context"`
-	Object createActivityObjectStruct `json:"object"`
-	Recipient []string `json:"to"`
-	Type string `json:"type"`
+	Actor     string                     `json:"actor"`
+	Context   string                     `json:"@context"`
+	Object    createActivityObjectStruct `json:"object"`
+	Recipient []string                   `json:"to"`
+	Type      string                     `json:"type"`
 }
 
 type createArticleStruct struct {
@@ -85,6 +85,25 @@ type serverWrapper struct {
 	create      createpb.CreateClient
 }
 
+func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
+	parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, published)
+	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
+	if timeErr != nil || protoTimeErr != nil {
+		log.Printf("Error: %s\n", timeErr)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid creation time\n")
+		return nil, fmt.Errorf("Invalid creation time")
+	}
+
+	timeSinceRequest := time.Since(parsedCreationDatetime)
+	if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Old creation time\n")
+		return nil, fmt.Errorf("Old creation time")
+	}
+	return protoTimestamp, nil
+}
+
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -118,7 +137,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 
 		v := mux.Vars(r)
 		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(400)  // Bad Request
+			w.WriteHeader(400) // Bad Request
 			return
 		}
 		fr := &feedpb.FeedRequest{Username: v["username"]}
@@ -267,25 +286,6 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	}
 }
 
-func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
-	parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, published)
-	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
-	if timeErr != nil || protoTimeErr != nil {
-		log.Printf("Error: %s\n", timeErr)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid creation time\n")
-		return nil, fmt.Errorf("Invalid creation time")
-	}
-
-	timeSinceRequest := time.Since(parsedCreationDatetime)
-	if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Old creation time\n")
-		return nil, fmt.Errorf("Old creation time")
-	}
-	return protoTimestamp, nil
-}
-
 func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
@@ -323,8 +323,8 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 		nfa := &createpb.NewForeignArticle{
 			AttributedTo: flattenedDoc.Object.AttributedTo,
 			Content:      flattenedDoc.Object.Content,
-			Published:		protoTimestamp,
-			Recipient:		flattenedDoc.Recipient[0],
+			Published:    protoTimestamp,
+			Recipient:    recipient,
 			Title:        flattenedDoc.Object.Name,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -356,8 +356,8 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		u := &dbpb.UsersEntry{
 			DisplayName: displayName,
 			Handle:      handle,
-			Password: password,
-			Bio: "nothing",
+			Password:    password,
+			Bio:         "nothing",
 		}
 		ur := &dbpb.UsersRequest{
 			Entry:       u,

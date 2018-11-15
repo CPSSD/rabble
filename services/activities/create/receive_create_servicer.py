@@ -22,16 +22,16 @@ class ReceiveCreateServicer:
         )
         if author_entry is None:
             self._logger.error("Could not find foreign author in db")
-            return None, None
+            return None, None, None
 
         follower_entry = self._users_util.get_user_from_db(
             handle=follower_user[1]
         )
         if follower_entry is None:
             self._logger.error("Could not find local follower user in db")
-            return None, None
+            return None, None, None
 
-        return author_entry.global_id, follower_entry.global_id
+        return author_entry.global_id, follower_entry.global_id, author_user[1]
 
     def _check_follow(self, foreign_id, local_user_id):
         self._logger.info("Checking follow for new foreign article")
@@ -59,12 +59,12 @@ class ReceiveCreateServicer:
 
         return True
 
-    def _add_to_posts_db(self, foreign_id, req):
-        self._logger.info("Calling article service with new foreign article")
+    def _add_to_posts_db(self, author_handle, req):
+        self._logger.debug("Calling article service with new foreign article")
         # set flag in article service that is foreign (so no need to create service)
         # TODO(sailslick) Unstring foreign_id when pr #159 is merged
         na = article_pb2.NewArticle(
-            author="foreign_id",
+            author=author_handle,
             title=req.title,
             body=req.content,
             creation_datetime=req.published,
@@ -80,11 +80,13 @@ class ReceiveCreateServicer:
         return True
 
     def ReceiveCreate(self, req, context):
-        self._logger.info("Recieved a new create notification.")
+        self._logger.debug("Recieved a new create notification.")
         resp = create_pb2.CreateResponse()
 
         # get actor ids
-        author_id, follower_id = self._get_actor_ids(req.attributedTo, req.recipient)
+        # TODO (sailslick) when author ids are sent from client instead of handles
+        # Remove extra return variable author_handle
+        author_id, follower_id, author_handle = self._get_actor_ids(req.attributedTo, req.recipient)
         if author_id is None:
             resp.result_type = create_pb2.CreateResponse.ERROR
             return resp
@@ -96,11 +98,11 @@ class ReceiveCreateServicer:
             return resp
 
         # add to article db
-        added_flag = self._add_to_posts_db(author_id, req)
+        added_flag = self._add_to_posts_db(author_handle, req)
         if added_flag == False:
             resp.result_type = create_pb2.CreateResponse.ERROR
             return resp
 
-        self._logger.info("Recieve create Article success")
+        self._logger.debug("Recieve create Article success")
         resp.result_type = create_pb2.CreateResponse.OK
         return resp

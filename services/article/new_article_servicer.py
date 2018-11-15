@@ -61,7 +61,7 @@ class NewArticleServicer:
         if success == database_pb2.PostsResponse.OK:
             self._logger.info('Article created.')
             resp.result_type = article_pb2.NewArticleResponse.OK
-            if req.foreign == False:
+            if not req.foreign:
                 create_success = self.send_create_activity_request(req)
         else:
             resp.result_type = article_pb2.NewArticleResponse.ERROR
