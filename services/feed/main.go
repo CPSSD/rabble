@@ -37,9 +37,9 @@ func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb
 	return fp
 }
 
-func (s *server) convertManyToFeed(ctx context.Context, p []*dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertManyToFeed(ctx context.Context, posts []*dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
-	for _, p := range p {
+	for _, p := range posts {
 		r := s.convertDBToFeed(ctx, p)
 		fp.Results = append(fp.Results, r.Results...)
 	}
@@ -85,7 +85,7 @@ func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Fo
 		Match:       &dbpb.Follow{Follower: u.GlobalId},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
 	resp, err := s.db.Follow(ctx, r)
@@ -100,6 +100,8 @@ func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Fo
 	return resp.Results, nil
 }
 
+// GetUserFeed returns all posts from users that a person is following.
+// It is not a service directly, it is called if there is a username in a feed.Get.
 func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	const feedErr = "feed.GetUserFeed(%v) failed: %v"
 
@@ -119,7 +121,6 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 
 	posts := []*dbpb.PostsResponse{}
 	for _, f := range follows {
-
 		pr := &dbpb.PostsRequest{
 			RequestType: dbpb.PostsRequest_FIND,
 			Match:       &dbpb.PostsEntry{GlobalId: f.Followed},
@@ -141,6 +142,9 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 	return s.convertManyToFeed(ctx, posts), nil
 }
 
+// Get is responsible for handling feeds
+// It takes an optional username argument, if it exists it sends the request to
+// GetUserFeed, otherwise it returns all articles on the instance.
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	log.Print(r.Username)
 	if r.Username != "" {
@@ -151,7 +155,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		RequestType: dbpb.PostsRequest_FIND,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
 	resp, err := s.db.Posts(ctx, pr)
