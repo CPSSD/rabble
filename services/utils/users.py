@@ -22,6 +22,8 @@ class UsersUtil:
         self._logger.warning('Couldn\'t parse username %s', username)
         return None, None
 
+    # Parse actor string. This is a the url of the actor object of
+    # a user of a local/foreign instance
     def parse_actor(self, actor_uri):
         actor_uri = actor_uri.lstrip('/@')
         p = actor_uri.split('/@')
@@ -43,31 +45,32 @@ class UsersUtil:
         # TODO(iandioch): Respond to errors.
         return insert_resp
 
-    def get_or_create_user_from_db(self,
-                         handle=None,
-                         host=None,
-                         global_id=None,
-                         attempt_number=0):
+    def get_or_create_user_from_db( self,
+                                    handle=None,
+                                    host=None,
+                                    global_id=None,
+                                    attempt_number=0):
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
 
         user = self.get_user_from_db(handle, host, global_id)
 
-        if user == None:
-            if global_id is not None:
-                # Should not try to create a user and hope it has this ID.
-                return None
-            user_entry = database_pb2.UsersEntry(
-                handle=handle,
-                host=host,
-                global_id=global_id
-            )
-            self._create_user_in_db(user_entry)
-            return self.get_or_create_user_from_db(handle, host,
-                                         attempt_number=attempt_number + 1)
-        else:
+        if user is not None:
             return user
+
+        if global_id is not None:
+            # Should not try to create a user and hope it has this ID.
+            return None
+
+        user_entry = database_pb2.UsersEntry(
+            handle=handle,
+            host=host
+        )
+        self._create_user_in_db(user_entry)
+        return self.get_or_create_user_from_db( handle,
+                                                host,
+                                                attempt_number=attempt_number + 1)
 
     def get_user_from_db(self,
                          handle=None,
