@@ -13,11 +13,11 @@ from proto import database_pb2_grpc
 
 
 def get_db_stub(logger):
-    DBVAR = 'DB_SERVICE_HOST'
-    if DBVAR not in os.environ:
+    db_host = os.environ.get('DB_SERVICE_HOST')
+    if not db_host:
         logger.error("%s variable not set", DBVAR)
         sys.exit(1)
-    db_address = os.environ[DBVAR] + ":1798"
+    db_address = db_host + ":1798"
     logger.info("Connecting to database at %s", db_address)
     return grpc.insecure_channel(db_address)
 
