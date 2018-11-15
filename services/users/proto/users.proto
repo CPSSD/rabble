@@ -31,30 +31,9 @@ message LoginResponse {
 
   ResultType result = 1;
   string error_details = 2;
-  // The token the user should send with future requests.
-  string token = 3;
-}
-
-message Token {
-  string token = 1;
-}
-
-message TokenResponse {
-  enum ResultType {
-    OK    = 0;
-    ERROR = 1;
-  }
-
-  ResultType result = 1;
-  string error_details = 2;
-
-  // Set if result is OK
-  int64 global_id = 3;
-  int64 handle = 4;
 }
 
 service Users {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Create(CreateUserRequest) returns (CreateUserResponse);
-  rpc CheckToken(Token) returns (TokenResponse);
 }
