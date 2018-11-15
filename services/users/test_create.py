@@ -1,4 +1,3 @@
-import logging
 import unittest
 from unittest.mock import Mock
 
@@ -14,9 +13,8 @@ class MockDBStub:
 
 class CreateHandlerTest(unittest.TestCase):
     def setUp(self):
-        self.logger = logging.getLogger(__name__)
         self.db_stub = MockDBStub()
-        self.create_handler = CreateHandler(self.logger, self.db_stub)
+        self.create_handler = CreateHandler(Mock(), self.db_stub)
 
     def _make_request(self, handle):
         return users_pb2.CreateUserRequest(
