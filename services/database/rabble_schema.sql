@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS posts (
   author_id         integer NOT NULL,
   title             text    NOT NULL,
   body              text    NOT NULL,
-  creation_datetime integer NOT NULL
+  creation_datetime integer NOT NULL,
+  md_body           text    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (

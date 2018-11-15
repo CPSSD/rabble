@@ -29,6 +29,7 @@ class NewArticleServicer:
             author_id=author.global_id,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
@@ -47,6 +48,7 @@ class NewArticleServicer:
             author=req.author,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         create_resp = self._create_stub.SendCreate(ad)
