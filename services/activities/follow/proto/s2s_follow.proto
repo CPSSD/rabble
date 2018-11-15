@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message FollowActivityUser {
+  string handle = 1;
+  string host = 2;
+}
+
+message FollowDetails {
+  FollowActivityUser follower = 1;
+  FollowActivityUser followed = 2;
+}
+
+message FollowActivityResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+    }
+
+    ResultType result_type = 1;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 2;
+}
+
+service S2SFollow {
+  rpc SendFollowActivity(FollowDetails) returns (FollowActivityResponse);
+  rpc ReceiveFollowActivity(FollowDetails) returns (FollowActivityResponse);
+}
