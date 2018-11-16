@@ -23,7 +23,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
-	//"github.com/piprate/json-gold/ld"
 	"google.golang.org/grpc"
 )
 
@@ -86,13 +85,22 @@ type serverWrapper struct {
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
+	invalidCreationTimeMessage := "Invalid creation time\n"
+
 	parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, published)
-	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
-	if timeErr != nil || protoTimeErr != nil {
+	if timeErr != nil {
 		log.Printf("Error: %s\n", timeErr)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid creation time\n")
-		return nil, fmt.Errorf("Invalid creation time")
+		fmt.Fprintf(w, invalidCreationTimeMessage)
+		return nil, fmt.Errorf(invalidCreationTimeMessage)
+	}
+
+	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
+	if protoTimeErr != nil {
+		log.Printf("Error: %s\n", protoTimeErr)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, invalidCreationTimeMessage)
+		return nil, fmt.Errorf(invalidCreationTimeMessage)
 	}
 
 	timeSinceRequest := time.Since(parsedCreationDatetime)
@@ -293,9 +301,9 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		log.Printf("User %v received a create activity\n", recipient)
 
+		// TODO (sailslick) Parse jsonLD in general case
 		decoder := json.NewDecoder(r.Body)
 		var t createActivityStruct
-		// map[string]interface{}
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
 			log.Printf("Invalid JSON\n")
@@ -305,27 +313,18 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("structure: %s\n", t)
-		// https://www.w3.org/TR/json-ld-api/
-		// proc := ld.NewJsonLdProcessor()
-		// options := ld.NewJsonLdOptions("")
-		flattenedDoc := t
-		// flattenedDoc, err := proc.Flatten(t, nil, options)
-		// https://stackoverflow.com/questions/23125144/unable-to-load-a-json-ld-remote-context
-		// log.Printf("flattened structure: %s\n", flattenedDoc)
-
-		protoTimestamp, parseErr := parseTimestamp(w, flattenedDoc.Object.Published)
+		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published)
 		if parseErr != nil {
 			log.Println(parseErr)
 			return
 		}
 
 		nfa := &createpb.NewForeignArticle{
-			AttributedTo: flattenedDoc.Object.AttributedTo,
-			Content:      flattenedDoc.Object.Content,
+			AttributedTo: t.Object.AttributedTo,
+			Content:      t.Object.Content,
 			Published:    protoTimestamp,
 			Recipient:    recipient,
-			Title:        flattenedDoc.Object.Name,
+			Title:        t.Object.Name,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
