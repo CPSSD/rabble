@@ -19,7 +19,7 @@ import (
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
 	followspb "github.com/cpssd/rabble/services/follows/proto"
-
+	userspb "github.com/cpssd/rabble/services/users/proto"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
@@ -82,6 +82,8 @@ type serverWrapper struct {
 	feed        feedpb.FeedClient
 	createConn  *grpc.ClientConn
 	create      createpb.CreateClient
+	usersConn   *grpc.ClientConn
+	users       userspb.UsersClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -352,20 +354,16 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		handle := vars["handle"][0]
 		password := vars["password"][0]
 		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
-		u := &dbpb.UsersEntry{
+		u := &userspb.CreateUserRequest{
 			DisplayName: displayName,
 			Handle:      handle,
 			Password:    password,
 			Bio:         "nothing",
 		}
-		ur := &dbpb.UsersRequest{
-			Entry:       u,
-			RequestType: dbpb.UsersRequest_INSERT,
-		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		resp, err := s.database.Users(ctx, ur)
+		resp, err := s.users.Create(ctx, u)
 		if err != nil {
 			log.Fatalf("could not add new user: %v", err)
 		}
@@ -419,6 +417,7 @@ func (s *serverWrapper) shutdown() {
 	s.followsConn.Close()
 	s.createConn.Close()
 	s.feedConn.Close()
+	s.usersConn.Close()
 }
 
 func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
@@ -447,6 +446,20 @@ func createCreateClient() (*grpc.ClientConn, createpb.CreateClient) {
 		log.Fatalf("Skinny server did not connect to Create: %v", err)
 	}
 	return conn, createpb.NewCreateClient(conn)
+}
+
+func createUsersClient() (*grpc.ClientConn, userspb.UsersClient) {
+	host := os.Getenv("USERS_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("USERS_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1534"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect to Users: %v", err)
+	}
+	return conn, userspb.NewUsersClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -518,6 +531,7 @@ func buildServerWrapper() *serverWrapper {
 	articleConn, articleClient := createArticleClient()
 	feedConn, feedClient := createFeedClient()
 	createConn, createClient := createCreateClient()
+	usersConn, usersClient := createUsersClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
@@ -532,6 +546,8 @@ func buildServerWrapper() *serverWrapper {
 		feed:         feedClient,
 		createConn:   createConn,
 		create:       createClient,
+		usersConn:    usersConn,
+		users:        usersClient,
 	}
 	s.setupRoutes()
 	return s
