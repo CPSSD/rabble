@@ -83,6 +83,17 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+  follow_activity_service:
+    build:
+      context: ./services/activities/follow
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - testnetwork
+      - default
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
   markdown_service:
     build:
       context: ./services/mdc
