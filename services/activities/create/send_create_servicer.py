@@ -76,7 +76,7 @@ class SendCreateServicer:
                 "attributedTo": actor,
                 "to": [target],
                 "content": req.body
-                }
+            }
         }
         headers = { "Content-Type": "application/ld+json" }
 
