@@ -7,7 +7,7 @@ import os
 import sys
 
 from utils.logger import get_logger
-from servicer import FollowServicer 
+from servicer import FollowServicer
 from proto import s2s_follow_pb2_grpc
 
 

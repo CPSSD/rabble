@@ -2,6 +2,7 @@ import json
 
 from proto import s2s_follow_pb2
 
+
 class ReceiveFollowServicer:
 
     def __init__(self, logger):

@@ -4,7 +4,9 @@ from unittest.mock import Mock, patch
 from send_follow_servicer import SendFollowServicer
 from proto import s2s_follow_pb2
 
+
 class SendFollowServicerTest(unittest.TestCase):
+
     def setUp(self):
         self.servicer = SendFollowServicer(Mock())
 
@@ -53,7 +55,7 @@ class SendFollowServicerTest(unittest.TestCase):
             req.followed.host = 'followed.com'
             req.followed.handle = 'b'
             resp = self.servicer.SendFollowActivity(req, None)
-            self.assertEqual(resp.result_type, 
+            self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.OK)
             self.assertEqual(resp.error, '')
             expected = self.servicer._build_activity('follower.com/@a',
@@ -70,7 +72,7 @@ class SendFollowServicerTest(unittest.TestCase):
             req.followed.host = 'followed.com'
             req.followed.handle = 'b'
             resp = self.servicer.SendFollowActivity(req, None)
-            self.assertEqual(resp.result_type, 
+            self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.ERROR)
             self.assertEqual(resp.error, 'insert error here')
             expected = self.servicer._build_activity('follower.com/@a',

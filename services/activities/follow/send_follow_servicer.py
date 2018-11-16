@@ -4,6 +4,7 @@ from urllib import request
 
 from proto import s2s_follow_pb2
 
+
 class SendFollowServicer:
 
     def __init__(self, logger):
@@ -27,8 +28,8 @@ class SendFollowServicer:
 
     def _send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
-        headers = { "Content-Type": "application/ld+json" }
-        self._logger.info('Sending Follow to ' + target_inbox) 
+        headers = {"Content-Type": "application/ld+json"}
+        self._logger.info('Sending Follow to ' + target_inbox)
         req = request.Request(target_inbox,
                               data=body,
                               headers=headers,
