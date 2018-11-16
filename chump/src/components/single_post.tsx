@@ -1,0 +1,72 @@
+import * as React from "react";
+import { Link, RouteProps } from "react-router-dom";
+
+import { GetSinglePost, IBlogPost } from "../models/posts";
+import { Post } from "./post";
+
+interface ISinglePostState {
+  posts: IBlogPost[];
+  user: string;
+}
+
+interface ISinglePostProps extends RouteProps {
+  match: {
+    params: {
+      user: string,
+      article_id: string,
+    },
+  };
+}
+
+export class SinglePost extends React.Component<ISinglePostProps, ISinglePostState> {
+  constructor(props: ISinglePostProps) {
+    super(props);
+    this.state = {
+      posts: [],
+      user: "",
+    };
+  }
+
+  componentDidMount() {
+    GetSinglePost(this.props.match.params.user, this.props.match.params.article_id)
+      .then((posts: IBlogPost[]) => {
+        this.setState({
+          posts,
+          user: this.props.match.params.user,
+        });
+      })
+      .catch(this.handleGetPostErr);
+  }
+
+  public handleGetPostErr() {
+    alert("Could not communicate with server :(");
+  }
+
+  public renderPosts() {
+    if (this.state.posts.length === 0) {
+      return (
+        <div>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <p>Specified article does not exist</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="pure-g" key={1}>
+        <Post blogPost={this.state.posts[0]}/>
+      </div>
+    );
+  }
+
+  public render() {
+    const blogPosts = this.renderPosts();
+    return (
+      <div>
+        {blogPosts}
+      </div>
+    );
+  }
+}
