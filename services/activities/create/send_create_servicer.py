@@ -9,7 +9,7 @@ from proto import database_pb2
 class SendCreateServicer:
 
     def __init__(self, db_stub, logger, users_util):
-        host_name = os.environ["HOST_NAME"]
+        host_name = os.environ.get("HOST_NAME")
         if not host_name:
             print("Please set HOST_NAME env variable")
             sys.exit(1)
@@ -93,14 +93,14 @@ class SendCreateServicer:
                 retries=2,
                 headers=headers
             )
-            self._logger.info("Create activity sent. Response status: %s", r.status)
+            self._logger.debug("Create activity sent. Response status: %s", r.status)
         except Exception as e:
             self._logger.error("Create activity for follower: %s failed", target)
             self._logger.error(e)
 
 
     def SendCreate(self, req, context):
-        self._logger.info("Recieved a new create action.")
+        self._logger.debug("Recieved a new create action.")
 
         # list of follow objects
         follow_list = self._get_follower_list(req.author)

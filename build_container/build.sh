@@ -30,6 +30,7 @@ echo "Running build"
 # Add build commands here.
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
+cp -R services/activities/create build_out/activities/
 
 echo "Building database service"
 cp -R services/database build_out/
@@ -58,6 +59,8 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/article \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  --python_out=build_out/activities/create \
+  --grpc_python_out=build_out/activities/create \
   build_out/article/proto/article.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
@@ -71,7 +74,6 @@ python3 -m grpc_tools.protoc \
   services/mdc/proto/mdc.proto
 
 echo "Building create service"
-cp -R services/activities/create build_out/activities/
 python3 -m grpc_tools.protoc \
   -Ibuild_out/activities/create \
   --python_out=build_out/activities/create \
