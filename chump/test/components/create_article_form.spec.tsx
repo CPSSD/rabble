@@ -9,9 +9,17 @@ import { mount } from "../enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 
+const examplePost = {
+  author: "sips",
+  body: "id be in so much trouble<br>i'd never live it down<br>lol",
+  global_id: "3",
+  title: "the man, the myth, the legend",
+};
+
 describe("CreateArticleForm", () => {
   let testComponent: any;
   let createStub: any;
+  let previewStub: any;
   let alertStub: any;
 
   afterEach(() => {
@@ -122,6 +130,45 @@ describe("CreateArticleForm", () => {
       createStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
+      setTimeout(() => {
+        expect(alertStub.called).to.equal(true);
+        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        done();
+      }, 200);
+    });
+  });
+
+  describe("can handle previewing", () => {
+
+    beforeEach(() => {
+      previewStub = sandbox.stub(article, "CreatePreview");
+      alertStub = sandbox.stub(CreateArticleForm.prototype, "alertUser" as any);
+    });
+
+    it("successfully get and show preview", (done) => {
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      const promise = new bluebird.Promise((resolve) => {
+        resolve({ body: examplePost });
+      });
+      previewStub.returns(promise);
+      testComponent.find("button").at(0).simulate("click");
+      expect(previewStub.called).to.equal(true);
+      promise.finally(() => {
+        expect(testComponent.state()).to.have.property("showModal", true);
+        expect(testComponent.state().post).to.have.property("author", "sips");
+        done();
+      });
+    });
+
+    it("and handle req error", (done) => {
+      const alertMessage: string = "500";
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      const promise = new bluebird.Promise((resolve, reject) => {
+        reject(new Error(alertMessage));
+      });
+      previewStub.returns(promise);
+      testComponent.find("button").at(0).simulate("click");
+      expect(previewStub.called).to.equal(true);
       setTimeout(() => {
         expect(alertStub.called).to.equal(true);
         expect(alertStub.calledWith(alertMessage)).to.equal(true);
