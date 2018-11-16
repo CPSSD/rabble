@@ -30,14 +30,25 @@ class UsersUtilTest(unittest.TestCase):
         self.assertEqual(a, 'cianlr')
         self.assertEqual(b, 'neopets.com')
 
+    def test_parse_actor(self):
+        a, b = self.util.parse_actor('neopets.com/@cianlr')
+        self.assertEqual(a, 'neopets.com')
+        self.assertEqual(b, 'cianlr')
+
+    def test_parse_bad_actor(self):
+        with self.assertLogs(self.logger, level='WARNING'):
+            a, b = self.util.parse_actor('a@b@c')
+            self.assertIsNone(a)
+            self.assertIsNone(b)
+
     def test_parse_bad_username(self):
         with self.assertLogs(self.logger, level='WARNING'):
             a, b = self.util.parse_username('a@b@c')
             self.assertIsNone(a)
             self.assertIsNone(b)
 
-    def test_get_user_from_db_too_many_attempts(self):
-        resp = self.util.get_user_from_db(None, None, attempt_number=100)
+    def test_get_or_create_user_from_db_too_many_attempts(self):
+        resp = self.util.get_or_create_user_from_db(None, None, attempt_number=100)
         self.assertIsNone(resp)
 
 

@@ -6,15 +6,26 @@ import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
 import { IBlogPost } from "../src/models/posts";
-import { Feed } from "../src/components/feed";
+import { User } from "../src/components/user";
 import { mount, shallow } from "./enzyme";
 
-describe("Feed", () => {
+describe("User", () => {
   it("should call post collecting methods", () => {
-    const getPosts = sinon.spy(Feed.prototype, "getPosts");
-    const render = sinon.spy(Feed.prototype, "renderPosts");
+    const getPosts = sinon.spy(User.prototype, "getPosts");
+    const render = sinon.spy(User.prototype, "renderPosts");
 
-    const wrapper = mount(<MemoryRouter><Feed username=""/></MemoryRouter>);
+    const userProps = {
+      match: {
+        params: {
+          user: "cian",
+        },
+      },
+    };
+    const wrapper = mount(
+      <MemoryRouter>
+        <User {...userProps} />
+      </MemoryRouter>
+    );
 
     expect(getPosts).to.have.property("callCount", 1);
     expect(render).to.have.property("callCount", 1);
@@ -25,9 +36,14 @@ describe("Feed", () => {
   });
 
   it("should properly render posts", () => {
-    const getPosts = sinon.spy(Feed.prototype, "getPosts");
-
-    const wrapper = shallow(<Feed username=""/>);
+    const userProps = {
+      match: {
+        params: {
+          user: "sips",
+        },
+      },
+    };
+    const wrapper = shallow(<User {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Post")).to.have.lengthOf(0);
 
@@ -39,11 +55,7 @@ describe("Feed", () => {
       },
     ]});
 
-    expect(Feed.prototype.getPosts).to.have.property("callCount", 1);
-    expect(wrapper.find("div")).to.have.lengthOf(5);
+    expect(wrapper.find("div")).to.have.lengthOf(2);
     expect(wrapper.find("Post")).to.have.lengthOf(1);
-
-    // Cleanup spies
-    getPosts.restore();
   });
 });

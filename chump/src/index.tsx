@@ -8,6 +8,7 @@ import {Header} from "./components/header";
 import {Feed} from "./components/feed";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
+import {User} from "./components/user";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -38,11 +39,24 @@ export class App extends React.Component<{}, IAppState> {
         <div>
           <Header username={this.state.username} />
           <Switch>
-            <Route exact={true} path="/" component={Feed}/>
+            <Route
+              exact={true}
+              path="/"
+              render={(props) => <Feed {...props} username=""/>}
+            />
             <Route path="/about" component={About}/>
+            <Route
+              path="/@:user"
+              component={User}
+            />
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <PrivateRoute
+              path="/feed"
+              username={this.state.username}
+              component={Feed}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>

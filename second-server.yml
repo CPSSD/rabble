@@ -22,7 +22,7 @@ services:
       - FOLLOWS_SERVICE_HOST=follows_service
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
-      - CREATE_SERVICE_HOST=create_service
+      - CREATE_SERVICE_HOST=create_service2
   feed_service:
     build:
       context: ./services/feed
@@ -82,8 +82,9 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
-      - CREATE_SERVICE_HOST=create_service
-  create_service:
+      - CREATE_SERVICE_HOST=create_service2
+      - MDC_SERVICE_HOST=markdown_service
+  create_service2:
     build:
       context: ./services/activities/create
       dockerfile: Dockerfile
@@ -91,9 +92,14 @@ services:
       - .:/repo
     depends_on:
       - "database_service"
+    networks:
+      - rabble_testnetwork
+      - default
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+      - ARTICLE_SERVICE_HOST=article_service
+      - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
   markdown_service:
     build:
       context: ./services/mdc

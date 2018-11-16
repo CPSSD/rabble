@@ -41,7 +41,7 @@ def main():
         UsersServicer(logger, get_db_stub(logger)),
         server)
     server.add_insecure_port('0.0.0.0:1534')
-    logger.info("Starting users server")
+    logger.info("Starting users server at port 1534")
     server.start()
     try:
         while True:
