@@ -40,8 +40,8 @@ class SendFollowServicer:
             return None
         except Exception as e:
             self._logger.error('Error trying to send activity:')
-            self._logger.error(e)
-            return e
+            self._logger.error(str(e))
+            return str(e)
 
     def SendFollowActivity(self, req, context):
         resp = s2s_follow_pb2.FollowActivityResponse()
