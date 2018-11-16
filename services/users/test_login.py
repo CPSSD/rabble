@@ -45,7 +45,7 @@ class LoginHandlerTest(unittest.TestCase):
         )
         resp = self.login_handler.Login(req, None)
         self.assertEqual(resp.result, users_pb2.LoginResponse.ERROR)
-        self.assertEqual(resp.error_details, err)
+        self.assertEqual(resp.error, err)
 
     def test_handle_no_user(self):
         req = self._make_request()

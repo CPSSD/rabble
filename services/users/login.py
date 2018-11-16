@@ -32,7 +32,7 @@ class LoginHandler:
                                  db_resp.error)
             return users_pb2.LoginResponse(
                 result=users_pb2.LoginResponse.ERROR,
-                error_details=db_resp.error,
+                error=db_resp.error,
             )
         elif len(db_resp.results) != 1:
             self._logger.warning(
@@ -40,7 +40,7 @@ class LoginHandler:
                 len(db_resp.results), request.handle)
             return users_pb2.LoginResponse(
                 result=users_pb2.LoginResponse.ERROR,
-                error_details="Got wrong number of users matching query",
+                error="Got wrong number of users matching query",
             )
         # Check password
         if not self._check_password(request.password,
