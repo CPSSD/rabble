@@ -24,6 +24,7 @@ message FollowActivityResponse {
     string error = 2;
 }
 
+// Service for sending and receiving server-to-server follow requests.
 service S2SFollow {
   rpc SendFollowActivity(FollowDetails) returns (FollowActivityResponse);
   rpc ReceiveFollowActivity(FollowDetails) returns (FollowActivityResponse);
