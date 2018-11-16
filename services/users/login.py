@@ -49,7 +49,7 @@ class LoginHandler:
             return users_pb2.LoginResponse(
                 result=users_pb2.LoginResponse.DENIED,
             )
-        self._logger.info("ACCESS GRANTED for user %s", request.handle)
+        self._logger.info("*hacker voice* I'm in (%s)", request.handle)
         return users_pb2.LoginResponse(
             result=users_pb2.LoginResponse.ACCEPTED,
         )
