@@ -87,6 +87,14 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/activities/create \
   build_out/database/proto/database.proto
 
+echo "Building s2s_follow service"
+cp -R services/activities/follow build_out/activities/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/activities/follow \
+  --python_out=build_out/activities/follow \
+  --grpc_python_out=build_out/activities/follow \
+  build_out/activities/follow/proto/s2s_follow.proto
+
 echo "Building users service"
 cp -R services/users build_out/
 python3 -m grpc_tools.protoc \
@@ -119,6 +127,8 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/users \
   --python_out=build_out/activities/create \
   --grpc_python_out=build_out/activities/create \
+  --python_out=build_out/activities/follow \
+  --grpc_python_out=build_out/activities/follow \
   build_out/logger/proto/logger.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
@@ -136,6 +146,7 @@ protoc -I. --go_out=plugins=grpc:"." services/article/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/activities/create/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/activities/follow/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/users/proto/*.proto
 
 echo "Creating go workspace"

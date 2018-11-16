@@ -100,6 +100,17 @@ services:
       - LOGGER_SERVICE_HOST=logger_service
       - ARTICLE_SERVICE_HOST=article_service
       - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
+  follow_activity_service2:
+    build:
+      context: ./services/activities/follow
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - testnetwork
+      - default
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
   markdown_service:
     build:
       context: ./services/mdc
