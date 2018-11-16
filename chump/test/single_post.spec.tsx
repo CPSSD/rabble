@@ -44,7 +44,7 @@ describe("SinglePost", () => {
     const wrapper = shallow(<SinglePost {...postProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Post")).to.have.lengthOf(0);
-    expect(wrapper.find("p").text()).to.contain("Specified article does not exist");
+    expect(wrapper.find("p").text()).to.contain("404: Article not found");
   });
 
   it("should render page when there is a post", () => {

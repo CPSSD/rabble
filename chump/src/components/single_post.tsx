@@ -48,7 +48,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
         <div>
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
-            <p>Specified article does not exist</p>
+            <p>404: Article not found</p>
           </div>
         </div>
       );

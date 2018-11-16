@@ -175,9 +175,6 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
 	resp, err := s.db.Posts(ctx, pr)
 	if err != nil {
 		log.Print("Single article db get went wrong. Error: %v", err)
