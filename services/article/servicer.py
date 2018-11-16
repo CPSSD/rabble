@@ -9,7 +9,7 @@ class ArticleServicer(article_pb2_grpc.ArticleServicer):
         self._logger = logger
         self._create_stub = create_stub
         self._db_stub = db_stub
-        self._md_stub = md_sub
+        self._md_stub = md_stub
         self._users_util = users_util
 
         new_article_servicer = NewArticleServicer(create_stub, db_stub, md_stub,
