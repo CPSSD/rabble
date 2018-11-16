@@ -23,6 +23,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/session"
 	"google.golang.org/grpc"
 )
 
