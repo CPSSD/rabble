@@ -13,6 +13,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - testnetwork
+      - default
     environment:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
       - USERS_SERVICE_HOST=users_service
@@ -96,6 +99,8 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+      - ARTICLE_SERVICE_HOST=article_service
+      - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
   markdown_service:
     build:
       context: ./services/mdc

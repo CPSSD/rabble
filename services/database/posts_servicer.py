@@ -28,11 +28,12 @@ class PostsDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO posts '
-                '(author, title, body, creation_datetime) '
-                'VALUES (?, ?, ?, ?)',
-                req.entry.author, req.entry.title,
+                '(author_id, title, body, creation_datetime, md_body) '
+                'VALUES (?, ?, ?, ?, ?)',
+                req.entry.author_id, req.entry.title,
                 req.entry.body,
-                req.entry.creation_datetime.seconds)
+                req.entry.creation_datetime.seconds,
+                req.entry.md_body)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
@@ -40,7 +41,7 @@ class PostsDatabaseServicer:
         resp.result_type = database_pb2.PostsResponse.OK
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 5:
+        if len(tup) != 6:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -48,10 +49,11 @@ class PostsDatabaseServicer:
         try:
             # You'd think there'd be a better way.
             entry.global_id = tup[0]
-            entry.author = tup[1]
+            entry.author_id = tup[1]
             entry.title = tup[2]
             entry.body = tup[3]
             entry.creation_datetime.seconds = tup[4]
+            entry.md_body = tup[5]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +

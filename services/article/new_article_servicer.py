@@ -6,11 +6,12 @@ from proto import mdc_pb2
 
 class NewArticleServicer:
 
-    def __init__(self, create_stub, db_stub, md_stub, logger):
+    def __init__(self, create_stub, db_stub, md_stub, logger, users_util):
         self._create_stub = create_stub
         self._db_stub = db_stub
         self._md_stub = md_stub
         self._logger = logger
+        self._users_util = users_util
 
     def get_html_body(self, body):
         convert_req = mdc_pb2.MDRequest(md_body=body)
@@ -18,11 +19,17 @@ class NewArticleServicer:
         return res.html_body
 
     def send_insert_request(self, req):
+        author = self._users_util.get_user_from_db(handle=req.author,
+                                                   host=None)
+        if author is None:
+            self._logger.error('Could not find user in db: ' + str(req.author))
+            return database_pb2.PostsResponse.error
         html_body = self.get_html_body(req.body)
         pe = database_pb2.PostsEntry(
-            author=req.author,
+            author_id=author.global_id,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
@@ -41,6 +48,7 @@ class NewArticleServicer:
             author=req.author,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         create_resp = self._create_stub.SendCreate(ad)
@@ -53,8 +61,14 @@ class NewArticleServicer:
 
         resp = article_pb2.NewArticleResponse()
         if success == database_pb2.PostsResponse.OK:
+            self._logger.info('Article created.')
             resp.result_type = article_pb2.NewArticleResponse.OK
-            create_success = self.send_create_activity_request(req)
+            if not req.foreign:
+                # TODO (sailslick) persist create activities
+                # or add to queueing service
+                create_success = self.send_create_activity_request(req)
+                if create_success == create_pb2.CreateResponse.ERROR:
+                    self._logger.error('Could not send create Activity')
         else:
             resp.result_type = article_pb2.NewArticleResponse.ERROR
         return resp

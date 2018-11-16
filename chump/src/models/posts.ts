@@ -8,7 +8,8 @@ export interface IBlogPost {
   body: string;
 }
 
-const apiURL = "/c2s/feed";
+const feedApiURL = "/c2s/feed";
+const perUserApiURL = "/c2s/@";
 
 export function SortPosts(b: IBlogPost[]) {
   // TODO: Once creation_datetime is working, sort by that (or global_id)
@@ -22,8 +23,7 @@ export function FixNewlines(b: IBlogPost[]) {
   }
 }
 
-export function GetPublicPosts(username= "") {
-  const url = username === "" ? apiURL : `${apiURL}/${username}`;
+export function PostsAPIPromise(url: string) {
   return new Promise<IBlogPost[]>((resolve, reject) => {
     superagent
       .get(url)
@@ -43,4 +43,14 @@ export function GetPublicPosts(username= "") {
         resolve(posts);
       });
   });
+}
+
+export function GetUsersPosts(username: string) {
+  const url = `${perUserApiURL}${username}`;
+  return PostsAPIPromise(url);
+}
+
+export function GetPublicPosts(username= "") {
+  const url = username === "" ? feedApiURL : `${feedApiURL}/${username}`;
+  return PostsAPIPromise(url);
 }

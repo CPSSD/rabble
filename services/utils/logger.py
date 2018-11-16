@@ -17,9 +17,9 @@ def get_logger(name, level):
     sh = logging.StreamHandler()
     sh.setLevel(level)
     logger.addHandler(sh)
-    if LOGGER_ENV_VAR in os.environ:
-        logger_addr = os.environ[LOGGER_ENV_VAR] + ':1867'
-        logger.addHandler(GrpcHandler(name, logger_addr))
+    logger_host = os.environ.get(LOGGER_ENV_VAR)
+    if logger_host:
+        logger.addHandler(GrpcHandler(name, logger_host + ':1867'))
     else:
         logger.warning(LOGGER_ENV_VAR + ' env var not set, ' +
                        'only logging locally')

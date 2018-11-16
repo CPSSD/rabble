@@ -8,20 +8,26 @@ import (
 	"os"
 	"time"
 
-	"google.golang.org/grpc"
-
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	pb "github.com/cpssd/rabble/services/feed/proto"
+	"google.golang.org/grpc"
 )
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
-func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, r := range p.Results {
+		// TODO(iandioch): Find a way to avoid or cache these requests.
+		author, err := s.getAuthorFromDb(ctx, "", "", r.AuthorId)
+		if err != nil {
+			// Error has already been logged.
+			continue
+		}
 		np := &pb.Post{
-			GlobalId:         r.GlobalId,
-			Author:           r.Author,
+			GlobalId: r.GlobalId,
+			// TODO(iandioch): Consider what happens for foreign users.
+			Author:           author.Handle,
 			Title:            r.Title,
 			Body:             r.Body,
 			CreationDatetime: r.CreationDatetime,
@@ -31,16 +37,125 @@ func convertDBToFeed(p *dbpb.PostsResponse) *pb.FeedResponse {
 	return fp
 }
 
+func (s *server) convertManyToFeed(ctx context.Context, posts []*dbpb.PostsResponse) *pb.FeedResponse {
+	fp := &pb.FeedResponse{}
+	for _, p := range posts {
+		r := s.convertDBToFeed(ctx, p)
+		fp.Results = append(fp.Results, r.Results...)
+	}
+	return fp
+}
+
+func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*dbpb.UsersEntry, error) {
+	const errFmt = "Could not find user %v@%v. error: %v"
+	r := &dbpb.UsersRequest{
+		RequestType: dbpb.UsersRequest_FIND,
+		Match: &dbpb.UsersEntry{
+			Handle:   handle,
+			Host:     host,
+			GlobalId: globalId,
+		},
+	}
+
+	resp, err := s.db.Users(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, handle, host, err)
+	}
+
+	if resp.ResultType != dbpb.UsersResponse_OK {
+		return nil, fmt.Errorf(errFmt, handle, host, resp.Error)
+	}
+
+	if len(resp.Results) == 0 {
+		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
+	}
+
+	return resp.Results[0], nil
+}
+
 type server struct {
 	db dbpb.DatabaseClient
 }
 
+func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Follow, error) {
+	const errorFmt = "Could not get follows for user %#v: %v"
+
+	r := &dbpb.DbFollowRequest{
+		RequestType: dbpb.DbFollowRequest_FIND,
+		Match:       &dbpb.Follow{Follower: u.GlobalId},
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	resp, err := s.db.Follow(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf(errorFmt, *u, err)
+	}
+
+	if resp.ResultType != dbpb.DbFollowResponse_OK {
+		return nil, fmt.Errorf(errorFmt, *u, resp.Error)
+	}
+
+	return resp.Results, nil
+}
+
+// GetUserFeed returns all posts from users that a person is following.
+// It is not a service directly, it is called if there is a username in a feed.Get.
+func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	const feedErr = "feed.GetUserFeed(%v) failed: %v"
+
+	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
+	if err != nil {
+		err := fmt.Errorf(feedErr, r.Username, err)
+		log.Print(err)
+		return nil, err
+	}
+
+	follows, err := s.getFollows(ctx, author)
+	if err != nil {
+		err := fmt.Errorf(feedErr, r.Username, err)
+		log.Print(err)
+		return nil, err
+	}
+
+	posts := []*dbpb.PostsResponse{}
+	for _, f := range follows {
+		pr := &dbpb.PostsRequest{
+			RequestType: dbpb.PostsRequest_FIND,
+			Match:       &dbpb.PostsEntry{GlobalId: f.Followed},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.db.Posts(ctx, pr)
+		if err != nil {
+			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+
+		posts = append(posts, resp)
+	}
+
+	return s.convertManyToFeed(ctx, posts), nil
+}
+
+// Get is responsible for handling feeds
+// It takes an optional username argument, if it exists it sends the request to
+// GetUserFeed, otherwise it returns all articles on the instance.
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
+	log.Print(r.Username)
+	if r.Username != "" {
+		return s.GetUserFeed(ctx, r)
+	}
+
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
 	resp, err := s.db.Posts(ctx, pr)
@@ -48,17 +163,24 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
 	}
 
-	return convertDBToFeed(resp), nil
+	return s.convertDBToFeed(ctx, resp), nil
 }
 
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	if r.Username == "" {
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
+
+	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
+	if err != nil {
+		return nil, err
+	}
+	authorId := author.GlobalId
+
 	pr := &dbpb.PostsRequest{
 		RequestType: dbpb.PostsRequest_FIND,
 		Match: &dbpb.PostsEntry{
-			Author: r.Username,
+			AuthorId: authorId,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -67,7 +189,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
-	return convertDBToFeed(resp), nil
+	return s.convertDBToFeed(ctx, resp), nil
 }
 
 func newServer(c *grpc.ClientConn) *server {
