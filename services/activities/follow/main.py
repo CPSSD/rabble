@@ -30,12 +30,8 @@ def main():
     server.add_insecure_port('0.0.0.0:1922')
     logger.info("Starting s2s follow server on port 1922")
     server.start()
-    try:
-        while True:
-            time.sleep(60 * 60 * 24)  # One day
-    except KeyboardInterrupt:
-        db_channel.close()
-        pass
+    while True:
+        time.sleep(60 * 60 * 24)  # One day
 
 if __name__ == '__main__':
     main()
