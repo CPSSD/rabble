@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 message FollowActivityUser {
   string handle = 1;
   string host = 2;
