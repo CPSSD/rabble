@@ -27,7 +27,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
     };
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     GetSinglePost(this.props.match.params.user, this.props.match.params.article_id)
       .then((posts: IBlogPost[]) => {
         this.setState({
@@ -42,7 +42,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
     alert("Could not communicate with server :(");
   }
 
-  public renderPosts() {
+  public renderPost() {
     if (this.state.posts.length === 0) {
       return (
         <div>
@@ -62,10 +62,10 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
   }
 
   public render() {
-    const blogPosts = this.renderPosts();
+    const blogPost = this.renderPost();
     return (
       <div>
-        {blogPosts}
+        {blogPost}
       </div>
     );
   }
