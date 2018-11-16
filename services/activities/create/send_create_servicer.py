@@ -1,5 +1,6 @@
 import urllib3
 import json
+import os
 
 from proto import create_pb2
 from proto import database_pb2
@@ -8,6 +9,11 @@ from proto import database_pb2
 class SendCreateServicer:
 
     def __init__(self, db_stub, logger, users_util):
+        host_name = os.environ.get("HOST_NAME")
+        if not host_name:
+            print("Please set HOST_NAME env variable")
+            sys.exit(1)
+        self._host_name = host_name
         self._db_stub = db_stub
         self._logger = logger
         self._users_util = users_util
@@ -20,7 +26,7 @@ class SendCreateServicer:
                 global_id=follow.follower
             )
             if follower_entry is None:
-                self._logger.error('Could not find follower in db. Id: %s', follow.follower)
+                self._logger.error("Could not find follower in db. Id: %s", follow.follower)
                 continue
             if follower_entry.host:
                 ff = (follower_entry.host, follower_entry.handle)
@@ -31,7 +37,7 @@ class SendCreateServicer:
         # get author user_id
         author_entry = self._users_util.get_user_from_db(handle=author)
         if author_entry is None:
-            self._logger.error('Could not find author in db: %s', user_resp.error)
+            self._logger.error("Could not find author in db")
             return []
 
         follow_entry = database_pb2.Follow(
@@ -44,7 +50,7 @@ class SendCreateServicer:
         follow_resp = self._db_stub.Follow(follow_req)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error(
-                'Find for followers or id: %s returned error: %s',
+                "Find for followers of id: %s returned error: %s",
                 author_entry.global_id,
                 follow_resp.error
             )
@@ -54,28 +60,29 @@ class SendCreateServicer:
 
     # follower_tuple is (host, handle)
     def _post_create_req(self, follower_tuple, req):
-        # Target format is host/@handle e.g. banana.com/@banana
+        # Target & actor format is host/@handle e.g. banana.com/@banana
         target = follower_tuple[0] + "/@" + follower_tuple[1]
+        actor = self._host_name + "/@" + req.author
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
             "@context": "https://www.w3.org/ns/activitystreams",
             "type": "Create",
             "to": [target],
-            "actor": req.author,
+            "actor": actor,
             "object": {
                 "type": "Article",
                 "name": req.title,
                 "published": timestamp,
-                "attributedTo": req.author,
+                "attributedTo": actor,
                 "to": [target],
                 "content": req.body
-                }
+            }
         }
-        headers = { "Content-Type": "application/json" }
+        headers = { "Content-Type": "application/ld+json" }
 
         # s2s inbox for user. Format banana.com/ap/@banana/inbox
         target_inbox = follower_tuple[0] + "/ap/@" + follower_tuple[1] + "/inbox"
-        encoded_body = json.dumps(create_activity).encode('utf-8')
+        encoded_body = json.dumps(create_activity).encode("utf-8")
         self._logger.info(target_inbox)
 
         try:
@@ -86,15 +93,14 @@ class SendCreateServicer:
                 retries=2,
                 headers=headers
             )
-            self._logger.info(r.status)
-            self._logger.info(r)
+            self._logger.debug("Create activity sent. Response status: %s", r.status)
         except Exception as e:
             self._logger.error("Create activity for follower: %s failed", target)
             self._logger.error(e)
 
 
     def SendCreate(self, req, context):
-        self._logger.info('Recieved a new create action.')
+        self._logger.debug("Recieved a new create action.")
 
         # list of follow objects
         follow_list = self._get_follower_list(req.author)

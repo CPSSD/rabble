@@ -14,12 +14,14 @@ import (
 	"syscall"
 	"time"
 
+	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 	articlepb "github.com/cpssd/rabble/services/article/proto"
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
 	followspb "github.com/cpssd/rabble/services/follows/proto"
-	createpb "github.com/cpssd/rabble/services/activities/create/proto"
+	userspb "github.com/cpssd/rabble/services/users/proto"
 	"github.com/golang/protobuf/ptypes"
+	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 )
@@ -29,6 +31,23 @@ const (
 	timeParseFormat = "2006-01-02T15:04:05.000Z"
 	timeoutDuration = time.Minute * 5
 )
+
+type createActivityObjectStruct struct {
+	Content      string   `json:"content"`
+	Name         string   `json:"name"`
+	Published    string   `json:"published"`
+	AttributedTo string   `json:"attributedTo"`
+	Recipient    []string `json:"to"`
+	Type         string   `json:"type"`
+}
+
+type createActivityStruct struct {
+	Actor     string                     `json:"actor"`
+	Context   string                     `json:"@context"`
+	Object    createActivityObjectStruct `json:"object"`
+	Recipient []string                   `json:"to"`
+	Type      string                     `json:"type"`
+}
 
 type createArticleStruct struct {
 	Author           string `json:"author"`
@@ -63,6 +82,36 @@ type serverWrapper struct {
 	feed        feedpb.FeedClient
 	createConn  *grpc.ClientConn
 	create      createpb.CreateClient
+	usersConn   *grpc.ClientConn
+	users       userspb.UsersClient
+}
+
+func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
+	invalidCreationTimeMessage := "Invalid creation time\n"
+
+	parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, published)
+	if timeErr != nil {
+		log.Printf("Error: %s\n", timeErr)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, invalidCreationTimeMessage)
+		return nil, fmt.Errorf(invalidCreationTimeMessage)
+	}
+
+	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
+	if protoTimeErr != nil {
+		log.Printf("Error: %s\n", protoTimeErr)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, invalidCreationTimeMessage)
+		return nil, fmt.Errorf(invalidCreationTimeMessage)
+	}
+
+	timeSinceRequest := time.Since(parsedCreationDatetime)
+	if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Old creation time\n")
+		return nil, fmt.Errorf("Old creation time")
+	}
+	return protoTimestamp, nil
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -98,7 +147,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 
 		v := mux.Vars(r)
 		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(400)  // Bad Request
+			w.WriteHeader(400) // Bad Request
 			return
 		}
 		fr := &feedpb.FeedRequest{Username: v["username"]}
@@ -217,21 +266,9 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, t.CreationDatetime)
-		protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
-		if timeErr != nil || protoTimeErr != nil {
-			log.Printf("Invalid creation time\n")
-			log.Printf("Error: %s\n", timeErr)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid creation time\n")
-			return
-		}
-
-		timeSinceRequest := time.Since(parsedCreationDatetime)
-		if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
-			log.Printf("Old creation time")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Old creation time\n")
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		if parseErr != nil {
+			log.Println(parseErr)
 			return
 		}
 
@@ -240,6 +277,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
+			Foreign:          false,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -265,6 +303,43 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		log.Printf("User %v received a create activity\n", recipient)
 
+		// TODO (sailslick) Parse jsonLD in general case
+		decoder := json.NewDecoder(r.Body)
+		var t createActivityStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published)
+		if parseErr != nil {
+			log.Println(parseErr)
+			return
+		}
+
+		nfa := &createpb.NewForeignArticle{
+			AttributedTo: t.Object.AttributedTo,
+			Content:      t.Object.Content,
+			Published:    protoTimestamp,
+			Recipient:    recipient,
+			Title:        t.Object.Name,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.create.ReceiveCreate(ctx, nfa)
+		if err != nil || resp.ResultType == createpb.CreateResponse_ERROR {
+			log.Printf("Could not receive create activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving create activity\n")
+			return
+		}
+
+		log.Printf("Activity was alright :+1:Received: %v\n", resp.Error)
 		fmt.Fprintf(w, "Created blog with title\n")
 	}
 }
@@ -279,20 +354,16 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		handle := vars["handle"][0]
 		password := vars["password"][0]
 		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
-		u := &dbpb.UsersEntry{
+		u := &userspb.CreateUserRequest{
 			DisplayName: displayName,
 			Handle:      handle,
-			Password: password,
-			Bio: "nothing",
-		}
-		ur := &dbpb.UsersRequest{
-			Entry:       u,
-			RequestType: dbpb.UsersRequest_INSERT,
+			Password:    password,
+			Bio:         "nothing",
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		resp, err := s.database.Users(ctx, ur)
+		resp, err := s.users.Create(ctx, u)
 		if err != nil {
 			log.Fatalf("could not add new user: %v", err)
 		}
@@ -346,6 +417,7 @@ func (s *serverWrapper) shutdown() {
 	s.followsConn.Close()
 	s.createConn.Close()
 	s.feedConn.Close()
+	s.usersConn.Close()
 }
 
 func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
@@ -374,6 +446,20 @@ func createCreateClient() (*grpc.ClientConn, createpb.CreateClient) {
 		log.Fatalf("Skinny server did not connect to Create: %v", err)
 	}
 	return conn, createpb.NewCreateClient(conn)
+}
+
+func createUsersClient() (*grpc.ClientConn, userspb.UsersClient) {
+	host := os.Getenv("USERS_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("USERS_SERVICE_HOST env var not set for skinny server.")
+	}
+	addr := host + ":1534"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect to Users: %v", err)
+	}
+	return conn, userspb.NewUsersClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
@@ -445,6 +531,7 @@ func buildServerWrapper() *serverWrapper {
 	articleConn, articleClient := createArticleClient()
 	feedConn, feedClient := createFeedClient()
 	createConn, createClient := createCreateClient()
+	usersConn, usersClient := createUsersClient()
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
@@ -459,6 +546,8 @@ func buildServerWrapper() *serverWrapper {
 		feed:         feedClient,
 		createConn:   createConn,
 		create:       createClient,
+		usersConn:    usersConn,
+		users:        usersClient,
 	}
 	s.setupRoutes()
 	return s
