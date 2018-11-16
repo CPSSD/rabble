@@ -28,7 +28,7 @@ class CreateHandler:
                                  db_resp.error)
             return users_pb2.CreateUserResponse(
                 result_type=users_pb2.CreateUserResponse.ERROR,
-                error_details=db_resp.error,
+                error=db_resp.error,
             )
         return users_pb2.CreateUserResponse(
             result_type=users_pb2.CreateUserResponse.OK,

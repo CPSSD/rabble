@@ -33,7 +33,7 @@ class CreateHandlerTest(unittest.TestCase):
         )
         resp = self.create_handler.Create(req, None)
         self.assertEqual(resp.result_type, users_pb2.CreateUserResponse.ERROR)
-        self.assertEqual(resp.error_details, err)
+        self.assertEqual(resp.error, err)
 
     def test_send_db_request(self):
         req = self._make_request("CianLR")

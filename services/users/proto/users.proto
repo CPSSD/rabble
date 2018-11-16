@@ -14,7 +14,7 @@ message CreateUserResponse {
   }
 
   ResultType result_type = 1;
-  string error_details = 2;
+  string error = 2;
 }
 
 message LoginRequest {
@@ -30,7 +30,7 @@ message LoginResponse {
   }
 
   ResultType result = 1;
-  string error_details = 2;
+  string error = 2;
 }
 
 service Users {

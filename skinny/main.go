@@ -295,7 +295,7 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		if err != nil {
 			log.Fatalf("could not add new user: %v", err)
 		}
-		fmt.Fprintf(w, "Received: %#v\n", resp.ErrorDetails)
+		fmt.Fprintf(w, "Received: %#v\n", resp.Error)
 		// TODO(iandioch): Return JSON with response status or error.
 	}
 }
