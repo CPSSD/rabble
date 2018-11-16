@@ -30,6 +30,7 @@ echo "Running build"
 # Add build commands here.
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
+cp -R services/activities/create build_out/activities/
 
 echo "Building database service"
 cp -R services/database build_out/
@@ -58,6 +59,8 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/article \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  --python_out=build_out/activities/create \
+  --grpc_python_out=build_out/activities/create \
   build_out/article/proto/article.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
@@ -71,7 +74,6 @@ python3 -m grpc_tools.protoc \
   services/mdc/proto/mdc.proto
 
 echo "Building create service"
-cp -R services/activities/create build_out/activities/
 python3 -m grpc_tools.protoc \
   -Ibuild_out/activities/create \
   --python_out=build_out/activities/create \
@@ -93,6 +95,19 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/activities/follow \
   build_out/activities/follow/proto/s2s_follow.proto
 
+echo "Building users service"
+cp -R services/users build_out/
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/users \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
+  build_out/users/proto/users.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
+  build_out/database/proto/database.proto
+
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/
@@ -108,6 +123,8 @@ python3 -m grpc_tools.protoc \
   --grpc_python_out=build_out/database \
   --python_out=build_out/article \
   --grpc_python_out=build_out/article \
+  --python_out=build_out/users \
+  --grpc_python_out=build_out/users \
   --python_out=build_out/activities/create \
   --grpc_python_out=build_out/activities/create \
   --python_out=build_out/activities/follow \
@@ -130,6 +147,7 @@ protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/activities/create/proto/*.proto
 protoc -I. --go_out=plugins=grpc:"." services/activities/follow/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/users/proto/*.proto
 
 echo "Creating go workspace"
 mkdir -p /go/src/github.com/cpssd/

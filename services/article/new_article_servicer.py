@@ -29,6 +29,7 @@ class NewArticleServicer:
             author_id=author.global_id,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         pr = database_pb2.PostsRequest(
@@ -47,6 +48,7 @@ class NewArticleServicer:
             author=req.author,
             title=req.title,
             body=html_body,
+            md_body=req.body,
             creation_datetime=req.creation_datetime
         )
         create_resp = self._create_stub.SendCreate(ad)
@@ -59,8 +61,14 @@ class NewArticleServicer:
 
         resp = article_pb2.NewArticleResponse()
         if success == database_pb2.PostsResponse.OK:
+            self._logger.info('Article created.')
             resp.result_type = article_pb2.NewArticleResponse.OK
-            create_success = self.send_create_activity_request(req)
+            if not req.foreign:
+                # TODO (sailslick) persist create activities
+                # or add to queueing service
+                create_success = self.send_create_activity_request(req)
+                if create_success == create_pb2.CreateResponse.ERROR:
+                    self._logger.error('Could not send create Activity')
         else:
             resp.result_type = article_pb2.NewArticleResponse.ERROR
         return resp

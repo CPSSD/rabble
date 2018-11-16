@@ -22,6 +22,10 @@ RUN pip3 install grpcio grpcio-tools googleapis-common-protos
 RUN go get -u github.com/gorilla/mux github.com/gomarkdown/markdown \
   github.com/microcosm-cc/bluemonday
 
+# Dependencies for auth service
+RUN apk add --no-cache libffi-dev
+RUN pip3 install bcrypt
+
 RUN apk add --no-cache --update protobuf-dev
 
 CMD ["/repo/build_container/entry.sh"]

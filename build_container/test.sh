@@ -17,6 +17,11 @@ cd build_out/utils
 python3 -B -m unittest discover
 cd ../../
 
+echo "Running python unit tests for users/"
+cd build_out/users
+python3 -B -m unittest discover
+cd ../../
+
 echo "Running tests for database microservice"
 cd build_out/database
 python3 -B -m unittest discover

@@ -39,7 +39,11 @@ export class App extends React.Component<{}, IAppState> {
         <div>
           <Header username={this.state.username} />
           <Switch>
-            <Route exact={true} path="/" component={Feed}/>
+            <Route
+              exact={true}
+              path="/"
+              render={(props) => <Feed {...props} username=""/>}
+            />
             <Route path="/about" component={About}/>
             <Route
               path="/@:user"
@@ -48,6 +52,11 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <PrivateRoute
+              path="/feed"
+              username={this.state.username}
+              component={Feed}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>

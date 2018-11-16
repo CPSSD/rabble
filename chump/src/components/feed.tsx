@@ -4,12 +4,16 @@ import { Link } from "react-router-dom";
 import { GetPublicPosts, IBlogPost } from "../models/posts";
 import { Post } from "./post";
 
+interface IFeedProps {
+  username: string;
+}
+
 interface IFeedState {
   publicBlog: IBlogPost[];
 }
 
-export class Feed extends React.Component<{}, IFeedState> {
-  constructor(props: any) {
+export class Feed extends React.Component<IFeedProps, IFeedState> {
+  constructor(props: IFeedProps) {
     super(props);
     this.state = { publicBlog: [] };
   }
@@ -19,7 +23,7 @@ export class Feed extends React.Component<{}, IFeedState> {
   }
 
   public getPosts() {
-    GetPublicPosts()
+    GetPublicPosts(this.props.username)
       .then((posts: IBlogPost[]) => {
         this.setState({ publicBlog: posts });
       })
