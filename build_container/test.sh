@@ -22,3 +22,7 @@ cd build_out/database
 python3 -B -m unittest discover
 cd ../../
 
+echo "Running python unit tests for activities/follow"
+cd build_out/activities/follow
+python3 -B -m unittest discover
+cd ../../../
