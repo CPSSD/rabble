@@ -66,7 +66,7 @@ type serverWrapper struct {
 	router *mux.Router
 	server *http.Server
 	store *sessions.CookieStore
-    // shutdownWait specifies how long the server should wait when shutting
+	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
 
@@ -224,19 +224,19 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			return
 		}
 
-        session, err := s.store.Get(r, "rabble-session")
-        if err != nil {
-            log.Printf("Error getting session. %#v", err)
+		session, err := s.store.Get(r, "rabble-session")
+		if err != nil {
+			log.Printf("Error getting session. %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			e := &followspb.FollowResponse{
 				ResultType: followspb.FollowResponse_ERROR,
 				Error:      "Error getting session",
 			}
-            enc.Encode(e)
-            return
-        }
-        if _, ok := session.Values["handle"]; !ok {
-            log.Printf("Call to follow by not logged in user")
+			enc.Encode(e)
+			return
+		}
+		if _, ok := session.Values["handle"]; !ok {
+			log.Printf("Call to follow by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
 			e := &followspb.FollowResponse{
 				ResultType: followspb.FollowResponse_ERROR,
@@ -244,10 +244,10 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			}
 			enc.Encode(e)
 			return
-        }
-        // Even if the request was sent with a different follower user the
-        // handle of the logged in user.
-        j.Follower = session.Values["handle"].(string)
+		}
+		// Even if the request was sent with a different follower user the
+		// handle of the logged in user.
+		j.Follower = session.Values["handle"].(string)
 
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
@@ -298,18 +298,18 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-        session, err := s.store.Get(r, "rabble-session")
-        if err != nil {
-            log.Printf("Error getting session %#v", err)
-            w.WriteHeader(http.StatusInternalServerError)
-            fmt.Fprintf(w, "Internal error")
-            return
-        } else if _, ok := session.Values["handle"]; !ok {
-            log.Printf("Create Article call from user not logged in")
-            w.WriteHeader(http.StatusBadRequest)
-            fmt.Fprintf(w, "Login Required")
-            return
-        }
+		session, err := s.store.Get(r, "rabble-session")
+		if err != nil {
+			log.Printf("Error getting session %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Internal error")
+			return
+		} else if _, ok := session.Values["handle"]; !ok {
+			log.Printf("Create Article call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Login Required")
+			return
+		}
 
 		na := &articlepb.NewArticle{
 			Author:           session.Values["handle"].(string),
@@ -414,67 +414,67 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 // handleLogin sends an RPC to the users service to check if a login
 // is correct.
 func (s *serverWrapper) handleLogin() http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // TODO(CianLR): Change to be post request
-        vars := r.URL.Query()
-        handle := vars["handle"][0]
-        password := vars["password"][0]
-        lr := &userspb.LoginRequest{
-            Handle: handle,
-            Password: password,
-        }
-        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-        defer cancel()
+	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO(CianLR): Change to be post request
+		vars := r.URL.Query()
+		handle := vars["handle"][0]
+		password := vars["password"][0]
+		lr := &userspb.LoginRequest{
+			Handle: handle,
+			Password: password,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
-        resp, err := s.users.Login(ctx, lr)
-        if err != nil {
-            log.Println(err)
+		resp, err := s.users.Login(ctx, lr)
+		if err != nil {
+			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with handling login request\n")
 			return
-        }
+		}
 		if resp.Result == userspb.LoginResponse_ACCEPTED {
-            session, err := s.store.Get(r, "rabble-session")
-            if err != nil {
-                log.Println(err)
-			    w.WriteHeader(http.StatusInternalServerError)
-			    fmt.Fprintf(w, "Issue with handling login request\n")
-			    return
-            }
-            session.Values["handle"] = handle
-            session.Values["global_id"] = resp.GlobalId
-            session.Values["display_name"] = resp.DisplayName
-            session.Save(r, w)
-        }
+			session, err := s.store.Get(r, "rabble-session")
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "Issue with handling login request\n")
+				return
+			}
+			session.Values["handle"] = handle
+			session.Values["global_id"] = resp.GlobalId
+			session.Values["display_name"] = resp.DisplayName
+			session.Save(r, w)
+		}
 
-        w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
-        // Intentionally not revealing if an error occurred.
-        err = enc.Encode(map[string]bool{
-            "success": resp.Result == userspb.LoginResponse_ACCEPTED,
-        })
+		// Intentionally not revealing if an error occurred.
+		err = enc.Encode(map[string]bool{
+			"success": resp.Result == userspb.LoginResponse_ACCEPTED,
+		})
 
-    }
+	}
 }
 
 // Clears the user's session when called.
 func (s *serverWrapper) handleLogout() http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        session, err := s.store.Get(r, "rabble-session")
-        if err != nil {
-            fmt.Println(err)
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, err := s.store.Get(r, "rabble-session")
+		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with handling logout request\n")
 			return
-        }
-        session.Options.MaxAge = -1  // Marks the session for deletion.
-        err = session.Save(r, w)
-        if err != nil {
-            fmt.Println(err)
+		}
+		session.Options.MaxAge = -1  // Marks the session for deletion.
+		err = session.Save(r, w)
+		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with handling logout request\n")
-        }
-    }
+		}
+	}
 }
 
 // setupRoutes specifies the routing of all endpoints on the server.
@@ -504,8 +504,8 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
-    r.HandleFunc("/c2s/login", s.handleLogin())
-    r.HandleFunc("/c2s/logout", s.handleLogout())
+	r.HandleFunc("/c2s/login", s.handleLogin())
+	r.HandleFunc("/c2s/logout", s.handleLogout())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
@@ -633,7 +633,7 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
-    cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
+	cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
@@ -643,7 +643,7 @@ func buildServerWrapper() *serverWrapper {
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
-        store:        cookie_store,
+		store:        cookie_store,
 		shutdownWait: 20 * time.Second,
 		databaseConn: databaseConn,
 		database:     databaseClient,

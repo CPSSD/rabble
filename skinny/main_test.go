@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-    "google.golang.org/grpc"
+	"google.golang.org/grpc"
 
 	articlepb "github.com/cpssd/rabble/services/article/proto"
 	dbpb "github.com/cpssd/rabble/services/database/proto"
@@ -87,11 +87,11 @@ func newTestServerWrapper() *serverWrapper {
 	// TODO(iandioch): Fake/mock instead of using real dependencies
 	r := mux.NewRouter()
 	srv := &http.Server{}
-    store := sessions.NewCookieStore([]byte("test"))
+	store := sessions.NewCookieStore([]byte("test"))
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
-        store:        store,
+		store:        store,
 		shutdownWait: 20 * time.Second,
 		database:     &DatabaseFake{},
 		article:      &ArticleFake{},
@@ -103,9 +103,9 @@ func newTestServerWrapper() *serverWrapper {
 }
 
 func addFakeSession(s *serverWrapper, w http.ResponseWriter, r *http.Request) {
-    session, _ := s.store.Get(r, "rabble-session")
-    session.Values["handle"] = "jose"
-    session.Save(r, w)
+	session, _ := s.store.Get(r, "rabble-session")
+	session.Values["handle"] = "jose"
+	session.Save(r, w)
 }
 
 func TestHandleNotImplemented(t *testing.T) {
@@ -128,7 +128,7 @@ func TestHandleFollow(t *testing.T) {
 	res := httptest.NewRecorder()
 	srv := newTestServerWrapper()
 
-    addFakeSession(srv, res, req)
+	addFakeSession(srv, res, req)
 	srv.handleFollow()(res, req)
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
@@ -147,7 +147,7 @@ func TestHandleFollowBadRequest(t *testing.T) {
 	res := httptest.NewRecorder()
 	srv := newTestServerWrapper()
 
-    addFakeSession(srv, res, req)
+	addFakeSession(srv, res, req)
 	srv.handleFollow()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
@@ -185,8 +185,8 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-    srv := newTestServerWrapper()
-    addFakeSession(srv, res, req)
+	srv := newTestServerWrapper()
+	addFakeSession(srv, res, req)
 	srv.handleCreateArticle()(res, req)
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
@@ -205,7 +205,7 @@ func TestHandleCreateArticleNotLoggedIn(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-    srv := newTestServerWrapper()
+	srv := newTestServerWrapper()
 	srv.handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
@@ -222,8 +222,8 @@ func TestHandleCreateArticleBadJSON(t *testing.T) {
 		"username": "testuser",
 	}
 	req = mux.SetURLVars(req, vars)
-    srv := newTestServerWrapper()
-    addFakeSession(srv, res, req)
+	srv := newTestServerWrapper()
+	addFakeSession(srv, res, req)
 	srv.handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
@@ -239,8 +239,8 @@ func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-    srv := newTestServerWrapper()
-    addFakeSession(srv, res, req)
+	srv := newTestServerWrapper()
+	addFakeSession(srv, res, req)
 	srv.handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
@@ -256,8 +256,8 @@ func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
 	res := httptest.NewRecorder()
-    srv := newTestServerWrapper()
-    addFakeSession(srv, res, req)
+	srv := newTestServerWrapper()
+	addFakeSession(srv, res, req)
 	srv.handleCreateArticle()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
