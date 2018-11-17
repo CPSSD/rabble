@@ -396,12 +396,27 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 			fmt.Fprintf(w, "Issue with handling login request\n")
 			return
         }
-		w.Header().Set("Content-Type", "application/json")
+		if resp.Result == userspb.LoginResponse_ACCEPTED {
+            session, err := s.store.Get(r, "rabble-session")
+            if err != nil {
+                log.Println(err)
+			    w.WriteHeader(http.StatusInternalServerError)
+			    fmt.Fprintf(w, "Issue with handling login request\n")
+			    return
+            }
+            session.Values["handle"] = handle
+            session.Values["global_id"] = resp.GlobalId
+            session.Values["display_name"] = resp.DisplayName
+            session.Save(r, w)
+        }
+
+        w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
         // Intentionally not revealing if an error occurred.
         err = enc.Encode(map[string]bool{
             "success": resp.Result == userspb.LoginResponse_ACCEPTED,
         })
+
     }
 }
 
