@@ -15,7 +15,7 @@ export class Post extends React.Component<IPostProps, {}> {
 
   public render() {
     return (
-      <div>
+      <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
           <p className="article-byline">Published 1st January 1970</p>
