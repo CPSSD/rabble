@@ -420,6 +420,26 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
     }
 }
 
+// Clears the user's session when called.
+func (s *serverWrapper) handleLogout() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        session, err := s.store.Get(r, "rabble-session")
+        if err != nil {
+            fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling logout request\n")
+			return
+        }
+        session.Options.MaxAge = -1  // Marks the session for deletion.
+        err = session.Save(r, w)
+        if err != nil {
+            fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling logout request\n")
+        }
+    }
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -448,6 +468,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
     r.HandleFunc("/c2s/login", s.handleLogin())
+    r.HandleFunc("/c2s/logout", s.handleLogout())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
