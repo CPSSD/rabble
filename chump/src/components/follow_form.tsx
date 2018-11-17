@@ -18,7 +18,7 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
       followedUsername: "",
     };
 
-    this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.alertUser = this.alertUser.bind(this);
   }
@@ -27,25 +27,26 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
         <div className="pure-control-group">
-          <textarea
+          <input
+            type="text"
             name="followedUsername"
             value={this.state.followedUsername}
-            onChange={this.handleTextAreaChange}
-            className="pure-input-1 blog-input"
-            placeholder="user@instance.com"
+            onChange={this.handleInputChange}
+            className="pure-input-1-2 blog-input"
+            placeholder="user[@instance.com]"
           />
         </div>
         <button
           type="submit"
           className="pure-button pure-input-1-3 pure-button-primary"
         >
-          Post
+          Follow
         </button>
       </form>
     );
   }
 
-  private handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  private handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
       followedUsername: target.value,
