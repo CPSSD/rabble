@@ -13,8 +13,12 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - testnetwork
+      - default
     environment:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
+      - USERS_SERVICE_HOST=users_service
       - DB_SERVICE_HOST=database_service
       - FOLLOWS_SERVICE_HOST=follows_service
       - ARTICLE_SERVICE_HOST=article_service
@@ -28,6 +32,17 @@ services:
       - .:/repo
     environment:
       - DB_SERVICE_HOST=database_service
+  users_service:
+    build:
+      context: ./services/users
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
   database_service:
     build:
       context: ./services/database
@@ -83,6 +98,19 @@ services:
       - default
     environment:
       - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
+      - ARTICLE_SERVICE_HOST=article_service
+      - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
+  follow_activity_service:
+    build:
+      context: ./services/activities/follow
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - testnetwork
+      - default
+    environment:
       - LOGGER_SERVICE_HOST=logger_service
   markdown_service:
     build:
