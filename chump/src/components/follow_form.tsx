@@ -62,9 +62,9 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
     const promise = CreateFollow(this.props.username,
                                  this.state.followedUsername);
     promise.then((res: any) => {
-      let message = "Posted follow";
+      let message = "Posted follow with response: ";
       if (res.text) {
-        message = res.text;
+        message += res.text;
       }
       this.alertUser(message);
       this.setState({
