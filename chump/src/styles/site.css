@@ -69,6 +69,8 @@ html, button, input, select, textarea,
   padding-bottom: 0;
   font-size: 2.6em;
   line-height: 1.1em;
+  text-decoration: none;
+  color: #000;
 }
 
 .article-body {
@@ -105,4 +107,8 @@ html, button, input, select, textarea,
 
 .author-handle:hover {
   color: #AAA;
+}
+
+.blog-post-holder {
+  width: 100%;
 }

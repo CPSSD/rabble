@@ -146,7 +146,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 // It takes an optional username argument, if it exists it sends the request to
 // GetUserFeed, otherwise it returns all articles on the instance.
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
-	log.Print(r.Username)
+	log.Printf("Username: %s\n", r.Username)
 	if r.Username != "" {
 		return s.GetUserFeed(ctx, r)
 	}
@@ -160,6 +160,24 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 
 	resp, err := s.db.Posts(ctx, pr)
 	if err != nil {
+		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
+	}
+
+	return s.convertDBToFeed(ctx, resp), nil
+}
+
+func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.FeedResponse, error) {
+	log.Printf("In per article, ID: %d\n", r.ArticleId)
+	pr := &dbpb.PostsRequest{
+		RequestType: dbpb.PostsRequest_FIND,
+		Match: &dbpb.PostsEntry{
+			GlobalId: r.ArticleId,
+		},
+	}
+
+	resp, err := s.db.Posts(ctx, pr)
+	if err != nil {
+		log.Print("Single article db get went wrong. Error: %v", err)
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
 	}
 
