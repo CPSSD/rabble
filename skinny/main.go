@@ -23,7 +23,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/session"
+	"github.com/gorilla/sessions"
 	"google.golang.org/grpc"
 )
 
@@ -65,7 +65,8 @@ type createArticleStruct struct {
 type serverWrapper struct {
 	router *mux.Router
 	server *http.Server
-	// shutdownWait specifies how long the server should wait when shutting
+	store *sessions.CookieStore
+    // shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
 
@@ -345,7 +346,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	}
 }
 
-// handleNewUser sends an RPC to the database service to create a user with the
+// handleNewUser sends an RPC to the users service to create a user with the
 // given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -371,6 +372,37 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 		fmt.Fprintf(w, "Received: %#v\n", resp.Error)
 		// TODO(iandioch): Return JSON with response status or error.
 	}
+}
+
+// handleLogin sends an RPC to the users service to check if a login
+// is correct.
+func (s *serverWrapper) handleLogin() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // TODO(CianLR): Change to be post request
+        vars := r.URL.Query()
+        handle := vars["handle"][0]
+        password := vars["password"][0]
+        lr := &userspb.LoginRequest{
+            Handle: handle,
+            Password: password,
+        }
+        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+        defer cancel()
+
+        resp, err := s.users.Login(ctx, lr)
+        if err != nil {
+            log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling login request\n")
+			return
+        }
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+        // Intentionally not revealing if an error occurred.
+        err = enc.Encode(map[string]bool{
+            "success": resp.Result == userspb.LoginResponse_ACCEPTED,
+        })
+    }
 }
 
 // setupRoutes specifies the routing of all endpoints on the server.
@@ -400,6 +432,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
+    r.HandleFunc("/c2s/login", s.handleLogin())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
@@ -527,6 +560,7 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
+    cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
@@ -536,6 +570,7 @@ func buildServerWrapper() *serverWrapper {
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
+        store:        cookie_store,
 		shutdownWait: 20 * time.Second,
 		databaseConn: databaseConn,
 		database:     databaseClient,
