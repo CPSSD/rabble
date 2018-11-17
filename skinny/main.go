@@ -212,7 +212,6 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		var j followspb.LocalToAnyFollow
 		err := decoder.Decode(&j)
-
 		enc := json.NewEncoder(w)
 		if err != nil {
 			log.Printf("Invalid JSON. Err = %#v", err)
@@ -224,6 +223,31 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			enc.Encode(e)
 			return
 		}
+
+        session, err := s.store.Get(r, "rabble-session")
+        if err != nil {
+            log.Printf("Error getting session. %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Error getting session",
+			}
+            enc.Encode(e)
+            return
+        }
+        if _, ok := session.Values["handle"]; !ok {
+            log.Printf("Call to follow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Login required",
+			}
+			enc.Encode(e)
+			return
+        }
+        // Even if the request was sent with a different follower user the
+        // handle of the logged in user.
+        j.Follower = session.Values["handle"].(string)
 
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
@@ -274,8 +298,21 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
+        session, err := s.store.Get(r, "rabble-session")
+        if err != nil {
+            log.Printf("Error getting session %#v", err)
+            w.WriteHeader(http.StatusInternalServerError)
+            fmt.Fprintf(w, "Internal error")
+            return
+        } else if _, ok := session.Values["handle"]; !ok {
+            log.Printf("Create Article call from user not logged in")
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintf(w, "Login Required")
+            return
+        }
+
 		na := &articlepb.NewArticle{
-			Author:           t.Author,
+			Author:           session.Values["handle"].(string),
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
