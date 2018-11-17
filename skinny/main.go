@@ -13,6 +13,7 @@ import (
 	"path"
 	"syscall"
 	"time"
+	"strconv"
 
 	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 	articlepb "github.com/cpssd/rabble/services/article/proto"
@@ -134,7 +135,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -147,7 +148,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 
 		v := mux.Vars(r)
 		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(400) // Bad Request
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
 		fr := &feedpb.FeedRequest{Username: v["username"]}
@@ -163,7 +164,49 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		username, uOk := v["username"]
+		strArticleId, aOk := v["article_id"]
+		if !uOk || !aOk || strArticleId == "" || username == "" {
+			log.Println("Per Article page passed bad url values")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		articleId, string2IntErr := strconv.ParseInt(strArticleId, 10, 64)
+
+		if string2IntErr != nil {
+			log.Println("Article ID could not be converted to int")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		fr := &feedpb.ArticleRequest{ArticleId: articleId}
+		resp, err := s.feed.PerArticle(ctx, fr)
+		if err != nil {
+			log.Print("Error in getting per Article page: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Results)
+		if err != nil {
+			log.Printf("Could not marshal article: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -397,6 +440,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
+	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
 

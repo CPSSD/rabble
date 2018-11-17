@@ -19,7 +19,12 @@ export class Post extends React.Component<IPostProps, {}> {
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
           <p className="article-byline">Published 1st January 1970</p>
-          <h3 className="article-title">{this.props.blogPost.title}</h3>
+          <Link
+            to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
+            className="article-title"
+          >
+            {this.props.blogPost.title}
+          </Link>
           <p className="article-body" dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}/>
         </div>
         <div className="pure-u-1-24"/>

@@ -9,6 +9,7 @@ import {Feed} from "./components/feed";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 import {User} from "./components/user";
+import {SinglePost} from "./components/single_post";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -45,6 +46,10 @@ export class App extends React.Component<{}, IAppState> {
               render={(props) => <Feed {...props} username=""/>}
             />
             <Route path="/about" component={About}/>
+            <Route
+              path="/@:user/:article_id"
+              component={SinglePost}
+            />
             <Route
               path="/@:user"
               component={User}
