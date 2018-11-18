@@ -9,6 +9,7 @@ import {Feed} from "./components/feed";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 import {User} from "./components/user";
+import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 
 require("./styles/site.css"); // tslint:disable-line
@@ -62,6 +63,11 @@ export class App extends React.Component<{}, IAppState> {
               path="/feed"
               username={this.state.username}
               component={Feed}
+            />
+            <PrivateRoute
+              path="/follow"
+              username={this.state.username}
+              component={Follow}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>
