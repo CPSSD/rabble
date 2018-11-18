@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto";
+
 message CreateUserRequest {
   string handle = 1;
   string password = 2;

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto";
+
 message MDRequest {
 	string md_body = 1;
 }

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto";
+
 import "google/protobuf/timestamp.proto";
 
 message Log {
