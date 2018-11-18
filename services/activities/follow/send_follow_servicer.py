@@ -14,7 +14,7 @@ class SendFollowServicer:
         return f'{host}/@{handle}'
 
     def _build_inbox_url(self, handle, host):
-        return f'{host}/ap/@{handle}/inbox'
+        return f'{host}/ap/@{handle}/inbox_follow'
 
     def _build_activity(self, follower_actor, followed_actor):
         d = {
