@@ -107,7 +107,7 @@ services:
     volumes:
       - .:/repo
     networks:
-      - testnetwork
+      - rabble_testnetwork
       - default
     environment:
       - LOGGER_SERVICE_HOST=logger_service
