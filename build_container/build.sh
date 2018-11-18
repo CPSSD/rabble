@@ -33,130 +33,35 @@ echo "Running build"
 cp -R services/activities/create build_out/activities/
 cp -R services/activities/follow build_out/activities/
 
+echo "Building python protos"
+python3 -m grpc_tools.protoc \
+  -Iservices/ \
+  --python_out=build_out/ \
+  --grpc_python_out=build_out/ \
+  services/proto/*.proto
+
 echo "Building database service"
 cp -R services/database build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/database \
-  --grpc_python_out=build_out/database \
-  build_out/database/proto/database.proto
 
 echo "Building follows service"
 cp -R services/follows build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/follows \
-  --python_out=build_out/follows \
-  --grpc_python_out=build_out/follows \
-  --python_out=build_out/activities/follow \
-  --grpc_python_out=build_out/activities/follow \
-  build_out/follows/proto/follows.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/follows \
-  --grpc_python_out=build_out/follows \
-  build_out/database/proto/database.proto
 
 echo "Building article service"
 cp -R services/article build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/article \
-  --python_out=build_out/article \
-  --grpc_python_out=build_out/article \
-  --python_out=build_out/activities/create \
-  --grpc_python_out=build_out/activities/create \
-  build_out/article/proto/article.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/article \
-  --grpc_python_out=build_out/article \
-  build_out/database/proto/database.proto
-python3 -m grpc_tools.protoc \
-  -Iservices/mdc \
-  --python_out=build_out/article \
-  --grpc_python_out=build_out/article \
-  services/mdc/proto/mdc.proto
-
-echo "Building create service"
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/activities/create \
-  --python_out=build_out/activities/create \
-  --grpc_python_out=build_out/activities/create \
-  --python_out=build_out/article \
-  --grpc_python_out=build_out/article \
-  build_out/activities/create/proto/create.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/activities/create \
-  --grpc_python_out=build_out/activities/create \
-  build_out/database/proto/database.proto
 
 echo "Building s2s_follow service"
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/activities/follow \
-  --python_out=build_out/activities/follow \
-  --grpc_python_out=build_out/activities/follow \
-  --python_out=build_out/follows \
-  --grpc_python_out=build_out/follows \
-  build_out/activities/follow/proto/s2s_follow.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/activities/follow \
-  --grpc_python_out=build_out/activities/follow \
-  build_out/database/proto/database.proto
+cp -R services/activities/follow build_out/activities/
 
 echo "Building users service"
 cp -R services/users build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/users \
-  --python_out=build_out/users \
-  --grpc_python_out=build_out/users \
-  build_out/users/proto/users.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/users \
-  --grpc_python_out=build_out/users \
-  build_out/database/proto/database.proto
 
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/logger \
-  --python_out=build_out/utils \
-  --grpc_python_out=build_out/utils \
-  --python_out=build_out/logger \
-  --grpc_python_out=build_out/logger \
-  --python_out=build_out/follows \
-  --grpc_python_out=build_out/follows \
-  --python_out=build_out/database \
-  --grpc_python_out=build_out/database \
-  --python_out=build_out/article \
-  --grpc_python_out=build_out/article \
-  --python_out=build_out/users \
-  --grpc_python_out=build_out/users \
-  --python_out=build_out/activities/create \
-  --grpc_python_out=build_out/activities/create \
-  --python_out=build_out/activities/follow \
-  --grpc_python_out=build_out/activities/follow \
-  build_out/logger/proto/logger.proto
-python3 -m grpc_tools.protoc \
-  -Ibuild_out/database \
-  --python_out=build_out/utils \
-  --grpc_python_out=build_out/utils \
-  build_out/database/proto/database.proto
 
 echo "Building protos for Go"
-# This generate compiled protos and place them in the repo.
-# For example: services/database/database.proto when build, would
-# create a new file in the same directory: database.pb.go
-protoc -I. --go_out=plugins=grpc:"." services/database/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/follows/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/article/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/feed/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/mdc/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/activities/create/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/activities/follow/proto/*.proto
-protoc -I. --go_out=plugins=grpc:"." services/users/proto/*.proto
+# This generate compiled protos and place them in the proto dir.
+protoc -Iservices/ --go_out=plugins=grpc:"." services/proto/*.proto
 
 echo "Creating go workspace"
 mkdir -p /go/src/github.com/cpssd/
