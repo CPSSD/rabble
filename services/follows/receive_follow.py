@@ -35,9 +35,10 @@ class ReceiveFollowServicer:
             resp.error = error
             return resp
 
-        foreign_user = \
-            self._users_util.get_or_create_user_from_db(handle=from_handle,
-                                                        host=from_host)
+        foreign_user = self._users_util.get_or_create_user_from_db(
+            handle=from_handle,
+            host=from_host)
+
         if foreign_user is None:
             error = 'Could not find user {}@{}'.format(from_handle, from_host)
             self._logger.error(error)
