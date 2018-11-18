@@ -33,8 +33,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
     event.preventDefault();
     if (this.state.username === "" ||
         this.state.password === "" ||
-        this.state.displayName === "" ||
-        this.state.bio === "") {
+        this.state.displayName === "") {
       return;
     }
     GetRegisterPromise(this.state.username,
@@ -99,8 +98,8 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 name="bio"
                 value={this.state.bio}
                 onChange={this.handleBio}
-                className="pure-input-1-2"
-                placeholder="Bio"
+                className="pure-input-1 blog-input"
+                placeholder="Something about you"
               />
             </div>
             <button
