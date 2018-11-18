@@ -15,13 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	createpb "github.com/cpssd/rabble/services/activities/create/proto"
-	s2sfollowpb "github.com/cpssd/rabble/services/activities/follow/proto"
-	articlepb "github.com/cpssd/rabble/services/article/proto"
-	dbpb "github.com/cpssd/rabble/services/database/proto"
-	feedpb "github.com/cpssd/rabble/services/feed/proto"
-	followspb "github.com/cpssd/rabble/services/follows/proto"
-	userspb "github.com/cpssd/rabble/services/users/proto"
+	pb "github.com/cpssd/rabble/services/proto"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
@@ -101,20 +95,20 @@ type serverWrapper struct {
 	// service. This reference must be retained so it can by closed later.
 	databaseConn *grpc.ClientConn
 	// database is the RPC client for talking to the database service.
-	database dbpb.DatabaseClient
+	database pb.DatabaseClient
 
 	followsConn   *grpc.ClientConn
-	follows       followspb.FollowsClient
+	follows       pb.FollowsClient
 	articleConn   *grpc.ClientConn
-	article       articlepb.ArticleClient
+	article       pb.ArticleClient
 	feedConn      *grpc.ClientConn
-	feed          feedpb.FeedClient
+	feed          pb.FeedClient
 	createConn    *grpc.ClientConn
-	create        createpb.CreateClient
+	create        pb.CreateClient
 	usersConn     *grpc.ClientConn
-	users         userspb.UsersClient
+	users         pb.UsersClient
 	s2sFollowConn *grpc.ClientConn
-	s2sFollow     s2sfollowpb.S2SFollowClient
+	s2sFollow     pb.S2SFollowClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -164,7 +158,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 
 		v := mux.Vars(r)
 
-		fr := &feedpb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
 			log.Printf("Error in feed.Get(%v): %v\n", *fr, err)
@@ -193,7 +187,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
-		fr := &feedpb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
 			log.Print("Error in feed.PerUser(%v): %v", *fr, err)
@@ -234,7 +228,7 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 			return
 		}
 
-		fr := &feedpb.ArticleRequest{ArticleId: articleId}
+		fr := &pb.ArticleRequest{ArticleId: articleId}
 		resp, err := s.feed.PerArticle(ctx, fr)
 		if err != nil {
 			log.Print("Error in getting per Article page: %v", err)
@@ -293,14 +287,14 @@ func (s *serverWrapper) handleIndex() http.HandlerFunc {
 func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
-		var j followspb.LocalToAnyFollow
+		var j pb.LocalToAnyFollow
 		err := decoder.Decode(&j)
 		enc := json.NewEncoder(w)
 		if err != nil {
 			log.Printf("Invalid JSON. Err = %#v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			e := &followspb.FollowResponse{
-				ResultType: followspb.FollowResponse_ERROR,
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
 				Error:      "Invalid JSON",
 			}
 			enc.Encode(e)
@@ -311,8 +305,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
-			e := &followspb.FollowResponse{
-				ResultType: followspb.FollowResponse_ERROR,
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
 				Error:      "Login required",
 			}
 			enc.Encode(e)
@@ -331,8 +325,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Fatalf("Could not send follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &followspb.FollowResponse{
-				ResultType: followspb.FollowResponse_ERROR,
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
 				Error:      "Invalid JSON",
 			}
 			enc.Encode(e)
@@ -343,8 +337,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not marshal follow result: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &followspb.FollowResponse{
-				ResultType: followspb.FollowResponse_ERROR,
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
 				Error:      "Invalid JSON",
 			}
 			enc.Encode(e)
@@ -379,7 +373,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		na := &articlepb.NewArticle{
+		na := &pb.NewArticle{
 			Author:           handle,
 			Body:             t.Body,
 			Title:            t.Title,
@@ -422,7 +416,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-		na := &articlepb.NewArticle{
+		na := &pb.NewArticle{
 			Author:           t.Author,
 			Body:             t.Body,
 			Title:            t.Title,
@@ -478,7 +472,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		nfa := &createpb.NewForeignArticle{
+		nfa := &pb.NewForeignArticle{
 			AttributedTo: t.Object.AttributedTo,
 			Content:      t.Object.Content,
 			Published:    protoTimestamp,
@@ -489,7 +483,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.create.ReceiveCreate(ctx, nfa)
-		if err != nil || resp.ResultType == createpb.CreateResponse_ERROR {
+		if err != nil || resp.ResultType == pb.CreateResponse_ERROR {
 			log.Printf("Could not receive create activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving create activity\n")
@@ -529,7 +523,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 
 		resp, err := s.s2sFollow.ReceiveFollowActivity(ctx, f)
 		if err != nil ||
-			resp.ResultType == s2sfollowpb.FollowActivityResponse_ERROR {
+			resp.ResultType == pb.FollowActivityResponse_ERROR {
 			log.Printf("Could not receive follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving follow activity.\n")
@@ -560,7 +554,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			return
 		}
 		log.Printf("Trying to add new user %#v.\n", req.Handle)
-		u := &userspb.CreateUserRequest{
+		u := &pb.CreateUserRequest{
 			DisplayName: req.DisplayName,
 			Handle:      req.Handle,
 			Password:    req.Password,
@@ -575,7 +569,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			log.Printf("could not add new user: %v", err)
 			jsonResp.Error = "Error communicating with create user service"
 			jsonResp.Success = false
-		} else if resp.ResultType != userspb.CreateUserResponse_OK {
+		} else if resp.ResultType != pb.CreateUserResponse_OK {
 			log.Printf("Error creating user: %s", resp.Error)
 			jsonResp.Error = resp.Error
 			jsonResp.Success = false
@@ -598,7 +592,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
 		}
-		lr := &userspb.LoginRequest{
+		lr := &pb.LoginRequest{
 			Handle:   t.Handle,
 			Password: t.Password,
 		}
@@ -612,7 +606,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 			fmt.Fprintf(w, "Issue with handling login request\n")
 			return
 		}
-		if resp.Result == userspb.LoginResponse_ACCEPTED {
+		if resp.Result == pb.LoginResponse_ACCEPTED {
 			session, err := s.store.Get(r, "rabble-session")
 			if err != nil {
 				log.Println(err)
@@ -628,7 +622,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
-		success := resp.Result == userspb.LoginResponse_ACCEPTED
+		success := resp.Result == pb.LoginResponse_ACCEPTED
 		log.Printf("User %s login success: %t", t.Handle, success)
 		// Intentionally not revealing to the user if an error occurred.
 		err = enc.Encode(map[string]bool{
@@ -653,7 +647,7 @@ func (s *serverWrapper) handleLogout() http.HandlerFunc {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with handling logout request\n")
-			return;
+			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
@@ -717,7 +711,7 @@ func (s *serverWrapper) shutdown() {
 	s.s2sFollowConn.Close()
 }
 
-func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
+func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
 	host := os.Getenv("ARTICLE_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("ARTICLE_SERVICE_HOST env var not set for skinny server.")
@@ -728,10 +722,10 @@ func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect to Article: %v", err)
 	}
-	return conn, articlepb.NewArticleClient(conn)
+	return conn, pb.NewArticleClient(conn)
 }
 
-func createCreateClient() (*grpc.ClientConn, createpb.CreateClient) {
+func createCreateClient() (*grpc.ClientConn, pb.CreateClient) {
 	host := os.Getenv("CREATE_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("CREATE_SERVICE_HOST env var not set for skinny server.")
@@ -742,10 +736,10 @@ func createCreateClient() (*grpc.ClientConn, createpb.CreateClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect to Create: %v", err)
 	}
-	return conn, createpb.NewCreateClient(conn)
+	return conn, pb.NewCreateClient(conn)
 }
 
-func createUsersClient() (*grpc.ClientConn, userspb.UsersClient) {
+func createUsersClient() (*grpc.ClientConn, pb.UsersClient) {
 	host := os.Getenv("USERS_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("USERS_SERVICE_HOST env var not set for skinny server.")
@@ -756,10 +750,10 @@ func createUsersClient() (*grpc.ClientConn, userspb.UsersClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect to Users: %v", err)
 	}
-	return conn, userspb.NewUsersClient(conn)
+	return conn, pb.NewUsersClient(conn)
 }
 
-func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
+func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	host := os.Getenv("DB_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
@@ -770,11 +764,11 @@ func createDatabaseClient() (*grpc.ClientConn, dbpb.DatabaseClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect: %v", err)
 	}
-	client := dbpb.NewDatabaseClient(conn)
+	client := pb.NewDatabaseClient(conn)
 	return conn, client
 }
 
-func createFollowsClient() (*grpc.ClientConn, followspb.FollowsClient) {
+func createFollowsClient() (*grpc.ClientConn, pb.FollowsClient) {
 	host := os.Getenv("FOLLOWS_SERVICE_HOST")
 	if host == "" {
 		log.Fatal("FOLLOWS_SERVICE_HOST env var not set for skinny server.")
@@ -785,11 +779,11 @@ func createFollowsClient() (*grpc.ClientConn, followspb.FollowsClient) {
 	if err != nil {
 		log.Fatalf("Skinny server did not connect: %v", err)
 	}
-	client := followspb.NewFollowsClient(conn)
+	client := pb.NewFollowsClient(conn)
 	return conn, client
 }
 
-func createFeedClient() (*grpc.ClientConn, feedpb.FeedClient) {
+func createFeedClient() (*grpc.ClientConn, pb.FeedClient) {
 	const env = "FEED_SERVICE_HOST"
 	host := os.Getenv(env)
 	if host == "" {
@@ -801,11 +795,11 @@ func createFeedClient() (*grpc.ClientConn, feedpb.FeedClient) {
 	if err != nil {
 		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
 	}
-	client := feedpb.NewFeedClient(conn)
+	client := pb.NewFeedClient(conn)
 	return conn, client
 }
 
-func createS2SFollowClient() (*grpc.ClientConn, s2sfollowpb.S2SFollowClient) {
+func createS2SFollowClient() (*grpc.ClientConn, pb.S2SFollowClient) {
 	const env = "FOLLOW_ACTIVITY_SERVICE_HOST"
 	host := os.Getenv(env)
 	if host == "" {
@@ -817,7 +811,7 @@ func createS2SFollowClient() (*grpc.ClientConn, s2sfollowpb.S2SFollowClient) {
 	if err != nil {
 		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
 	}
-	client := s2sfollowpb.NewS2SFollowClient(conn)
+	client := pb.NewS2SFollowClient(conn)
 	return conn, client
 }
 
