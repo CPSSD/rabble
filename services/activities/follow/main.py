@@ -8,6 +8,7 @@ import sys
 
 from utils.logger import get_logger
 from servicer import FollowServicer
+from proto import follows_pb2_grpc
 from proto import s2s_follow_pb2_grpc
 
 
@@ -18,13 +19,21 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+def get_follows_service_address():
+    host = os.environ.get('FOLLOWS_SERVICE_HOST')
+    if not host:
+        logger.error('FOLLOWS_SERVICE_HOST env var not set.')
+        sys.exit(1)
+    addr = host + ':1641'
+    return addr
 
 def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
+    follows_service_address = get_follows_service_address()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
-        FollowServicer(logger),
+        FollowServicer(logger, follows_service_address),
         server
     )
     server.add_insecure_port('0.0.0.0:1922')
