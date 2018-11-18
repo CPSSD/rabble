@@ -12,13 +12,24 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
       <Link to="/login" className="pure-menu-link">Login</Link>
     </li>
   );
+  let Register = (
+    <li className="pure-menu-item">
+      <Link to="/register" className="pure-menu-link">Register</Link>
+    </li>
+  );
 
   if (props.username !== "") {
     Login = (
       <li className="pure-menu-item">
-        <Link to="#" className="pure-menu-link">{props.username}</Link>
+        <Link
+          to={`/@${props.username}`}
+          className="pure-menu-link"
+        >
+          {props.username}
+        </Link>
       </li>
     );
+    Register = (<div/>);
   }
 
   return (
@@ -35,6 +46,7 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
               <Link to="/write" className="pure-menu-link">Write</Link>
             </li>
             {Login}
+            {Register}
           </ul>
         </div>
       </div>
