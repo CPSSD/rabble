@@ -11,18 +11,18 @@ function GetLogoutPromise() {
   const url = "/c2s/logout";
   return new Promise<ILogoutResult>((resolve, reject) => {
     superagent
-      .get(url)i
+      .get(url)
       .set("Accept", "application/json")
       .end((error, res) => {
         if (error) {
           reject(error);
+	      return;
         }
         let succ = res!.body;
         if (succ === null) {
             succ = { success: false };
         }
         resolve(succ);
-        }
       });
   });
 }
@@ -43,13 +43,14 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
       redirect: false,
     };
 
-    this.handleLogout = this.handleLogout.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.handleLogoutError = this.handleLogoutError.bind(this);
   }
 
-  public handleLogout() {
-    GetLogoutPromise()
+  public componentDidMount() {
+	GetLogoutPromise()
       .then((response: ILogoutResult) => {
-        if (!response.success) {
+		if (!response.success) {
           alert("Error logging out");
           return;
         }
@@ -62,9 +63,7 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
   }
 
   public render() {
-    this.handleLogout();
     if (this.state.redirect) {
-      // TODO: Add smarter redirect
       return <Redirect to={{ pathname: "/" }}/>;
     }
 
@@ -78,7 +77,8 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
     );
   }
 
-  private handleLogoutError() {
+  private handleLogoutError(error: any) {
     alert("Error attempting to logout.");
+    alert(error);
   }
 }
