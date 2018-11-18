@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/cpssd/rabble/services/proto"
+	pb "github.com/cpssd/rabble/services/proto/gopb"
 	"github.com/gomarkdown/markdown"
 	"github.com/microcosm-cc/bluemonday"
 	"google.golang.org/grpc"
