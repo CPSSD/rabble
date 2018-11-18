@@ -16,7 +16,7 @@ function GetLogoutPromise() {
       .end((error, res) => {
         if (error) {
           reject(error);
-	      return;
+          return;
         }
         let succ = res!.body;
         if (succ === null) {
@@ -48,9 +48,9 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
   }
 
   public componentDidMount() {
-	GetLogoutPromise()
+    GetLogoutPromise()
       .then((response: ILogoutResult) => {
-		if (!response.success) {
+        if (!response.success) {
           alert("Error logging out");
           return;
         }

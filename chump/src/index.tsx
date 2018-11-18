@@ -30,6 +30,7 @@ export class App extends React.Component<{}, IAppState> {
     }
 
     this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
   }
 
   login(username: string) {
