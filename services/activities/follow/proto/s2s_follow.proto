@@ -12,6 +12,13 @@ message FollowDetails {
   FollowActivityUser followed = 2;
 }
 
+// ReceivedFollowDetails is what the skinny server received in a raw form, and
+// what is then forwarded on to the s2s follow microservice.
+message ReceivedFollowDetails {
+  string follower = 1;
+  string followed = 2;
+}
+
 message FollowActivityResponse {
     enum ResultType {
         OK = 0;
@@ -27,5 +34,5 @@ message FollowActivityResponse {
 // Service for sending and receiving server-to-server follow requests.
 service S2SFollow {
   rpc SendFollowActivity(FollowDetails) returns (FollowActivityResponse);
-  rpc ReceiveFollowActivity(FollowDetails) returns (FollowActivityResponse);
+  rpc ReceiveFollowActivity(ReceivedFollowDetails) returns (FollowActivityResponse);
 }

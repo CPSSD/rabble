@@ -11,11 +11,12 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"syscall"
 	"time"
-	"strconv"
 
 	createpb "github.com/cpssd/rabble/services/activities/create/proto"
+	s2sfollowpb "github.com/cpssd/rabble/services/activities/follow/proto"
 	articlepb "github.com/cpssd/rabble/services/article/proto"
 	dbpb "github.com/cpssd/rabble/services/database/proto"
 	feedpb "github.com/cpssd/rabble/services/feed/proto"
@@ -51,6 +52,14 @@ type createActivityStruct struct {
 	Type      string                     `json:"type"`
 }
 
+type followActivityStruct struct {
+	Actor     string   `json:"actor"`
+	Context   string   `json:"@context"`
+	Object    string   `json:"object"`
+	Recipient []string `json:"to"`
+	Type      string   `json:"type"`
+}
+
 type createArticleStruct struct {
 	Author           string `json:"author"`
 	Body             string `json:"body"`
@@ -59,8 +68,8 @@ type createArticleStruct struct {
 }
 
 type loginStruct struct {
-	Handle           string `json:"handle"`
-	Password         string `json:"password"`
+	Handle   string `json:"handle"`
+	Password string `json:"password"`
 }
 
 type registerRequest struct {
@@ -83,7 +92,7 @@ type registerResponse struct {
 type serverWrapper struct {
 	router *mux.Router
 	server *http.Server
-	store *sessions.CookieStore
+	store  *sessions.CookieStore
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
@@ -94,16 +103,18 @@ type serverWrapper struct {
 	// database is the RPC client for talking to the database service.
 	database dbpb.DatabaseClient
 
-	followsConn *grpc.ClientConn
-	follows     followspb.FollowsClient
-	articleConn *grpc.ClientConn
-	article     articlepb.ArticleClient
-	feedConn    *grpc.ClientConn
-	feed        feedpb.FeedClient
-	createConn  *grpc.ClientConn
-	create      createpb.CreateClient
-	usersConn   *grpc.ClientConn
-	users       userspb.UsersClient
+	followsConn   *grpc.ClientConn
+	follows       followspb.FollowsClient
+	articleConn   *grpc.ClientConn
+	article       articlepb.ArticleClient
+	feedConn      *grpc.ClientConn
+	feed          feedpb.FeedClient
+	createConn    *grpc.ClientConn
+	create        createpb.CreateClient
+	usersConn     *grpc.ClientConn
+	users         userspb.UsersClient
+	s2sFollowConn *grpc.ClientConn
+	s2sFollow     s2sfollowpb.S2SFollowClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -138,7 +149,7 @@ func (s *serverWrapper) getSessionHandle(r *http.Request) (string, error) {
 	session, err := s.store.Get(r, "rabble-session")
 	if err != nil {
 		log.Printf("Error getting session: %v", err)
-		return "", err;
+		return "", err
 	}
 	if _, ok := session.Values["handle"]; !ok {
 		return "", fmt.Errorf("Handle doesn't exist, user not logged in")
@@ -405,8 +416,6 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-
-
 		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
 		if parseErr != nil {
 			log.Println(parseErr)
@@ -492,6 +501,46 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+
+		log.Printf("User %v received a follow activity\n", recipient)
+
+		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
+		decoder := json.NewDecoder(r.Body)
+		var t followActivityStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		f := &s2sfollowpb.ReceivedFollowDetails{
+			Follower: t.Actor,
+			Followed: t.Object,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sFollow.ReceiveFollowActivity(ctx, f)
+		if err != nil || resp.ResultType == s2sfollowpb.FollowActivityResponse_ERROR {
+			log.Printf("Could not receive follow activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving follow activity\n")
+			return
+		}
+
+		log.Printf("Activity received: %v\n", resp.Error)
+		fmt.Fprintf(w, "{}\n")
+	}
+}
+
 // handleRegister sends an RPC to the users service to create a user with the
 // given info.
 func (s *serverWrapper) handleRegister() http.HandlerFunc {
@@ -513,7 +562,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 		log.Printf("Trying to add new user %#v.\n", req.Handle)
 		u := &userspb.CreateUserRequest{
 			DisplayName: req.DisplayName,
-			Handle:	     req.Handle,
+			Handle:      req.Handle,
 			Password:    req.Password,
 			Bio:         req.Bio,
 		}
@@ -550,7 +599,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 			return
 		}
 		lr := &userspb.LoginRequest{
-			Handle: t.Handle,
+			Handle:   t.Handle,
 			Password: t.Password,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -599,7 +648,7 @@ func (s *serverWrapper) handleLogout() http.HandlerFunc {
 			fmt.Fprintf(w, "Issue with handling logout request\n")
 			return
 		}
-		session.Options.MaxAge = -1  // Marks the session for deletion.
+		session.Options.MaxAge = -1 // Marks the session for deletion.
 		err = session.Save(r, w)
 		if err != nil {
 			fmt.Println(err)
@@ -644,6 +693,7 @@ func (s *serverWrapper) setupRoutes() {
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
 	r.HandleFunc("/ap/@{username}/inbox", s.handleCreateActivity())
+	r.HandleFunc("/ap/@{username}/inbox_follow", s.handleFollowActivity())
 }
 
 func (s *serverWrapper) shutdown() {
@@ -659,6 +709,7 @@ func (s *serverWrapper) shutdown() {
 	s.createConn.Close()
 	s.feedConn.Close()
 	s.usersConn.Close()
+	s.s2sFollowConn.Close()
 }
 
 func createArticleClient() (*grpc.ClientConn, articlepb.ArticleClient) {
@@ -749,6 +800,22 @@ func createFeedClient() (*grpc.ClientConn, feedpb.FeedClient) {
 	return conn, client
 }
 
+func createS2SFollowClient() (*grpc.ClientConn, s2sfollowpb.S2SFollowClient) {
+	const env = "FOLLOW_ACTIVITY_SERVICE_HOST"
+	host := os.Getenv(env)
+	if host == "" {
+		log.Fatalf("%s env var not set for skinny server", env)
+	}
+	addr := host + ":2012"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
+	}
+	client := s2sfollowpb.NewS2SFollowClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -774,23 +841,26 @@ func buildServerWrapper() *serverWrapper {
 	feedConn, feedClient := createFeedClient()
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
+	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s := &serverWrapper{
-		router:       r,
-		server:       srv,
-		store:        cookie_store,
-		shutdownWait: 20 * time.Second,
-		databaseConn: databaseConn,
-		database:     databaseClient,
-		articleConn:  articleConn,
-		article:      articleClient,
-		followsConn:  followsConn,
-		follows:      followsClient,
-		feedConn:     feedConn,
-		feed:         feedClient,
-		createConn:   createConn,
-		create:       createClient,
-		usersConn:    usersConn,
-		users:        usersClient,
+		router:        r,
+		server:        srv,
+		store:         cookie_store,
+		shutdownWait:  20 * time.Second,
+		databaseConn:  databaseConn,
+		database:      databaseClient,
+		articleConn:   articleConn,
+		article:       articleClient,
+		followsConn:   followsConn,
+		follows:       followsClient,
+		feedConn:      feedConn,
+		feed:          feedClient,
+		createConn:    createConn,
+		create:        createClient,
+		usersConn:     usersConn,
+		users:         usersClient,
+		s2sFollowConn: s2sFollowConn,
+		s2sFollow:     s2sFollowClient,
 	}
 	s.setupRoutes()
 	return s
