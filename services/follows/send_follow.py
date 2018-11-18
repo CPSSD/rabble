@@ -1,16 +1,39 @@
+import os
+import sys
+
 from proto import database_pb2
 from proto import follows_pb2
+from proto import s2s_follow_pb2
 
 
 class SendFollowServicer:
 
     def __init__(self, logger, util, users_util,
                  database_stub, follow_activity_stub):
+        host_name = os.environ.get("HOST_NAME")
+        if not host_name:
+            print("Please set HOST_NAME env variable")
+            sys.exit(1)
+        self._host_name = host_name
         self._logger = logger
         self._util = util
         self._users_util = users_util
         self._database_stub = database_stub
         self._follow_activity_stub = follow_activity_stub
+
+    def _send_s2s(self, from_handle, to_handle, to_host):
+        local_user = s2s_follow_pb2.FollowActivityUser()
+        local_user.handle = from_handle
+        local_user.host = self._host_name
+
+        foreign_user = s2s_follow_pb2.FollowActivityUser()
+        foreign_user.handle = to_handle
+        foreign_user.host = to_host
+
+        s2s_follow = s2s_follow_pb2.FollowDetails()
+        s2s_follow.follower = local_user
+        s2s_follow.followed = foreign_user
+        self._follow_activity_stub.SendFollowActivity(s2s_follow)
 
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
@@ -62,9 +85,8 @@ class SendFollowServicer:
             return resp
 
         if to_instance is not None:
-            # non-local user
-            pass
-            #self._follow_activity_stub.
+            # Following a non-local user, should send Follow activity.
+            self._send_s2s(from_handle, to_handle, to_host)
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
