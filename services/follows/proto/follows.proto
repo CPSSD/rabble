@@ -25,8 +25,8 @@ message ForeignToLocalFollow {
     string follower_handle = 2;
     /* The handle of the user on this instance that has been followed, eg.
      * "admin". */
-    string followed = 2;
-    google.protobuf.Timestamp datetime = 3;
+    string followed = 3;
+    google.protobuf.Timestamp datetime = 4;
 }
 
 /* TODO(iandioch): Consider merging with DbFollowResponse in
