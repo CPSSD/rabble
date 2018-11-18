@@ -6,11 +6,15 @@ export interface ILoginResult {
 }
 
 export function GetLoginPromise(handle: string, password: string) {
-  const url = `/c2s/login?handle=${handle}&password=${password}`;
+  const url = "/c2s/login";
+  const postBody = { handle, password };
   return new Promise<ILoginResult>((resolve, reject) => {
     superagent
-      .get(url)
+      .post(url)
+      .set("Content-Type", "application/json")
       .set("Accept", "application/json")
+      .send(postBody)
+      .retry(2)
       .end((error, res) => {
         if (error) {
           reject(error);

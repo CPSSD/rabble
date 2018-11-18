@@ -57,6 +57,11 @@ type createArticleStruct struct {
 	CreationDatetime string `json:"creation_datetime"`
 }
 
+type loginStruct struct {
+	Handle           string `json:"handle"`
+	Password         string `json:"password"`
+}
+
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
 // access their dependencies through it. See
@@ -114,6 +119,18 @@ func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, e
 		return nil, fmt.Errorf("Old creation time")
 	}
 	return protoTimestamp, nil
+}
+
+func (s *serverWrapper) getSessionHandle(r *http.Request) (string, error) {
+	session, err := s.store.Get(r, "rabble-session")
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		return "", err;
+	}
+	if _, ok := session.Values["handle"]; !ok {
+		return "", fmt.Errorf("Handle doesn't exist, user not logged in")
+	}
+	return session.Values["handle"].(string), nil
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -224,18 +241,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			return
 		}
 
-		session, err := s.store.Get(r, "rabble-session")
+		handle, err := s.getSessionHandle(r)
 		if err != nil {
-			log.Printf("Error getting session. %#v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			e := &followspb.FollowResponse{
-				ResultType: followspb.FollowResponse_ERROR,
-				Error:      "Error getting session",
-			}
-			enc.Encode(e)
-			return
-		}
-		if _, ok := session.Values["handle"]; !ok {
 			log.Printf("Call to follow by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
 			e := &followspb.FollowResponse{
@@ -247,7 +254,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		}
 		// Even if the request was sent with a different follower user the
 		// handle of the logged in user.
-		j.Follower = session.Values["handle"].(string)
+		j.Follower = handle
 
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
@@ -298,13 +305,8 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		session, err := s.store.Get(r, "rabble-session")
+		handle, err := s.getSessionHandle(r)
 		if err != nil {
-			log.Printf("Error getting session %#v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Internal error")
-			return
-		} else if _, ok := session.Values["handle"]; !ok {
 			log.Printf("Create Article call from user not logged in")
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "Login Required")
@@ -312,7 +314,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		}
 
 		na := &articlepb.NewArticle{
-			Author:           session.Values["handle"].(string),
+			Author:           handle,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
@@ -415,13 +417,19 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 // is correct.
 func (s *serverWrapper) handleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO(CianLR): Change to be post request
-		vars := r.URL.Query()
-		handle := vars["handle"][0]
-		password := vars["password"][0]
+		decoder := json.NewDecoder(r.Body)
+		var t loginStruct
+		err := decoder.Decode(&t)
+		if err != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
 		lr := &userspb.LoginRequest{
-			Handle: handle,
-			Password: password,
+			Handle: t.Handle,
+			Password: t.Password,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -441,7 +449,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 				fmt.Fprintf(w, "Issue with handling login request\n")
 				return
 			}
-			session.Values["handle"] = handle
+			session.Values["handle"] = t.Handle
 			session.Values["global_id"] = resp.GlobalId
 			session.Values["display_name"] = resp.DisplayName
 			session.Save(r, w)
@@ -449,9 +457,11 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
-		// Intentionally not revealing if an error occurred.
+		success := resp.Result == userspb.LoginResponse_ACCEPTED
+		log.Printf("User %s login success: %t", t.Handle, success)
+		// Intentionally not revealing to the user if an error occurred.
 		err = enc.Encode(map[string]bool{
-			"success": resp.Result == userspb.LoginResponse_ACCEPTED,
+			"success": success,
 		})
 
 	}
