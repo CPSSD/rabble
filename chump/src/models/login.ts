@@ -6,7 +6,7 @@ export interface ILoginResult {
 }
 
 export function GetLoginPromise(handle: string, password: string) {
-  const url = `/c2s/login?handle=${handle}&password=${password}`
+  const url = `/c2s/login?handle=${handle}&password=${password}`;
   return new Promise<ILoginResult>((resolve, reject) => {
     superagent
       .get(url)
@@ -18,10 +18,9 @@ export function GetLoginPromise(handle: string, password: string) {
         }
         let succ = res!.body;
         if (succ === null) {
-          succ = {'success': false}
+          succ = { success: false };
         }
         resolve(succ);
       });
   });
 }
-

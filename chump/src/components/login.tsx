@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
-import {ILoginResult, GetLoginPromise} from "../models/login";
+import {GetLoginPromise, ILoginResult} from "../models/login";
 
 interface ILoginProps extends RouteProps {
   loginCallback(username: string): void;
@@ -17,9 +17,9 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
     super(props);
 
     this.state = {
+      password: "",
       redirect: false,
       username: "",
-      password: "",
     };
 
     this.handleUsername = this.handleUsername.bind(this);
