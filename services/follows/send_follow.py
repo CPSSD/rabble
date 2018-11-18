@@ -31,8 +31,10 @@ class SendFollowServicer:
         foreign_user.host = to_host
 
         s2s_follow = s2s_follow_pb2.FollowDetails()
-        s2s_follow.follower = local_user
-        s2s_follow.followed = foreign_user
+        s2s_follow.follower.handle = from_handle
+        s2s_follow.follower.host = self._host_name
+        s2s_follow.followed.handle = to_handle
+        s2s_follow.followed.host = to_host
         self._follow_activity_stub.SendFollowActivity(s2s_follow)
 
     def SendFollowRequest(self, request, context):
@@ -86,7 +88,7 @@ class SendFollowServicer:
 
         if to_instance is not None:
             # Following a non-local user, should send Follow activity.
-            self._send_s2s(from_handle, to_handle, to_host)
+            self._send_s2s(from_handle, to_handle, to_instance)
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp

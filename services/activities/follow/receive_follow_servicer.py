@@ -19,7 +19,7 @@ class ReceiveFollowServicer:
         self.__follows_stub = follows_pb2_grpc.FollowsStub(chan)
         return self.__follows_stub
 
-    def _s2s_req_to_follows_req(req):
+    def _s2s_req_to_follows_req(self, req):
         a = follows_pb2.ForeignToLocalFollow()
         a.followed, _ = self._users_util.parse_username(req.followed)
         a.follower_handle, a.follower_host = \
@@ -27,6 +27,7 @@ class ReceiveFollowServicer:
         return a
 
     def ReceiveFollowActivity(self, req, context):
+        self._logger.info('Received follow activity: {}'.format(req))
         resp = s2s_follow_pb2.FollowActivityResponse()
         resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
 
