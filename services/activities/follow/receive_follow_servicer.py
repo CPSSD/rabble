@@ -6,18 +6,10 @@ from proto import s2s_follow_pb2
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, users_util, follows_service_address):
+    def __init__(self, logger, users_util, follows_service):
         self._logger = logger
         self._users_util = users_util
-        self._follows_service_address = follows_service_address
-        self.__follows_stub = None
-
-    def _get_follows_stub(self):
-        if self.__follows_stub is not None:
-            return self.__follows_stub
-        chan = grpc.insecure_channel(self._follows_service_address)
-        self.__follows_stub = follows_pb2_grpc.FollowsStub(chan)
-        return self.__follows_stub
+        self._follows_stub = follows_service
 
     def _s2s_req_to_follows_req(self, req):
         a = follows_pb2.ForeignToLocalFollow()
@@ -32,8 +24,7 @@ class ReceiveFollowServicer:
         resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
 
         follow = self._s2s_req_to_follows_req(req)
-        stub = self._get_follows_stub()
-        follows_resp = stub.ReceiveFollowRequest(follow)
+        follows_resp = self._follows_stub.ReceiveFollowRequest(follow)
 
         resp.result_type = follows_resp.result_type
         resp.error = follows_resp.error

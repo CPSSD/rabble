@@ -33,17 +33,18 @@ def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
     users_util = UsersUtil(logger, None)
-    follows_service_address = get_follows_service_address(logger)
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
-        FollowServicer(logger, users_util, follows_service_address),
-        server
-    )
-    server.add_insecure_port('0.0.0.0:1922')
-    logger.info("Starting s2s follow server on port 1922")
-    server.start()
-    while True:
-        time.sleep(60 * 60 * 24)  # One day
+    with grpc.insecure_channel(get_follows_service_address(logger)) as chan:
+        follows_service = follows_pb2_grpc.FollowsStub(chan)
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
+            FollowServicer(logger, users_util, follows_service),
+            server
+        )
+        server.add_insecure_port('0.0.0.0:1922')
+        logger.info("Starting s2s follow server on port 1922")
+        server.start()
+        while True:
+            time.sleep(60 * 60 * 24)  # One day
 
 if __name__ == '__main__':
     main()
