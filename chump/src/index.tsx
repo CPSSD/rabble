@@ -9,6 +9,7 @@ import {Feed} from "./components/feed";
 import {Register} from "./components/register";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
+import {Logout} from "./components/logout";
 import {User} from "./components/user";
 import {SinglePost} from "./components/single_post";
 
@@ -35,6 +36,10 @@ export class App extends React.Component<{}, IAppState> {
     this.setState({username})
   }
 
+  logout() {
+    this.setState({username: ""});
+  }
+
   render() {
     return (
       <HashRouter>
@@ -58,6 +63,10 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <Route
+              path="/logout"
+              render={(props) => <Logout {...props} logoutCallback={this.logout} />}
             />
             <Route
               path="/register"

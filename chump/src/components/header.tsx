@@ -12,7 +12,7 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
       <Link to="/login" className="pure-menu-link">Login</Link>
     </li>
   );
-  let Register = (
+  let RegisterOrLogout = (
     <li className="pure-menu-item">
       <Link to="/register" className="pure-menu-link">Register</Link>
     </li>
@@ -24,7 +24,11 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
         <Link to="#" className="pure-menu-link">{props.username}</Link>
       </li>
     );
-    Register = (<div/>);
+    RegisterOrLogout = (
+      <li className="pure-menu-item">
+        <Link to="/logout" className="pure-menu-link">Logout</Link>
+      </li>
+    );
   }
 
   return (
@@ -41,7 +45,7 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
               <Link to="/write" className="pure-menu-link">Write</Link>
             </li>
             {Login}
-            {Register}
+            {RegisterOrLogout}
           </ul>
         </div>
       </div>
