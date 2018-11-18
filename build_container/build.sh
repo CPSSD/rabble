@@ -98,6 +98,11 @@ python3 -m grpc_tools.protoc \
   --python_out=build_out/follows \
   --grpc_python_out=build_out/follows \
   build_out/activities/follow/proto/s2s_follow.proto
+python3 -m grpc_tools.protoc \
+  -Ibuild_out/database \
+  --python_out=build_out/activities/follow \
+  --grpc_python_out=build_out/activities/follow \
+  build_out/database/proto/database.proto
 
 echo "Building users service"
 cp -R services/users build_out/
