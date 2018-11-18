@@ -2,11 +2,15 @@
 
 # Create user test
 curl --request POST \
-"127.0.0.1:1916/c2s/new_user?handle=test&display_name=test&password=test"
+  --header "Content-Type: application/json" \
+  --data '{"handle":"test","displayName":"test","password":"test","bio":"B"}' \
+  "127.0.0.1:1916/c2s/register"
 
 # Create user admin
 curl --request POST \
-"127.0.0.1:1917/c2s/new_user?handle=admin&display_name=admin&password=admin"
+  --header "Content-Type: application/json" \
+  --data '{"handle":"admin","displayName":"admin","password":"admin","bio":"B"}' \
+  "127.0.0.1:1916/c2s/register"
 
 # follow user test with foreign user admin
 curl --header "Content-Type: application/json" \
