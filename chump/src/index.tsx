@@ -6,6 +6,7 @@ import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {Header} from "./components/header";
 import {Feed} from "./components/feed";
+import {Register} from "./components/register";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 import {User} from "./components/user";
@@ -58,6 +59,10 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               path="/login"
               render={(props) => <Login {...props} loginCallback={this.login} />}
+            />
+            <Route
+              path="/register"
+              component={Register}
             />
             <PrivateRoute
               path="/feed"
