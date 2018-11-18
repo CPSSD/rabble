@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, RouteProps } from "react-router-dom";
+import { RouteProps } from "react-router-dom";
 
 import { GetSinglePost, IBlogPost } from "../models/posts";
 import { Post } from "./post";

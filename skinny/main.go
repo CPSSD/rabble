@@ -380,6 +380,58 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t createArticleStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+
+
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		if parseErr != nil {
+			log.Println(parseErr)
+			return
+		}
+
+		na := &articlepb.NewArticle{
+			Author:           t.Author,
+			Body:             t.Body,
+			Title:            t.Title,
+			CreationDatetime: protoTimestamp,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.article.PreviewArticle(ctx, na)
+		if err != nil {
+			log.Printf("Could not create preview. Err: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with creating preview\n")
+			return
+		}
+
+		log.Printf("User %#v attempted to create preview with title: %v\n", t.Author, t.Title)
+		w.Header().Set("Content-Type", "application/json")
+		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Preview)
+		if err != nil {
+			log.Printf("could not marshal post: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
@@ -552,6 +604,7 @@ func (s *serverWrapper) setupRoutes() {
 
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
+	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
