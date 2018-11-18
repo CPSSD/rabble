@@ -4,11 +4,13 @@ from proto import follows_pb2
 
 class SendFollowServicer:
 
-    def __init__(self, logger, util, users_util, database_stub):
+    def __init__(self, logger, util, users_util,
+                 database_stub, follow_activity_stub):
         self._logger = logger
         self._util = util
         self._users_util = users_util
         self._database_stub = database_stub
+        self._follow_activity_stub = follow_activity_stub
 
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
@@ -59,7 +61,10 @@ class SendFollowServicer:
             resp.error = 'Could not add requested follow to database'
             return resp
 
-        # TODO(#61): Send Follow activity if followed user is not local.
+        if to_instance is not None:
+            # non-local user
+            pass
+            #self._follow_activity_stub.
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
