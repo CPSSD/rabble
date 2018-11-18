@@ -6,8 +6,9 @@ from proto import s2s_follow_pb2
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, follows_service_address):
+    def __init__(self, logger, users_util, follows_service_address):
         self._logger = logger
+        self._users_util = users_util
         self._follows_service_address = follows_service_address
         self.__follows_stub = None
 
@@ -20,6 +21,9 @@ class ReceiveFollowServicer:
 
     def _s2s_req_to_follows_req(req):
         a = follows_pb2.ForeignToLocalFollow()
+        a.followed, _ = self._users_util.parse_username(req.followed)
+        a.follower_handle, a.follower_host = \
+            self._users_util.parse_username(req.follower)
         return a
 
     def ReceiveFollowActivity(self, req, context):

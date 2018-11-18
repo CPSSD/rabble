@@ -7,6 +7,8 @@ import os
 import sys
 
 from utils.logger import get_logger
+from utils.users import UsersUtil
+
 from servicer import FollowServicer
 from proto import follows_pb2_grpc
 from proto import s2s_follow_pb2_grpc
@@ -30,10 +32,11 @@ def get_follows_service_address(logger):
 def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
+    users_util = UsersUtil(logger, None)
     follows_service_address = get_follows_service_address(logger)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
-        FollowServicer(logger, follows_service_address),
+        FollowServicer(logger, users_util, follows_service_address),
         server
     )
     server.add_insecure_port('0.0.0.0:1922')
