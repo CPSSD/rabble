@@ -393,21 +393,11 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-		parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, t.CreationDatetime)
-		protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
-		if timeErr != nil || protoTimeErr != nil {
-			log.Printf("Invalid creation time\n")
-			log.Printf("Error: %s\n", timeErr)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid creation time\n")
-			return
-		}
 
-		timeSinceRequest := time.Since(parsedCreationDatetime)
-		if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
-			log.Printf("Old creation time")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Old creation time\n")
+
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		if parseErr != nil {
+			log.Println(parseErr)
 			return
 		}
 

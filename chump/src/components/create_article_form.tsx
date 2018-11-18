@@ -153,10 +153,8 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         });
       })
       .catch((err: any) => {
-        let status = err.message;
         let message = err.message;
         if (err.response) {
-          status = err.response.status;
           message = err.response.text;
         }
         this.alertUser(message);
@@ -179,10 +177,8 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         });
       })
       .catch((err: any) => {
-        let status = err.message;
         let message = err.message;
         if (err.response) {
-          status = err.response.status;
           message = err.response.text;
         }
         this.alertUser(message);
