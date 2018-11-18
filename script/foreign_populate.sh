@@ -20,5 +20,5 @@ RLOCAL=skinny:1916
 RFOREIGN=skinny2:1917
 
 create_user $FOREIGN david
-follow $FOREIGN david michael@$RLOCAL
+follow $LOCAL dwight david@$RFOREIGN
 create_article $FOREIGN david
