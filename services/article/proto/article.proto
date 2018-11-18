@@ -27,6 +27,20 @@ message NewArticleResponse {
     string error = 3;
 }
 
+message PreviewResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+    }
+
+    ResultType result_type = 1;
+    NewArticle preview = 2;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 3;
+}
+
 service Article {
   rpc CreateNewArticle(NewArticle) returns (NewArticleResponse);
+  rpc PreviewArticle(NewArticle) returns (PreviewResponse);
 }

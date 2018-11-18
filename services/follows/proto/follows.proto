@@ -21,13 +21,12 @@ message LocalToAnyFollow {
 /* ForeignToLocalFollow represents a user on a different instance requesting
  * to follow a user on this instance. */
 message ForeignToLocalFollow {
-    /* The fully-qualified username of the foreign user who has requested to
-     * follow a user on this instance. Eg. "@aaron@devoxel.net". */
-    string follower = 1;
+    string follower_host = 1;
+    string follower_handle = 2;
     /* The handle of the user on this instance that has been followed, eg.
      * "admin". */
-    string followed = 2;
-    google.protobuf.Timestamp datetime = 3;
+    string followed = 3;
+    google.protobuf.Timestamp datetime = 4;
 }
 
 /* TODO(iandioch): Consider merging with DbFollowResponse in
