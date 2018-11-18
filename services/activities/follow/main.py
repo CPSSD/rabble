@@ -19,7 +19,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
-def get_follows_service_address():
+def get_follows_service_address(logger):
     host = os.environ.get('FOLLOWS_SERVICE_HOST')
     if not host:
         logger.error('FOLLOWS_SERVICE_HOST env var not set.')
@@ -30,7 +30,7 @@ def get_follows_service_address():
 def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
-    follows_service_address = get_follows_service_address()
+    follows_service_address = get_follows_service_address(logger)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
         FollowServicer(logger, follows_service_address),
