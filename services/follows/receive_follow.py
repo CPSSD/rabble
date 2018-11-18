@@ -1,3 +1,4 @@
+from proto import database_pb2
 from proto import follows_pb2
 
 
@@ -11,11 +12,11 @@ class ReceiveFollowServicer:
 
     def ReceiveFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
-        from_handle, from_host = resp.follower_handle, resp.follower_host
-        to_handle = resp.followed
+        from_handle, from_host = request.follower_handle, request.follower_host
+        to_handle = request.followed
         self._logger.info('%s@%s has requested to follow %s (local user).',
                           from_handle,
-                          from_instance,
+                          from_host,
                           to_handle)
         if from_host is None or from_host == '':
             error = \
