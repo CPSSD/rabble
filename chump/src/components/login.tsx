@@ -29,7 +29,6 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
 
   public handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // TODO: Add authentication here
     if (this.state.username === "" || this.state.password === "") {
       return;
     }
