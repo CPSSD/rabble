@@ -31,6 +31,9 @@ message LoginResponse {
 
   ResultType result = 1;
   string error = 2;
+  // These fields are set if the result is ACCEPTED
+  string display_name = 3;
+  int64 global_id = 4;
 }
 
 service Users {

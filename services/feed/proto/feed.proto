@@ -8,6 +8,11 @@ message FeedRequest {
   string username = 1;
 }
 
+// To request for a specific article
+message ArticleRequest {
+  int64 article_id = 1;
+}
+
 // These responses will eventually be database.PostsResponse or at least use
 // PostsEntry. Right now our builds don't allow for importing proto files
 // between services. For that reason we'll keep it simple and ignore errors.
@@ -26,4 +31,5 @@ message FeedResponse {
 service Feed {
   rpc Get(FeedRequest) returns (FeedResponse);
   rpc PerUser(FeedRequest) returns (FeedResponse);
+  rpc PerArticle(ArticleRequest) returns (FeedResponse);
 }

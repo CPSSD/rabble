@@ -13,6 +13,7 @@ import (
 	"path"
 	"syscall"
 	"time"
+	"strconv"
 
 	createpb "github.com/cpssd/rabble/services/activities/create/proto"
 	articlepb "github.com/cpssd/rabble/services/article/proto"
@@ -23,6 +24,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"google.golang.org/grpc"
 )
 
@@ -56,6 +58,11 @@ type createArticleStruct struct {
 	CreationDatetime string `json:"creation_datetime"`
 }
 
+type loginStruct struct {
+	Handle           string `json:"handle"`
+	Password         string `json:"password"`
+}
+
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
 // access their dependencies through it. See
@@ -64,6 +71,7 @@ type createArticleStruct struct {
 type serverWrapper struct {
 	router *mux.Router
 	server *http.Server
+	store *sessions.CookieStore
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
@@ -114,6 +122,18 @@ func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, e
 	return protoTimestamp, nil
 }
 
+func (s *serverWrapper) getSessionHandle(r *http.Request) (string, error) {
+	session, err := s.store.Get(r, "rabble-session")
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		return "", err;
+	}
+	if _, ok := session.Values["handle"]; !ok {
+		return "", fmt.Errorf("Handle doesn't exist, user not logged in")
+	}
+	return session.Values["handle"].(string), nil
+}
+
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -134,7 +154,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -147,7 +167,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 
 		v := mux.Vars(r)
 		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(400) // Bad Request
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
 		fr := &feedpb.FeedRequest{Username: v["username"]}
@@ -163,7 +183,49 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		err = enc.Encode(resp.Results)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		username, uOk := v["username"]
+		strArticleId, aOk := v["article_id"]
+		if !uOk || !aOk || strArticleId == "" || username == "" {
+			log.Println("Per Article page passed bad url values")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		articleId, string2IntErr := strconv.ParseInt(strArticleId, 10, 64)
+
+		if string2IntErr != nil {
+			log.Println("Article ID could not be converted to int")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		fr := &feedpb.ArticleRequest{ArticleId: articleId}
+		resp, err := s.feed.PerArticle(ctx, fr)
+		if err != nil {
+			log.Print("Error in getting per Article page: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Results)
+		if err != nil {
+			log.Printf("Could not marshal article: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -210,7 +272,6 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		var j followspb.LocalToAnyFollow
 		err := decoder.Decode(&j)
-
 		enc := json.NewEncoder(w)
 		if err != nil {
 			log.Printf("Invalid JSON. Err = %#v", err)
@@ -222,6 +283,21 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			enc.Encode(e)
 			return
 		}
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to follow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			e := &followspb.FollowResponse{
+				ResultType: followspb.FollowResponse_ERROR,
+				Error:      "Login required",
+			}
+			enc.Encode(e)
+			return
+		}
+		// Even if the request was sent with a different follower user the
+		// handle of the logged in user.
+		j.Follower = handle
 
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
@@ -272,8 +348,16 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Create Article call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Login Required")
+			return
+		}
+
 		na := &articlepb.NewArticle{
-			Author:           t.Author,
+			Author:           handle,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
@@ -293,6 +377,58 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
 		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
 		// TODO(sailslick) send the response
+	}
+}
+
+func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t createArticleStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+
+
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		if parseErr != nil {
+			log.Println(parseErr)
+			return
+		}
+
+		na := &articlepb.NewArticle{
+			Author:           t.Author,
+			Body:             t.Body,
+			Title:            t.Title,
+			CreationDatetime: protoTimestamp,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.article.PreviewArticle(ctx, na)
+		if err != nil {
+			log.Printf("Could not create preview. Err: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with creating preview\n")
+			return
+		}
+
+		log.Printf("User %#v attempted to create preview with title: %v\n", t.Author, t.Title)
+		w.Header().Set("Content-Type", "application/json")
+		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Preview)
+		if err != nil {
+			log.Printf("could not marshal post: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -344,7 +480,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	}
 }
 
-// handleNewUser sends an RPC to the database service to create a user with the
+// handleNewUser sends an RPC to the users service to create a user with the
 // given info.
 func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -372,6 +508,80 @@ func (s *serverWrapper) handleNewUser() http.HandlerFunc {
 	}
 }
 
+// handleLogin sends an RPC to the users service to check if a login
+// is correct.
+func (s *serverWrapper) handleLogin() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t loginStruct
+		err := decoder.Decode(&t)
+		if err != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+		lr := &userspb.LoginRequest{
+			Handle: t.Handle,
+			Password: t.Password,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.users.Login(ctx, lr)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling login request\n")
+			return
+		}
+		if resp.Result == userspb.LoginResponse_ACCEPTED {
+			session, err := s.store.Get(r, "rabble-session")
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "Issue with handling login request\n")
+				return
+			}
+			session.Values["handle"] = t.Handle
+			session.Values["global_id"] = resp.GlobalId
+			session.Values["display_name"] = resp.DisplayName
+			session.Save(r, w)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		success := resp.Result == userspb.LoginResponse_ACCEPTED
+		log.Printf("User %s login success: %t", t.Handle, success)
+		// Intentionally not revealing to the user if an error occurred.
+		err = enc.Encode(map[string]bool{
+			"success": success,
+		})
+
+	}
+}
+
+// Clears the user's session when called.
+func (s *serverWrapper) handleLogout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, err := s.store.Get(r, "rabble-session")
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling logout request\n")
+			return
+		}
+		session.Options.MaxAge = -1  // Marks the session for deletion.
+		err = session.Save(r, w)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with handling logout request\n")
+		}
+	}
+}
+
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
 // as the code handling it can be looked up here.
@@ -394,11 +604,15 @@ func (s *serverWrapper) setupRoutes() {
 
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
+	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
+	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/new_user", s.handleNewUser())
+	r.HandleFunc("/c2s/login", s.handleLogin())
+	r.HandleFunc("/c2s/logout", s.handleLogout())
 
 	// ActivityPub routes
 	r.HandleFunc("/ap/", s.handleNotImplemented())
@@ -526,6 +740,7 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
+	cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
@@ -535,6 +750,7 @@ func buildServerWrapper() *serverWrapper {
 	s := &serverWrapper{
 		router:       r,
 		server:       srv,
+		store:        cookie_store,
 		shutdownWait: 20 * time.Second,
 		databaseConn: databaseConn,
 		database:     databaseClient,

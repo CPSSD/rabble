@@ -31,6 +31,7 @@ class LoginHandlerTest(unittest.TestCase):
         pw = self._pw_hash if pw is None else pw
         return database_pb2.UsersEntry(
             handle="CianLR",
+            global_id=1,
             display_name="Cian Ruane",
             password=pw,
             bio="A sound lad",
@@ -67,13 +68,16 @@ class LoginHandlerTest(unittest.TestCase):
 
     def test_correct_password(self):
         req = self._make_request()
+        user = self._make_user()
         self.db_stub.Users.return_value = database_pb2.UsersResponse(
             result_type=database_pb2.UsersResponse.OK,
-            results=[self._make_user()],
+            results=[user],
         )
         resp = self.login_handler.Login(req, None)
         self.assertEqual(resp.result, users_pb2.LoginResponse.ACCEPTED)
-    
+        self.assertEqual(resp.display_name, user.display_name)
+        self.assertEqual(resp.global_id, user.global_id)
+
     def test_incorrect_password(self):
         req = self._make_request()
         self.db_stub.Users.return_value = database_pb2.UsersResponse(

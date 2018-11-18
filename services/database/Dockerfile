@@ -8,7 +8,6 @@ RUN pip3 install protobuf
 
 ENV PYTHONPATH="/repo/build_out"
 ARG DBPATH
+ENV DBPATH=$DBPATH
 
-CMD ["python3", "-u", "-B", "/repo/build_out/database/main.py", \
-     "-v", "--schema", "/repo/build_out/database/rabble_schema.sql", \
-     "--db_path", "$DBPATH"]
+CMD python3 -u -B /repo/build_out/database/main.py -v --schema /repo/build_out/database/rabble_schema.sql --db_path $DBPATH

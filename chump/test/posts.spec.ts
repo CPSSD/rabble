@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { GetPublicPosts, IBlogPost } from "../src/models/posts";
+import { GetPublicPosts, GetSinglePost, IBlogPost } from "../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 
@@ -68,6 +68,16 @@ describe("GetPublicPosts", () => {
     }).catch(() => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
+      done();
+    });
+  });
+
+  it("should handle a single Post request", (done) => {
+    const getRequest = createFakeResponse(validBody);
+    GetSinglePost("username", "id").then((posts: IBlogPost[]) => {
+      expect(getRequest).to.have.property("callCount", 1);
+      expect(getRequest.calledWith("/c2s/@username/id")).to.be.ok;
+      expect(posts).to.eql(validBody);
       done();
     });
   });

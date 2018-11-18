@@ -27,7 +27,7 @@ def get_args():
 def main():
     args = get_args()
     logger = get_logger("database_service", args.v)
-    logger.info("Creating DB")
+    logger.info("Creating DB with path: " + args.db_path)
     database = build_database(logger, args.schema, args.db_path)
     logger.info("Creating server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

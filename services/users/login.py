@@ -52,5 +52,7 @@ class LoginHandler:
         self._logger.info("*hacker voice* I'm in (%s)", request.handle)
         return users_pb2.LoginResponse(
             result=users_pb2.LoginResponse.ACCEPTED,
+            display_name=db_resp.results[0].display_name,
+            global_id=db_resp.results[0].global_id,
         )
 

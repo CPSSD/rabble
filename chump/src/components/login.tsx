@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
+import {GetLoginPromise, ILoginResult} from "../models/login";
 
 interface ILoginProps extends RouteProps {
   loginCallback(username: string): void;
@@ -7,6 +8,7 @@ interface ILoginProps extends RouteProps {
 
 interface ILoginState {
   username: string;
+  password: string;
   redirect: boolean;
 }
 
@@ -15,23 +17,34 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
     super(props);
 
     this.state = {
+      password: "",
       redirect: false,
       username: "",
     };
 
     this.handleUsername = this.handleUsername.bind(this);
+    this.handlePassword = this.handlePassword.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
   }
 
   public handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // TODO: Add authentication here
-    if (this.state.username !== "") {
-      this.props.loginCallback(this.state.username);
-      this.setState({
-        redirect: true,
-      });
+    if (this.state.username === "" || this.state.password === "") {
+      return;
     }
+    GetLoginPromise(this.state.username, this.state.password)
+      .then((response: ILoginResult) => {
+        if (!response.success) {
+          alert("Incorrect login!");
+        } else {
+          this.props.loginCallback(this.state.username);
+          this.setState({
+            redirect: true,
+          });
+        }
+      })
+      .catch(this.handleLoginError);
   }
 
   public render() {
@@ -55,6 +68,16 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
                 placeholder="Username"
               />
             </div>
+            <div className="pure-control-group">
+              <input
+                type="password"
+                name="password"
+                value={this.state.password}
+                onChange={this.handlePassword}
+                className="pure-input-1-2"
+                placeholder="Password"
+              />
+            </div>
             <button
               type="submit"
               className="pure-button pure-input-1-3 pure-button-primary"
@@ -72,5 +95,16 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
     this.setState({
       username: target.value,
     });
+  }
+
+  private handlePassword(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+    this.setState({
+      password: target.value,
+    });
+  }
+
+  private handleLoginError() {
+    alert("Error attempting to login.");
   }
 }
