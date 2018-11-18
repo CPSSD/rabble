@@ -20,11 +20,11 @@ services:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
       - DB_SERVICE_HOST=database_service
       - USERS_SERVICE_HOST=users_service
-      - FOLLOWS_SERVICE_HOST=follows_service
+      - FOLLOWS_SERVICE_HOST=follows_service2
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service2
-      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
   feed_service:
     build:
       context: ./services/feed
@@ -56,18 +56,21 @@ services:
       - "logger_service"
     environment:
       - LOGGER_SERVICE_HOST=logger_service
-  follows_service:
+  follows_service2:
     build:
       context: ./services/follows
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - rabble_testnetwork
+      - default
     depends_on:
       - "database_service"
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
-      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
       - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
   logger_service:
     build:
@@ -115,7 +118,7 @@ services:
       - default
     environment:
       - LOGGER_SERVICE_HOST=logger_service
-      - FOLLOWS_SERVICE_HOST=follows_service
+      - FOLLOWS_SERVICE_HOST=follows_service2
   markdown_service:
     build:
       context: ./services/mdc
