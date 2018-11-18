@@ -63,6 +63,18 @@ type loginStruct struct {
 	Password         string `json:"password"`
 }
 
+type registerRequest struct {
+	Handle      string `json:"handle"`
+	Password    string `json:"password"`
+	DisplayName string `json:"displayName"`
+	Bio         string `json:"bio"`
+}
+
+type registerResponse struct {
+	Error   string `json:"error"`
+	Success bool   `json:"success"`
+}
+
 // serverWrapper encapsulates the dependencies and config values of the server
 // into one struct. Server endpoint handlers hang off of this struct and can
 // access their dependencies through it. See
@@ -428,31 +440,46 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	}
 }
 
-// handleNewUser sends an RPC to the users service to create a user with the
+// handleRegister sends an RPC to the users service to create a user with the
 // given info.
-func (s *serverWrapper) handleNewUser() http.HandlerFunc {
+func (s *serverWrapper) handleRegister() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := r.URL.Query()
-		// TODO(iandioch): Return error if parameters are missing.
-		displayName := vars["display_name"][0]
-		handle := vars["handle"][0]
-		password := vars["password"][0]
-		log.Printf("Trying to add new user %#v (%#v).\n", handle, displayName)
+		decoder := json.NewDecoder(r.Body)
+		var req registerRequest
+		var jsonResp registerResponse
+		err := decoder.Decode(&req)
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		if err != nil {
+			log.Printf("Invalid JSON, error: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			jsonResp.Error = "Invalid JSON"
+			jsonResp.Success = false
+			enc.Encode(jsonResp)
+			return
+		}
+		log.Printf("Trying to add new user %#v.\n", req.Handle)
 		u := &userspb.CreateUserRequest{
-			DisplayName: displayName,
-			Handle:      handle,
-			Password:    password,
-			Bio:         "nothing",
+			DisplayName: req.DisplayName,
+			Handle:	     req.Handle,
+			Password:    req.Password,
+			Bio:         req.Bio,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
 		resp, err := s.users.Create(ctx, u)
+		jsonResp.Success = true
 		if err != nil {
-			log.Fatalf("could not add new user: %v", err)
+			log.Printf("could not add new user: %v", err)
+			jsonResp.Error = "Error communicating with create user service"
+			jsonResp.Success = false
+		} else if resp.ResultType != userspb.CreateUserResponse_OK {
+			log.Printf("Error creating user: %s", resp.Error)
+			jsonResp.Error = resp.Error
+			jsonResp.Success = false
 		}
-		fmt.Fprintf(w, "Received: %#v\n", resp.Error)
-		// TODO(iandioch): Return JSON with response status or error.
+		enc.Encode(jsonResp)
 	}
 }
 
@@ -557,7 +584,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
-	r.HandleFunc("/c2s/new_user", s.handleNewUser())
+	r.HandleFunc("/c2s/register", s.handleRegister())
 	r.HandleFunc("/c2s/login", s.handleLogin())
 	r.HandleFunc("/c2s/logout", s.handleLogout())
 
