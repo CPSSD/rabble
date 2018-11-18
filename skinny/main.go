@@ -806,7 +806,7 @@ func createS2SFollowClient() (*grpc.ClientConn, s2sfollowpb.S2SFollowClient) {
 	if host == "" {
 		log.Fatalf("%s env var not set for skinny server", env)
 	}
-	addr := host + ":2012"
+	addr := host + ":1922"
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
