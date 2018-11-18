@@ -63,9 +63,11 @@ services:
       - .:/repo
     depends_on:
       - "database_service"
+      - "follow_activity_service"
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
   logger_service:
     build:
       context: ./services/logger
@@ -112,6 +114,7 @@ services:
       - default
     environment:
       - LOGGER_SERVICE_HOST=logger_service
+      - FOLLOWS_SERVICE_HOST=follows_service
   markdown_service:
     build:
       context: ./services/mdc

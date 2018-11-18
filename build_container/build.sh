@@ -31,6 +31,7 @@ echo "Running build"
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
 cp -R services/activities/create build_out/activities/
+cp -R services/activities/follow build_out/activities/
 
 echo "Building database service"
 cp -R services/database build_out/
@@ -46,6 +47,8 @@ python3 -m grpc_tools.protoc \
   -Ibuild_out/follows \
   --python_out=build_out/follows \
   --grpc_python_out=build_out/follows \
+  --python_out=build_out/activities/follow \
+  --grpc_python_out=build_out/activities/follow \
   build_out/follows/proto/follows.proto
 python3 -m grpc_tools.protoc \
   -Ibuild_out/database \
@@ -88,11 +91,12 @@ python3 -m grpc_tools.protoc \
   build_out/database/proto/database.proto
 
 echo "Building s2s_follow service"
-cp -R services/activities/follow build_out/activities/
 python3 -m grpc_tools.protoc \
   -Ibuild_out/activities/follow \
   --python_out=build_out/activities/follow \
   --grpc_python_out=build_out/activities/follow \
+  --python_out=build_out/follows \
+  --grpc_python_out=build_out/follows \
   build_out/activities/follow/proto/s2s_follow.proto
 
 echo "Building users service"
