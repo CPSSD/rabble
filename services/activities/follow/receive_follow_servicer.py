@@ -26,10 +26,10 @@ class ReceiveFollowServicer:
 
         follow = self._s2s_req_to_follows_req(req)
         self._logger.info('{}@{} requested to follow {}.'.format(
-            follow.follower_handle, follow.follower_host, follow.followed)
+            follow.follower_handle, follow.follower_host, follow.followed))
 
-        follows_resp=self._follows_stub.ReceiveFollowRequest(follow)
+        follows_resp = self._follows_stub.ReceiveFollowRequest(follow)
 
-        resp.result_type=follows_resp.result_type
-        resp.error=follows_resp.error
+        resp.result_type = follows_resp.result_type
+        resp.error = follows_resp.error
         return resp
