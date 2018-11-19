@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
 
-set -e
-
 # $debug is used in order to find out what we're sending, in the case we're
 # not getting expected results. To use it, just uncomment the debug line.
 debug=
@@ -17,7 +15,10 @@ create_user() {
   # Example:
   #   create_user localhost:1916 user
   $debug curl --request POST \
-    "$1/c2s/new_user?handle=$2&display_name=$2&password=badpassword"
+    --header "Content-Type: application/json" \
+    --data '{"handle":"'"$2"'","displayName":"'"$2"'","password":"'"$2"'","bio":"bio!"}' \
+    "$1/c2s/register"
+
 }
 
 login() {
@@ -28,7 +29,7 @@ login() {
   $debug curl -j -c localsession.db \
     --header "Content-Type: application/json" \
     --request POST \
-    --data '{"handle":"'"$2"'", "password":"badpassword"}' \
+    --data '{"handle":"'"$2"'", "password":"'"$2"'"}' \
     "$1/c2s/login"
 }
 
