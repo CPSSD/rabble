@@ -4,6 +4,7 @@ from proto import follows_pb2
 from proto import follows_pb2_grpc
 from proto import s2s_follow_pb2
 
+
 class ReceiveFollowServicer:
 
     def __init__(self, logger, users_util, follows_service):
@@ -19,13 +20,16 @@ class ReceiveFollowServicer:
         return a
 
     def ReceiveFollowActivity(self, req, context):
-        self._logger.info('Received follow activity: {}'.format(req))
+        self._logger.debug('Received follow activity.')
         resp = s2s_follow_pb2.FollowActivityResponse()
         resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
 
         follow = self._s2s_req_to_follows_req(req)
-        follows_resp = self._follows_stub.ReceiveFollowRequest(follow)
+        self._logger.info('{}@{} requested to follow {}.'.format(
+            follow.follower_handle, follow.follower_host, follow.followed)
 
-        resp.result_type = follows_resp.result_type
-        resp.error = follows_resp.error
+        follows_resp=self._follows_stub.ReceiveFollowRequest(follow)
+
+        resp.result_type=follows_resp.result_type
+        resp.error=follows_resp.error
         return resp

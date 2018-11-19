@@ -66,7 +66,7 @@ class SendFollowServicer:
             resp.error = error
             return resp
         followed_entry = self._users_util.get_or_create_user_from_db(handle=to_handle,
-                                                           host=to_instance)
+                                                                     host=to_instance)
         if followed_entry is None:
             error = 'Could not find or create user {}@{}'.format(to_handle,
                                                                  to_instance)

@@ -21,6 +21,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def get_follows_service_address(logger):
     host = os.environ.get('FOLLOWS_SERVICE_HOST')
     if not host:
@@ -28,6 +29,7 @@ def get_follows_service_address(logger):
         sys.exit(1)
     addr = host + ':1641'
     return addr
+
 
 def main():
     args = get_args()
