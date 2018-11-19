@@ -11,13 +11,19 @@ class SendFollowServicer:
         self._logger = logger
 
     def _build_actor(self, handle, host):
-        return f'http://{host}/@{handle}'
+        s = f'{host}/@{handle}'
+        if not s.startswith('http'):
+            s = 'http://' + s
+        return s
 
     def _build_inbox_url(self, handle, host):
         # TODO(iandioch): Consider smarter way of building URL than prefixing
         # "http://" to host.
         # TODO(iandioch): Use common inbox for all activities.
-        return f'http://{host}/ap/@{handle}/inbox_follow'
+        s = f'http://{host}/ap/@{handle}/inbox_follow'
+        if not s.startswith('http'):
+            s = 'http://' + s
+        return s
 
     def _build_activity(self, follower_actor, followed_actor):
         d = {

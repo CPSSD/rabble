@@ -12,11 +12,11 @@ class SendFollowServicerTest(unittest.TestCase):
 
     def test_build_actor(self):
         self.assertEqual(self.servicer._build_actor('a', 'b.com'),
-                         'b.com/@a')
+                         'http://b.com/@a')
 
     def test_build_inbox_url(self):
         self.assertEqual(self.servicer._build_inbox_url('a', 'b.com'),
-                         'b.com/ap/@a/inbox')
+                         'http://b.com/ap/@a/inbox')
 
     def test_build_activity(self):
         e = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
@@ -58,8 +58,8 @@ class SendFollowServicerTest(unittest.TestCase):
             self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.OK)
             self.assertEqual(resp.error, '')
-            expected = self.servicer._build_activity('follower.com/@a',
-                                                     'followed.com/@b')
+            expected = self.servicer._build_activity('http://follower.com/@a',
+                                                     'http://followed.com/@b')
             mock_send.assert_called_once_with(expected,
                                               'followed.com/ap/@b/inbox')
 
@@ -75,7 +75,7 @@ class SendFollowServicerTest(unittest.TestCase):
             self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.ERROR)
             self.assertEqual(resp.error, 'insert error here')
-            expected = self.servicer._build_activity('follower.com/@a',
-                                                     'followed.com/@b')
+            expected = self.servicer._build_activity('http://follower.com/@a',
+                                                     'http://followed.com/@b')
             mock_send.assert_called_once_with(expected,
                                               'followed.com/ap/@b/inbox')
