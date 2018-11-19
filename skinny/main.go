@@ -585,7 +585,6 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 		err = enc.Encode(map[string]bool{
 			"success": success,
 		})
-
 	}
 }
 
@@ -605,7 +604,13 @@ func (s *serverWrapper) handleLogout() http.HandlerFunc {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with handling logout request\n")
+			return;
 		}
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		err = enc.Encode(map[string]bool{
+			"success": true,
+		})
 	}
 }
 
