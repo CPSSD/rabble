@@ -71,7 +71,7 @@ services:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
-      - HOST_NAME=skinny2:${SKINNY_SERVER_PORT}
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   logger_service:
     build:
       context: ./services/logger
