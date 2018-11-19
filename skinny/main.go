@@ -505,8 +505,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
-
-		log.Printf("User %v received a follow activity\n", recipient)
+		log.Printf("User %v received a follow activity.\n", recipient)
 
 		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
@@ -529,14 +528,15 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.s2sFollow.ReceiveFollowActivity(ctx, f)
-		if err != nil || resp.ResultType == s2sfollowpb.FollowActivityResponse_ERROR {
+		if err != nil ||
+			resp.ResultType == s2sfollowpb.FollowActivityResponse_ERROR {
 			log.Printf("Could not receive follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving follow activity\n")
+			fmt.Fprintf(w, "Issue with receiving follow activity.\n")
 			return
 		}
 
-		log.Printf("Activity received: %v\n", resp.Error)
+		log.Println("Activity received successfully.")
 		fmt.Fprintf(w, "{}\n")
 	}
 }
