@@ -22,7 +22,6 @@ class ReceiveFollowServicer:
     def ReceiveFollowActivity(self, req, context):
         self._logger.debug('Received follow activity.')
         resp = s2s_follow_pb2.FollowActivityResponse()
-        resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
 
         follow = self._s2s_req_to_follows_req(req)
         self._logger.info('{}@{} requested to follow {}.'.format(
