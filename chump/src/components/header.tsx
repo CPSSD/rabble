@@ -50,8 +50,6 @@ export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
     );
   }
 
-
-
   return (
     <div className="pure-g topnav">
       <div className="pure-u-5-24"/>
