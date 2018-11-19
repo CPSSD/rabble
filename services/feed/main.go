@@ -123,7 +123,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 	for _, f := range follows {
 		pr := &dbpb.PostsRequest{
 			RequestType: dbpb.PostsRequest_FIND,
-			Match:       &dbpb.PostsEntry{GlobalId: f.Followed},
+			Match:       &dbpb.PostsEntry{AuthorId: f.Followed},
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
