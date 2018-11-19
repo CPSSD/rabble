@@ -38,7 +38,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post blogPost={e}/>
+          <Post username={this.props.username} blogPost={e}/>
         </div>
       );
     });

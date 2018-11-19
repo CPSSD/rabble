@@ -56,7 +56,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
 
     return (
       <div className="pure-g" key={1}>
-        <Post blogPost={this.state.posts[0]}/>
+        <Post username="" blogPost={this.state.posts[0]}/>
       </div>
     );
   }

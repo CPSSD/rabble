@@ -1,10 +1,12 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
+import { FollowButton} from "./follow_button";
 import { IBlogPost } from "../models/posts";
 
 interface IPostProps {
   blogPost: IBlogPost;
+  username: string;
 }
 
 export class Post extends React.Component<IPostProps, {}> {
@@ -40,6 +42,7 @@ export class Post extends React.Component<IPostProps, {}> {
             <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
               @{this.props.blogPost.author}
             </Link>
+            <FollowButton follower={this.props.username} followed={this.props.blogPost.author} />
             <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
             But nothing comes out when they move their lips; just a bunch of gibberish.</p>
           </div>
