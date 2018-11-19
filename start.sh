@@ -9,6 +9,7 @@ then
 fi
 
 export SKINNY_SERVER_PORT=1916
+export SKINNY_SERVER_HOST=skinny
 echo "Building docker-compose images"
 docker-compose -p rabble build
 

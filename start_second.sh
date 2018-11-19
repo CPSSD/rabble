@@ -9,6 +9,7 @@ then
 fi
 
 export SKINNY_SERVER_PORT=1917
+export SKINNY_SERVER_HOST=skinny2
 echo "Building docker-compose images"
 docker-compose -p two -f second-server.yml build
 
