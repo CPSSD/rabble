@@ -13,6 +13,7 @@ from util import Util
 
 from proto import database_pb2_grpc
 from proto import follows_pb2_grpc
+from proto import s2s_follow_pb2_grpc
 
 
 def get_args():
@@ -23,7 +24,7 @@ def get_args():
     return parser.parse_args()
 
 
-def get_database_service_address():
+def get_database_service_address(logger):
     host = os.environ.get('DB_SERVICE_HOST')
     if not host:
         logger.error('DB_SERVICE_HOST env var not set.')
@@ -32,28 +33,44 @@ def get_database_service_address():
     return addr
 
 
+def get_follow_activity_service_address(logger):
+    host = os.environ.get('FOLLOW_ACTIVITY_SERVICE_HOST')
+    if not host:
+        logger.error('FOLLOW_ACTIVITY_SERVICE_HOST env var not set.')
+        sys.exit(1)
+    addr = host + ':1922'
+    return addr
+
+
 def main():
     args = get_args()
     logger = get_logger('follows_service', args.v)
     logger.info('Creating server')
 
-    with grpc.insecure_channel(get_database_service_address()) as chan:
-        stub = database_pb2_grpc.DatabaseStub(chan)
-        util = Util(logger, stub)
-        users_util = UsersUtil(logger, stub)
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        follows_servicer = FollowsServicer(logger, util, users_util, stub)
-        follows_pb2_grpc.add_FollowsServicer_to_server(follows_servicer,
-                                                       server)
+    with grpc.insecure_channel(get_database_service_address(logger)) as db_chan:
+        db_stub = database_pb2_grpc.DatabaseStub(db_chan)
+        with grpc.insecure_channel(
+                get_follow_activity_service_address(logger)) as follow_chan:
+            follow_stub = s2s_follow_pb2_grpc.S2SFollowStub(follow_chan)
+            util = Util(logger, db_stub)
+            users_util = UsersUtil(logger, db_stub)
+            server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+            follows_servicer = FollowsServicer(logger,
+                                               util,
+                                               users_util,
+                                               db_stub,
+                                               follow_stub)
+            follows_pb2_grpc.add_FollowsServicer_to_server(follows_servicer,
+                                                           server)
 
-        server.add_insecure_port('0.0.0.0:1641')
-        logger.info('Starting server')
-        server.start()
-        try:
-            while True:
-                time.sleep(60 * 60 * 24)  # One day
-        except KeyboardInterrupt:
-            pass
+            server.add_insecure_port('0.0.0.0:1641')
+            logger.info('Starting server')
+            server.start()
+            try:
+                while True:
+                    time.sleep(60 * 60 * 24)  # One day
+            except KeyboardInterrupt:
+                pass
 
 if __name__ == '__main__':
     main()
