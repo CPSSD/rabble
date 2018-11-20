@@ -29,38 +29,6 @@ const (
 	timeoutDuration = time.Minute * 5
 )
 
-type createActivityObjectStruct struct {
-	Content      string   `json:"content"`
-	Name         string   `json:"name"`
-	Published    string   `json:"published"`
-	AttributedTo string   `json:"attributedTo"`
-	Recipient    []string `json:"to"`
-	Type         string   `json:"type"`
-}
-
-type createActivityStruct struct {
-	Actor     string                     `json:"actor"`
-	Context   string                     `json:"@context"`
-	Object    createActivityObjectStruct `json:"object"`
-	Recipient []string                   `json:"to"`
-	Type      string                     `json:"type"`
-}
-
-type followActivityStruct struct {
-	Actor     string   `json:"actor"`
-	Context   string   `json:"@context"`
-	Object    string   `json:"object"`
-	Recipient []string `json:"to"`
-	Type      string   `json:"type"`
-}
-
-type createArticleStruct struct {
-	Author           string `json:"author"`
-	Body             string `json:"body"`
-	Title            string `json:"title"`
-	CreationDatetime string `json:"creation_datetime"`
-}
-
 type loginStruct struct {
 	Handle   string `json:"handle"`
 	Password string `json:"password"`
@@ -76,6 +44,13 @@ type registerRequest struct {
 type registerResponse struct {
 	Error   string `json:"error"`
 	Success bool   `json:"success"`
+}
+
+type createArticleStruct struct {
+	Author           string `json:"author"`
+	Body             string `json:"body"`
+	Title            string `json:"title"`
+	CreationDatetime string `json:"creation_datetime"`
 }
 
 // serverWrapper encapsulates the dependencies and config values of the server
@@ -165,7 +140,6 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		err = enc.Encode(resp.Results)
@@ -194,7 +168,6 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		err = enc.Encode(resp.Results)
@@ -447,94 +420,6 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	}
 }
 
-func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		v := mux.Vars(r)
-		recipient := v["username"]
-
-		log.Printf("User %v received a create activity\n", recipient)
-
-		// TODO (sailslick) Parse jsonLD in general case
-		decoder := json.NewDecoder(r.Body)
-		var t createActivityStruct
-		jsonErr := decoder.Decode(&t)
-		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
-			return
-		}
-
-		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published)
-		if parseErr != nil {
-			log.Println(parseErr)
-			return
-		}
-
-		nfa := &pb.NewForeignArticle{
-			AttributedTo: t.Object.AttributedTo,
-			Content:      t.Object.Content,
-			Published:    protoTimestamp,
-			Recipient:    recipient,
-			Title:        t.Object.Name,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-
-		resp, err := s.create.ReceiveCreate(ctx, nfa)
-		if err != nil || resp.ResultType == pb.CreateResponse_ERROR {
-			log.Printf("Could not receive create activity. Error: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving create activity\n")
-			return
-		}
-
-		log.Printf("Activity was alright :+1:Received: %v\n", resp.Error)
-		fmt.Fprintf(w, "Created blog with title\n")
-	}
-}
-
-func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		v := mux.Vars(r)
-		recipient := v["username"]
-		log.Printf("User %v received a follow activity.\n", recipient)
-
-		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
-		decoder := json.NewDecoder(r.Body)
-		var t followActivityStruct
-		jsonErr := decoder.Decode(&t)
-		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
-			return
-		}
-
-		f := &pb.ReceivedFollowDetails{
-			Follower: t.Actor,
-			Followed: t.Object,
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-
-		resp, err := s.s2sFollow.ReceiveFollowActivity(ctx, f)
-		if err != nil ||
-			resp.ResultType == pb.FollowActivityResponse_ERROR {
-			log.Printf("Could not receive follow activity. Error: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving follow activity.\n")
-			return
-		}
-
-		log.Println("Activity received successfully.")
-		fmt.Fprintf(w, "{}\n")
-	}
-}
-
 // handleRegister sends an RPC to the users service to create a user with the
 // given info.
 func (s *serverWrapper) handleRegister() http.HandlerFunc {
@@ -689,7 +574,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/login", s.handleLogin())
 	r.HandleFunc("/c2s/logout", s.handleLogout())
 
-	// ActivityPub routes
+	// ActivityPub routes (see ap.go)
 	r.HandleFunc("/ap/", s.handleNotImplemented())
 	r.HandleFunc("/ap/@{username}/inbox", s.handleCreateActivity())
 	r.HandleFunc("/ap/@{username}/inbox_follow", s.handleFollowActivity())
