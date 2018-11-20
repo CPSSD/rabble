@@ -513,7 +513,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			return
 		}
 
-		f := &s2sfollowpb.ReceivedFollowDetails{
+		f := &pb.ReceivedFollowDetails{
 			Follower: t.Actor,
 			Followed: t.Object,
 		}
