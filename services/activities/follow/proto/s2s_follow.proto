@@ -20,15 +20,15 @@ message ReceivedFollowDetails {
 }
 
 message FollowActivityResponse {
-    enum ResultType {
-        OK = 0;
-        ERROR = 1;
-    }
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
 
-    ResultType result_type = 1;
+  ResultType result_type = 1;
 
-    /* Should only be set if result_type is not OK. */
-    string error = 2;
+  /* Should only be set if result_type is not OK. */
+  string error = 2;
 }
 
 // Service for sending and receiving server-to-server follow requests.
