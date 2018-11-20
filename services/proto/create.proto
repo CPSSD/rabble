@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto/gopb";
+
 import "google/protobuf/timestamp.proto";
 
 // ArticleDetails holds content from a c2s request with timestamp

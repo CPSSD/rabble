@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto/gopb";
+
 import "google/protobuf/timestamp.proto";
 
 // NewArticle has the same contents as request from client with timestamp

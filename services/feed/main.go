@@ -8,14 +8,13 @@ import (
 	"os"
 	"time"
 
-	dbpb "github.com/cpssd/rabble/services/database/proto"
-	pb "github.com/cpssd/rabble/services/feed/proto"
+	pb "github.com/cpssd/rabble/services/proto/gopb"
 	"google.golang.org/grpc"
 )
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
-func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, r := range p.Results {
 		// TODO(iandioch): Find a way to avoid or cache these requests.
@@ -37,7 +36,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *dbpb.PostsResponse) *pb
 	return fp
 }
 
-func (s *server) convertManyToFeed(ctx context.Context, posts []*dbpb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range posts {
 		r := s.convertDBToFeed(ctx, p)
@@ -46,11 +45,11 @@ func (s *server) convertManyToFeed(ctx context.Context, posts []*dbpb.PostsRespo
 	return fp
 }
 
-func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*dbpb.UsersEntry, error) {
+func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*pb.UsersEntry, error) {
 	const errFmt = "Could not find user %v@%v. error: %v"
-	r := &dbpb.UsersRequest{
-		RequestType: dbpb.UsersRequest_FIND,
-		Match: &dbpb.UsersEntry{
+	r := &pb.UsersRequest{
+		RequestType: pb.UsersRequest_FIND,
+		Match: &pb.UsersEntry{
 			Handle:   handle,
 			Host:     host,
 			GlobalId: globalId,
@@ -62,7 +61,7 @@ func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string
 		return nil, fmt.Errorf(errFmt, handle, host, err)
 	}
 
-	if resp.ResultType != dbpb.UsersResponse_OK {
+	if resp.ResultType != pb.UsersResponse_OK {
 		return nil, fmt.Errorf(errFmt, handle, host, resp.Error)
 	}
 
@@ -74,15 +73,15 @@ func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string
 }
 
 type server struct {
-	db dbpb.DatabaseClient
+	db pb.DatabaseClient
 }
 
-func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Follow, error) {
+func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow, error) {
 	const errorFmt = "Could not get follows for user %#v: %v"
 
-	r := &dbpb.DbFollowRequest{
-		RequestType: dbpb.DbFollowRequest_FIND,
-		Match:       &dbpb.Follow{Follower: u.GlobalId},
+	r := &pb.DbFollowRequest{
+		RequestType: pb.DbFollowRequest_FIND,
+		Match:       &pb.Follow{Follower: u.GlobalId},
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
@@ -93,7 +92,7 @@ func (s *server) getFollows(ctx context.Context, u *dbpb.UsersEntry) ([]*dbpb.Fo
 		return nil, fmt.Errorf(errorFmt, *u, err)
 	}
 
-	if resp.ResultType != dbpb.DbFollowResponse_OK {
+	if resp.ResultType != pb.DbFollowResponse_OK {
 		return nil, fmt.Errorf(errorFmt, *u, resp.Error)
 	}
 
@@ -119,11 +118,11 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 		return nil, err
 	}
 
-	posts := []*dbpb.PostsResponse{}
+	posts := []*pb.PostsResponse{}
 	for _, f := range follows {
-		pr := &dbpb.PostsRequest{
-			RequestType: dbpb.PostsRequest_FIND,
-			Match:       &dbpb.PostsEntry{AuthorId: f.Followed},
+		pr := &pb.PostsRequest{
+			RequestType: pb.PostsRequest_FIND,
+			Match:       &pb.PostsEntry{AuthorId: f.Followed},
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -151,8 +150,8 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		return s.GetUserFeed(ctx, r)
 	}
 
-	pr := &dbpb.PostsRequest{
-		RequestType: dbpb.PostsRequest_FIND,
+	pr := &pb.PostsRequest{
+		RequestType: pb.PostsRequest_FIND,
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
@@ -168,9 +167,9 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 
 func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.FeedResponse, error) {
 	log.Printf("In per article, ID: %d\n", r.ArticleId)
-	pr := &dbpb.PostsRequest{
-		RequestType: dbpb.PostsRequest_FIND,
-		Match: &dbpb.PostsEntry{
+	pr := &pb.PostsRequest{
+		RequestType: pb.PostsRequest_FIND,
+		Match: &pb.PostsEntry{
 			GlobalId: r.ArticleId,
 		},
 	}
@@ -195,9 +194,9 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	}
 	authorId := author.GlobalId
 
-	pr := &dbpb.PostsRequest{
-		RequestType: dbpb.PostsRequest_FIND,
-		Match: &dbpb.PostsEntry{
+	pr := &pb.PostsRequest{
+		RequestType: pb.PostsRequest_FIND,
+		Match: &pb.PostsEntry{
 			AuthorId: authorId,
 		},
 	}
@@ -211,7 +210,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 }
 
 func newServer(c *grpc.ClientConn) *server {
-	db := dbpb.NewDatabaseClient(c)
+	db := pb.NewDatabaseClient(c)
 	return &server{db: db}
 }
 
