@@ -10,7 +10,6 @@ import (
 // as the code handling it can be looked up here.
 // The server uses mux for routing. See instructions and examples for mux at
 // https://www.gorillatoolkit.org/pkg/mux .
-// TODO(iandioch): Move setupRoutes() to its own file if/when it gets too big.
 func (s *serverWrapper) setupRoutes() {
 	const (
 		assetPath = "/assets/"
