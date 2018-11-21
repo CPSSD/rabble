@@ -24,6 +24,7 @@ function chown_trap {
   chown -R user chump/node_modules
 }
 trap chown_trap EXIT
+trap chown_trap SIGINT
 
 echo "Running build"
 
