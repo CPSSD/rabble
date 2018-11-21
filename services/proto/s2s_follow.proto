@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "services/proto/gopb";
+
 // Both handle and host should be fully-qualified for both local and non-local
 // users, as they are required to build the URLs of actors, etc.
 message FollowActivityUser {

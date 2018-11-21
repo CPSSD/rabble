@@ -31,4 +31,7 @@ RUN pip3 install bcrypt
 
 RUN apk add --no-cache --update protobuf-dev
 
+# Add PYTHONPATH for when we run tests
+ENV PYTHONPATH="/repo/build_out"
+
 CMD ["/repo/build_container/entry.sh"]

@@ -10,6 +10,10 @@ fi
 
 export SKINNY_SERVER_PORT=1916
 export SKINNY_SERVER_HOST=skinny
+
+echo "Downing any existing docker-compose instance"
+docker-compose down
+
 echo "Building docker-compose images"
 docker-compose -p rabble build
 
