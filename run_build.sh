@@ -45,7 +45,7 @@ fi
 
 echo "Running build container"
 docker run \
-  --rm \
+  --rm -it \
   --volume $REPO_ROOT:/repo \
   -e LOCAL_USER_ID=$USER_ID \
   -e TEST_RABBLE=$_TEST_RABBLE \
