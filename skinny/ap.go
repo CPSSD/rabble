@@ -6,11 +6,60 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto/gopb"
 	"github.com/gorilla/mux"
 )
+
+type activity struct {
+	Type string `json:"type"`
+}
+
+// handleActorInbox is where server to server actions that relate to activities
+// are sent. It routes them using routeActivity to the correct handler.
+//
+// See https://www.w3.org/TR/activitypub/#inbox for details in the spec
+//
+// Specifically things modifying Actor (a rabble users) collections are
+// routed here, such as a follow, create, or like.
+func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
+	const (
+		inboxErr  = "Error handling actor inbox for '%#v': %s: %v"
+		typeField = "could not parse type field"
+		notFound  = "unable to handle given activity type"
+	)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+
+		d := json.NewDecoder(r.Body)
+		var a activity
+
+		if err := d.Decode(&a); err != nil {
+			log.Printf(inboxErr, recipient, typeField, err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON-LD: %v.", typeField)
+			return
+		}
+
+		if s.actorInboxRouter == nil || len(s.actorInboxRouter) == 0 {
+			log.Fatalf("Actor inbox not initalized, can not continue.")
+		}
+
+		m, exists := s.actorInboxRouter[strings.ToLower(a.Type)]
+		if !exists {
+			log.Printf(inboxErr, recipient, notFound, a.Type)
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "Could not handle activity '%#v': %v.",
+				a.Type, notFound)
+			return
+		}
+		m(w, r)
+	}
+}
 
 type createActivityObjectStruct struct {
 	Content      string   `json:"content"`
@@ -47,10 +96,10 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 		// TODO (sailslick) Parse jsonLD in general case
 		decoder := json.NewDecoder(r.Body)
 		var t createActivityStruct
-		jsonErr := decoder.Decode(&t)
-		if jsonErr != nil {
+		err := decoder.Decode(&t)
+		if err != nil {
 			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf("Error: %s\n", err)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
