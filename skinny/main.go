@@ -164,7 +164,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		fr := &pb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
-			log.Print("Error in feed.PerUser(%v): %v", *fr, err)
+			log.Printf("Error in feed.PerUser(%v): %v", *fr, err)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -204,7 +204,7 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		fr := &pb.ArticleRequest{ArticleId: articleId}
 		resp, err := s.feed.PerArticle(ctx, fr)
 		if err != nil {
-			log.Print("Error in getting per Article page: %v", err)
+			log.Printf("Error in getting per Article page: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
