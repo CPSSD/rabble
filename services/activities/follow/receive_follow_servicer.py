@@ -1,8 +1,8 @@
 import json
 
-from proto import follows_pb2
-from proto import follows_pb2_grpc
-from proto import s2s_follow_pb2
+from services.proto import follows_pb2
+from services.proto import follows_pb2_grpc
+from services.proto import s2s_follow_pb2
 
 
 class ReceiveFollowServicer:

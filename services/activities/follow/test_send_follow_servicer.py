@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from send_follow_servicer import SendFollowServicer
-from proto import s2s_follow_pb2
+from services.proto import s2s_follow_pb2
 
 
 class SendFollowServicerTest(unittest.TestCase):

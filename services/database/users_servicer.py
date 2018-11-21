@@ -2,7 +2,7 @@ import sqlite3
 
 import util
 
-from proto import database_pb2
+from services.proto import database_pb2
 
 
 class UsersDatabaseServicer:

@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/cpssd/rabble/services/proto/gopb"
+	pb "github.com/cpssd/rabble/services/proto"
 	"google.golang.org/grpc"
 )
 

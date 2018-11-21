@@ -1,4 +1,4 @@
-from proto import database_pb2
+from services.proto import database_pb2
 
 MAX_FIND_RETRIES = 3
 

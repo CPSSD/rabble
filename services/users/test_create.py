@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import Mock
 
 from create import CreateHandler
-from proto import database_pb2
-from proto import users_pb2
+from services.proto import database_pb2
+from services.proto import users_pb2
 
 
 class MockDBStub:

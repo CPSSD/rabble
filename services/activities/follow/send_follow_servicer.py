@@ -2,7 +2,7 @@ import json
 
 from urllib import request
 
-from proto import s2s_follow_pb2
+from services.proto import s2s_follow_pb2
 
 
 class SendFollowServicer:

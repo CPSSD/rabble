@@ -10,8 +10,8 @@ from utils.logger import get_logger
 from utils.users import UsersUtil
 
 from servicer import FollowServicer
-from proto import follows_pb2_grpc
-from proto import s2s_follow_pb2_grpc
+from services.proto import follows_pb2_grpc
+from services.proto import s2s_follow_pb2_grpc
 
 
 def get_args():

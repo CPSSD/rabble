@@ -8,8 +8,8 @@ import time
 
 from utils.logger import get_logger
 from users_servicer import UsersServicer
-from proto import users_pb2_grpc
-from proto import database_pb2_grpc
+from services.proto import users_pb2_grpc
+from services.proto import database_pb2_grpc
 
 
 def get_db_stub(logger):

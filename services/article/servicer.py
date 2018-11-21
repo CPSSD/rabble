@@ -1,7 +1,7 @@
 from new_article_servicer import NewArticleServicer
 from preview_servicer import PreviewServicer
 
-from proto import article_pb2_grpc
+from services.proto import article_pb2_grpc
 
 
 class ArticleServicer(article_pb2_grpc.ArticleServicer):

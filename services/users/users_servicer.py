@@ -1,4 +1,4 @@
-from proto import users_pb2_grpc
+from services.proto import users_pb2_grpc
 from login import LoginHandler
 from create import CreateHandler
 

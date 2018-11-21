@@ -9,9 +9,9 @@ import sys
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import CreateServicer
-from proto import create_pb2_grpc
-from proto import database_pb2_grpc
-from proto import article_pb2_grpc
+from services.proto import create_pb2_grpc
+from services.proto import database_pb2_grpc
+from services.proto import article_pb2_grpc
 
 
 def get_args():

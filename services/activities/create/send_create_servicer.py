@@ -2,8 +2,8 @@ import urllib3
 import json
 import os
 
-from proto import create_pb2
-from proto import database_pb2
+from services.proto import create_pb2
+from services.proto import database_pb2
 
 
 class SendCreateServicer:
