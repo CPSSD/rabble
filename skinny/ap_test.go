@@ -2,21 +2,36 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func setupFakeActorInboxRoutes(s *serverWrapper) {
+func setupFakeActorInboxRoutes(t *testing.T, s *serverWrapper) {
+	const bodyReadErr = "Failed to read body twice: %v"
+	unmarshal := func(r *http.Request) {
+		d := json.NewDecoder(r.Body)
+		var a activity
+
+		if err := d.Decode(&a); err != nil {
+			t.Errorf("Failed to re-read activity: %v", err)
+		}
+	}
+
 	s.actorInboxRouter = map[string]http.HandlerFunc{
-		"create": func(w http.ResponseWriter, r *http.Request) {},
-		"follow": func(w http.ResponseWriter, r *http.Request) {},
+		"create": func(w http.ResponseWriter, r *http.Request) {
+			unmarshal(r)
+		},
+		"follow": func(w http.ResponseWriter, r *http.Request) {
+			unmarshal(r)
+		},
 	}
 }
 
 func TestActorInboxRouting(t *testing.T) {
 	srv := newTestServerWrapper()
-	setupFakeActorInboxRoutes(srv)
+	setupFakeActorInboxRoutes(t, srv)
 
 	tests := []string{
 		`{ "type": "create" }`,
