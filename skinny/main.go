@@ -62,6 +62,11 @@ type serverWrapper struct {
 	router *mux.Router
 	server *http.Server
 	store  *sessions.CookieStore
+
+	// actorInboxRouter is responsible for routing activitypub requests
+	// based on the Type json parameter
+	actorInboxRouter map[string]http.HandlerFunc
+
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
@@ -540,44 +545,6 @@ func (s *serverWrapper) handleLogout() http.HandlerFunc {
 			"success": true,
 		})
 	}
-}
-
-// setupRoutes specifies the routing of all endpoints on the server.
-// Centralised routing config allows easier debugging of a specific endpoint,
-// as the code handling it can be looked up here.
-// The server uses mux for routing. See instructions and examples for mux at
-// https://www.gorillatoolkit.org/pkg/mux .
-// TODO(iandioch): Move setupRoutes() to its own file if/when it gets too big.
-func (s *serverWrapper) setupRoutes() {
-	const (
-		assetPath = "/assets/"
-	)
-	log.Printf("Setting up routes on skinny server.\n")
-
-	r := s.router
-	fs := http.StripPrefix(assetPath, http.FileServer(http.Dir(staticAssets)))
-
-	r.PathPrefix(assetPath).Handler(fs)
-
-	// User-facing routes
-	r.HandleFunc("/", s.handleIndex())
-
-	// c2s routes
-	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
-	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
-	r.HandleFunc("/c2s/feed", s.handleFeed())
-	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
-	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
-	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
-	r.HandleFunc("/c2s/follow", s.handleFollow())
-	r.HandleFunc("/c2s/register", s.handleRegister())
-	r.HandleFunc("/c2s/login", s.handleLogin())
-	r.HandleFunc("/c2s/logout", s.handleLogout())
-
-	// ActivityPub routes (see ap.go)
-	r.HandleFunc("/ap/", s.handleNotImplemented())
-	r.HandleFunc("/ap/@{username}/inbox", s.handleCreateActivity())
-	r.HandleFunc("/ap/@{username}/inbox_follow", s.handleFollowActivity())
 }
 
 func (s *serverWrapper) shutdown() {
