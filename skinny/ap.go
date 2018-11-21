@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -35,7 +38,13 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		v := mux.Vars(r)
 		recipient := v["username"]
 
-		d := json.NewDecoder(r.Body)
+		// We're reading from a stream, so we need to ensure it will
+		// get passed downwards without hitting EOF. We create another
+		// Reader and pass that onwards instead.
+		var newStream bytes.Buffer
+		body := io.TeeReader(r.Body, &newStream)
+
+		d := json.NewDecoder(body)
 		var a activity
 
 		if err := d.Decode(&a); err != nil {
@@ -57,6 +66,8 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 				a.Type, notFound)
 			return
 		}
+
+		r.Body = ioutil.NopCloser(&newStream)
 		m(w, r)
 	}
 }
