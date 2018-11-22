@@ -16,7 +16,7 @@ class SendFollowServicerTest(unittest.TestCase):
 
     def test_build_inbox_url(self):
         self.assertEqual(self.servicer._build_inbox_url('a', 'b.com'),
-                         'http://b.com/ap/@a/inbox_follow')
+                         'http://b.com/ap/@a/inbox')
 
     def test_build_activity(self):
         e = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
@@ -34,7 +34,7 @@ class SendFollowServicerTest(unittest.TestCase):
         request.urlopen.side_effect = Exception('some weird error')
         activity = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
         e = self.servicer._send_activity(activity,
-                                         'followed.com/ap/@b/inbox_follow')
+                                         'followed.com/ap/@b/inbox')
         self.assertEqual(e, 'some weird error')
 
     def test_send_activity(self):
@@ -43,7 +43,7 @@ class SendFollowServicerTest(unittest.TestCase):
         request.urlopen = Mock()
         activity = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
         e = self.servicer._send_activity(activity,
-                                         'followed.com/ap/@b/inbox_follow')
+                                         'followed.com/ap/@b/inbox')
         self.assertIsNone(e)
 
     def test_SendFollowActivity(self):
@@ -61,7 +61,7 @@ class SendFollowServicerTest(unittest.TestCase):
             expected = self.servicer._build_activity('http://follower.com/@a',
                                                      'http://followed.com/@b')
             mock_send.assert_called_once_with(expected,
-                                              'http://followed.com/ap/@b/inbox_follow')
+                                              'http://followed.com/ap/@b/inbox')
 
     def test_SendFollowActivity_return_error(self):
         with patch(__name__ + '.SendFollowServicer._send_activity') as mock_send:
@@ -78,4 +78,4 @@ class SendFollowServicerTest(unittest.TestCase):
             expected = self.servicer._build_activity('http://follower.com/@a',
                                                      'http://followed.com/@b')
             mock_send.assert_called_once_with(expected,
-                                              'http://followed.com/ap/@b/inbox_follow')
+                                              'http://followed.com/ap/@b/inbox')

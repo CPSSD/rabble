@@ -20,7 +20,7 @@ class SendFollowServicer:
         # TODO(iandioch): Consider smarter way of building URL than prefixing
         # "http://" to host.
         # TODO(iandioch): Use common inbox for all activities.
-        s = f'{host}/ap/@{handle}/inbox_follow'
+        s = f'{host}/ap/@{handle}/inbox'
         if not s.startswith('http'):
             s = 'http://' + s
         return s
