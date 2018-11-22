@@ -25,8 +25,8 @@ type activity struct {
 //
 // See https://www.w3.org/TR/activitypub/#inbox for details in the spec
 //
-// Specifically things modifying Actor (a rabble users) collections are
-// routed here, such as a follow, create, or like.
+// Specifically things modifying Actor collections are routed here.
+// See routes.go to view the activity routing in actorInboxRouter
 func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	const (
 		inboxErr  = "Error handling actor inbox for '%#v': %s: %v"
