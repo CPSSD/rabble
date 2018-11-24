@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/sessions"
 	"google.golang.org/grpc"
 
-	pb "github.com/cpssd/rabble/services/proto/gopb"
+	pb "github.com/cpssd/rabble/services/proto"
 )
 
 const (

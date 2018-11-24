@@ -36,7 +36,7 @@ cp -R services/activities/follow build_out/activities/
 
 echo "Building python protos"
 python3 -m grpc_tools.protoc \
-  -Iservices/ \
+  -I. \
   --python_out=build_out/ \
   --grpc_python_out=build_out/ \
   services/proto/*.proto
@@ -62,7 +62,7 @@ cp -R services/utils build_out/
 
 echo "Building protos for Go"
 # This generate compiled protos and place them in the proto dir.
-protoc -Iservices/ --go_out=plugins=grpc:"." services/proto/*.proto
+protoc -I. --go_out=plugins=grpc:"." services/proto/*.proto
 
 echo "Creating go workspace"
 mkdir -p /go/src/github.com/cpssd/

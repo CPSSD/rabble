@@ -11,9 +11,9 @@ from utils.users import UsersUtil
 from servicer import FollowsServicer
 from util import Util
 
-from proto import database_pb2_grpc
-from proto import follows_pb2_grpc
-from proto import s2s_follow_pb2_grpc
+from services.proto import database_pb2_grpc
+from services.proto import follows_pb2_grpc
+from services.proto import s2s_follow_pb2_grpc
 
 
 def get_args():

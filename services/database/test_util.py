@@ -1,7 +1,7 @@
 import unittest
 
 import util
-from proto import database_pb2
+from services.proto import database_pb2
 
 class UtilTest(unittest.TestCase):
     def test_entry_to_filter(self):

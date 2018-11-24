@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/cpssd/rabble/services/proto/gopb"
+	pb "github.com/cpssd/rabble/services/proto"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/gorilla/mux"

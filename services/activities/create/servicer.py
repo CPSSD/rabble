@@ -1,6 +1,6 @@
 from send_create_servicer import SendCreateServicer
 from receive_create_servicer import ReceiveCreateServicer
-from proto import create_pb2_grpc
+from services.proto import create_pb2_grpc
 
 
 class CreateServicer(create_pb2_grpc.CreateServicer):

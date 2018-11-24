@@ -1,7 +1,7 @@
-from proto import article_pb2
-from proto import database_pb2
-from proto import create_pb2
-from proto import mdc_pb2
+from services.proto import article_pb2
+from services.proto import database_pb2
+from services.proto import create_pb2
+from services.proto import mdc_pb2
 
 
 class NewArticleServicer:

@@ -1,6 +1,6 @@
-from proto import create_pb2
-from proto import database_pb2
-from proto import article_pb2
+from services.proto import create_pb2
+from services.proto import database_pb2
+from services.proto import article_pb2
 
 
 class ReceiveCreateServicer:

@@ -1,7 +1,7 @@
 import bcrypt
 
-from proto import users_pb2
-from proto import database_pb2
+from services.proto import users_pb2
+from services.proto import database_pb2
 
 class CreateHandler:
     def __init__(self, logger, db_stub):

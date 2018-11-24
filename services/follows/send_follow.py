@@ -1,9 +1,9 @@
 import os
 import sys
 
-from proto import database_pb2
-from proto import follows_pb2
-from proto import s2s_follow_pb2
+from services.proto import database_pb2
+from services.proto import follows_pb2
+from services.proto import s2s_follow_pb2
 
 
 class SendFollowServicer:

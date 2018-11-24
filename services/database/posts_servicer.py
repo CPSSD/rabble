@@ -2,8 +2,8 @@ import sqlite3
 
 import util
 
-from proto import database_pb2
-from proto import database_pb2_grpc
+from services.proto import database_pb2
+from services.proto import database_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
 
