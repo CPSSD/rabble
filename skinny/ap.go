@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/cpssd/rabble/services/proto/gopb"
+	pb "github.com/cpssd/rabble/services/proto"
 	"github.com/gorilla/mux"
 )
 
