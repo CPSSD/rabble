@@ -90,9 +90,13 @@ message UsersResponse {
   repeated UsersEntry results = 3;
 }
 
+
 message Follow {
   int64 follower = 1;
   int64 followed = 2;
+  // By default, intermediate is always set to false, including for match
+  // queries.
+  bool intermediate = 3;
 }
 
 message DbFollowRequest {
@@ -112,7 +116,12 @@ message DbFollowRequest {
    *     person follows.
    *   - If both match.followed and match.follower are set, the service will
    *     return an entry if this follow exists, and none otherwise.
-   *   - If neither are set, all follows in the database will be returned.
+   *   - If neither are set, all follows in the database will be returned
+   *     except for intermediate follows.
+   *
+   * You can set match.intermediate to find unaccepted follow requests
+   * but these should only be used carefully, since these followers must
+   * not be sent anything.
    */
   Follow match = 3;
 }
