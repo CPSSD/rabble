@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS follows (
   follower          integer NOT NULL,
   followed          integer NOT NULL,
+  /* if intermediate is true the follow is not active. */
+  intermediate      boolean NOT NULL,
   PRIMARY KEY (follower, followed)
 );
 /* Add other tables here */
