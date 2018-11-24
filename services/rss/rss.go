@@ -54,13 +54,14 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
-func buildServerWrapper(srv *grpc.Server) *serverWrapper {
+func buildServerWrapper() *serverWrapper {
 	dbConn, dbClient := createDatabaseClient()
+	grpcSrv := grpc.NewServer()
 
 	return &serverWrapper {
 		dbConn: dbConn,
 		db:     dbClient,
-		server: srv,
+		server: grpcSrv,
 	}
 }
 
@@ -71,12 +72,11 @@ func main() {
 		log.Fatalf("failed to listen: %v", netErr)
 	}
 
-	grpcSrv := grpc.NewServer()
-	serverWrapper := buildServerWrapper(grpcSrv)
-	pb.RegisterRSSServer(grpcSrv, serverWrapper)
+	serverWrapper := buildServerWrapper()
+	pb.RegisterRSSServer(serverWrapper.server, serverWrapper)
 
 	go func() {
-		if serveErr := grpcSrv.Serve(lis); serveErr != nil {
+		if serveErr := serverWrapper.server.Serve(lis); serveErr != nil {
 			log.Println(serveErr)
 		}
 	}()
@@ -89,7 +89,7 @@ func main() {
 
 	// Block until we receive signal.
 	<-c
-	grpcSrv.Stop()
+	serverWrapper.server.Stop()
 	serverWrapper.dbConn.Close()
 	os.Exit(0)
 }
