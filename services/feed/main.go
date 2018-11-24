@@ -223,7 +223,7 @@ func main() {
 
 	host := os.Getenv("DB_SERVICE_HOST")
 	if host == "" {
-		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
+		log.Fatal("DB_SERVICE_HOST env var not set for feed service.")
 	}
 	addr := host + ":1798"
 

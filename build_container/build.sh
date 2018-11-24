@@ -56,6 +56,9 @@ cp -R services/activities/follow build_out/activities/
 echo "Building users service"
 cp -R services/users build_out/
 
+echo "Building rss service"
+cp -R services/rss build_out/
+
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/
