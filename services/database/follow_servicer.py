@@ -25,7 +25,7 @@ class FollowDatabaseServicer:
             # You'd think there'd be a better way.
             entry.follower = tup[0]
             entry.followed = tup[1]
-            entry.intermediate = tup[2]
+            entry.state = tup[2]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to Follow: " +
@@ -40,19 +40,18 @@ class FollowDatabaseServicer:
 
     def _follow_handle_insert(self, req, resp):
         self._logger.info('Inserting new follow into Follow database.')
-        # Make sure that we always set intermediate with a default value
-        # of false.
-        intermediate = req.entry.intermediate
-        if intermediate == None:
-            intermediate = False
+        # Make sure that we always set state with a default value of ACTIVE.
+        state = req.entry.state
+        if state == None:
+            state = database_pb2.Follow.ACTIVE
         try:
             self._db.execute(
                 'INSERT INTO follows '
-                '(follower, followed, intermediate) '
+                '(follower, followed, state) '
                 'VALUES (?, ?, ?)',
                 req.entry.follower,
                 req.entry.followed,
-                intermediate)
+                state)
         except sqlite3.Error as e:
             self._logger.error(str(e))
             resp.result_type = database_pb2.DbFollowResponse.ERROR
@@ -61,7 +60,7 @@ class FollowDatabaseServicer:
         resp.result_type = database_pb2.DbFollowResponse.OK
 
     def _follow_handle_find(self, req, resp):
-        default = [("intermediate", False)]
+        default = [("state", database_pb2.Follow.ACTIVE)]
         filter_clause, values = util.entry_to_filter(req.match, default)
         try:
             if not filter_clause:
