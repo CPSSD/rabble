@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	pb "github.com/cpssd/rabble/services/mdc/proto"
+	pb "github.com/cpssd/rabble/services/proto"
 )
 
 func TestMarkdownToHTML(t *testing.T) {
