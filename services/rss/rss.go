@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	scraperInterval = time.Minute * 1
+	scraperInterval = time.Minute * 15
 	goRoutineCount = 10
 )
 
