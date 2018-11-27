@@ -21,10 +21,14 @@ const (
 	goRoutineCount = 10
 )
 
+type Parser interface {
+	ParseURL(string) (*gofeed.Feed, error)
+}
+
 type serverWrapper struct {
 	dbConn     *grpc.ClientConn
 	db         pb.DatabaseClient
-	feedParser *gofeed.Parser
+	feedParser Parser
 	server     *grpc.Server
 }
 

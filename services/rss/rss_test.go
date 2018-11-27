@@ -9,6 +9,20 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	fakeTitle = "fake test title"
+)
+
+type gofeedFake struct {
+	gofeed.Parser
+}
+
+func (d *gofeedFake) ParseURL(url string) (*gofeed.Feed, error) {
+	return &gofeed.Feed{
+		Title: fakeTitle,
+	}, nil
+}
+
 type DatabaseFake struct {
 	pb.DatabaseClient
 
@@ -18,11 +32,10 @@ type DatabaseFake struct {
 func newTestServerWrapper() *serverWrapper {
 	// TODO(iandioch): Fake/mock instead of using real dependencies
 
-	fp := gofeed.NewParser()
 	sw := &serverWrapper{
 		server:   &grpc.Server{},
 		db: &DatabaseFake{},
-		feedParser: fp,
+		feedParser: &gofeedFake{},
 	}
 	return sw
 }
