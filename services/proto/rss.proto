@@ -5,8 +5,7 @@ option go_package = "services/proto";
 import "google/protobuf/timestamp.proto";
 
 message NewRssFeed {
-  string rss_uri = 1;
-  string follower = 2;
+  string rss_url = 1;
 }
 
 message NewRssArticle {
@@ -14,6 +13,20 @@ message NewRssArticle {
   string title = 2;
   string body = 3;
   google.protobuf.Timestamp creation_datetime = 4;
+}
+
+message NewRssFeedResponse {
+    enum ResultType {
+      ACCEPTED = 0;
+      DENIED   = 1;
+      ERROR    = 2;
+    }
+
+    ResultType result_type = 1;
+    int64 global_id = 2;
+
+    // Should only be set if result_type is not OK.
+    string message = 3;
 }
 
 message RssResponse {
@@ -25,11 +38,11 @@ message RssResponse {
 
     ResultType result_type = 1;
 
-    /* Should only be set if result_type is not OK. */
-    string error = 3;
+    // Should only be set if result_type is not OK.
+    string message = 2;
 }
 
 service RSS {
-  rpc NewRssFollow(NewRssFeed) returns (RssResponse);
+  rpc NewRssFollow(NewRssFeed) returns (NewRssFeedResponse);
   rpc NewRssFeedItem(NewRssArticle) returns (RssResponse);
 }
