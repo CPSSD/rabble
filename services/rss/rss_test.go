@@ -33,8 +33,8 @@ func newTestServerWrapper() *serverWrapper {
 	// TODO(iandioch): Fake/mock instead of using real dependencies
 
 	sw := &serverWrapper{
-		server:   &grpc.Server{},
-		db: &DatabaseFake{},
+		server:     &grpc.Server{},
+		db:         &DatabaseFake{},
 		feedParser: &gofeedFake{},
 	}
 	return sw
@@ -44,15 +44,15 @@ func TestNewRssFollow(t *testing.T) {
 	sw := newTestServerWrapper()
 
 	req := &pb.NewRssFeed{
-    RssUrl: "https://news.ycombinator.com/rss",
-  }
+		RssUrl: "https://news.ycombinator.com/rss",
+	}
 
 	r, err := sw.NewRssFollow(context.Background(), req)
 	if err != nil {
-		t.Fatalf("NewRssFollow(%v), unexpected error: %v", req.RssUrl , err)
+		t.Fatalf("NewRssFollow(%v), unexpected error: %v", req.RssUrl, err)
 	}
 
-  if r.ResultType != pb.NewRssFeedResponse_ACCEPTED {
-    t.Fatalf("NewRssFollow(%v), received non accept result_type: %v", req.RssUrl , r.ResultType)
-  }
+	if r.ResultType != pb.NewRssFeedResponse_ACCEPTED {
+		t.Fatalf("NewRssFollow(%v), received non accept result_type: %v", req.RssUrl, r.ResultType)
+	}
 }

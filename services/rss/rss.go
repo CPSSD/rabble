@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"syscall"
 	"sync"
+	"syscall"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -18,7 +18,7 @@ import (
 
 const (
 	scraperInterval = time.Minute * 15
-	goRoutineCount = 10
+	goRoutineCount  = 10
 )
 
 type Parser interface {
@@ -86,7 +86,7 @@ func (s *serverWrapper) runScraper() {
 
 			if rssGetErr != nil {
 				log.Println(rssGetErr)
-				<- guard
+				<-guard
 				wg.Done()
 				return
 			}
@@ -94,7 +94,7 @@ func (s *serverWrapper) runScraper() {
 			// TODO (sailslick) convert feed to user items and update them
 			log.Println(feed.Title)
 
-			<- guard
+			<-guard
 			wg.Done()
 		}(url)
 	}
@@ -111,7 +111,7 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
+		log.Fatalf("Rss server did not connect to db: %v", err)
 	}
 	client := pb.NewDatabaseClient(conn)
 	return conn, client
@@ -122,7 +122,7 @@ func buildServerWrapper() *serverWrapper {
 	fp := gofeed.NewParser()
 	grpcSrv := grpc.NewServer()
 
-	return &serverWrapper {
+	return &serverWrapper{
 		dbConn:     dbConn,
 		db:         dbClient,
 		feedParser: fp,
@@ -142,16 +142,16 @@ func main() {
 
 	go func() {
 		if serveErr := serverWrapper.server.Serve(lis); serveErr != nil {
-			log.Println(serveErr)
+			log.Fatalf("failed to serve: %v", serveErr)
 		}
 	}()
 
 	scraperTicker := time.NewTicker(scraperInterval)
 
 	for t := range scraperTicker.C {
-			log.Print("Starting rss on port: 1973, time: ", t.String())
-      serverWrapper.runScraper()
-  }
+		log.Print("Starting rss on port: 1973, time: ", t.String())
+		serverWrapper.runScraper()
+	}
 
 	// Accept graceful shutdowns when quit via SIGINT or SIGTERM. Other signals
 	// (eg. SIGKILL, SIGQUIT) will not be caught.
