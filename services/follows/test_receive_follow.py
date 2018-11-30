@@ -1,4 +1,5 @@
 import unittest
+import os
 from unittest.mock import Mock
 
 from receive_follow import ReceiveFollowServicer
@@ -56,13 +57,22 @@ class FakeDatabase:
 
 class ReceiveFollowTest(unittest.TestCase):
     def setUp(self):
+        os.environ["HOST_NAME"] = "cianisharrypotter.secret"
         self.db = FakeDatabase()
         util = Mock()
         user_util = Mock()
         util.create_follow_in_db = self.db.add_follow
         user_util.get_user_from_db = self.db.get_user
         user_util.get_or_create_user_from_db = self.db.get_or_create_user
-        self.servicer = ReceiveFollowServicer(Mock(), util, user_util, Mock())
+        # TODO(devoxel): Test approver interactions
+        self.servicer = ReceiveFollowServicer(Mock(),
+                                              util,
+                                              user_util,
+                                              Mock(),
+                                              Mock())
+
+    def tearDown(self):
+        del os.environ["HOST_NAME"]
 
     def test_good_request(self):
         req = follows_pb2.ForeignToLocalFollow(
