@@ -1,14 +1,23 @@
+import os
+
+from services.proto import approver_pb2
 from services.proto import database_pb2
 from services.proto import follows_pb2
+from services.proto import s2s_follow_pb2
 
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, util, users_util, database_stub):
+    def __init__(self, logger, util, users_util, database_stub, approver_stub):
         self._logger = logger
         self._util = util
         self._users_util = users_util
         self._database_stub = database_stub
+        self._approver_stub = approver_stub
+        self._host_name = os.environ.get("HOST_NAME")
+        if not self._host_name:
+            print("Please set HOST_NAME env variable")
+            sys.exit(1)
 
     def _validate_and_get_users(self, resp, request):
         """
@@ -58,7 +67,19 @@ class ReceiveFollowServicer:
             resp.error = error
             return local_user, None
         return local_user, foreign_user
-        
+
+    def _attempt_to_accept(self, request):
+        s2s_follow = s2s_follow_pb2.FollowDetails()
+        s2s_follow.follower.handle = request.follower_handle
+        s2s_follow.follower.host = request.follower_host
+        s2s_follow.followed.handle = request.followed
+        s2s_follow.followed.host = self._host_name
+        req = approver_pb2.Approval(
+                accept = True,
+                follow=s2s_follow,
+        )
+        # TODO(devoxel): Add response logic
+        print(self._approver_stub.SendApproval(req))
 
     def ReceiveFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
@@ -69,6 +90,9 @@ class ReceiveFollowServicer:
         self._logger.info('User ID %d has requested to follow User ID %d',
                           foreign_user.global_id,
                           local_user.global_id)
+
+        self._logger.info('Attempting to accept request')
+        self._attempt_to_accept(request)
 
         follow_resp = self._util.create_follow_in_db(foreign_user.global_id,
                                                      local_user.global_id)
