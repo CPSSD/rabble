@@ -33,6 +33,7 @@ echo "Running build"
 # Write your output to the `build_out` directory
 cp -R services/activities/create build_out/activities/
 cp -R services/activities/follow build_out/activities/
+cp -R services/activities/like build_out/activities/
 
 echo "Building python protos"
 python3 -m grpc_tools.protoc \
