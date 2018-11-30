@@ -21,7 +21,6 @@ class SendLikeServicer:
 
     def _create_article_object(self, article):
         return {
-            'host': article.host,
             'id': article.id,
         }
 
