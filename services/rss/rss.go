@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -50,6 +51,15 @@ func (s *serverWrapper) convertFeedDatetime(ctx context.Context, gi *gofeed.Item
 		return nil, fmt.Errorf("Invalid timestamp\n")
 	}
 	return protoTimestamp, nil
+}
+
+func (s *serverWrapper) convertRssUrlToHandle(url string) (string) {
+	// Converts url in form: https://news.ycombinator.com/rss
+	// to: news.ycombinator.com-rss
+	if strings.HasPrefix(url, "http") {
+		url = strings.Split(url, "//")[1]
+	}
+	return strings.Replace(url, "/", "-", -1)
 }
 
 // convertFeedToPost converts gofeed.Feed types to post types.
@@ -131,12 +141,12 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	}
 
 	log.Println(r.RssUrl)
-
+	handle := s.convertRssUrlToHandle(r.RssUrl)
 	// add new user with feed details
 	urInsert := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_INSERT,
 		Entry: &pb.UsersEntry{
-			Handle: r.RssUrl,
+			Handle: handle,
 			Rss:    r.RssUrl,
 		},
 	}
@@ -153,13 +163,15 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	urFind := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
 		Match: &pb.UsersEntry{
-			Handle: r.RssUrl,
+			Handle: handle,
 			Rss:    r.RssUrl,
 		},
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)
 
-	if findErr != nil || findResp.ResultType != pb.UsersResponse_OK {
+	if findErr != nil ||
+		 findResp.ResultType != pb.UsersResponse_OK ||
+		 len(findResp.Results) < 1 {
 		log.Println(findErr)
 		rssr.ResultType = pb.NewRssFeedResponse_ERROR
 		rssr.Message = findErr.Error()

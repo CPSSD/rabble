@@ -68,6 +68,39 @@ func newTestServerWrapper() *serverWrapper {
 	return sw
 }
 
+func TestConvertRssUrlToHandle(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{
+			in:   "https://news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "http://news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "http://news.ycombinator.com/tech/rss",
+			want: "news.ycombinator.com-tech-rss",
+		},
+	}
+
+	sw := newTestServerWrapper()
+	for _, tcase := range tests {
+		convertedHandle := sw.convertRssUrlToHandle(tcase.in)
+		if convertedHandle != tcase.want {
+			t.Fatalf("convertRssUrlToHandle(%v), wanted: %v, got: %v",
+			tcase.in, tcase.want, convertedHandle)
+		}
+	}
+}
+
 func TestNewRssFollow(t *testing.T) {
 	sw := newTestServerWrapper()
 
