@@ -4,4 +4,5 @@ class ReceiveApprovalServicer:
         self._logger = logger
 
     def ReceiveApproval(self, req, context):
-        print("TODO(devoxel): send receive")
+        # TODO(devoxel): Receive approval
+        return approver_pb2.ApprovalResponse()

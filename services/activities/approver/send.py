@@ -32,7 +32,6 @@ class SendApprovalServicer:
         return d
 
     def SendApproval(self, req, context):
-        print("TODO(devoxel): send approval")
-        resp = approver_pb2.ApprovalResponse()
+        # TODO(devoxel): send approval
         print(req)
-        return resp
+        return approver_pb2.ApprovalResponse()
