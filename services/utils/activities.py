@@ -15,7 +15,6 @@ class ActivitiesUtil:
     def build_inbox_url(self, handle, host):
         # TODO(iandioch): Consider smarter way of building URL than prefixing
         # "http://" to host.
-        # TODO(iandioch): Use common inbox for all activities.
         s = f'{host}/ap/@{handle}/inbox'
         if not s.startswith('http'):
             s = 'http://' + s
