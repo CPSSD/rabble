@@ -13,7 +13,7 @@ import "google/protobuf/timestamp.proto";
 message LocalToAnyFollow {
     /* The handle of the local user who has requested to follow someone, eg.
      * "admin". */
-    string follower = 1; 
+    string follower = 1;
     /* The full username of the person being followed, eg. "admin", "@admin",
      * "admin@rabble.net", or "@aaron@devoxel.net". */
     string followed = 2;
@@ -29,6 +29,14 @@ message ForeignToLocalFollow {
      * "admin". */
     string followed = 3;
     google.protobuf.Timestamp datetime = 4;
+}
+
+// LocalToRss represents a user on a local instance requesting to follow a rss feed.
+message LocalToRss {
+    // The handle of the local user who has requested to follow a rss feed
+    string follower = 1;
+    // The url of the feed. (user input)
+    string feed_url = 2;
 }
 
 /* TODO(iandioch): Consider merging with DbFollowResponse in
@@ -75,6 +83,7 @@ message GetFollowsResponse {
 
 service Follows {
   rpc SendFollowRequest(LocalToAnyFollow) returns (FollowResponse);
+  rpc RssFollowRequest(LocalToRss) returns (FollowResponse);
   rpc ReceiveFollowRequest(ForeignToLocalFollow) returns (FollowResponse);
   rpc GetFollowers(GetFollowsRequest) returns (GetFollowsResponse);
   rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);

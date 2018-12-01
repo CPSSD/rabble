@@ -90,9 +90,17 @@ message UsersResponse {
   repeated UsersEntry results = 3;
 }
 
+
 message Follow {
+  enum State {
+    ACTIVE = 0;
+    PENDING = 1;
+    REJECTED = 2;
+    TIMED_OUT = 3;
+  }
   int64 follower = 1;
   int64 followed = 2;
+  State state = 3;
 }
 
 message DbFollowRequest {
@@ -112,7 +120,11 @@ message DbFollowRequest {
    *     person follows.
    *   - If both match.followed and match.follower are set, the service will
    *     return an entry if this follow exists, and none otherwise.
-   *   - If neither are set, all follows in the database will be returned.
+   *   - If neither are set, all active follows in the database will be returned
+   *
+   * You can set follow.state to find follows that are in currently unaccepted
+   * but these should only be used carefully, since these followers must not be
+   * sent anything. By default, your search will only return active follows.
    */
   Follow match = 3;
 }

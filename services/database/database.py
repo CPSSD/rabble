@@ -32,7 +32,9 @@ class DB:
 def build_database(logger, schema_path, db_path):
     db = DB(db_path)
     try:
-        script = open(schema_path).read()
+        f = open(schema_path)
+        script = f.read()
+        f.close()
     except FileNotFoundError:
         logger.error("Couldn't find schema file at: '{}'", schema_path)
         raise
