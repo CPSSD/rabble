@@ -134,3 +134,5 @@ services:
       - "database_service"
     environment:
       - DB_SERVICE_HOST=database_service
+      - ARTICLE_SERVICE_HOST=article_service
+      - MDC_SERVICE_HOST=markdown_service

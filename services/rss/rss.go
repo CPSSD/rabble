@@ -12,13 +12,15 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
+	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/mmcdole/gofeed"
 	"google.golang.org/grpc"
 )
 
 const (
-	scraperInterval = time.Minute * 15
-	goRoutineCount  = 10
+	scraperInterval     = time.Minute * 15
+	goRoutineCount      = 10
 )
 
 type Parser interface {
@@ -28,8 +30,72 @@ type Parser interface {
 type serverWrapper struct {
 	dbConn     *grpc.ClientConn
 	db         pb.DatabaseClient
+	artConn    *grpc.ClientConn
+	art        pb.ArticleClient
 	feedParser Parser
 	server     *grpc.Server
+}
+
+// convertFeedDatetime converts gofeed.Item.Published type to protobud timestamp
+func (s *serverWrapper) convertFeedDatetime(ctx context.Context, gi *gofeed.Item) (*tspb.Timestamp, error) {
+	parsedTimestamp := *gi.PublishedParsed
+	if (parsedTimestamp == time.Time{}) {
+		log.Printf("No timestamp for feed: %s\n", gi.Link)
+		parsedTimestamp = time.Now()
+	}
+
+	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedTimestamp)
+	if protoTimeErr != nil {
+		log.Printf("Error converting timestamp: %s\n", protoTimeErr)
+		return nil, fmt.Errorf("Invalid timestamp\n")
+	}
+	return protoTimestamp, nil
+}
+
+// convertFeedToPost converts gofeed.Feed types to post types.
+func (s *serverWrapper) convertFeedToPost(ctx context.Context, gf *gofeed.Feed, authorId int64) []*pb.PostsEntry {
+	postArray := []*pb.PostsEntry{}
+
+	for _, r := range gf.Items {
+		// convert time to creation_datetime
+		creationTime, creationErr := s.convertFeedDatetime(ctx, r)
+		if creationErr != nil {
+			continue
+		}
+
+		postArray = append(postArray, &pb.PostsEntry{
+			AuthorId:           authorId,
+			Title:            r.Title,
+			Body:             r.Content,
+			CreationDatetime: creationTime,
+		})
+	}
+	return postArray
+}
+
+// createArticlesFromFeed converts gofeed.Feed types to article type.
+func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, author string) {
+	for _, r := range gf.Items {
+		// convert time to creation_datetime
+		creationTime, creationErr := s.convertFeedDatetime(ctx, r)
+		if creationErr != nil {
+			continue
+		}
+
+		na := &pb.NewArticle{
+			Author:           author,
+			Title:            r.Title,
+			Body:             r.Content,
+			CreationDatetime: creationTime,
+			Foreign:          false,
+		}
+		newArtResp, newArtErr := s.art.CreateNewArticle(ctx, na)
+		if newArtErr != nil {
+			log.Printf("Could not create new article: %v", newArtErr)
+		} else if newArtResp.ResultType != pb.NewArticleResponse_OK {
+			log.Printf("Could not create new article message: %v", newArtResp.Error)
+		}
+	}
 }
 
 func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
@@ -64,9 +130,48 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 		return rssr, nil
 	}
 
+	log.Println(r.RssUrl)
+
+	// add new user with feed details
+	urInsert := &pb.UsersRequest{
+		RequestType: pb.UsersRequest_INSERT,
+		Entry: &pb.UsersEntry{
+			Handle: r.RssUrl,
+			Rss:    r.RssUrl,
+		},
+	}
+	insertResp, insertErr := s.db.Users(ctx, urInsert)
+
+	if insertErr != nil || insertResp.ResultType != pb.UsersResponse_OK {
+		log.Println(insertErr)
+		rssr.ResultType = pb.NewRssFeedResponse_ERROR
+		rssr.Message = insertErr.Error()
+		return rssr, nil
+	}
+
+	// get that new user's globalId
+	urFind := &pb.UsersRequest{
+		RequestType: pb.UsersRequest_FIND,
+		Match: &pb.UsersEntry{
+			Handle: r.RssUrl,
+			Rss:    r.RssUrl,
+		},
+	}
+	findResp, findErr := s.db.Users(ctx, urFind)
+
+	if findErr != nil || findResp.ResultType != pb.UsersResponse_OK {
+		log.Println(findErr)
+		rssr.ResultType = pb.NewRssFeedResponse_ERROR
+		rssr.Message = findErr.Error()
+		return rssr, nil
+	}
+
 	log.Println(feed.Title)
+	// convert feed to post items and save
+	s.createArticlesFromFeed(ctx, feed, findResp.Results[0].Handle)
 
 	rssr.ResultType = pb.NewRssFeedResponse_ACCEPTED
+	rssr.GlobalId = findResp.Results[0].GlobalId
 
 	return rssr, nil
 }
@@ -117,14 +222,32 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
+func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
+	host := os.Getenv("ARTICLE_SERVICE_HOST")
+	if host == "" {
+		log.Fatal("ARTICLE_SERVICE_HOST env var not set for rss service.")
+	}
+	addr := host + ":1601"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Rss server did not connect to article service: %v", err)
+	}
+	client := pb.NewArticleClient(conn)
+	return conn, client
+}
+
 func buildServerWrapper() *serverWrapper {
 	dbConn, dbClient := createDatabaseClient()
+	artConn, artClient := createArticleClient()
 	fp := gofeed.NewParser()
 	grpcSrv := grpc.NewServer()
 
 	return &serverWrapper{
 		dbConn:     dbConn,
 		db:         dbClient,
+		artConn:    artConn,
+		art:        artClient,
 		feedParser: fp,
 		server:     grpcSrv,
 	}
@@ -164,5 +287,6 @@ func main() {
 	scraperTicker.Stop()
 	serverWrapper.server.Stop()
 	serverWrapper.dbConn.Close()
+	serverWrapper.artConn.Close()
 	os.Exit(0)
 }
