@@ -59,6 +59,8 @@ message UsersEntry {
   string password = 5;
   // Plaintext biography of the user
   string bio = 6;
+  // Rss url if a rss user or None if normal user
+  string rss = 7;
 }
 
 message UsersRequest {

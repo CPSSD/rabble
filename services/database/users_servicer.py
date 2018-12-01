@@ -16,7 +16,7 @@ class UsersDatabaseServicer:
         }
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 6:
+        if len(tup) != 7:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -29,6 +29,7 @@ class UsersDatabaseServicer:
             entry.display_name = tup[3]
             entry.password = tup[4]
             entry.bio = tup[5]
+            entry.rss = tup[6]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -47,13 +48,14 @@ class UsersDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO users '
-                '(handle, host, display_name, password, bio) '
-                'VALUES (?, ?, ?, ?, ?)',
+                '(handle, host, display_name, password, bio, rss) '
+                'VALUES (?, ?, ?, ?, ?, ?)',
                 req.entry.handle,
                 req.entry.host,
                 req.entry.display_name,
                 req.entry.password,
-                req.entry.bio)
+                req.entry.bio,
+                req.entry.rss)
         except sqlite3.Error as e:
             self._logger.info("Error inserting")
             self._logger.error(str(e))
