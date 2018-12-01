@@ -47,7 +47,7 @@ type DatabaseFake struct {
 func (d *DatabaseFake) Users(_ context.Context, r *pb.UsersRequest, _ ...grpc.CallOption) (*pb.UsersResponse, error) {
 	d.ur = r
 	ue := &pb.UsersEntry{
-		Handle: "test/rss",
+		Handle:   "test/rss",
 		GlobalId: 1,
 	}
 	return &pb.UsersResponse{
@@ -96,7 +96,7 @@ func TestConvertRssUrlToHandle(t *testing.T) {
 		convertedHandle := sw.convertRssUrlToHandle(tcase.in)
 		if convertedHandle != tcase.want {
 			t.Fatalf("convertRssUrlToHandle(%v), wanted: %v, got: %v",
-			tcase.in, tcase.want, convertedHandle)
+				tcase.in, tcase.want, convertedHandle)
 		}
 	}
 }

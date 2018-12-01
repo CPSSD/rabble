@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	scraperInterval     = time.Minute * 15
-	goRoutineCount      = 10
+	scraperInterval = time.Minute * 15
+	goRoutineCount  = 10
 )
 
 type Parser interface {
@@ -53,7 +53,7 @@ func (s *serverWrapper) convertFeedDatetime(ctx context.Context, gi *gofeed.Item
 	return protoTimestamp, nil
 }
 
-func (s *serverWrapper) convertRssUrlToHandle(url string) (string) {
+func (s *serverWrapper) convertRssUrlToHandle(url string) string {
 	// Converts url in form: https://news.ycombinator.com/rss
 	// to: news.ycombinator.com-rss
 	if strings.HasPrefix(url, "http") {
@@ -74,7 +74,7 @@ func (s *serverWrapper) convertFeedToPost(ctx context.Context, gf *gofeed.Feed, 
 		}
 
 		postArray = append(postArray, &pb.PostsEntry{
-			AuthorId:           authorId,
+			AuthorId:         authorId,
 			Title:            r.Title,
 			Body:             r.Content,
 			CreationDatetime: creationTime,
@@ -140,7 +140,6 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 		return rssr, nil
 	}
 
-	log.Println(r.RssUrl)
 	handle := s.convertRssUrlToHandle(r.RssUrl)
 	// add new user with feed details
 	urInsert := &pb.UsersRequest{
@@ -152,10 +151,17 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	}
 	insertResp, insertErr := s.db.Users(ctx, urInsert)
 
-	if insertErr != nil || insertResp.ResultType != pb.UsersResponse_OK {
-		log.Println(insertErr)
+	if insertErr != nil {
+		log.Printf("Error on rss user insert: %v\n", insertErr)
 		rssr.ResultType = pb.NewRssFeedResponse_ERROR
 		rssr.Message = insertErr.Error()
+		return rssr, nil
+	}
+
+	if insertResp.ResultType != pb.UsersResponse_OK {
+		log.Printf("Rss user insert failed. message: %v\n", insertResp.Error)
+		rssr.ResultType = pb.NewRssFeedResponse_ERROR
+		rssr.Message = insertResp.Error
 		return rssr, nil
 	}
 
@@ -169,12 +175,17 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)
 
-	if findErr != nil ||
-		 findResp.ResultType != pb.UsersResponse_OK ||
-		 len(findResp.Results) < 1 {
-		log.Println(findErr)
+	if findErr != nil {
+		log.Printf("Error on rss user find: %v\n", findErr)
 		rssr.ResultType = pb.NewRssFeedResponse_ERROR
 		rssr.Message = findErr.Error()
+		return rssr, nil
+	}
+
+	if findResp.ResultType != pb.UsersResponse_OK || len(findResp.Results) < 1 {
+		log.Printf("Rss user find failed. message: %v\n", findResp.Error)
+		rssr.ResultType = pb.NewRssFeedResponse_ERROR
+		rssr.Message = findResp.Error
 		return rssr, nil
 	}
 
