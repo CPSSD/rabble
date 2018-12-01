@@ -16,7 +16,7 @@ from servicer import S2SLikeServicer
 
 
 def get_args():
-    parser = argparse.ArgumentParser('Run the follow activity microservice')
+    parser = argparse.ArgumentParser('Run the like activity microservice')
     parser.add_argument(
         '-v', default='WARNING', action='store_const', const='DEBUG',
         help='Log more verbosely.')
