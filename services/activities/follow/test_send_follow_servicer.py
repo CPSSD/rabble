@@ -3,20 +3,14 @@ from unittest.mock import Mock, patch
 
 from send_follow_servicer import SendFollowServicer
 from services.proto import s2s_follow_pb2
+from utils.activities import ActivitiesUtil
 
 
 class SendFollowServicerTest(unittest.TestCase):
 
     def setUp(self):
-        self.servicer = SendFollowServicer(Mock())
-
-    def test_build_actor(self):
-        self.assertEqual(self.servicer._build_actor('a', 'b.com'),
-                         'http://b.com/@a')
-
-    def test_build_inbox_url(self):
-        self.assertEqual(self.servicer._build_inbox_url('a', 'b.com'),
-                         'http://b.com/ap/@a/inbox')
+        self.activ_util = ActivitiesUtil(Mock())
+        self.servicer = SendFollowServicer(Mock(), self.activ_util)
 
     def test_build_activity(self):
         e = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
@@ -27,28 +21,9 @@ class SendFollowServicerTest(unittest.TestCase):
         self.assertEqual(e['object'], 'FOLLOWED')
         self.assertEqual(e['to'], ['FOLLOWED'])
 
-    def test_send_activity_error(self):
-        from urllib import request
-        request.Request = Mock()
-        request.urlopen = Mock()
-        request.urlopen.side_effect = Exception('some weird error')
-        activity = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
-        e = self.servicer._send_activity(activity,
-                                         'followed.com/ap/@b/inbox')
-        self.assertEqual(e, 'some weird error')
-
-    def test_send_activity(self):
-        from urllib import request
-        request.Request = Mock()
-        request.urlopen = Mock()
-        activity = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
-        e = self.servicer._send_activity(activity,
-                                         'followed.com/ap/@b/inbox')
-        self.assertIsNone(e)
-
     def test_SendFollowActivity(self):
-        with patch(__name__ + '.SendFollowServicer._send_activity') as mock_send:
-            mock_send.return_value = None
+        with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
+            mock_send.return_value = ("response", None)
             req = s2s_follow_pb2.FollowDetails()
             req.follower.host = 'follower.com'
             req.follower.handle = 'a'
@@ -64,8 +39,8 @@ class SendFollowServicerTest(unittest.TestCase):
                                               'http://followed.com/ap/@b/inbox')
 
     def test_SendFollowActivity_return_error(self):
-        with patch(__name__ + '.SendFollowServicer._send_activity') as mock_send:
-            mock_send.return_value = 'insert error here'
+        with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
+            mock_send.return_value = (None, 'insert error here')
             req = s2s_follow_pb2.FollowDetails()
             req.follower.host = 'follower.com'
             req.follower.handle = 'a'
