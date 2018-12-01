@@ -73,7 +73,7 @@ def main():
     with grpc.insecure_channel(db_addr) as db_chan, \
          grpc.insecure_channel(follow_addr) as follow_chan, \
          grpc.insecure_channel(approver_addr) as approver_chan, \
-         grpc.insecure_channel(rss_ddr) as rss_chan:
+         grpc.insecure_channel(rss_addr) as rss_chan:
 
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         rss_stub = rss_pb2_grpc.RSSStub(rss_chan)
