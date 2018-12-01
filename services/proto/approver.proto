@@ -11,7 +11,7 @@ message Approval {
 
 message ReceivedApproval {
   ReceivedFollowDetails follow = 1;
-  string accept = 3;
+  string accept = 2;
 }
 
 message ApprovalResponse {
