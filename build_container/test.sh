@@ -4,9 +4,9 @@ set -e
 
 cd /repo
 
-#cd chump/ && npm run lint && npm run test && cd ..
-#
-#go test github.com/cpssd/rabble/...
+cd chump/ && npm run lint && npm run test && cd ..
+
+go test github.com/cpssd/rabble/...
 
 echo "Running python unit tests for utils/"
 cd build_out/utils

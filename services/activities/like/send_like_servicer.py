@@ -21,7 +21,8 @@ class SendLikeServicer:
 
     def _create_article_object(self, article):
         return {
-            'id': article.id,
+            'title': article.title,
+            'body': article.body,
         }
 
     def _create_actor_object(self, liker_host, liker_handle):
@@ -31,13 +32,13 @@ class SendLikeServicer:
         }
 
     def _get_author_inbox(self, article):
-        user = self._user_utils.get_user_from_db(
+        user = self._user_util.get_user_from_db(
             global_id=article.author_id)
         if user is None:
             return None
         if user.host is None:
-            #TODO(CianLR): Handle local users.
-            return 'Oh fuck'
+            #TODO(CianLR): Figure out if there's a reason this won't work.
+            user.host = 'localhost'
         return self._activ_util.build_inbox_url(user.handle, user.host)
 
     def _get_article(self, article_id):
@@ -68,8 +69,12 @@ class SendLikeServicer:
         activity = self._build_activity(
             self._create_actor_object(req.liker_host, req.liker_handle),
             self._create_article_object(article))
-        resp, err = self._activ_util.send_activity(
-            activity, self._get_author_inbox(article))
+        inbox = self._get_author_inbox(article)
+        if inbox is None:
+            response.result_type = like_pb2.LikeResponse.ERROR
+            response.error = "Error getting author's inbox URL"
+            return response
+        resp, err = self._activ_util.send_activity(activity, inbox)
         if err is not None:
             response.result_type = like_pb2.LikeResponse.ERROR
             response.error = err
