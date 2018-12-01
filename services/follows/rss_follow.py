@@ -53,8 +53,7 @@ class RssFollowServicer:
 
         # check if rss user already exists (handle: domain) (local user so no host)
         rss_user_id = None
-        rss_hostname = urlparse(req.feed_url).hostname
-        rss_entry = self._users_util.get_user_from_db(handle=rss_hostname)
+        rss_entry = self._users_util.get_user_from_db(handle=req.feed_url)
         if rss_entry is None:
             # send to rss service to be created
             rss_user_id, rss_error = self._create_rss_user(req.feed_url)
