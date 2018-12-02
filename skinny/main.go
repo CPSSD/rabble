@@ -89,6 +89,8 @@ type serverWrapper struct {
 	users         pb.UsersClient
 	s2sFollowConn *grpc.ClientConn
 	s2sFollow     pb.S2SFollowClient
+	s2sLikeConn   *grpc.ClientConn
+	s2sLike       pb.S2SLikeClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -727,6 +729,22 @@ func createS2SFollowClient() (*grpc.ClientConn, pb.S2SFollowClient) {
 	return conn, client
 }
 
+func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
+	const env = "LIKE_SERVICE_HOST"
+	host  := os.Getenv(env)
+	if host == "" {
+		log.Fatalf("%s env var not set for skinny server", env)
+	}
+	addr := host + ":1848"
+
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
+	}
+	client := pb.NewS2SLikeClient(conn)
+	return conn, client
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -753,6 +771,7 @@ func buildServerWrapper() *serverWrapper {
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
+	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	s := &serverWrapper{
 		router:        r,
 		server:        srv,
@@ -772,6 +791,8 @@ func buildServerWrapper() *serverWrapper {
 		users:         usersClient,
 		s2sFollowConn: s2sFollowConn,
 		s2sFollow:     s2sFollowClient,
+		s2sLikeConn:   s2sLikeConn,
+		s2sLike:       s2sLikeClient,
 	}
 	s.setupRoutes()
 	return s

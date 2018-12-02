@@ -20,7 +20,9 @@ message LikeResponse {
 }
 
 message ReceivedLikeDetails {
-  // TODO(CianLR): This
+  string liked_object = 1;
+  string liker_handle = 2;
+  string liker_host = 3;
 }
 
 

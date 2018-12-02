@@ -184,3 +184,57 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "{}\n")
 	}
 }
+
+type likeActorStruct struct {
+	Handle string `json:"handle"`
+	Host   string `json:"host"`
+	Type   string `json:"type"`
+}
+
+type likeActivityStruct struct {
+	Actor   likeActorStruct `json:"actor"`
+	Context string          `json:"@context"`
+	Object  string          `json:"object"`
+	Type    string          `json:"type"`
+}
+
+func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a like activity.\n", recipient)
+
+		// TODO(iandioch, sailslick, CianLR): Parse JSON-LD in other shapes.
+		decoder := json.NewDecoder(r.Body)
+		var t likeActivityStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		f := &pb.ReceivedLikeDetails{
+			LikedObject: t.Object,
+			LikerHandle: t.Actor.Handle,
+			LikerHost: t.Actor.Host,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sLike.ReceiveLikeActivity(ctx, f)
+		if err != nil || resp.ResultType == pb.LikeResponse_ERROR {
+			log.Printf("Could not receive like activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving like activity.\n")
+			return
+		}
+
+		log.Println("Like activity received successfully.")
+		fmt.Fprintf(w, "{}\n")
+	}
+}
+

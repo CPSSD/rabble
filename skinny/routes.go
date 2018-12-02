@@ -41,6 +41,7 @@ func (s *serverWrapper) setupRoutes() {
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create": s.handleCreateActivity(),
 		"follow": s.handleFollowActivity(),
+		"like": s.handleLikeActivity(),
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 }
