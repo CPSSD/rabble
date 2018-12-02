@@ -62,7 +62,11 @@ class SendLikeServicerTest(unittest.TestCase):
         # Check that the request sent makes sense.
         self.assertEqual(self.data["type"], "Like")
         self.assertEqual(self.data["actor"]["handle"], "farmlover73")
-        self.assertEqual(self.data["object"]["title"], "Minecraft Farming 101")
+        # Check the object is the article URL.
+        self.assertIn("rabble.mojang.com", self.data["object"])
+        self.assertIn("@minecraft4ever", self.data["object"])
+        # TODO(CianLR): Check that the article ID is in the object.
+        # Check the request was sent to a valid URL.
         self.assertIn("rabble.mojang.com", self.url)
         self.assertIn("@minecraft4ever", self.url)
     

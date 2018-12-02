@@ -27,26 +27,29 @@ class SendLikeServicer:
             'object': liked_object,
         }
 
-    def _create_article_object(self, article):
-        return {
-            'title': article.title,
-            'body': article.body,
-        }
+    def _create_article_object(self, author, article):
+        # TODO(CianLR): Replace 123 with foreign article ID.
+        s = f'{author.host}/@{author.handle}/123'
+        if not s.startswith('http'):
+            s = 'http://' + s
+        return s
 
     def _create_actor_object(self, liker_handle):
         return {
+            'type': 'Person'
             'host': self._hostname,
             'handle': liker_handle,
         }
 
-    def _get_author_inbox(self, article):
+    def _get_author(self, article):
         user = self._user_util.get_user_from_db(
             global_id=article.author_id)
         if user is None:
             return None
         if user.host is None:
+            # The author must be local.
             user.host = self._hostname
-        return self._activ_util.build_inbox_url(user.handle, user.host)
+        return user
 
     def _get_article(self, article_id):
         req = database_pb2.PostsRequest(
@@ -73,14 +76,16 @@ class SendLikeServicer:
             response.result_type = like_pb2.LikeResponse.ERROR
             response.error = err
             return response
+        author = self._get_author(article)
+        if author is None:
+            self._logger.error("Error getting article author from DB")
+            response.result_type = like_pb2.LikeResponse.ERROR
+            response.error = "Error getting article author from DB"
+            return response
         activity = self._build_activity(
             self._create_actor_object(req.liker_handle),
-            self._create_article_object(article))
-        inbox = self._get_author_inbox(article)
-        if inbox is None:
-            response.result_type = like_pb2.LikeResponse.ERROR
-            response.error = "Error getting author's inbox URL"
-            return response
+            self._create_article_object(author, article))
+        inbox = self._activ_util.build_inbox_url(author.handle, author.host)
         resp, err = self._activ_util.send_activity(activity, inbox)
         if err is not None:
             response.result_type = like_pb2.LikeResponse.ERROR
