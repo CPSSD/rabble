@@ -1,15 +1,23 @@
+import os
+import sys
 import json
 from urllib import request
 
 from services.proto import database_pb2
 from services.proto import like_pb2
 
+
 class SendLikeServicer:
-    def __init__(self, logger, db, user_util, activ_util):
+    def __init__(self, logger, db, user_util, activ_util, hostname=None):
         self._logger = logger
         self._db = db
         self._user_util = user_util
         self._activ_util = activ_util
+        # Use the hostname passed in or get it manually
+        self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
+        if not self._hostname:
+            self._logger.error("'HOST_NAME' env var is not set")
+            sys.exit(1)
 
     def _build_activity(self, like_actor, liked_object):
         return {
@@ -25,9 +33,9 @@ class SendLikeServicer:
             'body': article.body,
         }
 
-    def _create_actor_object(self, liker_host, liker_handle):
+    def _create_actor_object(self, liker_handle):
         return {
-            'host': liker_host,
+            'host': self._hostname,
             'handle': liker_handle,
         }
 
@@ -37,8 +45,7 @@ class SendLikeServicer:
         if user is None:
             return None
         if user.host is None:
-            #TODO(CianLR): Figure out if there's a reason this won't work.
-            user.host = 'localhost'
+            user.host = self._hostname
         return self._activ_util.build_inbox_url(user.handle, user.host)
 
     def _get_article(self, article_id):
@@ -67,7 +74,7 @@ class SendLikeServicer:
             response.error = err
             return response
         activity = self._build_activity(
-            self._create_actor_object(req.liker_host, req.liker_handle),
+            self._create_actor_object(req.liker_handle),
             self._create_article_object(article))
         inbox = self._get_author_inbox(article)
         if inbox is None:

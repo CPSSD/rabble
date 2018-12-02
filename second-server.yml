@@ -55,6 +55,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service
       - DB_SERVICE_HOST=database_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   database_service:
     build:
       context: ./services/database

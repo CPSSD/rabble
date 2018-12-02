@@ -42,7 +42,7 @@ class SendLikeServicerTest(unittest.TestCase):
         self.db = MockDB()
         self.users_util = UsersUtil(Mock(), self.db)
         self.servicer = SendLikeServicer(
-            Mock(), self.db, self.users_util, self.activ_util)
+            Mock(), self.db, self.users_util, self.activ_util, "localhost")
         self.data = None
         self.url = None
         self.activ_util.send_activity = self.save_request
@@ -55,7 +55,6 @@ class SendLikeServicerTest(unittest.TestCase):
     def test_SendLikeActivity(self):
         req = like_pb2.LikeDetails(
             article_id=123,
-            liker_host="myhost.com",
             liker_handle="farmlover73",
         )
         resp = self.servicer.SendLikeActivity(req, None)
@@ -70,7 +69,6 @@ class SendLikeServicerTest(unittest.TestCase):
     def test_SendLikeActivitySendingError(self):
         req = like_pb2.LikeDetails(
             article_id=123,
-            liker_host="myhost.com",
             liker_handle="farmlover73",
         )
         self.activ_util.send_activity = lambda *_: ("", "Error 404")
@@ -80,7 +78,6 @@ class SendLikeServicerTest(unittest.TestCase):
     def test_SendLikeActivityNoArticle(self):
         req = like_pb2.LikeDetails(
             article_id=123,
-            liker_host="myhost.com",
             liker_handle="farmlover73",
         )
         self.db.Posts = lambda *_: database_pb2.PostsResponse(

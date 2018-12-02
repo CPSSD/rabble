@@ -4,7 +4,6 @@ option go_package = "services/proto";
 
 message LikeDetails {
   int64 article_id = 1;
-  string liker_host = 2;
   string liker_handle = 3;
 }
 
