@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
   host              text,
   display_name      text    NOT NULL,
   password          text    NOT NULL,
-  bio               text    NOT NULL
+  bio               text    NOT NULL,
+  rss               text
 );
 
 /* follower and followed both match global_id in entries in users table. */

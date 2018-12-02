@@ -23,10 +23,37 @@ func (d *gofeedFake) ParseURL(url string) (*gofeed.Feed, error) {
 	}, nil
 }
 
+type ArticleFake struct {
+	pb.ArticleClient
+
+	// The most recent NewArticle
+	na *pb.NewArticle
+}
+
+func (a *ArticleFake) CreateNewArticle(_ context.Context, r *pb.NewArticle, _ ...grpc.CallOption) (*pb.NewArticleResponse, error) {
+	a.na = r
+	return &pb.NewArticleResponse{
+		ResultType: pb.NewArticleResponse_OK,
+		GlobalId:   "test id",
+	}, nil
+}
+
 type DatabaseFake struct {
 	pb.DatabaseClient
 
-	rq *pb.PostsRequest
+	ur *pb.UsersRequest
+}
+
+func (d *DatabaseFake) Users(_ context.Context, r *pb.UsersRequest, _ ...grpc.CallOption) (*pb.UsersResponse, error) {
+	d.ur = r
+	ue := &pb.UsersEntry{
+		Handle:   "test/rss",
+		GlobalId: 1,
+	}
+	return &pb.UsersResponse{
+		ResultType: pb.UsersResponse_OK,
+		Results:    []*pb.UsersEntry{ue},
+	}, nil
 }
 
 func newTestServerWrapper() *serverWrapper {
@@ -34,10 +61,44 @@ func newTestServerWrapper() *serverWrapper {
 
 	sw := &serverWrapper{
 		server:     &grpc.Server{},
+		art:        &ArticleFake{},
 		db:         &DatabaseFake{},
 		feedParser: &gofeedFake{},
 	}
 	return sw
+}
+
+func TestConvertRssUrlToHandle(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{
+			in:   "https://news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "http://news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "news.ycombinator.com/rss",
+			want: "news.ycombinator.com-rss",
+		},
+		{
+			in:   "http://news.ycombinator.com/tech/rss",
+			want: "news.ycombinator.com-tech-rss",
+		},
+	}
+
+	sw := newTestServerWrapper()
+	for _, tcase := range tests {
+		convertedHandle := sw.convertRssUrlToHandle(tcase.in)
+		if convertedHandle != tcase.want {
+			t.Fatalf("convertRssUrlToHandle(%v), wanted: %v, got: %v",
+				tcase.in, tcase.want, convertedHandle)
+		}
+	}
 }
 
 func TestNewRssFollow(t *testing.T) {
