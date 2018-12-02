@@ -227,7 +227,12 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 
 		resp, err := s.s2sLike.ReceiveLikeActivity(ctx, f)
 		if err != nil || resp.ResultType == pb.LikeResponse_ERROR {
-			log.Printf("Could not receive like activity. Error: %v", err)
+			if err != nil {
+				log.Printf("Could not receive like activity. Error: %v", err)
+			} else {
+				log.Printf("Could not receive like activity. Error: %v",
+						   resp.Error);
+			}
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving like activity.\n")
 			return
