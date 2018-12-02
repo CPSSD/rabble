@@ -36,7 +36,7 @@ class SendLikeServicer:
 
     def _create_actor_object(self, liker_handle):
         return {
-            'type': 'Person'
+            'type': 'Person',
             'host': self._hostname,
             'handle': liker_handle,
         }
