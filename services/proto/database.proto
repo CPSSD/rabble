@@ -67,6 +67,7 @@ message UsersRequest {
   enum RequestType {
     INSERT = 0;
     FIND = 1;
+    FIND_NOT = 2;
   }
 
   RequestType request_type = 1;
