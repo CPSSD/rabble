@@ -70,11 +70,16 @@ class ReceiveFollowServicer:
         return local_user, foreign_user
 
     def _attempt_to_accept(self, request):
-        s2s_follow = s2s_follow_pb2.FollowDetails()
-        s2s_follow.follower.handle = request.follower_handle
-        s2s_follow.follower.host = request.follower_host
-        s2s_follow.followed.handle = request.followed
-        s2s_follow.followed.host = self._host_name
+        s2s_follow = s2s_follow_pb2.FollowDetails(
+            follower = s2s_follow_pb2.FollowActivityUser(
+                handle = request.follower_handle,
+                host = request.follower_host,
+            ),
+            followed = s2s_follow_pb2.FollowActivityUser(
+                handle = request.followed,
+                host = self._host_name,
+            ),
+        )
         req = approver_pb2.Approval(
                 accept = True,
                 follow=s2s_follow,
