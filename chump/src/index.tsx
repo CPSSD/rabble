@@ -34,6 +34,10 @@ export class App extends React.Component<{}, IAppState> {
     this.logout = this.logout.bind(this);
   }
 
+  componentDidMount() {
+    document.title = "Rabble"
+  }
+
   login(username: string) {
     this.setState({username})
   }

@@ -41,6 +41,15 @@ type FollowsFake struct {
 
 	// The most recent LocalToAnyFollow
 	rq *pb.LocalToAnyFollow
+	// Most recent LocalToRss
+	rrq *pb.LocalToRss
+}
+
+func (f *FollowsFake) RssFollowRequest(_ context.Context, r *pb.LocalToRss, _ ...grpc.CallOption) (*pb.FollowResponse, error) {
+	f.rrq = r
+	return &pb.FollowResponse{
+		ResultType: pb.FollowResponse_OK,
+	}, nil
 }
 
 type ArticleFake struct {
@@ -164,6 +173,65 @@ func TestHandleFollowNotLoggedIn(t *testing.T) {
 	srv := newTestServerWrapper()
 
 	srv.handleFollow()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_ERROR {
+		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollow(t *testing.T) {
+	jsonString := `{ "follower": "testuser", "feed_url": "jose" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	addFakeSession(srv, res, req)
+	srv.handleRssFollow()(res, req)
+	if res.Code != http.StatusOK {
+		t.Errorf("Expected 200 OK, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_OK {
+		t.Errorf("Expected FollowResponse_OK, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollowBadRequest(t *testing.T) {
+	jsonString := `{ this is not json }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	addFakeSession(srv, res, req)
+	srv.handleRssFollow()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_ERROR {
+		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollowNotLoggedIn(t *testing.T) {
+	jsonString := `{ "follower": "testuser", "feed_url": "jose" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("GET", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	srv.handleRssFollow()(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
 	}

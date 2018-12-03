@@ -44,6 +44,18 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+  like_service:
+    build:
+      context: ./services/activities/like
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
+      - DB_SERVICE_HOST=database_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   database_service:
     build:
       context: ./services/database
@@ -68,6 +80,7 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+      - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   logger_service:
@@ -123,3 +136,13 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+  rss_service:
+    build:
+      context: ./services/rss
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service"
+    environment:
+      - DB_SERVICE_HOST=database_service

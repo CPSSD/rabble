@@ -324,6 +324,66 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var j pb.LocalToRss
+		err := decoder.Decode(&j)
+		enc := json.NewEncoder(w)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to follow rss by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Login required",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		// Even if the request was sent with a different follower user the
+		// handle of the logged in user.
+		j.Follower = handle
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+		defer cancel()
+		resp, err := s.follows.RssFollowRequest(ctx, &j)
+		if err != nil {
+			log.Fatalf("Could not send rss follow request: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal rss follow result: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+		}
+	}
+}
+
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
