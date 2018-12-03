@@ -2,7 +2,7 @@ def equivalent_filter(entry, defaults=[]):
     return entry_to_filter(entry, defaults, " = ?")
 
 def not_equivalent_filter(entry, defaults=[]):
-    return entry_to_filter(entry, defaults, " != ?")
+    return entry_to_filter(entry, defaults, ' IS NOT ""')
 
 def entry_to_filter(entry, defaults, comparison):
     """

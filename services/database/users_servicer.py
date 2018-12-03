@@ -67,7 +67,7 @@ class UsersDatabaseServicer:
 
     def _users_handle_find_not(self, req, resp):
         filter_clause, values = util.not_equivalent_filter(req.match)
-        self._user_find_op(resp, filter_clause, values)
+        self._user_find_op(resp, filter_clause, [])
 
     def _users_handle_find(self, req, resp):
         filter_clause, values = util.equivalent_filter(req.match)
