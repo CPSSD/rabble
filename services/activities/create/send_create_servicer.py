@@ -20,7 +20,7 @@ class SendCreateServicer:
         self._client = urllib3.PoolManager()
 
     def _generate_article_id(self, author, article_id):
-        s = f'{self._hostname}/@{author}/{article_id}'
+        s = f'{self._host_name}/@{author}/{article_id}'
         if not s.startswith('http'):
             return 'http://' + s
         return s

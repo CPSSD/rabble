@@ -19,7 +19,7 @@ class DB:
     def execute(self, statement, *params, commit=True):
         if self.cursor is None:
             self.cursor = self._get_cursor()
-            self.cursor.execute(statement, params)
+        self.cursor.execute(statement, params)
         res = self.cursor.fetchall()
         if commit:
             self.cursor.connection.commit()
