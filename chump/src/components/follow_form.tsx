@@ -39,10 +39,10 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
             placeholder="user[@instance.com]"
           />
           <label>
-            State
+            { "Type: " }
             <select
               id="type"
-              className="pure-input-1-2"
+              className="pure-input-4-5"
               onChange={this.handleDropdownChange}
               value={this.state.type}
             >
