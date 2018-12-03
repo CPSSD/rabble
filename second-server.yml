@@ -46,7 +46,7 @@ services:
       - LOGGER_SERVICE_HOST=logger_service
   like_service:
     build:
-      context: ./services/activities
+      context: ./services/activities/like
       dockerfile: Dockerfile
     volumes:
       - .:/repo
