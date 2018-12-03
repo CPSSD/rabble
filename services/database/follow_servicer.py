@@ -13,6 +13,7 @@ class FollowDatabaseServicer:
         self._follow_type_handlers = {
             database_pb2.DbFollowRequest.INSERT: self._follow_handle_insert,
             database_pb2.DbFollowRequest.FIND: self._follow_handle_find,
+            database_pb2.DbFollowRequest.UPDATE: self._follow_handle_update,
         }
 
     def _db_tuple_to_entry(self, tup, entry):
@@ -88,4 +89,38 @@ class FollowDatabaseServicer:
             if not self._db_tuple_to_entry(tup, resp.results.add()):
                 del resp.results[-1]
 
+        self._logger.debug('%d results of follower query.', len(resp.results))
+
+    def _follow_handle_update(self, req, resp):
+        if not req.HasField("match") or not req.HasField("entry"):
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            resp.error = "bad parameters: please set both match and entry"
+            return
+
+        if not req.match.follower or not req.match.followed:
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            resp.error = "bad parameters: please set both follower and followed"
+            return
+
+        filter_clause, values = util.entry_to_filter(req.match)
+        if not filter_clause:
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            resp.error = "could not create filter for UPDATE"
+            return
+
+        try:
+            # since we only update state we can hardcode that paramater
+            query = 'UPDATE follows SET state = ? WHERE ' + filter_clause
+            valstr = str(req.entry.state) + ", " + ', '.join(str(v) for v in values)
+            res = self._db.execute(query, req.entry.state, *values)
+        except sqlite3.Error as e:
+            self._logger.warning('Got error writing to DB: ' + str(e))
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            resp.error = str(e)
+            return
+
+        resp.result_type = database_pb2.DbFollowResponse.OK
+        for tup in res:
+            if not self._db_tuple_to_entry(tup, resp.results.add()):
+                del resp.results[-1]
         self._logger.debug('%d results of follower query.', len(resp.results))

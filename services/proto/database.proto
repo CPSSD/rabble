@@ -110,13 +110,15 @@ message DbFollowRequest {
   enum RequestType {
     INSERT = 0;
     FIND = 1;
+    UPDATE = 2;
   }
 
   RequestType request_type = 1;
 
   Follow entry = 2;
 
-  /* If request_type is FIND:
+  /* 
+   * If request_type is FIND:
    *   - If match.followed is set, then the service will return all followers
    *     for this user's ID.
    *   - If match.follower is set, the service will return all users this
@@ -128,6 +130,11 @@ message DbFollowRequest {
    * You can set follow.state to find follows that are in currently unaccepted
    * but these should only be used carefully, since these followers must not be
    * sent anything. By default, your search will only return active follows.
+   * 
+   * If the request_type is UPDATE:
+   *   - match will be used to find an existing follow entry
+   *   - The entry follow state will replace the current follow state
+   * We do not support modifying any paremater other than state for follows.
    */
   Follow match = 3;
 }
