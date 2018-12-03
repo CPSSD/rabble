@@ -19,6 +19,12 @@ class SendCreateServicer:
         self._users_util = users_util
         self._client = urllib3.PoolManager()
 
+    def _generate_article_id(self, author, article_id):
+        s = f'{self._hostname}/@{author}/{article_id}'
+        if not s.startswith('http'):
+            return 'http://' + s
+        return s
+
     def _remove_local_users(self, followers):
         foreign_followers = []
         for follow in followers:
@@ -75,7 +81,8 @@ class SendCreateServicer:
                 "published": timestamp,
                 "attributedTo": actor,
                 "to": [target],
-                "content": req.body
+                "content": req.body,
+                "id": self._generate_article_id(req.author, req.global_id),
             }
         }
         headers = { "Content-Type": "application/ld+json" }
