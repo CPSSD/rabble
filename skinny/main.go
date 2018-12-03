@@ -89,6 +89,8 @@ type serverWrapper struct {
 	users         pb.UsersClient
 	s2sFollowConn *grpc.ClientConn
 	s2sFollow     pb.S2SFollowClient
+	approverConn  *grpc.ClientConn
+	approver      pb.ApproverClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -357,7 +359,7 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		// handle of the logged in user.
 		j.Follower = handle
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 		defer cancel()
 		resp, err := s.follows.RssFollowRequest(ctx, &j)
 		if err != nil {
@@ -623,108 +625,58 @@ func (s *serverWrapper) shutdown() {
 	s.s2sFollowConn.Close()
 }
 
-func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
-	host := os.Getenv("ARTICLE_SERVICE_HOST")
+func grpcConn(env string, port string) *grpc.ClientConn {
+	host := os.Getenv(env)
 	if host == "" {
-		log.Fatal("ARTICLE_SERVICE_HOST env var not set for skinny server.")
+		log.Fatal("%s env var not set for skinny server.", env)
 	}
-	addr := host + ":1601"
-
+	addr := host + ":" + port
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Skinny server did not connect to Article: %v", err)
+		log.Fatalf("Skinny server did not connect to %s: %v", addr, err)
 	}
+	return conn
+}
+
+func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
+	conn := grpcConn("ARTICLE_SERVICE_HOST", "1601")
 	return conn, pb.NewArticleClient(conn)
 }
 
 func createCreateClient() (*grpc.ClientConn, pb.CreateClient) {
-	host := os.Getenv("CREATE_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("CREATE_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1922"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect to Create: %v", err)
-	}
+	conn := grpcConn("CREATE_SERVICE_HOST", "1922")
 	return conn, pb.NewCreateClient(conn)
 }
 
 func createUsersClient() (*grpc.ClientConn, pb.UsersClient) {
-	host := os.Getenv("USERS_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("USERS_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1534"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect to Users: %v", err)
-	}
+	conn := grpcConn("USERS_SERVICE_HOST", "1534")
 	return conn, pb.NewUsersClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
-	host := os.Getenv("DB_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1798"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
-	}
+	conn := grpcConn("DB_SERVICE_HOST", "1798")
 	client := pb.NewDatabaseClient(conn)
 	return conn, client
 }
 
 func createFollowsClient() (*grpc.ClientConn, pb.FollowsClient) {
-	host := os.Getenv("FOLLOWS_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("FOLLOWS_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1641"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
-	}
-	client := pb.NewFollowsClient(conn)
-	return conn, client
+	conn := grpcConn("FOLLOWS_SERVICE_HOST", "1641")
+	return conn, pb.NewFollowsClient(conn)
 }
 
 func createFeedClient() (*grpc.ClientConn, pb.FeedClient) {
-	const env = "FEED_SERVICE_HOST"
-	host := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":2012"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewFeedClient(conn)
-	return conn, client
+	conn := grpcConn("FEED_SERVICE_HOST", "2012")
+	return conn, pb.NewFeedClient(conn)
 }
 
 func createS2SFollowClient() (*grpc.ClientConn, pb.S2SFollowClient) {
-	const env = "FOLLOW_ACTIVITY_SERVICE_HOST"
-	host := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":1922"
+	conn := grpcConn("FOLLOW_ACTIVITY_SERVICE_HOST", "1922")
+	return conn, pb.NewS2SFollowClient(conn)
+}
 
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewS2SFollowClient(conn)
-	return conn, client
+func createApproverClient() (*grpc.ClientConn, pb.ApproverClient) {
+	conn := grpcConn("APPROVER_SERVICE_HOST", "2077")
+	return conn, pb.NewApproverClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
@@ -753,6 +705,7 @@ func buildServerWrapper() *serverWrapper {
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
+	approverConn, approverClient := createApproverClient()
 	s := &serverWrapper{
 		router:        r,
 		server:        srv,
@@ -772,6 +725,8 @@ func buildServerWrapper() *serverWrapper {
 		users:         usersClient,
 		s2sFollowConn: s2sFollowConn,
 		s2sFollow:     s2sFollowClient,
+		approver:      approverClient,
+		approverConn:  approverConn,
 	}
 	s.setupRoutes()
 	return s
