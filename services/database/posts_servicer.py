@@ -33,12 +33,22 @@ class PostsDatabaseServicer:
                 req.entry.author_id, req.entry.title,
                 req.entry.body,
                 req.entry.creation_datetime.seconds,
-                req.entry.md_body)
+                req.entry.md_body
+                commit=False)
+            res = self._db.execute(
+                'SELECT last_insert_rowid() FROM posts LIMIT 1')
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
             return
+        if len(res) != 1 or len(res[0]) != 1:
+            err = "Global ID data in weird format: " + str(res)
+            self._logger.error(err)
+            resp.result_type = database_pb2.PostsReponse.ERROR
+            resp.error = err
+            return
         resp.result_type = database_pb2.PostsResponse.OK
+        resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 6:
