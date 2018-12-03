@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { CreateFollow } from "../models/follow";
+import { CreateFollow, CreateRssFollow } from "../models/follow";
 
 interface IFormState {
-  followedUsername: string;
+  toFollow: string;
+  type: string;
 }
 
 export interface IFormProps {
@@ -15,10 +16,12 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
     super(props);
 
     this.state = {
-      followedUsername: "",
+      toFollow: "",
+      type: "username",
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleDropdownChange = this.handleDropdownChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.alertUser = this.alertUser.bind(this);
   }
@@ -29,12 +32,24 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
         <div className="pure-control-group">
           <input
             type="text"
-            name="followedUsername"
-            value={this.state.followedUsername}
+            name="toFollow"
+            value={this.state.toFollow}
             onChange={this.handleInputChange}
             className="pure-input-1-2 blog-input"
             placeholder="user[@instance.com]"
           />
+          <label>
+            State
+            <select
+              id="type"
+              className="pure-input-1-2"
+              onChange={this.handleDropdownChange}
+              value={this.state.type}
+            >
+                <option value="username">Username</option>
+                <option value="url">Rss/Atom</option>
+            </select>
+          </label>
         </div>
         <button
           type="submit"
@@ -49,7 +64,13 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
   private handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
-      followedUsername: target.value,
+      toFollow: target.value,
+    });
+  }
+
+  private handleDropdownChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    this.setState({
+      type: event.target.value,
     });
   }
 
@@ -59,8 +80,10 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const promise = CreateFollow(this.props.username,
-                                 this.state.followedUsername);
+    const promise = (this.state.type === "url")
+      ? CreateRssFollow(this.props.username, this.state.toFollow)
+      : CreateFollow(this.props.username, this.state.toFollow);
+
     promise.then((res: any) => {
       let message = "Posted follow with response: ";
       if (res.text) {
@@ -68,7 +91,8 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
       }
       this.alertUser(message);
       this.setState({
-        followedUsername: "",
+        toFollow: "",
+        type: "username",
       });
     })
     .catch((err: any) => {
