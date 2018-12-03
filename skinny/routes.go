@@ -43,7 +43,7 @@ func (s *serverWrapper) setupRoutes() {
 		"create": s.handleCreateActivity(),
 		"follow": s.handleFollowActivity(),
 		"accept": approvalHandler,
-		"deny":   approvalHandler,
+		"reject": approvalHandler,
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 }

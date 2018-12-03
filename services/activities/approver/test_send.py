@@ -43,12 +43,12 @@ class SendServicerTest(unittest.TestCase):
         }
         self.assertEqual(self.servicer._build_activity(req), want)
 
-    def test_build_deny_activity(self):
+    def test_build_reject_activity(self):
         req = example_req
         req.accept = False
         want = {
             '@context': 'https://www.w3.org/ns/activitystreams',
-            'type': 'deny',
+            'type': 'reject',
             'actor': 'http://example.com/@callmekevin',
             'object': {
                 'type': 'Follow',

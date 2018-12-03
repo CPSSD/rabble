@@ -237,7 +237,7 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 				Follower: t.Object.Actor,
 				Followed: t.Object.Object,
 			},
-			// We know type is either an approve or deny activity
+			// We know type is either an accept or reject activity
 			// since the request was routed here.
 			Accept: t.Type == "accept",
 		}
