@@ -30,6 +30,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
+	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/rss_follow", s.handleRssFollow())

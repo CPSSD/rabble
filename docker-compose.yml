@@ -24,6 +24,7 @@ services:
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service
+      - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
       - LIKE_SERVICE_HOST=like_service
       - APPROVER_SERVICE_HOST=approver_service
