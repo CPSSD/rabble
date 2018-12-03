@@ -628,7 +628,7 @@ func (s *serverWrapper) shutdown() {
 func grpcConn(env string, port string) *grpc.ClientConn {
 	host := os.Getenv(env)
 	if host == "" {
-		log.Fatal("%s env var not set for skinny server.", env)
+		log.Fatalf("%s env var not set for skinny server.", env)
 	}
 	addr := host + ":" + port
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
