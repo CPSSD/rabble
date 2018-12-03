@@ -33,10 +33,10 @@ type serverWrapper struct {
 
 // convertFeedItemDatetime converts gofeed.Item.Published type to protobud timestamp
 func (s *serverWrapper) convertFeedItemDatetime(gi *gofeed.Item) (*tspb.Timestamp, error) {
-	parsedTimestamp := *gi.PublishedParsed
-	if (parsedTimestamp == time.Time{}) {
+	parsedTimestamp := time.Now()
+	if (gi.PublishedParsed != &time.Time{} && gi.PublishedParsed != nil) {
 		log.Printf("No timestamp for feed: %s\n", gi.Link)
-		parsedTimestamp = time.Now()
+		parsedTimestamp = *gi.PublishedParsed
 	}
 
 	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedTimestamp)

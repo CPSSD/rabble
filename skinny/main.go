@@ -358,7 +358,7 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		// handle of the logged in user.
 		j.Follower = handle
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second * 10)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		resp, err := s.follows.RssFollowRequest(ctx, &j)
 		if err != nil {

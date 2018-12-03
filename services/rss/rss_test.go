@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"testing"
+	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
+	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/mmcdole/gofeed"
 	"google.golang.org/grpc"
 )
@@ -66,6 +69,36 @@ func newTestServerWrapper() *serverWrapper {
 		feedParser: &gofeedFake{},
 	}
 	return sw
+}
+
+func TestConvertFeedItemDatetime(t *testing.T) {
+	nowProto, _ := ptypes.TimestampProto(time.Now())
+	then := time.Unix(0,0)
+	thenProto, _ := ptypes.TimestampProto(then)
+	tests := []struct {
+		in   *gofeed.Item
+		want *tspb.Timestamp
+	}{
+		{
+			in:   &gofeed.Item{
+				PublishedParsed: &then,
+			},
+			want: thenProto,
+		},
+		{
+			in:   &gofeed.Item{},
+			want: nowProto,
+		},
+	}
+
+	sw := newTestServerWrapper()
+	for _, tcase := range tests {
+		convertedTime, _ := sw.convertFeedItemDatetime(tcase.in)
+		if convertedTime.GetSeconds() != tcase.want.GetSeconds() {
+			t.Fatalf("convertFeedItemDatetime(%v), wanted: %v, got: %v",
+				tcase.in, tcase.want, convertedTime)
+		}
+	}
 }
 
 func TestConvertRssUrlToHandle(t *testing.T) {
