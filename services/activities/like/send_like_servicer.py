@@ -37,8 +37,7 @@ class SendLikeServicer:
     def _create_actor_object(self, liker_handle):
         return {
             'type': 'Person',
-            'host': self._hostname,
-            'handle': liker_handle,
+            'id': self._activ_util.build_actor(liker_handle, self._hostname),
         }
 
     def _get_author(self, article):

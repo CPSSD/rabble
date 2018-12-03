@@ -61,7 +61,8 @@ class SendLikeServicerTest(unittest.TestCase):
         self.assertEqual(resp.result_type, like_pb2.LikeResponse.OK)
         # Check that the request sent makes sense.
         self.assertEqual(self.data["type"], "Like")
-        self.assertEqual(self.data["actor"]["handle"], "farmlover73")
+        self.assertEqual(self.data["actor"]["type"], "Person")
+        self.assertIn("localhost/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
         self.assertIn("rabble.mojang.com", self.data["object"])
         self.assertIn("@minecraft4ever", self.data["object"])
