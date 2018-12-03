@@ -24,6 +24,7 @@ message NewForeignArticle {
   string recipient = 4;
   google.protobuf.Timestamp published = 5;
   string md_body = 6;
+  string id = 7;
 }
 
 message CreateResponse {

@@ -79,6 +79,7 @@ type createActivityObjectStruct struct {
 	AttributedTo string   `json:"attributedTo"`
 	Recipient    []string `json:"to"`
 	Type         string   `json:"type"`
+	Id           string   `json:"id"`
 }
 
 type createActivityStruct struct {
@@ -128,6 +129,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			Published:    protoTimestamp,
 			Recipient:    recipient,
 			Title:        t.Object.Name,
+			Id:           t.Object.Id,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()

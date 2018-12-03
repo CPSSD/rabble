@@ -30,7 +30,8 @@ class NewArticleServicer:
             title=req.title,
             body=html_body,
             md_body=req.body,
-            creation_datetime=req.creation_datetime
+            creation_datetime=req.creation_datetime,
+            ap_id=req.ap_id,
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,

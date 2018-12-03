@@ -67,7 +67,8 @@ class ReceiveCreateServicer:
             title=req.title,
             body=req.content,
             creation_datetime=req.published,
-            foreign=True
+            foreign=True,
+            ap_id=req.id,
         )
         article_resp = self._article_stub.CreateNewArticle(na)
         if article_resp.result_type == article_pb2.NewArticleResponse.ERROR:
