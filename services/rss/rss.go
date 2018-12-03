@@ -56,11 +56,11 @@ func (s *serverWrapper) convertRssUrlToHandle(url string) string {
 	return strings.Replace(url, "/", "-", -1)
 }
 
-func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, it *gofeed.Item, cTime *tspb.Timestamp) {
+func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, title string, content string, cTime *tspb.Timestamp) {
 	na := &pb.NewArticle{
 		Author:           author,
-		Title:            it.Title,
-		Body:             it.Content,
+		Title:            title,
+		Body:             content,
 		CreationDatetime: cTime,
 		Foreign:          false,
 	}
@@ -80,7 +80,7 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 		if creationErr != nil {
 			continue
 		}
-		s.sendCreateArticle(ctx, author, r, creationTime)
+		s.sendCreateArticle(ctx, author, r.Title, r.Content, creationTime)
 	}
 }
 
@@ -240,7 +240,7 @@ func main() {
 	scraperTicker := time.NewTicker(scraperInterval)
 
 	for t := range scraperTicker.C {
-		log.Print("Starting rss on port: 1973, time: ", t.String())
+		log.Print("Starting scraper, time: ", t.String())
 		serverWrapper.runScraper()
 	}
 

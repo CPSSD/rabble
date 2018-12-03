@@ -8,6 +8,7 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -21,15 +22,18 @@ func (s *serverWrapper) getAllRssUsers(ctx context.Context) ([]*pb.UsersEntry, e
 	urFind := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND_NOT,
 		Match: &pb.UsersEntry{
-			Rss:    "",
+			Rss: "unused",
 		},
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)
 	if findErr != nil {
 		return nil, fmt.Errorf(allRssUserErrorFmt, findErr)
 	}
-	if findResp.ResultType != pb.UsersResponse_OK || len(findResp.Results) < 1 {
+	if findResp.ResultType != pb.UsersResponse_OK {
 		return nil, fmt.Errorf(allRssUserErrorFmt, findResp.Error)
+	}
+	if len(findResp.Results) < 1 {
+		return nil, fmt.Errorf("No RSS users in db\n")
 	}
 	return findResp.Results, nil
 }
@@ -82,14 +86,39 @@ func (s *serverWrapper) runScraper() {
 			}
 
 			// Convert feed to post items
-			//postFormArray :=
-			s.convertFeedToPost(feed, u.GlobalId)
-			log.Println(feed.Title)
-			// TODO (sailslick) check if post items are in db/out of date
+			postFormArray := s.convertFeedToPost(feed, u.GlobalId)
+			// Get all the rss feed user's posts
+      findReq := &pb.PostsRequest{
+    		RequestType: pb.PostsRequest_FIND,
+    		Match: &pb.PostsEntry{
+    			AuthorId: u.GlobalId,
+    		},
+    	}
+    	findResp, findErr := s.db.Posts(ctx, findReq)
+    	if findErr != nil {
+        log.Printf("ERROR: db all post find returned error: %v\n", findErr.Error())
+    		return
+    	}
+    	if findResp.ResultType != pb.PostsResponse_OK || len(findResp.Results) < 1 {
+        log.Printf("ERROR: db all post find returned error: %v\n", findResp.Error)
+    		return
+    	}
 
-			// TODO (sailslick) if out of date update
-
-			// TODO (sailslick) if not in db send create article request
+			// TODO (sailslick) if posts have been updated update
+      // note latest timestamp of these Posts
+      latestTimestamp, _ := ptypes.TimestampProto(time.Unix(0,0))
+      for _, post := range findResp.Results {
+        if latestTimestamp.GetSeconds() < post.CreationDatetime.GetSeconds() {
+					latestTimestamp = post.CreationDatetime
+        }
+      }
+			// use the latest timestamp from last to get all new posts
+      for _, p := range postFormArray {
+        if latestTimestamp.GetSeconds() < p.CreationDatetime.GetSeconds() {
+					log.Printf("Making new article, title: %s\n", p.Title)
+					s.sendCreateArticle(ctx, u.Handle, p.Title, p.Body, p.CreationDatetime)
+        }
+      }
 
 			<-guard
 			wg.Done()
