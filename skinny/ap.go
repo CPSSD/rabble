@@ -186,9 +186,8 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 }
 
 type likeActorStruct struct {
-	Handle string `json:"handle"`
-	Host   string `json:"host"`
-	Type   string `json:"type"`
+	Id   string `json:"id"`
+	Type string `json:"type"`
 }
 
 type likeActivityStruct struct {
@@ -218,8 +217,7 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 
 		f := &pb.ReceivedLikeDetails{
 			LikedObject: t.Object,
-			LikerHandle: t.Actor.Handle,
-			LikerHost: t.Actor.Host,
+			LikerId: t.Actor.Id,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)

@@ -21,8 +21,7 @@ message LikeResponse {
 
 message ReceivedLikeDetails {
   string liked_object = 1;
-  string liker_handle = 2;
-  string liker_host = 3;
+  string liker_id = 2;
 }
 
 
