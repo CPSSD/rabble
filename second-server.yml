@@ -25,6 +25,7 @@ services:
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service2
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
+      - APPROVER_SERVICE_HOST=approver_service
   feed_service:
     build:
       context: ./services/feed
