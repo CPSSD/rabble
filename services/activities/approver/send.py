@@ -9,7 +9,7 @@ class SendApprovalServicer:
         actor = self._activ_util.build_actor
         followed = actor(req.follow.followed.handle, req.follow.followed.host)
         follower = actor(req.follow.follower.handle, req.follow.follower.host)
-        activity_type = 'accept' if req.accept else 'reject'
+        activity_type = 'Accept' if req.accept else 'Reject'
 
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
