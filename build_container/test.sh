@@ -33,3 +33,9 @@ echo "Running python unit tests for activities/follow"
 cd build_out/activities/follow
 python3 -B -m unittest discover
 cd ../../../
+
+echo "Running python unit tests for activities/like"
+cd build_out/activities/like
+python3 -B -m unittest discover
+cd ../../../
+

@@ -190,6 +190,7 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
+		log.Println("Per Article page called")
 
 		v := mux.Vars(r)
 		username, uOk := v["username"]
@@ -303,7 +304,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		defer cancel()
 		resp, err := s.follows.SendFollowRequest(ctx, &j)
 		if err != nil {
-			log.Fatalf("Could not send follow request: %#v", err)
+			log.Printf("Could not send follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			e := &pb.FollowResponse{
 				ResultType: pb.FollowResponse_ERROR,
@@ -359,11 +360,11 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		// handle of the logged in user.
 		j.Follower = handle
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		resp, err := s.follows.RssFollowRequest(ctx, &j)
 		if err != nil {
-			log.Fatalf("Could not send rss follow request: %#v", err)
+			log.Printf("Could not send rss follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			e := &pb.FollowResponse{
 				ResultType: pb.FollowResponse_ERROR,

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+message LikeDetails {
+  int64 article_id = 1;
+  string liker_handle = 3;
+}
+
+message LikeResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  // Should only be set if result_type is not OK
+  string error = 2;
+}
+
+message ReceivedLikeDetails {
+  // TODO(CianLR): This
+}
+
+
+// Service for sending and receiving server-to-server like activities.
+service S2SLike {
+  rpc SendLikeActivity(LikeDetails) returns (LikeResponse);
+  rpc ReceiveLikeActivity(ReceivedLikeDetails) returns (LikeResponse);
+}

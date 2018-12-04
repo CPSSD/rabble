@@ -38,12 +38,12 @@ export function PostsAPIPromise(url: string) {
 }
 
 export function GetUsersPosts(username: string) {
-  const url = `${perUserApiURL}${username}`;
+  const url = `${perUserApiURL}${encodeURIComponent(username)}`;
   return PostsAPIPromise(url);
 }
 
 export function GetSinglePost(username: string, id: string) {
-  const url = `${perUserApiURL}${username}/${id}`;
+  const url = `${perUserApiURL}${encodeURIComponent(username)}/${id}`;
   return PostsAPIPromise(url);
 }
 
