@@ -7,6 +7,7 @@ import time
 import os
 import sys
 
+from utils.activities import ActivitiesUtil
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import ApproverServicer
@@ -30,6 +31,7 @@ def get_db_channel_address(logger):
 def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
+    activ_util = ActivitiesUtil(logger)
 
     logger.info("Creating db connection")
 
@@ -38,7 +40,7 @@ def main():
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         approver_pb2_grpc.add_ApproverServicer_to_server(
-            ApproverServicer(logger, db_stub),
+            ApproverServicer(logger, db_stub, activ_util),
             server,
         )
         
