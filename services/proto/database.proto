@@ -135,6 +135,7 @@ message DbFollowRequest {
    *   - match will be used to find an existing follow entry
    *   - The entry follow state will replace the current follow state
    * We do not support modifying any paremater other than state for follows.
+   * No response is returned.
    */
   Follow match = 3;
 }
