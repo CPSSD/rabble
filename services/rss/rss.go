@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -16,6 +17,11 @@ import (
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/mmcdole/gofeed"
 	"google.golang.org/grpc"
+)
+
+const (
+	findUserErrorFmt = "ERROR: User(%v) find failed. message: %v\n"
+	findUserPostsErrorFmt = "ERROR: User id(%v) posts find failed. message: %v\n"
 )
 
 type Parser interface {
@@ -84,6 +90,46 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 	}
 }
 
+func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEntry, error) {
+	urFind := &pb.UsersRequest{
+		RequestType: pb.UsersRequest_FIND,
+		Match: &pb.UsersEntry{
+			Handle: handle,
+		},
+	}
+	findResp, findErr := s.db.Users(ctx, urFind)
+	if findErr != nil {
+		return nil, fmt.Errorf(findUserErrorFmt, handle, findErr)
+	}
+	if findResp.ResultType != pb.UsersResponse_OK {
+		return nil, fmt.Errorf(findUserErrorFmt, handle, findResp.Error)
+	}
+	if len(findResp.Results) < 1 {
+		return nil, fmt.Errorf("No users in db in handle: %v\n", handle)
+	}
+	if len(findResp.Results) > 1 {
+		return nil, fmt.Errorf("Multiple users with handle: %v in db\n", handle)
+	}
+	return findResp.Results[0], nil
+}
+
+func (s *serverWrapper) GetUserPosts(ctx context.Context, authorId int64) ([]*pb.PostsEntry, error) {
+	findReq := &pb.PostsRequest{
+		RequestType: pb.PostsRequest_FIND,
+		Match: &pb.PostsEntry{
+			AuthorId: authorId,
+		},
+	}
+	findResp, findErr := s.db.Posts(ctx, findReq)
+	if findErr != nil {
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findErr)
+	}
+	if findResp.ResultType != pb.PostsResponse_OK {
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findResp.Error)
+	}
+	return findResp.Results, nil
+}
+
 func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 	feed, parseErr := s.feedParser.ParseURL(url)
 
@@ -94,10 +140,39 @@ func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 	return feed, nil
 }
 
-func (s *serverWrapper) NewRssFeedItem(ctx context.Context, r *pb.NewRssArticle) (*pb.RssResponse, error) {
-	log.Printf("Got a new article to add to rss with title: %s\n", r.Title)
-	// TODO(sailslick) Add article to user's rss feed
+func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.RssResponse, error) {
+	log.Printf("Got a per user request for user: %s\n", r.Handle)
 	rssr := &pb.RssResponse{}
+	// TODO(sailslick) Get user details {Only local users?}
+	ue, userErr := s.GetUser(ctx, r.Handle)
+	if userErr != nil {
+		log.Printf("PerUserRss user find got: %v\n", userErr.Error())
+		rssr.ResultType = pb.RssResponse_ERROR
+		rssr.Message = userErr.Error()
+		return rssr, nil
+	}
+
+	// TODO(sailslick) Get user posts
+	posts, postFindErr := s.GetUserPosts(ctx, ue.GlobalId)
+	if postFindErr != nil {
+		log.Printf("PerUserRss posts find got: %v\n", postFindErr.Error())
+		rssr.ResultType = pb.RssResponse_ERROR
+		rssr.Message = postFindErr.Error()
+		return rssr, nil
+	}
+
+	// TODO(sailslick) Take most recent 10 posts
+	sort.SliceStable(posts, func(i int, j int) bool {
+		return posts[i].CreationDatetime.GetSeconds() < posts[j].CreationDatetime.GetSeconds()
+	})
+	topTen := posts[:10]
+
+	// TODO(sailslick) Construct rss header
+
+	// TODO(sailslick) Convert each post to rss entry
+
+	// TODO(sailslick) Add all rss entrys into body
+
 	rssr.ResultType = pb.RssResponse_ACCEPTED
 
 	return rssr, nil
