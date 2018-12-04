@@ -102,7 +102,7 @@ class FollowDatabaseServicer:
             resp.error = "bad parameters: please set both follower and followed"
             return
 
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
         if not filter_clause:
             resp.result_type = database_pb2.DbFollowResponse.ERROR
             resp.error = "could not create filter for UPDATE"
@@ -112,15 +112,17 @@ class FollowDatabaseServicer:
             # since we only update state we can hardcode that paramater
             query = 'UPDATE follows SET state = ? WHERE ' + filter_clause
             valstr = str(req.entry.state) + ", " + ', '.join(str(v) for v in values)
-            res = self._db.execute(query, req.entry.state, *values)
+            count = self._db.execute_count(query, req.entry.state, *values)
         except sqlite3.Error as e:
             self._logger.warning('Got error writing to DB: ' + str(e))
             resp.result_type = database_pb2.DbFollowResponse.ERROR
             resp.error = str(e)
             return
 
+        if count != 1:
+            err = 'UPDATE affected {} rows, expected 1'.format(count)
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            self._logger.wanring(err)
+            resp.error = err
+
         resp.result_type = database_pb2.DbFollowResponse.OK
-        for tup in res:
-            if not self._db_tuple_to_entry(tup, resp.results.add()):
-                del resp.results[-1]
-        self._logger.debug('%d results of follower query.', len(resp.results))
