@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -17,11 +16,6 @@ import (
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/mmcdole/gofeed"
 	"google.golang.org/grpc"
-)
-
-const (
-	scraperInterval = time.Minute * 15
-	goRoutineCount  = 10
 )
 
 type Parser interface {
@@ -37,12 +31,12 @@ type serverWrapper struct {
 	server     *grpc.Server
 }
 
-// convertFeedDatetime converts gofeed.Item.Published type to protobud timestamp
-func (s *serverWrapper) convertFeedDatetime(ctx context.Context, gi *gofeed.Item) (*tspb.Timestamp, error) {
-	parsedTimestamp := *gi.PublishedParsed
-	if (parsedTimestamp == time.Time{}) {
+// convertFeedItemDatetime converts gofeed.Item.Published type to protobuf timestamp
+func (s *serverWrapper) convertFeedItemDatetime(gi *gofeed.Item) (*tspb.Timestamp, error) {
+	parsedTimestamp := time.Now()
+	if (gi.PublishedParsed != &time.Time{} && gi.PublishedParsed != nil) {
 		log.Printf("No timestamp for feed: %s\n", gi.Link)
-		parsedTimestamp = time.Now()
+		parsedTimestamp = *gi.PublishedParsed
 	}
 
 	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedTimestamp)
@@ -62,49 +56,31 @@ func (s *serverWrapper) convertRssUrlToHandle(url string) string {
 	return strings.Replace(url, "/", "-", -1)
 }
 
-// convertFeedToPost converts gofeed.Feed types to post types.
-func (s *serverWrapper) convertFeedToPost(ctx context.Context, gf *gofeed.Feed, authorId int64) []*pb.PostsEntry {
-	postArray := []*pb.PostsEntry{}
-
-	for _, r := range gf.Items {
-		// convert time to creation_datetime
-		creationTime, creationErr := s.convertFeedDatetime(ctx, r)
-		if creationErr != nil {
-			continue
-		}
-
-		postArray = append(postArray, &pb.PostsEntry{
-			AuthorId:         authorId,
-			Title:            r.Title,
-			Body:             r.Content,
-			CreationDatetime: creationTime,
-		})
+func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, title string, content string, cTime *tspb.Timestamp) {
+	na := &pb.NewArticle{
+		Author:           author,
+		Title:            title,
+		Body:             content,
+		CreationDatetime: cTime,
+		Foreign:          false,
 	}
-	return postArray
+	newArtResp, newArtErr := s.art.CreateNewArticle(ctx, na)
+	if newArtErr != nil {
+		log.Printf("ERROR: Could not create new article: %v", newArtErr)
+	} else if newArtResp.ResultType != pb.NewArticleResponse_OK {
+		log.Printf("ERROR: Could not create new article message: %v", newArtResp.Error)
+	}
 }
 
 // createArticlesFromFeed converts gofeed.Feed types to article type.
 func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, author string) {
 	for _, r := range gf.Items {
 		// convert time to creation_datetime
-		creationTime, creationErr := s.convertFeedDatetime(ctx, r)
+		creationTime, creationErr := s.convertFeedItemDatetime(r)
 		if creationErr != nil {
 			continue
 		}
-
-		na := &pb.NewArticle{
-			Author:           author,
-			Title:            r.Title,
-			Body:             r.Content,
-			CreationDatetime: creationTime,
-			Foreign:          false,
-		}
-		newArtResp, newArtErr := s.art.CreateNewArticle(ctx, na)
-		if newArtErr != nil {
-			log.Printf("Could not create new article: %v", newArtErr)
-		} else if newArtResp.ResultType != pb.NewArticleResponse_OK {
-			log.Printf("Could not create new article message: %v", newArtResp.Error)
-		}
+		s.sendCreateArticle(ctx, author, r.Title, r.Content, creationTime)
 	}
 }
 
@@ -120,7 +96,7 @@ func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 
 func (s *serverWrapper) NewRssFeedItem(ctx context.Context, r *pb.NewRssArticle) (*pb.RssResponse, error) {
 	log.Printf("Got a new article to add to rss with title: %s\n", r.Title)
-
+	// TODO(sailslick) Add article to user's rss feed
 	rssr := &pb.RssResponse{}
 	rssr.ResultType = pb.RssResponse_ACCEPTED
 
@@ -199,37 +175,6 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	return rssr, nil
 }
 
-func (s *serverWrapper) runScraper() {
-	// TODO (sailslick) get all rss users from db instead of steady list
-	rssUrls := []string{"http://news.ycombinator.com/rss", "https://www.rte.ie/news/rss/news-headlines.xml"}
-
-	guard := make(chan struct{}, goRoutineCount)
-	var wg sync.WaitGroup
-
-	for _, url := range rssUrls {
-		guard <- struct{}{}
-		wg.Add(1)
-		go func(u string) {
-			feed, rssGetErr := s.GetRssFeed(u)
-
-			if rssGetErr != nil {
-				log.Println(rssGetErr)
-				<-guard
-				wg.Done()
-				return
-			}
-
-			// TODO (sailslick) convert feed to user items and update them
-			log.Println(feed.Title)
-
-			<-guard
-			wg.Done()
-		}(url)
-	}
-
-	wg.Wait()
-}
-
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	host := os.Getenv("DB_SERVICE_HOST")
 	if host == "" {
@@ -295,7 +240,7 @@ func main() {
 	scraperTicker := time.NewTicker(scraperInterval)
 
 	for t := range scraperTicker.C {
-		log.Print("Starting rss on port: 1973, time: ", t.String())
+		log.Print("Starting scraper, time: ", t.String())
 		serverWrapper.runScraper()
 	}
 

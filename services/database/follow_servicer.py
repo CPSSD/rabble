@@ -61,7 +61,7 @@ class FollowDatabaseServicer:
 
     def _follow_handle_find(self, req, resp):
         default = [("state", database_pb2.Follow.ACTIVE)]
-        filter_clause, values = util.entry_to_filter(req.match, default)
+        filter_clause, values = util.equivalent_filter(req.match, default)
         try:
             if not filter_clause:
                 # Since we set a default match, this should never happen.

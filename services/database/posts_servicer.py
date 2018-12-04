@@ -62,7 +62,7 @@ class PostsDatabaseServicer:
         return True
 
     def _handle_find(self, req, resp):
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('SELECT * FROM posts')
@@ -80,7 +80,7 @@ class PostsDatabaseServicer:
                 del resp.results[-1]
 
     def _handle_delete(self, req, resp):
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('DELETE FROM posts')
