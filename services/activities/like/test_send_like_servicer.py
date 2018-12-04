@@ -9,8 +9,8 @@ from utils.users import UsersUtil
 
 
 class MockDB:
-    def Posts(*args):
-        return database_pb2.PostsResponse(
+    def __init__(self):
+        self.posts_response = database_pb2.PostsResponse(
             result_type=database_pb2.PostsResponse.OK,
             results=[
                 database_pb2.PostsEntry(
@@ -18,12 +18,11 @@ class MockDB:
                     author_id=456,
                     title="Minecraft Farming 101",
                     body="Don't bother",
+                    ap_id="http://rabble.mojang.com/@minecraft4ever/666",
                 )
             ]
         )
-
-    def Users(*args):
-        return database_pb2.UsersResponse(
+        self.users_response = database_pb2.UsersResponse(
             result_type=database_pb2.UsersResponse.OK,
             results=[
                 database_pb2.UsersEntry(
@@ -34,6 +33,12 @@ class MockDB:
                 )
             ],
         )
+
+    def Posts(self, *args):
+        return self.posts_response
+
+    def Users(self, *args):
+        return self.users_response
 
 
 class SendLikeServicerTest(unittest.TestCase):
@@ -64,13 +69,34 @@ class SendLikeServicerTest(unittest.TestCase):
         self.assertEqual(self.data["actor"]["type"], "Person")
         self.assertIn("localhost/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
-        self.assertIn("rabble.mojang.com", self.data["object"])
-        self.assertIn("@minecraft4ever", self.data["object"])
-        # TODO(CianLR): Check that the article ID is in the object.
+        self.assertEqual("http://rabble.mojang.com/@minecraft4ever/666",
+                         self.data["object"])
         # Check the request was sent to a valid URL.
         self.assertIn("rabble.mojang.com", self.url)
         self.assertIn("@minecraft4ever", self.url)
-    
+
+    def test_SendLikeActivityLocal(self):
+        req = like_pb2.LikeDetails(
+            article_id=123,
+            liker_handle="farmlover73",
+        )
+        # Simulate local user.
+        self.db.posts_response.results[0].ClearField('ap_id')
+        self.db.users_response.results[0].ClearField('host')
+        resp = self.servicer.SendLikeActivity(req, None)
+        self.assertEqual(resp.result_type, like_pb2.LikeResponse.OK)
+        # Check that the request sent makes sense.
+        self.assertEqual(self.data["type"], "Like")
+        self.assertEqual(self.data["actor"]["type"], "Person")
+        self.assertIn("localhost/@farmlover73", self.data["actor"]["id"])
+        # Check the object is the article URL.
+        self.assertEqual("http://localhost/@minecraft4ever/123",
+                         self.data["object"])
+        # TODO(CianLR): Check that the article ID is in the object.
+        # Check the request was sent to a valid URL.
+        self.assertIn("localhost", self.url)
+        self.assertIn("@minecraft4ever", self.url)
+
     def test_SendLikeActivitySendingError(self):
         req = like_pb2.LikeDetails(
             article_id=123,

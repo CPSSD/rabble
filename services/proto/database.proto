@@ -12,6 +12,7 @@ message PostsEntry {
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
   string md_body = 6;
+  string ap_id = 7;
 }
 
 message PostsRequest {
@@ -47,6 +48,9 @@ message PostsResponse {
   // If the result_type is OK, and the query returns some entries, then those
   // entries are provided here.
   repeated PostsEntry results = 3;
+
+  // If the request was an INSERT this is the global_id of the inserted post.
+  int64 global_id = 4;
 }
 
 message UsersEntry {

@@ -28,8 +28,10 @@ class SendLikeServicer:
         }
 
     def _create_article_object(self, author, article):
-        # TODO(CianLR): Replace 123 with foreign article ID.
-        s = f'{author.host}/@{author.handle}/123'
+        if article.ap_id:
+            return article.ap_id
+        # Local article, build ID manually
+        s = f'{author.host}/@{author.handle}/{article.global_id}'
         if not s.startswith('http'):
             s = 'http://' + s
         return s
@@ -45,7 +47,7 @@ class SendLikeServicer:
             global_id=article.author_id)
         if user is None:
             return None
-        if user.host is None:
+        if not user.host:
             # The author must be local.
             user.host = self._hostname
         return user

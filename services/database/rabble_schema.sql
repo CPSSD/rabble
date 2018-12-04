@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS posts (
   title             text    NOT NULL,
   body              text    NOT NULL,
   creation_datetime integer NOT NULL,
-  md_body           text    NOT NULL
+  md_body           text    NOT NULL,
+  ap_id             text    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (

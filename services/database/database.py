@@ -6,6 +6,7 @@ class DB:
 
     def __init__(self, filename):
         self.filename = filename
+        self.cursor = None
 
     def _get_cursor(self):
         # Connections and cursors can't be shared between threads so they're
@@ -15,12 +16,15 @@ class DB:
         conn = sqlite3.connect(self.filename)
         return conn.cursor()
 
-    def execute(self, statement, *params):
-        cursor = self._get_cursor()
-        cursor.execute(statement, params)
-        res = cursor.fetchall()
-        cursor.connection.commit()
-        cursor.close()
+    def execute(self, statement, *params, commit=True):
+        if self.cursor is None:
+            self.cursor = self._get_cursor()
+        self.cursor.execute(statement, params)
+        res = self.cursor.fetchall()
+        if commit:
+            self.cursor.connection.commit()
+            self.cursor.close()
+            self.cursor = None
         return res
 
     def execute_script(self, script):

@@ -23,14 +23,15 @@ class NewArticleServicer:
                                                    host=None)
         if author is None:
             self._logger.error('Could not find user in db: ' + str(req.author))
-            return database_pb2.PostsResponse.error
+            return database_pb2.PostsResponse.error, None
         html_body = self.get_html_body(req.body)
         pe = database_pb2.PostsEntry(
             author_id=author.global_id,
             title=req.title,
             body=html_body,
             md_body=req.body,
-            creation_datetime=req.creation_datetime
+            creation_datetime=req.creation_datetime,
+            ap_id=req.ap_id,
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,
@@ -40,16 +41,17 @@ class NewArticleServicer:
         if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
             self._logger.error('Could not insert into db: %s', posts_resp.error)
 
-        return posts_resp.result_type
+        return posts_resp.result_type, posts_resp.global_id
 
-    def send_create_activity_request(self, req):
+    def send_create_activity_request(self, req, global_id):
         html_body = self.get_html_body(req.body)
         ad = create_pb2.ArticleDetails(
             author=req.author,
             title=req.title,
             body=html_body,
             md_body=req.body,
-            creation_datetime=req.creation_datetime
+            creation_datetime=req.creation_datetime,
+            global_id=global_id,
         )
         create_resp = self._create_stub.SendCreate(ad)
 
@@ -57,7 +59,7 @@ class NewArticleServicer:
 
     def CreateNewArticle(self, req, context):
         self._logger.info('Recieved a new article.')
-        success = self.send_insert_request(req)
+        success, global_id = self.send_insert_request(req)
 
         resp = article_pb2.NewArticleResponse()
         if success == database_pb2.PostsResponse.OK:
@@ -66,7 +68,8 @@ class NewArticleServicer:
             if not req.foreign:
                 # TODO (sailslick) persist create activities
                 # or add to queueing service
-                create_success = self.send_create_activity_request(req)
+                create_success = self.send_create_activity_request(
+                    req, global_id)
                 if create_success == create_pb2.CreateResponse.ERROR:
                     self._logger.error('Could not send create Activity')
         else:
