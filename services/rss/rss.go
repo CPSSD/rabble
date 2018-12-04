@@ -31,7 +31,7 @@ type serverWrapper struct {
 	server     *grpc.Server
 }
 
-// convertFeedItemDatetime converts gofeed.Item.Published type to protobud timestamp
+// convertFeedItemDatetime converts gofeed.Item.Published type to protobuf timestamp
 func (s *serverWrapper) convertFeedItemDatetime(gi *gofeed.Item) (*tspb.Timestamp, error) {
 	parsedTimestamp := time.Now()
 	if (gi.PublishedParsed != &time.Time{} && gi.PublishedParsed != nil) {
