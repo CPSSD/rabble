@@ -48,11 +48,14 @@ func (s *serverWrapper) convertFeedToPost(gf *gofeed.Feed, authorId int64) []*pb
 		if creationErr != nil {
 			continue
 		}
-
+		content := r.Content
+		if content == "" {
+			content = r.Description
+		}
 		postArray = append(postArray, &pb.PostsEntry{
 			AuthorId:         authorId,
 			Title:            r.Title,
-			Body:             r.Content,
+			Body:             content,
 			CreationDatetime: creationTime,
 		})
 	}

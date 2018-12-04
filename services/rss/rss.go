@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"sort"
 	"strings"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -90,7 +91,11 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 		if creationErr != nil {
 			continue
 		}
-		s.sendCreateArticle(ctx, author, r.Title, r.Content, creationTime)
+		content := r.Content
+		if content == "" {
+			content = r.Description
+		}
+		s.sendCreateArticle(ctx, author, r.Title, content, creationTime)
 	}
 }
 
@@ -100,6 +105,16 @@ func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) 
 	return "<title>Rabble blog for " + ue.Handle + "</title>\n" +
 		"<description>" + ue.Bio + "</description>\n" +
 		"<link>" + link + "</link>\n" +
+		"<pubDate>" + datetime + "</pubDate>\n"
+}
+
+func (s *serverWrapper) createRssItem(ctx context.Context, ue *pb.UsersEntry, pe *pb.PostsEntry) string {
+	link := s.hostname + "/c2s/@" + ue.Handle + "/" + strconv.FormatInt(pe.GlobalId, 10)
+	timestamp, _ := ptypes.Timestamp(pe.CreationDatetime)
+	datetime := timestamp.Format(rfc2822TimeParseFormat)
+	return "<title>" + pe.Title + "</title>\n" +
+		"<link>" + link + "</link>\n" +
+		"<description>" + pe.Body + "</description>\n" +
 		"<pubDate>" + datetime + "</pubDate>\n"
 }
 
@@ -174,21 +189,25 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 		return rssr, nil
 	}
 
+	// TODO(sailslick) Construct rss header
+	rssHeader := s.createRssHeader(ctx, ue)
+	rssFeed := rssDeclare + rssHeader
+
 	// TODO(sailslick) Take most recent 10 posts
 	sort.SliceStable(posts, func(i int, j int) bool {
 		return posts[i].CreationDatetime.GetSeconds() < posts[j].CreationDatetime.GetSeconds()
 	})
 	topTen := posts[:10]
 
-	// TODO(sailslick) Construct rss header
-	rssHeader := s.createRssHeader(ctx, ue)
-
-	rssFeed := rssDeclare + rssHeader
+	var rssFeedItem string
 	// TODO(sailslick) Convert each post to rss entry
+	for _, post := range topTen {
 		// TODO(sailslick) Add all rss entrys into body
+		rssFeedItem = s.createRssItem(ctx, ue, post)
+		rssFeed += rssFeedItem
+	}
 
 	rssFeed += rssDeclareEnd
-
 	rssr.ResultType = pb.RssResponse_ACCEPTED
 	rssr.Feed = rssFeed
 

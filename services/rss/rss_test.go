@@ -200,6 +200,32 @@ func TestConvertFeedToPost(t *testing.T) {
 				&pb.PostsEntry{},
 			},
 		},
+		{
+			inF: &gofeed.Feed{
+				Items: []*gofeed.Item{
+					&gofeed.Item{
+						PublishedParsed: &then,
+						Title:           fakeTitle,
+						Description:     fakeContent,
+					},
+					&gofeed.Item{
+						PublishedParsed: &then,
+						Title:           fakeTitle,
+						Content:         fakeContent,
+					},
+				},
+			},
+			inAId: 2,
+			want: []*pb.PostsEntry{
+				&pb.PostsEntry{
+					AuthorId:         2,
+					Title:            fakeTitle,
+					Body:             fakeContent,
+					CreationDatetime: thenProto,
+				},
+				&pb.PostsEntry{},
+			},
+		},
 	}
 
 	sw := newTestServerWrapper()
