@@ -20,8 +20,11 @@ import (
 )
 
 const (
-	findUserErrorFmt = "ERROR: User(%v) find failed. message: %v\n"
-	findUserPostsErrorFmt = "ERROR: User id(%v) posts find failed. message: %v\n"
+	findUserErrorFmt       = "ERROR: User(%v) find failed. message: %v\n"
+	findUserPostsErrorFmt  = "ERROR: User id(%v) posts find failed. message: %v\n"
+	rfc2822TimeParseFormat = "Mon Jan 02 15:04:05 -0700 2006"
+	rssDeclare             = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
+	rssDeclareEnd          = `</channel></rss>`
 )
 
 type Parser interface {
@@ -35,6 +38,7 @@ type serverWrapper struct {
 	art        pb.ArticleClient
 	feedParser Parser
 	server     *grpc.Server
+	hostname   string
 }
 
 // convertFeedItemDatetime converts gofeed.Item.Published type to protobuf timestamp
@@ -88,6 +92,15 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 		}
 		s.sendCreateArticle(ctx, author, r.Title, r.Content, creationTime)
 	}
+}
+
+func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) string {
+	link := s.hostname + "/c2s/@" + ue.Handle
+	datetime := time.Now().Format(rfc2822TimeParseFormat)
+	return "<title>Rabble blog for " + ue.Handle + "</title>\n" +
+		"<description>" + ue.Bio + "</description>\n" +
+		"<link>" + link + "</link>\n" +
+		"<pubDate>" + datetime + "</pubDate>\n"
 }
 
 func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEntry, error) {
@@ -168,12 +181,16 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 	topTen := posts[:10]
 
 	// TODO(sailslick) Construct rss header
+	rssHeader := s.createRssHeader(ctx, ue)
 
+	rssFeed := rssDeclare + rssHeader
 	// TODO(sailslick) Convert each post to rss entry
+		// TODO(sailslick) Add all rss entrys into body
 
-	// TODO(sailslick) Add all rss entrys into body
+	rssFeed += rssDeclareEnd
 
 	rssr.ResultType = pb.RssResponse_ACCEPTED
+	rssr.Feed = rssFeed
 
 	return rssr, nil
 }
@@ -285,6 +302,10 @@ func buildServerWrapper() *serverWrapper {
 	artConn, artClient := createArticleClient()
 	fp := gofeed.NewParser()
 	grpcSrv := grpc.NewServer()
+	hostname := os.Getenv("HOST_NAME")
+	if hostname == "" {
+		log.Fatal("HOST_NAME env var not set for rss service.")
+	}
 
 	return &serverWrapper{
 		dbConn:     dbConn,
@@ -293,6 +314,7 @@ func buildServerWrapper() *serverWrapper {
 		art:        artClient,
 		feedParser: fp,
 		server:     grpcSrv,
+		hostname:   hostname,
 	}
 }
 

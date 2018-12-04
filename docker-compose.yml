@@ -168,3 +168,4 @@ services:
       - DB_SERVICE_HOST=database_service
       - ARTICLE_SERVICE_HOST=article_service
       - MDC_SERVICE_HOST=markdown_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
