@@ -23,7 +23,7 @@ import (
 const (
 	findUserErrorFmt       = "ERROR: User(%v) find failed. message: %v\n"
 	findUserPostsErrorFmt  = "ERROR: User id(%v) posts find failed. message: %v\n"
-	rfc2822TimeParseFormat = "Mon Jan 02 15:04:05 -0700 2006"
+	rssTimeParseFormat     = "Mon, 02 Jan 2006 15:04:05 -0700"
 	rssDeclare             = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
 	rssDeclareEnd          = `</channel></rss>`
 )
@@ -101,7 +101,7 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 
 func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) string {
 	link := s.hostname + "/c2s/@" + ue.Handle
-	datetime := time.Now().Format(rfc2822TimeParseFormat)
+	datetime := time.Now().Format(rssTimeParseFormat)
 	return "<title>Rabble blog for " + ue.Handle + "</title>\n" +
 		"<description>" + ue.Bio + "</description>\n" +
 		"<link>" + link + "</link>\n" +
@@ -111,11 +111,14 @@ func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) 
 func (s *serverWrapper) createRssItem(ctx context.Context, ue *pb.UsersEntry, pe *pb.PostsEntry) string {
 	link := s.hostname + "/c2s/@" + ue.Handle + "/" + strconv.FormatInt(pe.GlobalId, 10)
 	timestamp, _ := ptypes.Timestamp(pe.CreationDatetime)
-	datetime := timestamp.Format(rfc2822TimeParseFormat)
-	return "<title>" + pe.Title + "</title>\n" +
+	datetime := timestamp.Format(rssTimeParseFormat)
+	return "<item>\n" +
+		"<title>" + pe.Title + "</title>\n" +
 		"<link>" + link + "</link>\n" +
 		"<description>" + pe.Body + "</description>\n" +
-		"<pubDate>" + datetime + "</pubDate>\n"
+		"<pubDate>" + datetime + "</pubDate>\n" +
+		"</item>\n"
+
 }
 
 func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEntry, error) {
