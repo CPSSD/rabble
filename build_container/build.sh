@@ -54,6 +54,9 @@ cp -R services/article build_out/
 echo "Building s2s_follow service"
 cp -R services/activities/follow build_out/activities/
 
+echo "Building approver service"
+cp -R services/activities/approver build_out/activities/
+
 echo "Building users service"
 cp -R services/users build_out/
 

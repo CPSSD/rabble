@@ -17,6 +17,13 @@ class RssFollowServicer:
         self._database_stub = database_stub
         self._rss_stub = rss_stub
 
+    def _convert_rss_url_to_handle(self, url):
+        # Converts url in form: https://news.ycombinator.com/rss
+        # to: news.ycombinator.com-rss
+        if url.startswith("http"):
+            url = url.split("//")[1]
+        return url.replace("/", "-")
+
     def _validate_url(self, url):
         # TODO(sailslick) check url path? add more checks to the parsed_url
         parsed_url = urlparse(url)
@@ -52,9 +59,8 @@ class RssFollowServicer:
             return resp
 
         # check if rss user already exists (handle: domain) (local user so no host)
-        rss_user_id = None
-        rss_hostname = urlparse(req.feed_url).hostname
-        rss_entry = self._users_util.get_user_from_db(handle=rss_hostname)
+        rss_handle = self._convert_rss_url_to_handle(req.feed_url)
+        rss_entry = self._users_util.get_user_from_db(handle=rss_handle)
         if rss_entry is None:
             # send to rss service to be created
             rss_user_id, rss_error = self._create_rss_user(req.feed_url)

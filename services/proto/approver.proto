@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "services/proto/s2s_follow.proto";
+
+message Approval {
+  FollowDetails follow = 1;
+  // Whether or not the follow is accepted or rejected.
+  bool accept = 2;
+}
+
+message ReceivedApproval {
+  ReceivedFollowDetails follow = 1;
+  // Whether or not the received follow is to be accepted or rejected.
+  bool accept = 2;
+}
+
+message ApprovalResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  /* Should only be set if result_type is not OK. */
+  string error = 2;
+}
+
+// Service for sending and receiving server-to-server follow requests.
+service Approver {
+  rpc SendApproval(Approval) returns (ApprovalResponse);
+  rpc ReceiveApproval(ReceivedApproval) returns (ApprovalResponse);
+}

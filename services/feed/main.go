@@ -20,7 +20,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 		// TODO(iandioch): Find a way to avoid or cache these requests.
 		author, err := s.getAuthorFromDb(ctx, "", "", r.AuthorId)
 		if err != nil {
-			// Error has already been logged.
+			log.Println(err)
 			continue
 		}
 		np := &pb.Post{

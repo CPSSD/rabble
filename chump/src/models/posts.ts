@@ -16,13 +16,6 @@ export function SortPosts(b: IBlogPost[]) {
   b.reverse();
 }
 
-export function FixNewlines(b: IBlogPost[]) {
-  // TODO: Remove this once we handle body text better
-  for (const p of b) {
-    p.body = p.body.replace(/(?:\r\n|\r|\n)/g, "<br>");
-  }
-}
-
 export function PostsAPIPromise(url: string) {
   return new Promise<IBlogPost[]>((resolve, reject) => {
     superagent
@@ -38,7 +31,6 @@ export function PostsAPIPromise(url: string) {
         if (posts === null) {
           posts = [];
         }
-        FixNewlines(posts);
         SortPosts(posts);
         resolve(posts);
       });
@@ -46,12 +38,12 @@ export function PostsAPIPromise(url: string) {
 }
 
 export function GetUsersPosts(username: string) {
-  const url = `${perUserApiURL}${username}`;
+  const url = `${perUserApiURL}${encodeURIComponent(username)}`;
   return PostsAPIPromise(url);
 }
 
 export function GetSinglePost(username: string, id: string) {
-  const url = `${perUserApiURL}${username}/${id}`;
+  const url = `${perUserApiURL}${encodeURIComponent(username)}/${id}`;
   return PostsAPIPromise(url);
 }
 
