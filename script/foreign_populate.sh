@@ -21,6 +21,7 @@ create_user $LOCAL aaron
 create_user $FOREIGN ross
 
 follow $LOCAL aaron ross@$RFOREIGN
+sleep 1
 
 create_article $LOCAL aaron
 create_article $FOREIGN ross
