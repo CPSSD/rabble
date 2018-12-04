@@ -25,7 +25,7 @@ class ReceiveFollowServicer:
         _validate_and_get_users validates request fields and finds the
         requested users. It takes as an argument the response field, and
         handles errors if they should happen.
-        
+
         Returns:
           local_user, foreign_user
           If either is None, then the request has failed and the error has
@@ -89,7 +89,7 @@ class ReceiveFollowServicer:
 
     def ReceiveFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
-        foreign_user, local_user = self._validate_and_get_users(resp, request)
+        local_user, foreign_user = self._validate_and_get_users(resp, request)
         if foreign_user == None or local_user == None:
             return resp
 
