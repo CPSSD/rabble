@@ -104,7 +104,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		log.Printf("User %v received a create activity\n", recipient)
 
-		// TODO (sailslick) Parse jsonLD in general case
+		// TODO: Parse jsonLD in general case
 		decoder := json.NewDecoder(r.Body)
 		var t createActivityStruct
 		err := decoder.Decode(&t)
@@ -151,7 +151,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		recipient := v["username"]
 		log.Printf("User %v received a follow activity.\n", recipient)
 
-		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
+		// TODO: Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t followActivityStruct
 		jsonErr := decoder.Decode(&t)
@@ -209,7 +209,7 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 		recipient := v["username"]
 		log.Printf("User %v received an approval activity.\n", recipient)
 
-		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
+		// TODO: Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t approvalActivity
 		jsonErr := decoder.Decode(&t)
