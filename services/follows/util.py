@@ -8,12 +8,14 @@ class Util:
         self._logger = logger
         self._db = db_stub
 
-    def create_follow_in_db(self, follower_id, followed_id):
+    def create_follow_in_db(self, follower_id, followed_id,
+                            state=database_pb2.Follow.ACTIVE):
         self._logger.debug('Adding <User ID %d following User ID %d> to db.',
                            follower_id, followed_id)
         follow_entry = database_pb2.Follow(
             follower=follower_id,
-            followed=followed_id
+            followed=followed_id,
+            state=state,
         )
         follow_req = database_pb2.DbFollowRequest(
             request_type=database_pb2.DbFollowRequest.INSERT,
