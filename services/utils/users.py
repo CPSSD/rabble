@@ -72,10 +72,7 @@ class UsersUtil:
                                                 host,
                                                 attempt_number=attempt_number + 1)
 
-    def get_user_from_db(self,
-                         handle=None,
-                         host=None,
-                         global_id=None):
+    def get_user_from_db(self, handle=None, host=None, global_id=None):
         self._logger.debug('User %s@%s (id %s) requested from database',
                            handle, host, global_id)
         user_entry = database_pb2.UsersEntry(
