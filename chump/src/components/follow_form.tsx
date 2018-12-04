@@ -39,7 +39,7 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
             placeholder="user[@instance.com]"
           />
           <label>
-            {"Type: "}
+            Type: &nbsp;
             <select
               id="type"
               className="pure-input-4-5"
