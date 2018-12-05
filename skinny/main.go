@@ -200,7 +200,7 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
-		ue := &pb.UsersEntry{ Handle: v["username"] }
+		ue := &pb.UsersEntry{Handle: v["username"]}
 		resp, err := s.rss.PerUserRss(ctx, ue)
 		if err != nil {
 			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
@@ -792,7 +792,7 @@ func buildServerWrapper() *serverWrapper {
 		s2sLike:       s2sLikeClient,
 		approver:      approverClient,
 		approverConn:  approverConn,
-		rssConn:			 rssConn,
+		rssConn:       rssConn,
 		rss:           rssClient,
 	}
 	s.setupRoutes()

@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/signal"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -21,11 +21,11 @@ import (
 )
 
 const (
-	findUserErrorFmt       = "ERROR: User(%v) find failed. message: %v\n"
-	findUserPostsErrorFmt  = "ERROR: User id(%v) posts find failed. message: %v\n"
-	rssTimeParseFormat     = "Mon, 02 Jan 2006 15:04:05 -0700"
-	rssDeclare             = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
-	rssDeclareEnd          = `</channel></rss>`
+	findUserErrorFmt      = "ERROR: User(%v) find failed. message: %v\n"
+	findUserPostsErrorFmt = "ERROR: User id(%v) posts find failed. message: %v\n"
+	rssTimeParseFormat    = "Mon, 02 Jan 2006 15:04:05 -0700"
+	rssDeclare            = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
+	rssDeclareEnd         = `</channel></rss>`
 )
 
 type Parser interface {
@@ -99,7 +99,7 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 	}
 }
 
-func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) string {
+func (s *serverWrapper) createRssHeader(ue *pb.UsersEntry) string {
 	link := s.hostname + "/c2s/@" + ue.Handle
 	datetime := time.Now().Format(rssTimeParseFormat)
 	return "<title>Rabble blog for " + ue.Handle + "</title>\n" +
@@ -108,14 +108,14 @@ func (s *serverWrapper) createRssHeader(ctx context.Context, ue *pb.UsersEntry) 
 		"<pubDate>" + datetime + "</pubDate>\n"
 }
 
-func (s *serverWrapper) createRssItem(ctx context.Context, ue *pb.UsersEntry, pe *pb.PostsEntry) string {
+func (s *serverWrapper) createRssItem(ue *pb.UsersEntry, pe *pb.PostsEntry) string {
 	link := s.hostname + "/c2s/@" + ue.Handle + "/" + strconv.FormatInt(pe.GlobalId, 10)
 	timestamp, _ := ptypes.Timestamp(pe.CreationDatetime)
 	datetime := timestamp.Format(rssTimeParseFormat)
 	return "<item>\n" +
 		"<title>" + pe.Title + "</title>\n" +
 		"<link>" + link + "</link>\n" +
-		"<description>" + pe.Body + "</description>\n" +
+		"<description>" + pe.MdBody + "</description>\n" +
 		"<pubDate>" + datetime + "</pubDate>\n" +
 		"</item>\n"
 
@@ -174,7 +174,8 @@ func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.RssResponse, error) {
 	log.Printf("Got a per user request for user: %s\n", r.Handle)
 	rssr := &pb.RssResponse{}
-	// TODO(sailslick) Get user details {Only local users?}
+
+	// Get user details
 	ue, userErr := s.GetUser(ctx, r.Handle)
 	if userErr != nil {
 		log.Printf("PerUserRss user find got: %v\n", userErr.Error())
@@ -183,7 +184,7 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 		return rssr, nil
 	}
 
-	// TODO(sailslick) Get user posts
+	// Get user posts
 	posts, postFindErr := s.GetUserPosts(ctx, ue.GlobalId)
 	if postFindErr != nil {
 		log.Printf("PerUserRss posts find got: %v\n", postFindErr.Error())
@@ -192,22 +193,20 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 		return rssr, nil
 	}
 
-	// TODO(sailslick) Construct rss header
-	rssHeader := s.createRssHeader(ctx, ue)
+	// Construct rss header
+	rssHeader := s.createRssHeader(ue)
 	rssFeed := rssDeclare + rssHeader
 
-	// TODO(sailslick) Take most recent 10 posts
+	// Take most recent 10 posts
 	sort.SliceStable(posts, func(i int, j int) bool {
 		return posts[i].CreationDatetime.GetSeconds() < posts[j].CreationDatetime.GetSeconds()
 	})
 	topTen := posts[:10]
 
-	var rssFeedItem string
-	// TODO(sailslick) Convert each post to rss entry
+	// Convert each post to rss entry
 	for _, post := range topTen {
-		// TODO(sailslick) Add all rss entrys into body
-		rssFeedItem = s.createRssItem(ctx, ue, post)
-		rssFeed += rssFeedItem
+		// Add all rss entrys into body
+		rssFeed += s.createRssItem(ue, post)
 	}
 
 	rssFeed += rssDeclareEnd
