@@ -23,7 +23,7 @@ type registerRequest struct {
 	Bio         string `json:"bio"`
 }
 
-type usersResponse struct {
+type userResponse struct {
 	Error   string `json:"error"`
 	Success bool   `json:"success"`
 }
@@ -113,7 +113,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var req registerRequest
-		var jsonResp usersResponse
+		var jsonResp userResponse
 		err := decoder.Decode(&req)
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
@@ -147,5 +147,69 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			jsonResp.Success = false
 		}
 		enc.Encode(jsonResp)
+	}
+}
+
+// handleUserUpdate sends an RPC to the users service to update a user with the
+// given info.
+func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+
+		var (
+			req  pb.UpdateUserRequest
+			resp userResponse
+		)
+
+		enc := json.NewEncoder(w)
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to update user by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Invalid JSON"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+
+		err = decoder.Decode(&req)
+		w.Header().Set("Content-Type", "application/json")
+		if err != nil {
+			log.Printf("Invalid JSON, error: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Invalid JSON"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+
+		// This makes the handle optional to send, since it's already
+		// provided by the session handler.
+		req.Handle = handle
+
+		log.Printf("Trying to update user %#v.\n", req.Handle)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		updateResp, err := s.users.Update(ctx, &req)
+		resp.Success = true
+
+		if err != nil {
+			log.Printf("Could not update user: %v", err)
+			resp.Error = "Error communicating with user update service"
+			resp.Success = false
+		} else if updateResp.Result != pb.UpdateUserResponse_ACCEPTED {
+			// Unlike in user response, we will be clear that they
+			// provided an incorrect password.
+			log.Printf("Error updating user: %s", resp.Error)
+			resp.Error = updateResp.Error
+			resp.Success = false
+		} else {
+			log.Print("Update session display_name if it changed")
+			resp.Success = true
+		}
+
+		enc.Encode(resp)
 	}
 }
