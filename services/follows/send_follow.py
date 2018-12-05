@@ -38,7 +38,7 @@ class SendFollowServicer:
         self._follow_activity_stub.SendFollowActivity(s2s_follow)
 
     def _add_follow(self, resp, follower_id, followed_id, is_foreign):
-        state = None
+        state = database_pb2.Follow.ACTIVE
         if is_foreign:
             state = database_pb2.Follow.PENDING
 
