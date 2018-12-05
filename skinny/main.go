@@ -683,19 +683,8 @@ func createApproverClient() (*grpc.ClientConn, pb.ApproverClient) {
 }
 
 func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
-	const env = "LIKE_SERVICE_HOST"
-	host  := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":1848"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewS2SLikeClient(conn)
-	return conn, client
+	conn := grpcConn("LIKE_SERVICE_HOST", "1848")
+	return conn, pb.NewS2SLikeClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
