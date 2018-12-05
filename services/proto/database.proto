@@ -13,6 +13,7 @@ message PostsEntry {
   google.protobuf.Timestamp creation_datetime = 5;
   string md_body = 6;
   string ap_id = 7;
+  int64 likes_count = 8;
 }
 
 message PostsRequest {

@@ -28,13 +28,15 @@ class PostsDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO posts '
-                '(author_id, title, body, creation_datetime, md_body, ap_id) '
-                'VALUES (?, ?, ?, ?, ?, ?)',
+                '(author_id, title, body, creation_datetime, '
+                'md_body, ap_id, likes_count) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?)',
                 req.entry.author_id, req.entry.title,
                 req.entry.body,
                 req.entry.creation_datetime.seconds,
                 req.entry.md_body,
                 req.entry.ap_id,
+                req.entry.likes_count,
                 commit=False)
             res = self._db.execute(
                 'SELECT last_insert_rowid() FROM posts LIMIT 1')
@@ -52,7 +54,7 @@ class PostsDatabaseServicer:
         resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 7:
+        if len(tup) != 8:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -66,6 +68,7 @@ class PostsDatabaseServicer:
             entry.creation_datetime.seconds = tup[4]
             entry.md_body = tup[5]
             entry.ap_id = tup[6]
+            entry.likes_count = tup[7]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
