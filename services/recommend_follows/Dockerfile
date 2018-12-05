@@ -7,6 +7,7 @@ RUN pip3 install grpcio
 RUN pip3 install protobuf
 RUN pip3 install numpy
 RUN pip3 install scipy
+RUN pip3 install pandas
 RUN python3 -m pip install scikit-surprise
 
 ENV PYTHONPATH="/repo/build_out"
