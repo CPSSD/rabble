@@ -3,7 +3,9 @@ from enum import Enum
 from services.proto import database_pb2
 from services.proto import recommend_follows_pb2
 
-from surprise import Dataset, SVD
+import pandas as pd
+
+from surprise import Dataset, Reader, SVD
 from surprise.model_selection import cross_validate
 
 
@@ -25,8 +27,28 @@ class GetFollowRecommendationsServicer:
                                follow_resp.error)
         return follow_resp
 
+    def _convert_data(self, follow_resp):
+        # Must be (user_id, item_id, rating)
+        d = [[], [], []]
+        user_id = []
+        item_id = []
+        rating = []
+        for follow in follow_resp.results:
+            # TODO(iandioch): Consider follow state.
+            user_id.append(follow.follower)
+            item_id.append(follow.followed)
+            rating.append(1)
+
+        d = {'follower': user_id, 'followee': item_id, 'rating': rating}
+        df = pd.DataFrame(data=d)
+
+        reader = Reader(rating_scale=(0, 1))
+        return Dataset.load_from_df(df[['follower', 'followee', 'rating']],
+                                    reader)
+
+
     def _fit_model(self):
-        data = self._load_data()
+        data = self._convert_data(self._load_data())
         algo = SVD()
         cross_validate(algo, data, measures=['RMSE', 'MAE'], cv=5, verbose=True)
         return algo
