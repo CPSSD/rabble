@@ -34,7 +34,7 @@ login() {
 }
 
 like() {
-  # Liek an article on a rabble instance
+  # Like an article on a rabble instance
   # Arguments:
   #   1: domain - the rabble host (including port).
   #   2: username - the rabble user (created with script)

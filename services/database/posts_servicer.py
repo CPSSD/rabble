@@ -41,6 +41,7 @@ class PostsDatabaseServicer:
             res = self._db.execute(
                 'SELECT last_insert_rowid() FROM posts LIMIT 1')
         except sqlite3.Error as e:
+            self._db.commit()
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
             return

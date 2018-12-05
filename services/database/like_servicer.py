@@ -30,6 +30,7 @@ class LikeDatabaseServicer:
                 req.article_id
             )
         except sqlite3.Error as e:
+            self._db.commit()
             self._logger.error("AddLike error: %s", str(e))
             response.result_type = db_pb.AddLikeResponse.ERROR
             response.error = str(e)

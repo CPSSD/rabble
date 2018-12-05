@@ -15,7 +15,7 @@ class ReceiveLikeServicer:
             sys.exit(1)
 
     def _get_host_name_param(self, host):
-        # Remove protcol
+        # Remove protocol
         foreign_host = host.split('://')[-1]
         local_host = self._hostname.split('://')[-1]
         if foreign_host == local_host:
@@ -25,13 +25,14 @@ class ReceiveLikeServicer:
     def _get_liking_user(self, liker_id):
         host, handle = self._user_util.parse_actor(liker_id)
         # Sets the host to None if the user is local.
+        # TODO(CianLR): This may possibly match a user with the same
+        # handle but on a different instance.
         host = self._get_host_name_param(host)
         user = self._user_util.get_or_create_user_from_db(
             handle=handle, host=host)
         return user.global_id if user else None
 
     def _get_liked_article(self, liked_obj):
-        # Case one, foreign article.
         posts_req = db_pb.PostsRequest(
             request_type=db_pb.PostsRequest.FIND,
             match=db_pb.PostsEntry(
@@ -65,7 +66,7 @@ class ReceiveLikeServicer:
         user = self._user_util.get_user_from_db(global_id=user_id)
         if user is None:
             self._logger.error(
-                "Could not get author from DB, "
+                "Could not get user from DB, "
                 "assuming they're foreign and continuing"
             )
             return False
