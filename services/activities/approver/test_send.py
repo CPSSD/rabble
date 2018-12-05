@@ -23,7 +23,7 @@ example_req = approver_pb2.Approval(
 class SendServicerTest(unittest.TestCase):
 
     def setUp(self):
-        activ_util = activ_util = ActivitiesUtil(Mock())
+        activ_util = ActivitiesUtil(Mock())
         activ_util.send_activity = Mock(return_value=(None, None))
         self.servicer = SendApprovalServicer(Mock(), activ_util)
 

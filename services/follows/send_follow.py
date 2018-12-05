@@ -37,6 +37,19 @@ class SendFollowServicer:
         s2s_follow.followed.host = to_host
         self._follow_activity_stub.SendFollowActivity(s2s_follow)
 
+    def _add_follow(self, resp, follower_id, followed_id, is_foreign):
+        state = database_pb2.Follow.ACTIVE
+        if is_foreign:
+            state = database_pb2.Follow.PENDING
+
+        follow_resp = self._util.create_follow_in_db(follower_id, followed_id,
+                                                     state=state)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Error creating follow: %s', follow_resp.error)
+            resp.result_type = follows_pb2.FollowResponse.ERROR
+            resp.error = 'Could not add requested follow to database'
+            return resp.error
+
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
         self._logger.info('Sending follow request.')
@@ -78,17 +91,14 @@ class SendFollowServicer:
                           follower_entry.global_id,
                           followed_entry.global_id)
 
-        follow_resp = self._util.create_follow_in_db(follower_entry.global_id,
-                                                     followed_entry.global_id)
-        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
-            self._logger.error('Error creating follow: %s', follow_resp.error)
-            resp.result_type = follows_pb2.FollowResponse.ERROR
-            resp.error = 'Could not add requested follow to database'
+        is_foreign = to_instance is not None
+        err = self._add_follow(resp,
+                               follower_entry.global_id,
+                               followed_entry.global_id,
+                               is_foreign)
+        if err is not None:
             return resp
-
-        if to_instance is not None:
-            # Following a non-local user, should send Follow activity.
+        if is_foreign:
             self._send_s2s(from_handle, to_handle, to_instance)
-
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
