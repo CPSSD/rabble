@@ -77,7 +77,7 @@ class SendCreateServicer:
         resp = self._db_stub.Posts(req)
         if resp.result_type != database_pb2.PostsResponse.OK:
             return "Error inserting ap_id into DB: " + str(resp.error)
-        return ""
+        return None
 
     # follower_tuple is (host, handle)
     def _post_create_req(self, follower_tuple, req):
@@ -127,7 +127,7 @@ class SendCreateServicer:
         # Insert ActivityPub ID into database.
         ap_id = self._generate_article_id(req.author, req.global_id)
         err = self._add_ap_id(req.global_id, ap_id)
-        if err:
+        if err is not None:
             self._logger.error("Continuing through error: %s", err)
 
         # list of follow objects
