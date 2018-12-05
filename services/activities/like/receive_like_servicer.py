@@ -1,3 +1,5 @@
+import os
+
 from services.proto import database_pb2 as db_pb
 from services.proto import like_pb2
 
@@ -21,10 +23,10 @@ class ReceiveLikeServicer:
         return host
 
     def _get_liking_user(self, liker_id):
-        host, handle = self.user_util.parse_actor(liker_id)
+        host, handle = self._user_util.parse_actor(liker_id)
         # Sets the host to None if the user is local.
         host = self._get_host_name_param(host)
-        user = self.user_util.get_or_create_user_from_db(
+        user = self._user_util.get_or_create_user_from_db(
             handle=handle, host=host)
         return user.global_id if user else None
 

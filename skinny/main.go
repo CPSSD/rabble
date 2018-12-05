@@ -490,6 +490,53 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	}
 }
 
+type likeStruct struct {
+	ArticleId int64 `json:"article_id"`
+}
+
+func (s *serverWrapper) handleLike() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t likeStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Like call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Login Required")
+			return
+		}
+
+		like := &pb.LikeDetails{
+			ArticleId:   t.ArticleId,
+			LikerHandle: handle,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sLike.SendLikeActivity(ctx, like)
+		if err != nil {
+			log.Printf("Could not send like: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with sending like\n")
+			return
+		} else if resp.ResultType != pb.LikeResponse_OK {
+			log.Printf("Could not send like: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with sending like\n")
+			return
+		}
+	}
+}
+
 // handleRegister sends an RPC to the users service to create a user with the
 // given info.
 func (s *serverWrapper) handleRegister() http.HandlerFunc {

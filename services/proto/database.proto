@@ -159,7 +159,7 @@ message AddLikeResponse {
     OK = 0;
     ERROR = 1;
   }
-  ResultType result = 1;
+  ResultType result_type = 1;
   string error = 2;
 }
 
