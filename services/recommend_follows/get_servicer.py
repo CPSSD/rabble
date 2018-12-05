@@ -1,3 +1,4 @@
+from collections import defaultdict
 from enum import Enum
 
 from services.proto import database_pb2
@@ -15,7 +16,11 @@ class GetFollowRecommendationsServicer:
         self._logger = logger
         self._users_util = users_util
         self._db = database_stub
-        self.algo = self._fit_model()
+        self._data = self._convert_data(self._load_data())
+        self._algo = self._fit_model(self._data)
+        self._predictions = self._top_n(self._algo, self._data)
+        for p in self._predictions:
+            print(p, self._predictions[p])
 
     def _load_data(self):
         follow_req = database_pb2.DbFollowRequest(
@@ -46,15 +51,30 @@ class GetFollowRecommendationsServicer:
         return Dataset.load_from_df(df[['follower', 'followee', 'rating']],
                                     reader)
 
-
-    def _fit_model(self):
-        data = self._convert_data(self._load_data())
+    def _fit_model(self, data):
         algo = SVD()
         cross_validate(algo, data, measures=['RMSE', 'MAE'], cv=5, verbose=True)
         return algo
 
+    # Returns a dict of form {user_id: [recommendation]}, where recommendation
+    # is a tuple consisting of (user_to_follow_id, confidence_score). Each list
+    # of recommendations should be of length n.
+    def _top_n(self, algo, data, n=8):
+        # Should contain all entries NOT in the trainset.
+        testset = data.build_full_trainset().build_anti_testset()
+        pred = algo.test(testset)
+        print('Samples:')
+        for i in range(10):
+            print(pred[i])
+        user = defaultdict(list)
+        for follower, followed, _, est, _ in pred:
+            user[follower].append((followed, est))
+
+        for u in user:
+            user[u].sort(key=lambda x:x[1], reverse=True)
+            user[u] = user[u][:n]
+        return user
+
     def GetFollowRecommendations(self, request, context):
         self._logger.debug('GetFollowing, username = %s', request.username)
-
-
         return None
