@@ -12,16 +12,44 @@ fi
 . $REPO_ROOT/script/rabble_utils.sh
 
 _RH=localhost:1916
+DATASET_URL="http://snap.stanford.edu/data/soc-LiveJournal1.txt.gz"
+NUM_USERS=1000
 
-wget "http://snap.stanford.edu/data/soc-LiveJournal1.txt.gz"
-gunzip "soc-LiveJournal1.txt.gz"
+FILTER_SCRIPT="
+import sys
+MAX_ID = $NUM_USERS
+follows=[]
+for line in sys.stdin:
+    if line[0] == '#' or len(line) == 0:
+        continue
+    follower, followee = map(int, line.split())
+    if follower > MAX_ID:
+        break
+    if followee > MAX_ID:
+        continue
+    follows.append((follower, followee))
+
+for a, b in follows:
+    print(a, b)
+"
+
+wget -N $DATASET_URL
+gunzip soc-LiveJournal1.txt.gz
+
+# Create users & articles.
+for i in $(seq 0 $NUM_USERS); do
+    create_user $_RH $i && create_article $_RH $i && logout $_RH
+done
+
+# Add follows.
+cat soc-LiveJournal1.txt | python3 -c "$FILTER_SCRIPT" > tmp.txt
+
+# Sanity check.
+head -n 5 tmp.txt
 
 while read p; do
-    echo $p
-done < soc-LiveJournal1.txt
+    follow $_RH $p
+done < tmp.txt
+rm tmp.txt
 
-#create_user $_RH stanley
-
-#follow $_RH pam jim
-
-#create_article $_RH stanley
+rm soc-LiveJournal1.txt
