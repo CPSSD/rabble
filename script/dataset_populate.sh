@@ -44,9 +44,6 @@ done
 # Add follows.
 cat soc-LiveJournal1.txt | python3 -c "$FILTER_SCRIPT" > tmp.txt
 
-# Sanity check.
-head -n 5 tmp.txt
-
 while read p; do
     follow $_RH $p
 done < tmp.txt
