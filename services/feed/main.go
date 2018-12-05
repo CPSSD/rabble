@@ -12,11 +12,18 @@ import (
 	"google.golang.org/grpc"
 )
 
+const MaxItemsReturned = 50
+
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
 func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
-	for _, r := range p.Results {
+	for i, r := range p.Results {
+		if i >= MaxItemsReturned {
+			// Have hit limit for number of items returned for this request.
+			break
+		}
+
 		// TODO(iandioch): Find a way to avoid or cache these requests.
 		author, err := s.getAuthorFromDb(ctx, "", "", r.AuthorId)
 		if err != nil {
