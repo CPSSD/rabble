@@ -30,14 +30,14 @@ CREATE TABLE IF NOT EXISTS follows (
   PRIMARY KEY (follower, followed)
 );
 
-/* 
+/*
   liker_id is the global_id of a user in the users table
   liked_article_id is the global_id of the article in the posts table.
 */
 CREATE TABLE IF NOT EXISTS likes (
-  liker_id          integer NOT NULL,
-  liked_article_id  integer NOT NULL,
-  PRIMARY KEY (liker_id, liked_article_id)
+  user_id          integer NOT NULL,
+  article_id       integer NOT NULL,
+  PRIMARY KEY (user_id, article_id)
 );
 
 /* Add other tables here */

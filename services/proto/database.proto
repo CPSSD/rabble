@@ -149,8 +149,25 @@ message DbFollowResponse {
   repeated Follow results = 3;
 }
 
+message LikeEntry {
+  int64 user_id = 1;
+  int64 article_id = 2;
+}
+
+message AddLikeResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result = 1;
+  string error = 2;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
   rpc Follow(DbFollowRequest) returns (DbFollowResponse);
+
+  // Different style of RPC since this will involve multiple tables.
+  rpc AddLike(LikeEntry) returns (AddLikeResponse);
 }
