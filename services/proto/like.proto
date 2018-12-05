@@ -20,7 +20,11 @@ message LikeResponse {
 }
 
 message ReceivedLikeDetails {
-  // TODO(CianLR): This
+  // This is an ActivityPub style ID. E.g. http://rabble.ie/@a/123
+  string liked_object = 1;
+
+  // This is an ActivityPub style ID. E.g. http://rabble.rocks/@b
+  string liker_id = 2;
 }
 
 

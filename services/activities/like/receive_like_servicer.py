@@ -5,5 +5,8 @@ class ReceiveLikeServicer:
         self._logger = logger
 
     def ReceiveLikeActivity(self, req, context):
-        pass
+        return like_pb2.LikeResponse(
+            result_type=like_pb2.LikeResponse.ERROR,
+            error="Not implemented",
+        )
 

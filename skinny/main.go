@@ -89,6 +89,8 @@ type serverWrapper struct {
 	users         pb.UsersClient
 	s2sFollowConn *grpc.ClientConn
 	s2sFollow     pb.S2SFollowClient
+	s2sLikeConn   *grpc.ClientConn
+	s2sLike       pb.S2SLikeClient
 	approverConn  *grpc.ClientConn
 	approver      pb.ApproverClient
 }
@@ -680,6 +682,11 @@ func createApproverClient() (*grpc.ClientConn, pb.ApproverClient) {
 	return conn, pb.NewApproverClient(conn)
 }
 
+func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
+	conn := grpcConn("LIKE_SERVICE_HOST", "1848")
+	return conn, pb.NewS2SLikeClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -706,6 +713,7 @@ func buildServerWrapper() *serverWrapper {
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
+	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
 	s := &serverWrapper{
 		router:        r,
@@ -726,6 +734,8 @@ func buildServerWrapper() *serverWrapper {
 		users:         usersClient,
 		s2sFollowConn: s2sFollowConn,
 		s2sFollow:     s2sFollowClient,
+		s2sLikeConn:   s2sLikeConn,
+		s2sLike:       s2sLikeClient,
 		approver:      approverClient,
 		approverConn:  approverConn,
 	}

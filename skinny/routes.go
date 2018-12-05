@@ -42,6 +42,7 @@ func (s *serverWrapper) setupRoutes() {
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create": s.handleCreateActivity(),
 		"follow": s.handleFollowActivity(),
+		"like": s.handleLikeActivity(),
 		"accept": approvalHandler,
 		"reject": approvalHandler,
 	}
