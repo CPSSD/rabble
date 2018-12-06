@@ -171,6 +171,20 @@ message AddLikeResponse {
   string error = 2;
 }
 
+message LikedCollectionRequest {
+  int64 user_id = 1;
+}
+
+message LikedCollectionResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+  repeated string liked_ap_ids = 3;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -178,4 +192,5 @@ service Database {
 
   // Different style of RPC since this will involve multiple tables.
   rpc AddLike(LikeEntry) returns (AddLikeResponse);
+  rpc LikedCollection(LikedCollectionRequest) returns (LikedCollectionResponse);
 }
