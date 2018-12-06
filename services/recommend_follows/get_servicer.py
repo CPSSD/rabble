@@ -16,6 +16,8 @@ class GetFollowRecommendationsServicer:
         self._logger = logger
         self._users_util = users_util
         self._db = database_stub
+        # A dict of the form {user_id: [(recommended_user_id, confidence)]}.
+        self._predictions = {}
         self._compute_recommendations()
 
     def _load_data(self):
@@ -60,9 +62,6 @@ class GetFollowRecommendationsServicer:
         # Should contain all entries NOT in the trainset.
         testset = data.build_full_trainset().build_anti_testset()
         pred = algo.test(testset)
-        print('Samples:')
-        for i in range(10):
-            print(pred[i])
         user = defaultdict(list)
         for follower, followed, _, est, _ in pred:
             user[follower].append((followed, est))
@@ -73,33 +72,46 @@ class GetFollowRecommendationsServicer:
         return user
 
     def _compute_recommendations(self):
+        self._logger.debug('Recomputing recommendations. This may take some time.')
         # It is necessary to reload data each time, as it may have changed.
         self._data = self._convert_data(self._load_data())
         self._algo = self._fit_model(self._data)
         self._predictions = self._top_n(self._algo, self._data)
-        for p in self._predictions:
-            print(p, self._predictions[p])
-
-    def ComputeRecommendations(self, request, context):
-        self._compute_recommendations()
+        self._logger.debug('Finished computing recommendations.')
 
     def GetFollowRecommendations(self, request, context):
-        self._logger.debug('GetFollowing, username = %s', request.username)
+        self._logger.debug('GetFollowRecommendations, username = %s',
+                           request.username)
 
         resp = recommend_follows_pb2.FollowRecommendationResponse()
 
-        if request.username not in self._predictions:
-            resp.result_type = recommend_follows_pb2.ResultType_ERROR
+        handle, host = self._users_util.parse_username(request.username)
+        if not (host is None or host == ""):
+            resp.result_type = \
+                recommend_follows_pb2.FollowRecommendationResponse.ERROR
+            resp.error = "Can only give recommendations for local users."
+            return resp
+
+        user = self._users_util.get_user_from_db(handle=handle, host=None)
+        if user is None:
+            resp.result_type = \
+                recommend_follows_pb2.FollowRecommendationResponse.ERROR
+            resp.error = "Could not find the given username."
+            return resp
+
+        user_id = user.global_id
+        if user_id not in self._predictions:
+            resp.result_type = \
+                recommend_follows_pb2.FollowRecommendationResponse.ERROR
             resp.error = "No recommendations found for this user."
             return resp
 
-        resp.result_type = recommend_follows_pb2.ResultType_OK
-        for p in self._predictions[request.username]:
+        resp.result_type = \
+            recommend_follows_pb2.FollowRecommendationResponse.OK
+        for p in self._predictions[user_id]:
             a = self._users_util.get_or_create_user_from_db(global_id=p[0])
-            user_obj = recommend_follows_pb2.FollowRecommendationUser(
-                handle=a.handle,
-                host=a.host,
-                display_name=a.display_name,
-            )
-            resp.results.append(user_obj)
+            user_obj = resp.results.add()
+            user_obj.handle = a.handle
+            user_obj.host = a.host
+            user_obj.display_name = a.display_name
         return resp
