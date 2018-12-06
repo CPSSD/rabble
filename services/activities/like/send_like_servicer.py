@@ -5,7 +5,7 @@ from urllib import request
 
 from services.proto import database_pb2
 from services.proto import like_pb2
-
+from like_util import build_like_activity
 
 class SendLikeServicer:
     def __init__(self, logger, db, user_util, activ_util, hostname=None):
@@ -18,14 +18,6 @@ class SendLikeServicer:
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
-
-    def _build_activity(self, like_actor, liked_object):
-        return {
-            '@context': 'https://www.w3.org/ns/activitystreams',
-            'type': 'Like',
-            'actor': like_actor,
-            'object': liked_object,
-        }
 
     def _create_article_object(self, author, article):
         if article.ap_id:
@@ -83,7 +75,7 @@ class SendLikeServicer:
             response.result_type = like_pb2.LikeResponse.ERROR
             response.error = "Error getting article author from DB"
             return response
-        activity = self._build_activity(
+        activity = build_like_activity(
             self._create_actor_object(req.liker_handle),
             self._create_article_object(author, article))
         inbox = self._activ_util.build_inbox_url(author.handle, author.host)
