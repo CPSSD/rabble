@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {IEditUserResult, EditUserPromise} from "../models/edit_user";
+import {EditUserPromise, IEditUserResult} from "../models/edit_user";
 
 interface IAccountEditState {
   bio: string;
