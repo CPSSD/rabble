@@ -89,6 +89,12 @@ type serverWrapper struct {
 	users         pb.UsersClient
 	s2sFollowConn *grpc.ClientConn
 	s2sFollow     pb.S2SFollowClient
+	s2sLikeConn   *grpc.ClientConn
+	s2sLike       pb.S2SLikeClient
+	approverConn  *grpc.ClientConn
+	approver      pb.ApproverClient
+	rssConn       *grpc.ClientConn
+	rss           pb.RSSClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -181,6 +187,40 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			return
+		}
+		ue := &pb.UsersEntry{Handle: v["username"]}
+		resp, err := s.rss.PerUserRss(ctx, ue)
+		if err != nil {
+			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.ResultType == pb.RssResponse_ERROR {
+			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, resp.Message)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if resp.ResultType == pb.RssResponse_DENIED {
+			log.Printf("Access denied in rss.PerUserRss(%v): %v", *ue, resp.Message)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/rss+xml")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, resp.Feed)
 	}
 }
 
@@ -358,7 +398,7 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		// handle of the logged in user.
 		j.Follower = handle
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		resp, err := s.follows.RssFollowRequest(ctx, &j)
 		if err != nil {
@@ -622,110 +662,70 @@ func (s *serverWrapper) shutdown() {
 	s.feedConn.Close()
 	s.usersConn.Close()
 	s.s2sFollowConn.Close()
+	s.rssConn.Close()
+}
+
+func grpcConn(env string, port string) *grpc.ClientConn {
+	host := os.Getenv(env)
+	if host == "" {
+		log.Fatalf("%s env var not set for skinny server.", env)
+	}
+	addr := host + ":" + port
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Skinny server did not connect to %s: %v", addr, err)
+	}
+	return conn
 }
 
 func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
-	host := os.Getenv("ARTICLE_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("ARTICLE_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1601"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect to Article: %v", err)
-	}
+	conn := grpcConn("ARTICLE_SERVICE_HOST", "1601")
 	return conn, pb.NewArticleClient(conn)
 }
 
 func createCreateClient() (*grpc.ClientConn, pb.CreateClient) {
-	host := os.Getenv("CREATE_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("CREATE_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1922"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect to Create: %v", err)
-	}
+	conn := grpcConn("CREATE_SERVICE_HOST", "1922")
 	return conn, pb.NewCreateClient(conn)
 }
 
 func createUsersClient() (*grpc.ClientConn, pb.UsersClient) {
-	host := os.Getenv("USERS_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("USERS_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1534"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect to Users: %v", err)
-	}
+	conn := grpcConn("USERS_SERVICE_HOST", "1534")
 	return conn, pb.NewUsersClient(conn)
 }
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
-	host := os.Getenv("DB_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("DB_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1798"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
-	}
-	client := pb.NewDatabaseClient(conn)
-	return conn, client
+	conn := grpcConn("DB_SERVICE_HOST", "1798")
+	return conn, pb.NewDatabaseClient(conn)
 }
 
 func createFollowsClient() (*grpc.ClientConn, pb.FollowsClient) {
-	host := os.Getenv("FOLLOWS_SERVICE_HOST")
-	if host == "" {
-		log.Fatal("FOLLOWS_SERVICE_HOST env var not set for skinny server.")
-	}
-	addr := host + ":1641"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server did not connect: %v", err)
-	}
-	client := pb.NewFollowsClient(conn)
-	return conn, client
+	conn := grpcConn("FOLLOWS_SERVICE_HOST", "1641")
+	return conn, pb.NewFollowsClient(conn)
 }
 
 func createFeedClient() (*grpc.ClientConn, pb.FeedClient) {
-	const env = "FEED_SERVICE_HOST"
-	host := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":2012"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewFeedClient(conn)
-	return conn, client
+	conn := grpcConn("FEED_SERVICE_HOST", "2012")
+	return conn, pb.NewFeedClient(conn)
 }
 
 func createS2SFollowClient() (*grpc.ClientConn, pb.S2SFollowClient) {
-	const env = "FOLLOW_ACTIVITY_SERVICE_HOST"
-	host := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":1922"
+	conn := grpcConn("FOLLOW_ACTIVITY_SERVICE_HOST", "1922")
+	return conn, pb.NewS2SFollowClient(conn)
+}
 
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewS2SFollowClient(conn)
-	return conn, client
+func createApproverClient() (*grpc.ClientConn, pb.ApproverClient) {
+	conn := grpcConn("APPROVER_SERVICE_HOST", "2077")
+	return conn, pb.NewApproverClient(conn)
+}
+
+func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
+	conn := grpcConn("LIKE_SERVICE_HOST", "1848")
+	return conn, pb.NewS2SLikeClient(conn)
+}
+
+func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
+	conn := grpcConn("RSS_SERVICE_HOST", "1973")
+	return conn, pb.NewRSSClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
@@ -753,7 +753,10 @@ func buildServerWrapper() *serverWrapper {
 	feedConn, feedClient := createFeedClient()
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
+	rssConn, rssClient := createRSSClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
+	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
+	approverConn, approverClient := createApproverClient()
 	s := &serverWrapper{
 		router:        r,
 		server:        srv,
@@ -773,6 +776,12 @@ func buildServerWrapper() *serverWrapper {
 		users:         usersClient,
 		s2sFollowConn: s2sFollowConn,
 		s2sFollow:     s2sFollowClient,
+		s2sLikeConn:   s2sLikeConn,
+		s2sLike:       s2sLikeClient,
+		approver:      approverClient,
+		approverConn:  approverConn,
+		rssConn:       rssConn,
+		rss:           rssClient,
 	}
 	s.setupRoutes()
 	return s

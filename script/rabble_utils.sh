@@ -33,6 +33,13 @@ login() {
     "$1/c2s/login"
 }
 
+logout() {
+  # Log out of a rabble instance
+  # Arguments:
+  #   1: domain - the rabble host (including port).
+  $debug curl -j -c localsession.db "$1/c2s/logout"
+}
+
 follow() {
   # Follow a user on a specified rabble instance.
   #

@@ -79,6 +79,7 @@ type createActivityObjectStruct struct {
 	AttributedTo string   `json:"attributedTo"`
 	Recipient    []string `json:"to"`
 	Type         string   `json:"type"`
+	Id           string   `json:"id"`
 }
 
 type createActivityStruct struct {
@@ -104,7 +105,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		log.Printf("User %v received a create activity\n", recipient)
 
-		// TODO (sailslick) Parse jsonLD in general case
+		// TODO: Parse jsonLD in general case
 		decoder := json.NewDecoder(r.Body)
 		var t createActivityStruct
 		err := decoder.Decode(&t)
@@ -128,6 +129,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			Published:    protoTimestamp,
 			Recipient:    recipient,
 			Title:        t.Object.Name,
+			Id:           t.Object.Id,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -151,7 +153,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		recipient := v["username"]
 		log.Printf("User %v received a follow activity.\n", recipient)
 
-		// TODO(iandioch, sailslick): Parse JSON-LD in other shapes.
+		// TODO: Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t followActivityStruct
 		jsonErr := decoder.Decode(&t)
@@ -184,3 +186,137 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "{}\n")
 	}
 }
+
+type likeActorStruct struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
+}
+
+type likeActivityStruct struct {
+	Actor   likeActorStruct `json:"actor"`
+	Context string          `json:"@context"`
+	Object  string          `json:"object"`
+	Type    string          `json:"type"`
+}
+
+func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a like activity.\n", recipient)
+
+		// TODO(iandioch, sailslick, CianLR): Parse JSON-LD in other shapes.
+		decoder := json.NewDecoder(r.Body)
+		var t likeActivityStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		f := &pb.ReceivedLikeDetails{
+			LikedObject: t.Object,
+			LikerId: t.Actor.Id,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sLike.ReceiveLikeActivity(ctx, f)
+		if err != nil {
+			log.Printf("Could not receive like activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving like activity.\n")
+			return
+		} else if resp.ResultType == pb.LikeResponse_ERROR {
+			log.Printf("Could not receive like activity. Error: %v",
+					   resp.Error);
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving like activity.\n")
+			return
+		}
+
+		log.Println("Like activity received successfully.")
+		fmt.Fprintf(w, "{}\n")
+	}
+}
+
+type approvalObject struct {
+	Actor  string `json:"actor"`
+	Object string `json:"object"`
+	Type   string `json:"type"`
+}
+
+type approvalActivity struct {
+	Actor     string         `json:"actor"`
+	Context   string         `json:"@context"`
+	Object    approvalObject `json:"object"`
+	Recipient []string       `json:"to"`
+	Type      string         `json:"type"`
+}
+
+func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
+	const (
+		nonFollow  = "Received %s activity of type %s, only support follow.\n"
+		receiveErr = "Could not receive %s activity: %v"
+	)
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received an approval activity.\n", recipient)
+
+		// TODO: Parse JSON-LD in other shapes.
+		decoder := json.NewDecoder(r.Body)
+		var t approvalActivity
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		// Lowercase any types do string comparisons against
+		t.Type = strings.ToLower(t.Type)
+		t.Object.Type = strings.ToLower(t.Object.Type)
+
+		if t.Object.Type != "follow" {
+			log.Printf(nonFollow, t.Type, t.Object.Type)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, nonFollow, t.Type, t.Object.Type)
+			return
+		}
+
+		ap := &pb.ReceivedApproval{
+			Follow: &pb.ReceivedFollowDetails{
+				Follower: t.Object.Actor,
+				Followed: t.Object.Object,
+			},
+			// We know type is either an accept or reject activity
+			// since the request was routed here.
+			Accept: t.Type == "accept",
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.approver.ReceiveApproval(ctx, ap)
+		if err != nil {
+			log.Printf(receiveErr, t.Type, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error handling %s activity.\n", t.Type)
+		} else if resp.ResultType == pb.ApprovalResponse_ERROR {
+			log.Printf(receiveErr, t.Type, resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error handling %s activity.\n", t.Type)
+			return
+		}
+		log.Println("Activity received successfully.")
+		fmt.Fprintf(w, "{}\n")
+	}
+}
+

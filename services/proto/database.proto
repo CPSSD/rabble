@@ -12,6 +12,7 @@ message PostsEntry {
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
   string md_body = 6;
+  string ap_id = 7;
 }
 
 message PostsRequest {
@@ -47,6 +48,9 @@ message PostsResponse {
   // If the result_type is OK, and the query returns some entries, then those
   // entries are provided here.
   repeated PostsEntry results = 3;
+
+  // If the request was an INSERT this is the global_id of the inserted post.
+  int64 global_id = 4;
 }
 
 message UsersEntry {
@@ -67,6 +71,7 @@ message UsersRequest {
   enum RequestType {
     INSERT = 0;
     FIND = 1;
+    FIND_NOT = 2;
   }
 
   RequestType request_type = 1;
@@ -109,13 +114,15 @@ message DbFollowRequest {
   enum RequestType {
     INSERT = 0;
     FIND = 1;
+    UPDATE = 2;
   }
 
   RequestType request_type = 1;
 
   Follow entry = 2;
 
-  /* If request_type is FIND:
+  /*
+   * If request_type is FIND:
    *   - If match.followed is set, then the service will return all followers
    *     for this user's ID.
    *   - If match.follower is set, the service will return all users this
@@ -127,6 +134,12 @@ message DbFollowRequest {
    * You can set follow.state to find follows that are in currently unaccepted
    * but these should only be used carefully, since these followers must not be
    * sent anything. By default, your search will only return active follows.
+   *
+   * If the request_type is UPDATE:
+   *   - match will be used to find an existing follow entry
+   *   - The entry follow state will replace the current follow state
+   * We do not support modifying any paremater other than state for follows.
+   * No response is returned.
    */
   Follow match = 3;
 }
@@ -143,8 +156,14 @@ message DbFollowResponse {
   repeated Follow results = 3;
 }
 
+message InstanceFeedRequest {
+  int32 num_posts = 1;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
   rpc Follow(DbFollowRequest) returns (DbFollowResponse);
+  // Get the N most recent posts from local users.
+  rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
 }

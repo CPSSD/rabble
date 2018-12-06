@@ -30,6 +30,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
+	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/rss_follow", s.handleRssFollow())
@@ -37,10 +38,14 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/login", s.handleLogin())
 	r.HandleFunc("/c2s/logout", s.handleLogout())
 
+	approvalHandler := s.handleApprovalActivity()
 	// ActorInbox routes are routed based on the activity type
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create": s.handleCreateActivity(),
 		"follow": s.handleFollowActivity(),
+		"like": s.handleLikeActivity(),
+		"accept": approvalHandler,
+		"reject": approvalHandler,
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 }

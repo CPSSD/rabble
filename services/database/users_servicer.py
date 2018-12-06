@@ -13,6 +13,7 @@ class UsersDatabaseServicer:
         self._users_type_handlers = {
             database_pb2.UsersRequest.INSERT: self._users_handle_insert,
             database_pb2.UsersRequest.FIND: self._users_handle_find,
+            database_pb2.UsersRequest.FIND_NOT: self._users_handle_find_not,
         }
 
     def _db_tuple_to_entry(self, tup, entry):
@@ -64,8 +65,15 @@ class UsersDatabaseServicer:
             return
         resp.result_type = database_pb2.UsersResponse.OK
 
+    def _users_handle_find_not(self, req, resp):
+        filter_clause, values = util.not_equivalent_filter(req.match)
+        self._user_find_op(resp, filter_clause, [])
+
     def _users_handle_find(self, req, resp):
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
+        self._user_find_op(resp, filter_clause, values)
+
+    def _user_find_op(self, resp, filter_clause, values):
         try:
             if not filter_clause:
                 res = self._db.execute('SELECT * FROM users')
@@ -81,3 +89,4 @@ class UsersDatabaseServicer:
         for tup in res:
             if not self._db_tuple_to_entry(tup, resp.results.add()):
                 del resp.results[-1]
+        return resp

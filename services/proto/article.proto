@@ -12,6 +12,8 @@ message NewArticle {
   string body = 3;
   google.protobuf.Timestamp creation_datetime = 4;
   bool foreign = 5;
+  // The ActivityPub ID of this article. May not be set.
+  string ap_id = 6;
 }
 
 // NewArticleResponse is a simple response.

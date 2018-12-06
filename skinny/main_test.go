@@ -103,6 +103,7 @@ func newTestServerWrapper() *serverWrapper {
 		article:      &ArticleFake{},
 		feed:         &FeedFake{},
 		follows:      &FollowsFake{},
+		s2sLike:      &LikeFake{},
 	}
 	s.setupRoutes()
 	return s
