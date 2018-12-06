@@ -32,11 +32,13 @@ class PostsDatabaseServicer:
         n = request.num_posts
         if not n:
             n = DEFAULT_NUM_POSTS
+        self._logger.info('Reading {} posts for instance feed'.format(n))
         try:
-            res = self._db.execute('SELECT * FROM posts '
+            res = self._db.execute('SELECT posts.global_id, author_id, title, body, creation_datetime, md_body, ap_id '
+                                   'FROM posts '
                                    'INNER JOIN users '
                                    'ON posts.author_id = users.global_id '
-                                   'WHERE users.host IS NULL '
+                                   'WHERE users.host = "" '
                                    'LIMIT {}'.format(n))
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
