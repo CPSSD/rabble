@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS posts (
   title             text    NOT NULL,
   body              text    NOT NULL,
   creation_datetime integer NOT NULL,
-  md_body           text    NOT NULL
+  md_body           text    NOT NULL,
+  ap_id             text    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -14,13 +15,17 @@ CREATE TABLE IF NOT EXISTS users (
   host              text,
   display_name      text    NOT NULL,
   password          text    NOT NULL,
-  bio               text    NOT NULL
+  bio               text    NOT NULL,
+  rss               text
 );
 
 /* follower and followed both match global_id in entries in users table. */
 CREATE TABLE IF NOT EXISTS follows (
   follower          integer NOT NULL,
   followed          integer NOT NULL,
+  /* State represents the current state of a follow.
+   * See the database.proto file for a full list. */
+  state             integer NOT NULL,
   PRIMARY KEY (follower, followed)
 );
 /* Add other tables here */

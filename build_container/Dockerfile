@@ -23,12 +23,16 @@ RUN go get -u \
   github.com/gorilla/mux \
   github.com/gorilla/sessions \
   github.com/gomarkdown/markdown \
-  github.com/microcosm-cc/bluemonday
+  github.com/microcosm-cc/bluemonday \
+  github.com/mmcdole/gofeed
 
 # Dependencies for auth service
 RUN apk add --no-cache libffi-dev
 RUN pip3 install bcrypt
 
 RUN apk add --no-cache --update protobuf-dev
+
+# Add PYTHONPATH for when we run tests
+ENV PYTHONPATH="/repo/build_out"
 
 CMD ["/repo/build_container/entry.sh"]

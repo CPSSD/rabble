@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "google/protobuf/timestamp.proto";
+
+/* LocalToAnyFollow represents either a local user following another local
+ * user, or a local user following a foreign user. The fact that these
+ * separate concepts are shared by one type allows the frontend to send the
+ * same request to the backend without parsing the username of the followed
+ * account (eg. to find out if it is local), or needing to verify that it
+ * exists. */
+message LocalToAnyFollow {
+    /* The handle of the local user who has requested to follow someone, eg.
+     * "admin". */
+    string follower = 1;
+    /* The full username of the person being followed, eg. "admin", "@admin",
+     * "admin@rabble.net", or "@aaron@devoxel.net". */
+    string followed = 2;
+    google.protobuf.Timestamp datetime = 3;
+}
+
+/* ForeignToLocalFollow represents a user on a different instance requesting
+ * to follow a user on this instance. */
+message ForeignToLocalFollow {
+    string follower_host = 1;
+    string follower_handle = 2;
+    /* The handle of the user on this instance that has been followed, eg.
+     * "admin". */
+    string followed = 3;
+    google.protobuf.Timestamp datetime = 4;
+}
+
+// LocalToRss represents a user on a local instance requesting to follow a rss feed.
+message LocalToRss {
+    // The handle of the local user who has requested to follow a rss feed
+    string follower = 1;
+    // The url of the feed. (user input)
+    string feed_url = 2;
+}
+
+/* TODO(iandioch): Consider merging with DbFollowResponse in
+ * services/database/database.proto */
+message FollowResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+        // More types can be added here.
+    }
+
+    ResultType result_type = 1;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 2;
+}
+
+message FollowUser {
+    string handle = 1;
+    string host = 2;
+    string display_name = 3;
+}
+
+message GetFollowsRequest {
+    /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
+    string username = 1;
+}
+
+message GetFollowsResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+        // More types can be added here.
+    }
+
+    ResultType result_type = 1;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 2;
+
+    /* Should only be set if result_type is OK. */
+    repeated FollowUser results = 3;
+}
+
+service Follows {
+  rpc SendFollowRequest(LocalToAnyFollow) returns (FollowResponse);
+  rpc RssFollowRequest(LocalToRss) returns (FollowResponse);
+  rpc ReceiveFollowRequest(ForeignToLocalFollow) returns (FollowResponse);
+  rpc GetFollowers(GetFollowsRequest) returns (GetFollowsResponse);
+  rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);
+}

@@ -4,8 +4,8 @@ import unittest
 from unittest.mock import Mock
 
 from login import LoginHandler
-from proto import database_pb2
-from proto import users_pb2
+from services.proto import database_pb2
+from services.proto import users_pb2
 
 
 class MockDBStub:

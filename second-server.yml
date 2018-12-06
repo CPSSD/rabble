@@ -20,10 +20,14 @@ services:
       - SKINNY_SERVER_PORT=${SKINNY_SERVER_PORT}
       - DB_SERVICE_HOST=database_service
       - USERS_SERVICE_HOST=users_service
-      - FOLLOWS_SERVICE_HOST=follows_service
+      - FOLLOWS_SERVICE_HOST=follows_service2
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service2
+      - RSS_SERVICE_HOST=rss_service
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
+      - LIKE_SERVICE_HOST=like_service
+      - APPROVER_SERVICE_HOST=approver_service2
   feed_service:
     build:
       context: ./services/feed
@@ -43,6 +47,18 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+  like_service:
+    build:
+      context: ./services/activities/like
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
+      - DB_SERVICE_HOST=database_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   database_service:
     build:
       context: ./services/database
@@ -55,17 +71,25 @@ services:
       - "logger_service"
     environment:
       - LOGGER_SERVICE_HOST=logger_service
-  follows_service:
+  follows_service2:
     build:
       context: ./services/follows
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - rabble_testnetwork
+      - default
     depends_on:
       - "database_service"
+      - "approver_service2"
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+      - RSS_SERVICE_HOST=rss_service
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
+      - APPROVER_SERVICE_HOST=approver_service2
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   logger_service:
     build:
       context: ./services/logger
@@ -100,7 +124,22 @@ services:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
       - ARTICLE_SERVICE_HOST=article_service
-      - HOST_NAME=skinny:${SKINNY_SERVER_PORT}
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  approver_service2:
+    build:
+      context: ./services/activities/approver
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service"
+    networks:
+      - rabble_testnetwork
+      - default
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   follow_activity_service2:
     build:
       context: ./services/activities/follow
@@ -112,9 +151,23 @@ services:
       - default
     environment:
       - LOGGER_SERVICE_HOST=logger_service
+      - FOLLOWS_SERVICE_HOST=follows_service2
   markdown_service:
     build:
       context: ./services/mdc
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+  rss_service:
+    build:
+      context: ./services/rss
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - ARTICLE_SERVICE_HOST=article_service
+      - MDC_SERVICE_HOST=markdown_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}

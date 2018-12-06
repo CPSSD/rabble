@@ -13,10 +13,7 @@ import (
 	"github.com/gorilla/sessions"
 	"google.golang.org/grpc"
 
-	articlepb "github.com/cpssd/rabble/services/article/proto"
-	dbpb "github.com/cpssd/rabble/services/database/proto"
-	feedpb "github.com/cpssd/rabble/services/feed/proto"
-	followspb "github.com/cpssd/rabble/services/follows/proto"
+	pb "github.com/cpssd/rabble/services/proto"
 )
 
 const (
@@ -24,62 +21,71 @@ const (
 )
 
 type FeedFake struct {
-	feedpb.FeedClient
+	pb.FeedClient
 
 	// The most recent postRequest
-	rq *feedpb.FeedRequest
+	rq *pb.FeedRequest
 }
 
-func (d *FeedFake) Get(_ context.Context, r *feedpb.FeedRequest, _ ...grpc.CallOption) (*feedpb.FeedResponse, error) {
+func (d *FeedFake) Get(_ context.Context, r *pb.FeedRequest, _ ...grpc.CallOption) (*pb.FeedResponse, error) {
 	d.rq = r
-	return &feedpb.FeedResponse{
-		Results: []*feedpb.Post{{
+	return &pb.FeedResponse{
+		Results: []*pb.Post{{
 			Title: fakeTitle,
 		}},
 	}, nil
 }
 
 type FollowsFake struct {
-	followspb.FollowsClient
+	pb.FollowsClient
 
 	// The most recent LocalToAnyFollow
-	rq *followspb.LocalToAnyFollow
+	rq *pb.LocalToAnyFollow
+	// Most recent LocalToRss
+	rrq *pb.LocalToRss
+}
+
+func (f *FollowsFake) RssFollowRequest(_ context.Context, r *pb.LocalToRss, _ ...grpc.CallOption) (*pb.FollowResponse, error) {
+	f.rrq = r
+	return &pb.FollowResponse{
+		ResultType: pb.FollowResponse_OK,
+	}, nil
 }
 
 type ArticleFake struct {
-	articlepb.ArticleClient
+	pb.ArticleClient
 
 	// The most recent NewArticle
-	na *articlepb.NewArticle
+	na *pb.NewArticle
 }
 
-func (a *ArticleFake) CreateNewArticle(_ context.Context, r *articlepb.NewArticle, _ ...grpc.CallOption) (*articlepb.NewArticleResponse, error) {
+func (a *ArticleFake) CreateNewArticle(_ context.Context, r *pb.NewArticle, _ ...grpc.CallOption) (*pb.NewArticleResponse, error) {
 	a.na = r
-	return &articlepb.NewArticleResponse{
-		ResultType: articlepb.NewArticleResponse_OK,
+	return &pb.NewArticleResponse{
+		ResultType: pb.NewArticleResponse_OK,
 		GlobalId:   "test_id",
 	}, nil
 }
 
 type DatabaseFake struct {
-	dbpb.DatabaseClient
+	pb.DatabaseClient
 
-	rq *dbpb.PostsRequest
+	rq *pb.PostsRequest
 }
 
-func (d *DatabaseFake) Posts(_ context.Context, r *dbpb.PostsRequest, _ ...grpc.CallOption) (*dbpb.PostsResponse, error) {
+func (d *DatabaseFake) Posts(_ context.Context, r *pb.PostsRequest, _ ...grpc.CallOption) (*pb.PostsResponse, error) {
 	d.rq = r
-	return &dbpb.PostsResponse{
-		Results: []*dbpb.PostsEntry{{
+	return &pb.PostsResponse{
+		Results: []*pb.PostsEntry{{
 			Title: fakeTitle,
 		}},
 	}, nil
 }
 
-func (f *FollowsFake) SendFollowRequest(_ context.Context, r *followspb.LocalToAnyFollow, _ ...grpc.CallOption) (*followspb.FollowResponse, error) {
+func (f *FollowsFake) SendFollowRequest(_ context.Context, r *pb.LocalToAnyFollow, _ ...grpc.CallOption) (*pb.FollowResponse, error) {
 	f.rq = r
-	return &followspb.FollowResponse{
-		ResultType: followspb.FollowResponse_OK,
+	return &pb.FollowResponse{
+		ResultType: pb.FollowResponse_OK,
 	}, nil
 }
 
@@ -97,6 +103,7 @@ func newTestServerWrapper() *serverWrapper {
 		article:      &ArticleFake{},
 		feed:         &FeedFake{},
 		follows:      &FollowsFake{},
+		s2sLike:      &LikeFake{},
 	}
 	s.setupRoutes()
 	return s
@@ -133,9 +140,9 @@ func TestHandleFollow(t *testing.T) {
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
-	var r followspb.FollowResponse
+	var r pb.FollowResponse
 	json.Unmarshal([]byte(res.Body.String()), &r)
-	if r.ResultType != followspb.FollowResponse_OK {
+	if r.ResultType != pb.FollowResponse_OK {
 		t.Errorf("Expected FollowResponse_OK, got %#v", r.ResultType)
 	}
 }
@@ -152,9 +159,9 @@ func TestHandleFollowBadRequest(t *testing.T) {
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
 	}
-	var r followspb.FollowResponse
+	var r pb.FollowResponse
 	json.Unmarshal([]byte(res.Body.String()), &r)
-	if r.ResultType != followspb.FollowResponse_ERROR {
+	if r.ResultType != pb.FollowResponse_ERROR {
 		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
 	}
 }
@@ -170,9 +177,68 @@ func TestHandleFollowNotLoggedIn(t *testing.T) {
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
 	}
-	var r followspb.FollowResponse
+	var r pb.FollowResponse
 	json.Unmarshal([]byte(res.Body.String()), &r)
-	if r.ResultType != followspb.FollowResponse_ERROR {
+	if r.ResultType != pb.FollowResponse_ERROR {
+		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollow(t *testing.T) {
+	jsonString := `{ "follower": "testuser", "feed_url": "jose" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	addFakeSession(srv, res, req)
+	srv.handleRssFollow()(res, req)
+	if res.Code != http.StatusOK {
+		t.Errorf("Expected 200 OK, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_OK {
+		t.Errorf("Expected FollowResponse_OK, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollowBadRequest(t *testing.T) {
+	jsonString := `{ this is not json }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("POST", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	addFakeSession(srv, res, req)
+	srv.handleRssFollow()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_ERROR {
+		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
+	}
+}
+
+func TestHandleRssFollowNotLoggedIn(t *testing.T) {
+	jsonString := `{ "follower": "testuser", "feed_url": "jose" }`
+	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
+	req, _ := http.NewRequest("GET", "/c2s/rss_follow", jsonBuffer)
+	req.Header.Set("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	srv := newTestServerWrapper()
+
+	srv.handleRssFollow()(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	}
+	var r pb.FollowResponse
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.ResultType != pb.FollowResponse_ERROR {
 		t.Errorf("Expected FollowResponse_ERROR, got %#v", r.ResultType)
 	}
 }
@@ -277,7 +343,7 @@ func TestFeed(t *testing.T) {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
 
-	var r []feedpb.Post
+	var r []pb.Post
 	if err := json.Unmarshal(res.Body.Bytes(), &r); err != nil {
 		t.Fatalf("json.Unmarshal(%#v) unexpected error: %v", res.Body.String(), err)
 	}

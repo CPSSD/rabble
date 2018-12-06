@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "services/proto/database.proto";
+
+message NewRssFeed {
+  string rss_url = 1;
+}
+
+message NewRssFeedResponse {
+    enum ResultType {
+      ACCEPTED = 0;
+      DENIED   = 1;
+      ERROR    = 2;
+    }
+
+    ResultType result_type = 1;
+    int64 global_id = 2;
+
+    // Should only be set if result_type is not OK.
+    string message = 3;
+}
+
+message RssResponse {
+    enum ResultType {
+      ACCEPTED = 0;
+      DENIED   = 1;
+      ERROR    = 2;
+    }
+
+    ResultType result_type = 1;
+
+    // Should only be set if result_type is not OK.
+    string message = 2;
+
+    // string containing xml feed
+    string feed = 3;
+}
+
+service RSS {
+  rpc NewRssFollow(NewRssFeed) returns (NewRssFeedResponse);
+  rpc PerUserRss(UsersEntry) returns (RssResponse);
+}

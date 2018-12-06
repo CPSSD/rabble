@@ -1,8 +1,8 @@
 from datetime import datetime
 import logging
 
-from proto import logger_pb2_grpc
-from proto import logger_pb2 as lpb2
+from services.proto import logger_pb2_grpc
+from services.proto import logger_pb2 as lpb2
 
 class LoggerServicer(logger_pb2_grpc.LoggerServicer):
     def __init__(self, logger):

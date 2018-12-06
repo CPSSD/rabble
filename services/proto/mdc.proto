@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+message MDRequest {
+	string md_body = 1;
+}
+
+message MDResponse {
+	string html_body = 1;
+}
+
+service Converter {
+	rpc MarkdownToHTML(MDRequest) returns (MDResponse);
+}

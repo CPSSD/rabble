@@ -2,9 +2,12 @@ import sqlite3
 
 import util
 
-from proto import database_pb2
-from proto import database_pb2_grpc
+from services.proto import database_pb2
+from services.proto import database_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
+
+
+DEFAULT_NUM_POSTS = 50
 
 
 class PostsDatabaseServicer:
@@ -24,24 +27,66 @@ class PostsDatabaseServicer:
         self._type_handlers[request.request_type](request, response)
         return response
 
+    def InstanceFeed(self, request, context):
+        resp = database_pb2.PostsResponse()
+        n = request.num_posts
+        if not n:
+            n = DEFAULT_NUM_POSTS
+        self._logger.info('Reading {} posts for instance feed'.format(n))
+        try:
+            # TODO(iandioch): Fix user host insertion. Below query should have
+            # 'WHERE users.host IS NULL' and not 'WHERE users.host = ""'.
+
+            # If new columns are added to the database, this query must be
+            # changed. Change also _handle_insert.
+            res = self._db.execute('SELECT posts.global_id, author_id, title, '
+                                   'body, creation_datetime, md_body, ap_id '
+                                   'FROM posts '
+                                   'INNER JOIN users '
+                                   'ON posts.author_id = users.global_id '
+                                   'WHERE users.host = "" '
+                                   'ORDER BY posts.global_id DESC '
+                                   'LIMIT {} '.format(n))
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
     def _handle_insert(self, req, resp):
         try:
+            # If new columns are added to the database, this query must be
+            # changed. Change also InstanceFeed.
             self._db.execute(
                 'INSERT INTO posts '
-                '(author_id, title, body, creation_datetime, md_body) '
-                'VALUES (?, ?, ?, ?, ?)',
+                '(author_id, title, body, creation_datetime, md_body, ap_id) '
+                'VALUES (?, ?, ?, ?, ?, ?)',
                 req.entry.author_id, req.entry.title,
                 req.entry.body,
                 req.entry.creation_datetime.seconds,
-                req.entry.md_body)
+                req.entry.md_body,
+                req.entry.ap_id,
+                commit=False)
+            res = self._db.execute(
+                'SELECT last_insert_rowid() FROM posts LIMIT 1')
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
             return
+        if len(res) != 1 or len(res[0]) != 1:
+            err = "Global ID data in weird format: " + str(res)
+            self._logger.error(err)
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = err
+            return
         resp.result_type = database_pb2.PostsResponse.OK
+        resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 6:
+        if len(tup) != 7:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -54,6 +99,7 @@ class PostsDatabaseServicer:
             entry.body = tup[3]
             entry.creation_datetime.seconds = tup[4]
             entry.md_body = tup[5]
+            entry.ap_id = tup[6]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
@@ -62,7 +108,7 @@ class PostsDatabaseServicer:
         return True
 
     def _handle_find(self, req, resp):
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('SELECT * FROM posts')
@@ -80,7 +126,7 @@ class PostsDatabaseServicer:
                 del resp.results[-1]
 
     def _handle_delete(self, req, resp):
-        filter_clause, values = util.entry_to_filter(req.match)
+        filter_clause, values = util.equivalent_filter(req.match)
         try:
             if not filter_clause:
                 res = self._db.execute('DELETE FROM posts')
@@ -95,4 +141,18 @@ class PostsDatabaseServicer:
         resp.result_type = database_pb2.PostsResponse.OK
 
     def _handle_update(self, req, resp):
-        pass
+        # Only support updating ap_id from global_id for now.
+        if not req.match.global_id or not req.entry.ap_id:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = "Must only filter by global_id and set ap_id"
+            return
+        try:
+            self._db.execute(
+                'UPDATE posts SET ap_id=? WHERE global_id=?',
+                req.entry.ap_id, req.match.global_id
+            )
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return
+        resp.result_type = database_pb2.PostsResponse.OK

@@ -45,6 +45,7 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
+            title: "Rabble",
             inject: false,
             template: require("html-webpack-template"),
             appMountId: "root",

@@ -2,7 +2,7 @@ from follow_servicer import FollowDatabaseServicer
 from posts_servicer import PostsDatabaseServicer
 from users_servicer import UsersDatabaseServicer
 
-from proto import database_pb2_grpc
+from services.proto import database_pb2_grpc
 
 
 class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
@@ -13,6 +13,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
 
         posts_servicer = PostsDatabaseServicer(db, logger)
         self.Posts = posts_servicer.Posts
+        self.InstanceFeed = posts_servicer.InstanceFeed
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
         follow_servicer = FollowDatabaseServicer(db, logger)

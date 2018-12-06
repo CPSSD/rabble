@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+// Both handle and host should be fully-qualified for both local and non-local
+// users, as they are required to build the URLs of actors, etc.
+message FollowActivityUser {
+  string handle = 1;
+  string host = 2;
+}
+
+message FollowDetails {
+  FollowActivityUser follower = 1;
+  FollowActivityUser followed = 2;
+}
+
+// ReceivedFollowDetails is what the skinny server received in a raw form, and
+// what is then forwarded on to the s2s follow microservice.
+message ReceivedFollowDetails {
+  string follower = 1;
+  string followed = 2;
+}
+
+message FollowActivityResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  /* Should only be set if result_type is not OK. */
+  string error = 2;
+}
+
+// Service for sending and receiving server-to-server follow requests.
+service S2SFollow {
+  rpc SendFollowActivity(FollowDetails) returns (FollowActivityResponse);
+  rpc ReceiveFollowActivity(ReceivedFollowDetails) returns (FollowActivityResponse);
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "google/protobuf/timestamp.proto";
+
+// NewArticle has the same contents as request from client with timestamp
+// converted to protobuf format.
+message NewArticle {
+  string author = 1;
+  string title = 2;
+  string body = 3;
+  google.protobuf.Timestamp creation_datetime = 4;
+  bool foreign = 5;
+  // The ActivityPub ID of this article. May not be set.
+  string ap_id = 6;
+}
+
+// NewArticleResponse is a simple response.
+// global_id is included to be sent back to display on client side
+message NewArticleResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+    }
+
+    ResultType result_type = 1;
+    string global_id = 2;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 3;
+}
+
+message PreviewResponse {
+    enum ResultType {
+        OK = 0;
+        ERROR = 1;
+    }
+
+    ResultType result_type = 1;
+    NewArticle preview = 2;
+
+    /* Should only be set if result_type is not OK. */
+    string error = 3;
+}
+
+service Article {
+  rpc CreateNewArticle(NewArticle) returns (NewArticleResponse);
+  rpc PreviewArticle(NewArticle) returns (PreviewResponse);
+}
