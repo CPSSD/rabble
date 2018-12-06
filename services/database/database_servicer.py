@@ -13,6 +13,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
 
         posts_servicer = PostsDatabaseServicer(db, logger)
         self.Posts = posts_servicer.Posts
+        self.InstanceFeed = posts_servicer.InstanceFeed
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
         follow_servicer = FollowDatabaseServicer(db, logger)

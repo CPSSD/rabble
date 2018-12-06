@@ -156,8 +156,14 @@ message DbFollowResponse {
   repeated Follow results = 3;
 }
 
+message InstanceFeedRequest {
+  int32 num_posts = 1;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
   rpc Follow(DbFollowRequest) returns (DbFollowResponse);
+  // Get the N most recent posts from local users.
+  rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
 }

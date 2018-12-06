@@ -7,6 +7,9 @@ from services.proto import database_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
 
+DEFAULT_NUM_POSTS = 50
+
+
 class PostsDatabaseServicer:
 
     def __init__(self, db, logger):
@@ -24,8 +27,39 @@ class PostsDatabaseServicer:
         self._type_handlers[request.request_type](request, response)
         return response
 
+    def InstanceFeed(self, request, context):
+        resp = database_pb2.PostsResponse()
+        n = request.num_posts
+        if not n:
+            n = DEFAULT_NUM_POSTS
+        self._logger.info('Reading {} posts for instance feed'.format(n))
+        try:
+            # TODO(iandioch): Fix user host insertion. Below query should have
+            # 'WHERE users.host IS NULL' and not 'WHERE users.host = ""'.
+
+            # If new columns are added to the database, this query must be
+            # changed. Change also _handle_insert.
+            res = self._db.execute('SELECT posts.global_id, author_id, title, '
+                                   'body, creation_datetime, md_body, ap_id '
+                                   'FROM posts '
+                                   'INNER JOIN users '
+                                   'ON posts.author_id = users.global_id '
+                                   'WHERE users.host = "" '
+                                   'ORDER BY posts.global_id DESC '
+                                   'LIMIT {} '.format(n))
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
     def _handle_insert(self, req, resp):
         try:
+            # If new columns are added to the database, this query must be
+            # changed. Change also InstanceFeed.
             self._db.execute(
                 'INSERT INTO posts '
                 '(author_id, title, body, creation_datetime, md_body, ap_id) '
@@ -122,4 +156,3 @@ class PostsDatabaseServicer:
             resp.error = str(e)
             return
         resp.result_type = database_pb2.PostsResponse.OK
-
