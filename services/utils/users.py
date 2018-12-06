@@ -61,7 +61,7 @@ class UsersUtil:
             self._logger.error('Retried query too many times.')
             return None
 
-        host = self._normalise_hostname(host)
+        host = self._normalise_hostname(host) if host else host
         user = self.get_user_from_db(handle, host, global_id)
 
         if user is not None:
@@ -86,6 +86,7 @@ class UsersUtil:
                          global_id=None):
         self._logger.debug('User %s@%s (id %s) requested from database',
                            handle, host, global_id)
+        host = self._normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
