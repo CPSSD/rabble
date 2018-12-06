@@ -695,8 +695,7 @@ func createUsersClient() (*grpc.ClientConn, pb.UsersClient) {
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	conn := grpcConn("DB_SERVICE_HOST", "1798")
-	client := pb.NewDatabaseClient(conn)
-	return conn, client
+	return conn, pb.NewDatabaseClient(conn)
 }
 
 func createFollowsClient() (*grpc.ClientConn, pb.FollowsClient) {
@@ -725,19 +724,8 @@ func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
 }
 
 func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
-	const env = "RSS_SERVICE_HOST"
-	host := os.Getenv(env)
-	if host == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
-	}
-	addr := host + ":1973"
-
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Skinny server could not connect to %s: %v", addr, err)
-	}
-	client := pb.NewRSSClient(conn)
-	return conn, client
+	conn := grpcConn("RSS_SERVICE_HOST", "1973")
+	return conn, pb.NewRSSClient(conn)
 }
 
 // buildServerWrapper sets up all necessary individual parts of the server
