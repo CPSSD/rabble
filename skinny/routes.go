@@ -31,8 +31,8 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
-    r.HandleFunc("/c2s/@{username}/recommend_follows",
-                 s.handleRecommendFollows())
+	r.HandleFunc("/c2s/@{username}/recommend_follows",
+		s.handleRecommendFollows())
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/rss_follow", s.handleRssFollow())
@@ -45,7 +45,7 @@ func (s *serverWrapper) setupRoutes() {
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create": s.handleCreateActivity(),
 		"follow": s.handleFollowActivity(),
-		"like": s.handleLikeActivity(),
+		"like":   s.handleLikeActivity(),
 		"accept": approvalHandler,
 		"reject": approvalHandler,
 	}

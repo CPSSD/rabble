@@ -219,7 +219,7 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 
 		f := &pb.ReceivedLikeDetails{
 			LikedObject: t.Object,
-			LikerId: t.Actor.Id,
+			LikerId:     t.Actor.Id,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -233,7 +233,7 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			return
 		} else if resp.ResultType == pb.LikeResponse_ERROR {
 			log.Printf("Could not receive like activity. Error: %v",
-					   resp.Error);
+				resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving like activity.\n")
 			return
@@ -319,4 +319,3 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "{}\n")
 	}
 }
-

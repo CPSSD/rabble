@@ -8,7 +8,7 @@ import time
 
 from utils.logger import get_logger
 from utils.users import UsersUtil
-from servicer import FollowRecommendationsServicer 
+from servicer import FollowRecommendationsServicer
 
 from services.proto import database_pb2_grpc
 from services.proto import recommend_follows_pb2_grpc
@@ -47,7 +47,7 @@ def main():
 
         servicer = FollowRecommendationsServicer(logger, users_util, db_stub)
         recommend_follows_pb2_grpc.add_FollowRecommendationsServicer_to_server(servicer,
-                                                                                server)
+                                                                               server)
 
         server.add_insecure_port('0.0.0.0:1973')
         logger.info('Starting server')

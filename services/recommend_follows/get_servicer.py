@@ -52,7 +52,8 @@ class GetFollowRecommendationsServicer:
 
     def _fit_model(self, data):
         algo = SVD()
-        cross_validate(algo, data, measures=['RMSE', 'MAE'], cv=5, verbose=True)
+        cross_validate(algo, data, measures=[
+                       'RMSE', 'MAE'], cv=5, verbose=True)
         return algo
 
     # Returns a dict of form {user_id: [recommendation]}, where recommendation
@@ -71,12 +72,13 @@ class GetFollowRecommendationsServicer:
             user[follower].append((followed, est))
 
         for u in user:
-            user[u].sort(key=lambda x:x[1], reverse=True)
+            user[u].sort(key=lambda x: x[1], reverse=True)
             user[u] = user[u][:n]
         return user
 
     def _compute_recommendations(self):
-        self._logger.debug('Recomputing recommendations. This may take some time.')
+        self._logger.debug(
+            'Recomputing recommendations. This may take some time.')
         # It is necessary to reload data each time, as it may have changed.
         self._data = self._convert_data(self._load_data())
         self._algo = self._fit_model(self._data)
