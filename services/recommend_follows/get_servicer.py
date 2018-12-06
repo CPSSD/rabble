@@ -64,6 +64,10 @@ class GetFollowRecommendationsServicer:
         pred = algo.test(testset)
         user = defaultdict(list)
         for follower, followed, _, est, _ in pred:
+            if follower == followed:
+                # Never recommend a user follow themselves, no matter how much
+                # they'd love themselves.
+                continue
             user[follower].append((followed, est))
 
         for u in user:
