@@ -62,6 +62,24 @@ class FollowDatabaseHelper(unittest.TestCase):
                             database_pb2.DbFollowResponse.ERROR)
         return find_res
 
+    def update_follow(self, follower=None, followed=None, new_state=None):
+        entry = database_pb2.Follow(state=new_state)
+
+        match = database_pb2.Follow(
+            follower=follower,
+            followed=followed,
+        )
+
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.UPDATE,
+            match=match,
+            entry=entry
+        )
+
+        find_res = self.service.Follow(req, self.ctx)
+        self.assertNotEqual(find_res.result_type,
+                            database_pb2.DbFollowResponse.ERROR)
+        return find_res
 
 
 class FollowDatabase(FollowDatabaseHelper):
@@ -123,6 +141,80 @@ class FollowDatabase(FollowDatabaseHelper):
                                    state=database_pb2.Follow.REJECTED)
         self.assertIn(want, find_res.results)
         self.assertEqual(len(find_res.results), 1)
+
+class TestUpdateDatabase(FollowDatabaseHelper):
+    def test_update_reflects_database(self):
+        self.add_follow(follower=1,
+                        followed=2,
+                        state=database_pb2.Follow.PENDING)
+        self.update_follow(follower=1,
+                           followed=2,
+                           new_state=database_pb2.Follow.ACTIVE)
+        want = database_pb2.Follow(follower=1,
+                                   followed=2,
+                                   state=database_pb2.Follow.ACTIVE)
+        find_res = self.find_follow()
+        self.assertEqual(len(find_res.results), 1)
+        self.assertEqual(find_res.results[0], want)
+
+    def test_update_works_for_rejected(self):
+        self.add_follow(follower=10,
+                        followed=11,
+                        state=database_pb2.Follow.ACTIVE)
+        self.update_follow(follower=10,
+                           followed=11,
+                           new_state=database_pb2.Follow.REJECTED)
+        want = database_pb2.Follow(follower=10,
+                                   followed=11,
+                                   state=database_pb2.Follow.REJECTED)
+        find_res = self.find_follow(state=database_pb2.Follow.REJECTED)
+        self.assertEqual(len(find_res.results), 1)
+        self.assertEqual(find_res.results[0], want)
+
+    def test_update_errors_when_entry_is_not_set(self):
+        match = database_pb2.Follow(follower=8, followed=9)
+
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.UPDATE,
+            match=match,
+        )
+        follow_res = self.service.Follow(req, self.ctx)
+        self.assertEqual(follow_res.result_type,
+                         database_pb2.DbFollowResponse.ERROR)
+
+    def test_update_errors_when_match_is_not_set(self):
+        entry = database_pb2.Follow(
+                follower=8,
+                followed=9,
+                state=database_pb2.Follow.ACTIVE,
+        )
+
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.UPDATE,
+            entry=entry,
+        )
+        follow_res = self.service.Follow(req, self.ctx)
+        self.assertEqual(follow_res.result_type,
+                         database_pb2.DbFollowResponse.ERROR)
+
+    def test_update_errors_when_you_match_multiple_items(self):
+        self.add_follow(follower=20,
+                        followed=21,
+                        state=database_pb2.Follow.ACTIVE)
+        self.add_follow(follower=20,
+                        followed=22,
+                        state=database_pb2.Follow.ACTIVE)
+
+        match = database_pb2.Follow(follower=20)
+        entry = database_pb2.Follow(state=database_pb2.Follow.ACTIVE)
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.UPDATE,
+            entry=entry,
+            match=match,
+        )
+        follow_res = self.service.Follow(req, self.ctx)
+        self.assertEqual(follow_res.result_type,
+                         database_pb2.DbFollowResponse.ERROR)
 
 
 class FollowFindAllDatabase(FollowDatabaseHelper):

@@ -32,6 +32,14 @@ class DB:
             self.commit()
         return res
 
+    def execute_count(self, statement, *params):
+        cursor = self._get_cursor()
+        cursor.execute(statement, params)
+        count = cursor.rowcount
+        cursor.connection.commit()
+        cursor.close()
+        return count
+
     def execute_script(self, script):
         cursor = self._get_cursor()
         cursor.executescript(script)

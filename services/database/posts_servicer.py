@@ -112,7 +112,7 @@ class PostsDatabaseServicer:
 
     def _handle_update(self, req, resp):
         # Only support updating ap_id from global_id for now.
-        if req.match.global_id == 0 or req.entry.ap_id == "":
+        if not req.match.global_id or not req.entry.ap_id:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = "Must only filter by global_id and set ap_id"
             return

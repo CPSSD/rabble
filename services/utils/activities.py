@@ -13,8 +13,7 @@ class ActivitiesUtil:
         return s
     
     def build_inbox_url(self, handle, host):
-        # TODO(iandioch): Consider smarter way of building URL than prefixing
-        # "http://" to host.
+        # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
         if not s.startswith('http'):
             s = 'http://' + s
