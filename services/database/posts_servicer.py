@@ -36,6 +36,9 @@ class PostsDatabaseServicer:
         try:
             # TODO(iandioch): Fix user host insertion. Below query should have
             # 'WHERE users.host IS NULL' and not 'WHERE users.host = ""'.
+
+            # If new columns are added to the database, this query must be
+            # changed. Change also _handle_insert.
             res = self._db.execute('SELECT posts.global_id, author_id, title, '
                                    'body, creation_datetime, md_body, ap_id '
                                    'FROM posts '
@@ -55,6 +58,8 @@ class PostsDatabaseServicer:
 
     def _handle_insert(self, req, resp):
         try:
+            # If new columns are added to the database, this query must be
+            # changed. Change also InstanceFeed.
             self._db.execute(
                 'INSERT INTO posts '
                 '(author_id, title, body, creation_datetime, md_body, ap_id) '
