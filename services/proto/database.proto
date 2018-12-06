@@ -72,6 +72,7 @@ message UsersRequest {
     INSERT = 0;
     FIND = 1;
     FIND_NOT = 2;
+    UPDATE = 3;
   }
 
   RequestType request_type = 1;
