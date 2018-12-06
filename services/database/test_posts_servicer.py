@@ -10,7 +10,9 @@ from services.proto import database_pb2
 
 POSTS_DB_PATH = "./testdb/posts.db"
 
+
 class PostsDatabaseHelper(unittest.TestCase):
+
     def setUp(self):
         def clean_database():
             os.remove(POSTS_DB_PATH)
@@ -67,10 +69,12 @@ class PostsDatabaseHelper(unittest.TestCase):
         self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
         return res
 
+
 class PostsDatabase(PostsDatabaseHelper):
+
     def test_no_foreign_posts_in_instance_feed(self):
-        self.add_user(handle='tayne', host=None) # local user, id 1
-        self.add_user(handle='nude_tayne', host='celery.com') # foreign, id 2
+        self.add_user(handle='tayne', host=None)  # local user, id 1
+        self.add_user(handle='nude_tayne', host='celery.com')  # foreign, id 2
         self.add_post(author_id=1, title='hi', body='hello sam')
         self.add_post(author_id=2, title='yo', body='sammy!')
 
@@ -86,7 +90,7 @@ class PostsDatabase(PostsDatabaseHelper):
         self.assertIn(want, res.results)
 
     def test_limit_works_in_instance_feed(self):
-        self.add_user(handle='tayne', host=None) # local user, id 1
+        self.add_user(handle='tayne', host=None)  # local user, id 1
         self.add_post(author_id=1, title='1 kissie', body='for the boys')
         self.add_post(author_id=1, title='2 kissies', body='for the boys')
         self.add_post(author_id=1, title='3 kissies', body='for the boys')

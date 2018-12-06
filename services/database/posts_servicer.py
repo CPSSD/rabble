@@ -151,4 +151,3 @@ class PostsDatabaseServicer:
             resp.error = str(e)
             return
         resp.result_type = database_pb2.PostsResponse.OK
-

@@ -111,7 +111,8 @@ class FollowDatabaseServicer:
         try:
             # since we only update state we can hardcode that paramater
             query = 'UPDATE follows SET state = ? WHERE ' + filter_clause
-            valstr = str(req.entry.state) + ", " + ', '.join(str(v) for v in values)
+            valstr = str(req.entry.state) + ", " + ', '.join(str(v)
+                                                             for v in values)
             count = self._db.execute_count(query, req.entry.state, *values)
         except sqlite3.Error as e:
             self._logger.warning('Got error writing to DB: ' + str(e))
