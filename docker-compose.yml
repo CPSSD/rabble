@@ -52,6 +52,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - testnetwork
+      - default
     depends_on:
       - "logger_service"
     environment:

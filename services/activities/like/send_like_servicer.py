@@ -28,12 +28,6 @@ class SendLikeServicer:
             s = 'http://' + s
         return s
 
-    def _create_actor_object(self, liker_handle):
-        return {
-            'type': 'Person',
-            'id': self._activ_util.build_actor(liker_handle, self._hostname),
-        }
-
     def _get_author(self, article):
         user = self._user_util.get_user_from_db(
             global_id=article.author_id)
@@ -76,7 +70,7 @@ class SendLikeServicer:
             response.error = "Error getting article author from DB"
             return response
         activity = build_like_activity(
-            self._create_actor_object(req.liker_handle),
+            self._activ_util.build_actor(req.liker_handle, self._hostname),
             self._create_article_object(author, article))
         inbox = self._activ_util.build_inbox_url(author.handle, author.host)
         resp, err = self._activ_util.send_activity(activity, inbox)

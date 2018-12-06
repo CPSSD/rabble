@@ -81,14 +81,15 @@ class ReceiveLikeServicer:
         resp = self._db.Follow(db_pb.DbFollowRequest(
             request_type=db_pb.DbFollowRequest.FIND,
             match=db_pb.Follow(followed=author_id),
-        )
+        ))
         if resp.result_type != db_pb.DbFollowResponse.OK:
             return db_pb.error
         self._logger.info("Have %d users to notify", len(resp.results))
         # Gather up the users, filter local and non-unique hosts.
         hosts_to_users = {}
-        for user_id in resp.results:
-            user = self._user_util.get_user_from_db(global_id=user_id)
+        for follow in resp.results:
+            user = self._user_util.get_user_from_db(
+                global_id=follow.follower)
             if user is None:
                 self._logger.warning(
                     "Could not find user %d, skipping", user_id)
@@ -100,11 +101,12 @@ class ReceiveLikeServicer:
         activity = build_like_activity(req.liker_id, req.liked_object)
         for host, user in hosts_to_users.items():
             inbox = self._activ_util.build_inbox_url(user.handle, host)
+            self._logger.info("Sending like to: %s", inbox)
             resp, err = self._activ_util.send_activity(activity, inbox)
             if err:
                 self._logger.warning(
-                    "Error sending activity to %s@%s: %s",
-                    user.handle, host, err
+                    "Error sending activity to '%s' at '%s': %s",
+                    user.handle, host, str(err)
                 )
         return None
 
