@@ -1,10 +1,12 @@
 import * as React from "react";
 
+import {IEditUserResult, EditUserPromise} from "../models/edit_user";
+
 interface IAccountEditState {
   bio: string;
-  display_name: string;
-  current_password: string;
-  new_password: string;
+  displayName: string;
+  currentPassword: string;
+  newPassword: string;
 }
 
 export class AccountEdit extends React.Component<{}, IAccountEditState> {
@@ -14,9 +16,9 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
 
     this.state = {
       bio: "",
-      display_name: "",
-      current_password: "",
-      new_password: "",
+      currentPassword: "",
+      displayName: "",
+      newPassword: "",
     };
 
     this.handlePassword = this.handlePassword.bind(this);
@@ -40,25 +42,37 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
 
   public handleUpdate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log(this.state);
+    EditUserPromise(this.state.bio,
+                    this.state.displayName,
+                    this.state.currentPassword,
+                    this.state.newPassword,
+    ).then((response: IEditUserResult) => {
+      if (!response.success) {
+        alert("Error editing: " + response.error);
+      }
+    })
+    .catch(this.handleUpdateError);
   }
 
   private form() {
     // TODO: It would be nice to fill in the current user details here
     return (
       <div>
-        <form className="pure-form pure-form-aligned" onSubmit={this.handleUpdate}>
+        <form
+          className="pure-form pure-form-aligned"
+          onSubmit={this.handleUpdate}
+        >
           <fieldset>
             <legend>Blank fields are left unchanged</legend>
             <div className="pure-control-group">
-                <label htmlFor="new_password">New Password</label>
+                <label htmlFor="newPassword">New Password</label>
                 <input
-                  id="new_password"
+                  id="newPassword"
                   type="password"
                   placeholder="New Password"
                   className="pure-input-2-3"
-                  value={this.state.new_password}
-                  onChange={this.handlePassword}
+                  value={this.state.newPassword}
+                  onChange={this.handleNewPassword}
                 />
             </div>
             <div className="pure-control-group">
@@ -68,7 +82,7 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
                   type="text"
                   placeholder="Display Name"
                   className="pure-input-2-3"
-                  value={this.state.display_name}
+                  value={this.state.displayName}
                   onChange={this.handleDisplayName}
                 />
             </div>
@@ -92,7 +106,7 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
                   placeholder="Password"
                   className="pure-input-2-3"
                   required={true}
-                  value={this.state.current_password}
+                  value={this.state.currentPassword}
                   onChange={this.handlePassword}
                 />
             </div>
@@ -113,14 +127,14 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
   private handleNewPassword(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
-      new_password: target.value,
+      newPassword: target.value,
     });
   }
 
   private handlePassword(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
-      current_password: target.value,
+      currentPassword: target.value,
     });
   }
 
@@ -134,8 +148,11 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
   private handleDisplayName(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target;
     this.setState({
-      display_name: target.value,
+      displayName: target.value,
     });
   }
 
+  private handleUpdateError() {
+    alert("Error attempting to update.");
+  }
 }
