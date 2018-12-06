@@ -8,6 +8,28 @@ class LikeDatabaseServicer:
         self._db = db
         self._logger = logger
 
+    def LikesCollection(self, req, context):
+        self._logger.debug(
+            "Got likes collection request for article %d",
+            req.article_id
+        )
+        response = db_pb.LikesCollectionResponse(
+            result_type=db_pb.LikesCollectionResponse.OK,
+        )
+        try:
+            res = self._db.execute(
+                "SELECT user_id FROM likes "
+                "WHERE article_id = ?",
+                req.article_id)
+            print(res)
+            response.liking_user_ids.extend(
+                [u[0] for u in res])
+        except sqlite3.Error as e:
+            self._logger.error("LikesCollection error: %s", str(e))
+            response.result_type = db_pb.LikesCollectionResponse.ERROR
+            response.error = str(e)
+        return response
+
     def LikedCollection(self, req, context):
         self._logger.debug(
             "Got liked collection request for user %d",

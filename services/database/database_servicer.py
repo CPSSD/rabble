@@ -21,4 +21,5 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         like_servicer = LikeDatabaseServicer(db, logger)
         self.AddLike = like_servicer.AddLike
         self.LikedCollection = like_servicer.LikedCollection
+        self.LikesCollection = like_servicer.LikesCollection
 
