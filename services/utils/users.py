@@ -9,6 +9,13 @@ class UsersUtil:
         self._logger = logger
         self._db = db_stub
 
+    def _normalise_hostname(self, hostname):
+        if not hostname.startswith('http'):
+            self._logger.info('Normalising hostname from %s', hostname)
+            hostname = 'http://' + hostname
+            self._logger.info('to %s', hostname)
+        return hostname
+
     def parse_username(self, username):
         username = username.lstrip('@')
         p = username.split('@')
@@ -54,6 +61,7 @@ class UsersUtil:
             self._logger.error('Retried query too many times.')
             return None
 
+        host = self._normalise_hostname(host)
         user = self.get_user_from_db(handle, host, global_id)
 
         if user is not None:
