@@ -32,24 +32,23 @@ def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
     activ_util = ActivitiesUtil(logger)
-
     logger.info("Creating db connection")
 
     with grpc.insecure_channel(get_db_channel_address(logger)) as db_chan:
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
+        users_util = UsersUtil(logger, db_stub)
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         approver_pb2_grpc.add_ApproverServicer_to_server(
-            ApproverServicer(logger, db_stub, activ_util),
+            ApproverServicer(logger, db_stub, activ_util, users_util),
             server,
         )
-        
+
         server.add_insecure_port('0.0.0.0:2077')
         logger.info("Starting approver service on port 2077")
         server.start()
         while True:
             time.sleep(60 * 60 * 24)  # One day
-        
 
 if __name__ == '__main__':
     main()

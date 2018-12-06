@@ -93,6 +93,8 @@ type serverWrapper struct {
 	s2sLike       pb.S2SLikeClient
 	approverConn  *grpc.ClientConn
 	approver      pb.ApproverClient
+	rssConn       *grpc.ClientConn
+	rss           pb.RSSClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -185,6 +187,40 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			return
+		}
+		ue := &pb.UsersEntry{Handle: v["username"]}
+		resp, err := s.rss.PerUserRss(ctx, ue)
+		if err != nil {
+			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.ResultType == pb.RssResponse_ERROR {
+			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, resp.Message)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if resp.ResultType == pb.RssResponse_DENIED {
+			log.Printf("Access denied in rss.PerUserRss(%v): %v", *ue, resp.Message)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/rss+xml")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, resp.Feed)
 	}
 }
 
@@ -673,6 +709,7 @@ func (s *serverWrapper) shutdown() {
 	s.feedConn.Close()
 	s.usersConn.Close()
 	s.s2sFollowConn.Close()
+	s.rssConn.Close()
 }
 
 func grpcConn(env string, port string) *grpc.ClientConn {
@@ -705,8 +742,7 @@ func createUsersClient() (*grpc.ClientConn, pb.UsersClient) {
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	conn := grpcConn("DB_SERVICE_HOST", "1798")
-	client := pb.NewDatabaseClient(conn)
-	return conn, client
+	return conn, pb.NewDatabaseClient(conn)
 }
 
 func createFollowsClient() (*grpc.ClientConn, pb.FollowsClient) {
@@ -734,6 +770,11 @@ func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
 	return conn, pb.NewS2SLikeClient(conn)
 }
 
+func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
+	conn := grpcConn("RSS_SERVICE_HOST", "1973")
+	return conn, pb.NewRSSClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -759,6 +800,7 @@ func buildServerWrapper() *serverWrapper {
 	feedConn, feedClient := createFeedClient()
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
+	rssConn, rssClient := createRSSClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
@@ -785,6 +827,8 @@ func buildServerWrapper() *serverWrapper {
 		s2sLike:       s2sLikeClient,
 		approver:      approverClient,
 		approverConn:  approverConn,
+		rssConn:       rssConn,
+		rss:           rssClient,
 	}
 	s.setupRoutes()
 	return s

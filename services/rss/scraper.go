@@ -48,11 +48,14 @@ func (s *serverWrapper) convertFeedToPost(gf *gofeed.Feed, authorId int64) []*pb
 		if creationErr != nil {
 			continue
 		}
-
+		content := r.Content
+		if content == "" {
+			content = r.Description
+		}
 		postArray = append(postArray, &pb.PostsEntry{
 			AuthorId:         authorId,
 			Title:            r.Title,
-			Body:             r.Content,
+			Body:             content,
 			CreationDatetime: creationTime,
 		})
 	}
@@ -64,9 +67,8 @@ func (s *serverWrapper) runScraper() {
 	defer cancel()
 	// get all rss users from db
 	users, findErr := s.getAllRssUsers(ctx)
-
 	if findErr != nil {
-		log.Printf(findErr.Error())
+		log.Printf("Scraper all users find got: %v\n", findErr.Error())
 	}
 
 	guard := make(chan struct{}, goRoutineCount)
@@ -88,26 +90,16 @@ func (s *serverWrapper) runScraper() {
 			// Convert feed to post items
 			postFormArray := s.convertFeedToPost(feed, u.GlobalId)
 			// Get all the rss feed user's posts
-			findReq := &pb.PostsRequest{
-				RequestType: pb.PostsRequest_FIND,
-				Match: &pb.PostsEntry{
-					AuthorId: u.GlobalId,
-				},
-			}
-			findResp, findErr := s.db.Posts(ctx, findReq)
-			if findErr != nil {
-				log.Printf("ERROR: db all post find returned error: %v\n", findErr.Error())
-				return
-			}
-			if findResp.ResultType != pb.PostsResponse_OK || len(findResp.Results) < 1 {
-				log.Printf("ERROR: db all post find returned error: %v\n", findResp.Error)
+			posts, postFindErr := s.GetUserPosts(ctx, u.GlobalId)
+			if postFindErr != nil {
+				log.Printf("Scraper post find got: %v\n", findErr.Error())
 				return
 			}
 
 			// TODO (sailslick) if posts have been updated update
 			// note latest timestamp of these Posts
 			latestTimestamp, _ := ptypes.TimestampProto(time.Unix(0, 0))
-			for _, post := range findResp.Results {
+			for _, post := range posts {
 				if latestTimestamp.GetSeconds() < post.CreationDatetime.GetSeconds() {
 					latestTimestamp = post.CreationDatetime
 				}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -69,6 +70,7 @@ func newTestServerWrapper() *serverWrapper {
 		art:        &ArticleFake{},
 		db:         &DatabaseFake{},
 		feedParser: &gofeedFake{},
+		hostname:   "testserver.com",
 	}
 	return sw
 }
@@ -136,6 +138,84 @@ func TestConvertRssUrlToHandle(t *testing.T) {
 	}
 }
 
+func TestCreateRssHeader(t *testing.T) {
+	tests := []struct {
+		in   *pb.UsersEntry
+		want string
+	}{
+		{
+			in: &pb.UsersEntry{
+				Handle:   "test",
+				GlobalId: 1,
+				Rss:      "https://news.ycombinator.com/rss",
+				Bio:      "",
+			},
+			want: "<title>Rabble blog for test</title>\n" +
+				"<description></description>\n" +
+				"<link>testserver.com/c2s/@test</link>\n" + "<pubDate>",
+		},
+		{
+			in: &pb.UsersEntry{
+				Bio:      "Test bio",
+				GlobalId: 1,
+			},
+			want: "<title>Rabble blog for </title>\n" +
+				"<description>Test bio</description>\n" +
+				"<link>testserver.com/c2s/@</link>\n" + "<pubDate>",
+		},
+	}
+
+	sw := newTestServerWrapper()
+	for _, tcase := range tests {
+		header := sw.createRssHeader(tcase.in)
+		if strings.HasPrefix(header, tcase.want) != true {
+			t.Fatalf("createRssHeader(%v), wanted: %v, got: %v",
+				tcase.in, tcase.want, header)
+		}
+	}
+}
+
+func createRssItem(t *testing.T) {
+	timestamp := time.Now()
+	nowProto, _ := ptypes.TimestampProto(timestamp)
+	datetime := timestamp.Format(rssTimeParseFormat)
+	tests := []struct {
+		inUe *pb.UsersEntry
+		inPe *pb.PostsEntry
+		want string
+	}{
+		{
+			inUe: &pb.UsersEntry{
+				Handle:   "test",
+				GlobalId: 1,
+				Rss:      "https://news.ycombinator.com/rss",
+				Bio:      "",
+			},
+			inPe: &pb.PostsEntry{
+				Title:            "Test Title",
+				MdBody:           "Boday",
+				CreationDatetime: nowProto,
+				GlobalId:         1,
+			},
+			want: "<item>\n" +
+				"<title>Test Title</title>\n" +
+				"<link>testserver.com/c2s/@test/1</link>\n" +
+				"<description>Boday</description>\n" +
+				"<pubDate>" + datetime + "</pubDate>\n" +
+				"</item>\n",
+		},
+	}
+
+	sw := newTestServerWrapper()
+	for _, tcase := range tests {
+		item := sw.createRssItem(tcase.inUe, tcase.inPe)
+		if item == tcase.want {
+			t.Fatalf("createRssItem(%v, %v), wanted: %v, got: %v",
+				tcase.inUe, tcase.inPe, tcase.want, item)
+		}
+	}
+}
+
 func TestNewRssFollow(t *testing.T) {
 	sw := newTestServerWrapper()
 
@@ -181,6 +261,32 @@ func TestConvertFeedToPost(t *testing.T) {
 						PublishedParsed: &then,
 						Title:           fakeTitle,
 						Content:         fakeContent,
+					},
+					&gofeed.Item{
+						PublishedParsed: &then,
+						Title:           fakeTitle,
+						Content:         fakeContent,
+					},
+				},
+			},
+			inAId: 2,
+			want: []*pb.PostsEntry{
+				&pb.PostsEntry{
+					AuthorId:         2,
+					Title:            fakeTitle,
+					Body:             fakeContent,
+					CreationDatetime: thenProto,
+				},
+				&pb.PostsEntry{},
+			},
+		},
+		{
+			inF: &gofeed.Feed{
+				Items: []*gofeed.Item{
+					&gofeed.Item{
+						PublishedParsed: &then,
+						Title:           fakeTitle,
+						Description:     fakeContent,
 					},
 					&gofeed.Item{
 						PublishedParsed: &then,
