@@ -7,6 +7,9 @@ from services.proto import database_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
 
 
+DEFAULT_NUM_POSTS = 50
+
+
 class PostsDatabaseServicer:
 
     def __init__(self, db, logger):
@@ -23,6 +26,26 @@ class PostsDatabaseServicer:
         response = database_pb2.PostsResponse()
         self._type_handlers[request.request_type](request, response)
         return response
+
+    def InstanceFeed(self, request, context):
+        resp = database_pb2.PostsResponse()
+        n = request.num_posts
+        if not n:
+            n = DEFAULT_NUM_POSTS
+        try:
+            res = self._db.execute('SELECT * FROM posts '
+                                   'INNER JOIN users '
+                                   'ON posts.author_id = users.global_id '
+                                   'WHERE users.host IS NULL '
+                                   'LIMIT {}'.format(n))
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
 
     def _handle_insert(self, req, resp):
         try:
