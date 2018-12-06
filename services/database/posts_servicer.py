@@ -42,7 +42,8 @@ class PostsDatabaseServicer:
                                    'INNER JOIN users '
                                    'ON posts.author_id = users.global_id '
                                    'WHERE users.host = "" '
-                                   'LIMIT {}'.format(n))
+                                   'ORDER BY posts.global_id DESC '
+                                   'LIMIT {} '.format(n))
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
