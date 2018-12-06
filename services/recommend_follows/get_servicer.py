@@ -16,11 +16,7 @@ class GetFollowRecommendationsServicer:
         self._logger = logger
         self._users_util = users_util
         self._db = database_stub
-        self._data = self._convert_data(self._load_data())
-        self._algo = self._fit_model(self._data)
-        self._predictions = self._top_n(self._algo, self._data)
-        for p in self._predictions:
-            print(p, self._predictions[p])
+        self._compute_recommendations()
 
     def _load_data(self):
         follow_req = database_pb2.DbFollowRequest(
@@ -39,7 +35,8 @@ class GetFollowRecommendationsServicer:
         item_id = []
         rating = []
         for follow in follow_resp.results:
-            # TODO(iandioch): Consider follow state.
+            # Do not have to worry about follow state, because even a rejected
+            # follow is still a strong signal of interest by the followee.
             user_id.append(follow.follower)
             item_id.append(follow.followed)
             rating.append(1)
@@ -75,6 +72,34 @@ class GetFollowRecommendationsServicer:
             user[u] = user[u][:n]
         return user
 
+    def _compute_recommendations(self):
+        # It is necessary to reload data each time, as it may have changed.
+        self._data = self._convert_data(self._load_data())
+        self._algo = self._fit_model(self._data)
+        self._predictions = self._top_n(self._algo, self._data)
+        for p in self._predictions:
+            print(p, self._predictions[p])
+
+    def ComputeRecommendations(self, request, context):
+        self._compute_recommendations()
+
     def GetFollowRecommendations(self, request, context):
         self._logger.debug('GetFollowing, username = %s', request.username)
-        return None
+
+        resp = recommend_follows_pb2.FollowRecommendationResponse()
+
+        if request.username not in self._predictions:
+            resp.result_type = recommend_follows_pb2.ResultType_ERROR
+            resp.error = "No recommendations found for this user."
+            return resp
+
+        resp.result_type = recommend_follows_pb2.ResultType_OK
+        for p in self._predictions[request.username]:
+            a = self._users_util.get_or_create_user_from_db(global_id=p[0])
+            user_obj = recommend_follows_pb2.FollowRecommendationUser(
+                handle=a.handle,
+                host=a.host,
+                display_name=a.display_name,
+            )
+            resp.results.append(user_obj)
+        return resp
