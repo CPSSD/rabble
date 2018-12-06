@@ -123,7 +123,7 @@ class FollowDatabaseServicer:
         if count != 1:
             err = 'UPDATE affected {} rows, expected 1'.format(count)
             resp.result_type = database_pb2.DbFollowResponse.ERROR
-            self._logger.wanring(err)
+            self._logger.warning(err)
             resp.error = err
 
         resp.result_type = database_pb2.DbFollowResponse.OK
