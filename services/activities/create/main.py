@@ -12,6 +12,7 @@ from servicer import CreateServicer
 from services.proto import create_pb2_grpc
 from services.proto import database_pb2_grpc
 from services.proto import article_pb2_grpc
+from utils.activities import ActivitiesUtil
 
 
 def get_args():
@@ -51,8 +52,9 @@ def main():
     logger.info("Creating create server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)
+    activ_util = ActivitiesUtil(logger)
     create_pb2_grpc.add_CreateServicer_to_server(
-        CreateServicer(db_stub, article_stub, logger, users_util),
+        CreateServicer(db_stub, article_stub, logger, users_util, activ_util),
         server
         )
     server.add_insecure_port('0.0.0.0:1922')
