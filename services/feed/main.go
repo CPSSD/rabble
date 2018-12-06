@@ -157,14 +157,14 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		return s.GetUserFeed(ctx, r)
 	}
 
-	pr := &pb.PostsRequest{
-		RequestType: pb.PostsRequest_FIND,
+	pr := &pb.InstanceFeedRequest{
+		NumPosts: MaxItemsReturned,
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
-	resp, err := s.db.Posts(ctx, pr)
+	resp, err := s.db.InstanceFeed(ctx, pr)
 	if err != nil {
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
 	}
