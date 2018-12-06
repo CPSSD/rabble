@@ -1,7 +1,6 @@
 import unittest
 import logging
 import os
-from functools import partial
 
 import posts_servicer
 import users_servicer
