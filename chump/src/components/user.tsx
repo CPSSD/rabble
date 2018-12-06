@@ -66,9 +66,18 @@ export class User extends React.Component<IUserProps, IUserState> {
   }
 
   public render() {
+    // TODO: Make "Edit your account" button less ugly.
     const blogPosts = this.renderPosts();
     return (
       <div>
+        <div>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <Link to={`/@${this.props.match.params.user}/edit`}>
+              Edit your account!
+            </Link>
+          </div>
+        </div>
         {blogPosts}
       </div>
     );
