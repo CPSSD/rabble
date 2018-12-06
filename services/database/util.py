@@ -37,3 +37,25 @@ def entry_to_filter(entry, defaults, comparison):
 
     filter_clause = ' AND '.join(filter_list)
     return filter_clause, values
+
+def entry_to_update(entry):
+    """
+    entry_to_update converts an entry to the set part of a sql query.
+
+    This is intended to be used with entry_to_filter to produce a full query.
+
+    For example:
+      sql = "UPDATE users SET " update_clause + " WHERE " +  filter_clause
+
+    Arguments:
+      - entry: A proto message entry
+
+    Returns:
+      The SET part of an update SQL query and a list of values.
+
+      For example:
+         "bio = ?, display_name = ?" ["my bio", "my name"]
+    """
+    fields = entry.ListFields()
+    update_list = [f.name + " = ?" for f, _ in fields]
+    return ', '.join(update_list), [v for _, v in fields]
