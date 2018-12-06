@@ -28,6 +28,7 @@ services:
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
       - LIKE_SERVICE_HOST=like_service
       - APPROVER_SERVICE_HOST=approver_service
+      - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
   feed_service:
     build:
       context: ./services/feed
