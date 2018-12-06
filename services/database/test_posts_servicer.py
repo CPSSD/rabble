@@ -84,3 +84,28 @@ class PostsDatabase(PostsDatabaseHelper):
         )
         self.assertEqual(len(res.results), 1)
         self.assertIn(want, res.results)
+
+    def test_limit_works_in_instance_feed(self):
+        self.add_user(handle='tayne', host=None) # local user, id 1
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        self.add_post(author_id=1, title='3 kissies', body='for the boys')
+
+        res = self.instance_feed(2)
+        want0 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=3,
+            author_id=1,
+            title='3 kissies',
+            body='for the boys',
+            creation_datetime={},
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
