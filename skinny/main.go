@@ -541,6 +541,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 		var t likeStruct
 		var r likeResponse;
 		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json")
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
 			log.Printf("Invalid JSON\n")
