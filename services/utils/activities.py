@@ -26,7 +26,8 @@ class ActivitiesUtil:
                               data=body,
                               headers=headers,
                               method='POST')
-        self._logger.debug('Sending activity to foreign server')
+        self._logger.debug('Sending activity to foreign server: %s',
+                           target_inbox)
         try:
             resp = request.urlopen(req)
         except Exception as e:

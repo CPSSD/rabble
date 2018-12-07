@@ -26,7 +26,7 @@ services:
       - CREATE_SERVICE_HOST=create_service2
       - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
-      - LIKE_SERVICE_HOST=like_service
+      - LIKE_SERVICE_HOST=like_service2
       - APPROVER_SERVICE_HOST=approver_service2
   feed_service:
     build:
@@ -47,12 +47,15 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
-  like_service:
+  like_service2:
     build:
       context: ./services/activities/like
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - rabble_testnetwork
+      - default
     depends_on:
       - "logger_service"
     environment:
