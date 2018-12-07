@@ -12,7 +12,7 @@ message PostsEntry {
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
   string md_body = 6;
-  string ap_id = 7;
+  string ap_id = 7;  // This is the URL ID, i.e. http://a.b/@cian/123
   int64 likes_count = 8;
 }
 
@@ -176,6 +176,7 @@ service Database {
   rpc Users(UsersRequest) returns (UsersResponse);
   rpc Follow(DbFollowRequest) returns (DbFollowResponse);
 
-  // Different style of RPC since this will involve multiple tables.
+  // The likes table will require a lot of cross-table style requests,
+  // this is why the RPC is in a different style.
   rpc AddLike(LikeEntry) returns (AddLikeResponse);
 }

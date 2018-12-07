@@ -32,11 +32,11 @@ class ReceiveLikeServicer:
             handle=handle, host=host)
         return user.global_id if user else None
 
-    def _get_liked_article(self, liked_obj):
+    def _get_liked_article(self, liked_obj_id):
         posts_req = db_pb.PostsRequest(
             request_type=db_pb.PostsRequest.FIND,
             match=db_pb.PostsEntry(
-                ap_id=liked_obj,
+                ap_id=liked_obj_id,
             ),
         )
         resp = self._db.Posts(posts_req)
