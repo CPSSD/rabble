@@ -2,12 +2,14 @@ import os
 
 from services.proto import database_pb2 as db_pb
 from services.proto import like_pb2
+from like_util import build_like_activity
 
 class ReceiveLikeServicer:
-    def __init__(self, logger, db, user_util, hostname=None):
+    def __init__(self, logger, db, user_util, activ_util, hostname=None):
         self._logger = logger
         self._db = db
         self._user_util = user_util
+        self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
         if not self._hostname:
@@ -32,11 +34,11 @@ class ReceiveLikeServicer:
             handle=handle, host=host)
         return user.global_id if user else None
 
-    def _get_liked_article(self, liked_obj):
+    def _get_liked_article(self, liked_obj_id):
         posts_req = db_pb.PostsRequest(
             request_type=db_pb.PostsRequest.FIND,
             match=db_pb.PostsEntry(
-                ap_id=liked_obj,
+                ap_id=liked_obj_id,
             ),
         )
         resp = self._db.Posts(posts_req)
@@ -74,8 +76,39 @@ class ReceiveLikeServicer:
         return user.host == ""
 
     def _forward_like(self, author_id, req):
-        # TODO(CianLR): Forward like to following servers.
-        pass
+        # Forward like to following servers.
+        self._logger.info("Sending like to followers")
+        resp = self._db.Follow(db_pb.DbFollowRequest(
+            request_type=db_pb.DbFollowRequest.FIND,
+            match=db_pb.Follow(followed=author_id),
+        ))
+        if resp.result_type != db_pb.DbFollowResponse.OK:
+            return db_pb.error
+        self._logger.info("Have %d users to notify", len(resp.results))
+        # Gather up the users, filter local and non-unique hosts.
+        hosts_to_users = {}
+        for follow in resp.results:
+            user = self._user_util.get_user_from_db(
+                global_id=follow.follower)
+            if user is None:
+                self._logger.warning(
+                    "Could not find user %d, skipping", user_id)
+                continue
+            elif not user.host:
+                continue  # Local user, already handled.
+            hosts_to_users[user.host] = user
+        # Send the activities off.
+        activity = build_like_activity(req.liker_id, req.liked_object)
+        for host, user in hosts_to_users.items():
+            inbox = self._activ_util.build_inbox_url(user.handle, host)
+            self._logger.info("Sending like to: %s", inbox)
+            resp, err = self._activ_util.send_activity(activity, inbox)
+            if err:
+                self._logger.warning(
+                    "Error sending activity to '%s' at '%s': %s",
+                    user.handle, host, str(err)
+                )
+        return None
 
     def ReceiveLikeActivity(self, req, context):
         self._logger.debug("Got like for %s from %s",
