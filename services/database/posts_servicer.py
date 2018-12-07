@@ -44,7 +44,7 @@ class PostsDatabaseServicer:
                                    'FROM posts '
                                    'INNER JOIN users '
                                    'ON posts.author_id = users.global_id '
-                                   'WHERE users.host = "" '
+                                   'WHERE users.host = "" AND users.private = 0 '
                                    'ORDER BY posts.global_id DESC '
                                    'LIMIT {} '.format(n))
             for tup in res:
