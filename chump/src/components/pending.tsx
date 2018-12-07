@@ -48,7 +48,7 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
     return this.state.pending.followers!.map((e: IPendingFollow, i: number) => {
       let user = e.handle;
       if (e.hasOwnProperty("host")) {
-        user = e.handle + "@" + e.host;
+        user = e.handle + "@" + e.host!.replace(/https?:\/\//g, '');
       }
       // We create a function on render
       // This slightly impacts performance, but it's negligible.
