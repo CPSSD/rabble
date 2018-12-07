@@ -5,7 +5,8 @@ import { GetPublicPosts, IBlogPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IFeedProps {
-  username: string;
+  username: string,
+  queryUsername: string;
 }
 
 interface IFeedState {
@@ -23,7 +24,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
   }
 
   public getPosts() {
-    GetPublicPosts(this.props.username)
+    GetPublicPosts(this.props.queryUsername)
       .then((posts: IBlogPost[]) => {
         this.setState({ publicBlog: posts });
       })
@@ -46,6 +47,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
 
   public render() {
     const blogPosts = this.renderPosts();
+    alert("username = " + this.props.username + ", queryUsername = " + this.props.queryUsername);
     return (
       <div>
         <div className="pure-g">
