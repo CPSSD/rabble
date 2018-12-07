@@ -47,7 +47,6 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
 
   public render() {
     const blogPosts = this.renderPosts();
-    alert("username = " + this.props.username + ", queryUsername = " + this.props.queryUsername);
     return (
       <div>
         <div className="pure-g">
