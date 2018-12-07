@@ -171,6 +171,34 @@ message AddLikeResponse {
   string error = 2;
 }
 
+message LikedCollectionRequest {
+  int64 user_id = 1;
+}
+
+message LikedCollectionResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+  repeated string liked_ap_ids = 3;
+}
+
+message LikesCollectionRequest {
+  int64 article_id = 1;
+}
+
+message LikesCollectionResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+  repeated int64 liking_user_ids = 3;
+}
+
 message InstanceFeedRequest {
   int32 num_posts = 1;
 }
@@ -183,6 +211,10 @@ service Database {
   // The likes table will require a lot of cross-table style requests,
   // this is why the RPC is in a different style.
   rpc AddLike(LikeEntry) returns (AddLikeResponse);
+  // All the article (ActivityPub) ids liked by a given user.
+  rpc LikedCollection(LikedCollectionRequest) returns (LikedCollectionResponse);
+  // The user global_ids who like a given article.
+  rpc LikesCollection(LikesCollectionRequest) returns (LikedCollectionResponse);
   // Get the N most recent posts from local users.
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
 }
