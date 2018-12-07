@@ -6,6 +6,7 @@ import { Post } from "./post";
 
 interface IUserState {
   publicBlog: IBlogPost[];
+  // user that we're looking at, filled when we complete our lookup
   user: string;
 }
 
@@ -15,6 +16,8 @@ interface IUserProps extends RouteProps {
       user: string,
     },
   };
+  // currently logged in user
+  username: string;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {
@@ -65,19 +68,33 @@ export class User extends React.Component<IUserProps, IUserState> {
     });
   }
 
+  public userLinks() {
+    if (! (this.props.username === this.props.match.params.user)) {
+      return false;
+    }
+
+    return (
+      <div>
+        <div className="pure-u-5-24"/>
+        <div className="pure-u-10-24 user-menu">
+          <Link to={"/@/edit"} className="pure-button">
+            Edit account
+          </Link>
+          <Link to={"/@/pending"} className="pure-button">
+            Follow requests
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   public render() {
     // TODO: Make "Edit your account" button less ugly.
+    const userEdit = this.userLinks();
     const blogPosts = this.renderPosts();
     return (
       <div>
-        <div>
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-10-24">
-            <Link to={`/@${this.props.match.params.user}/edit`}>
-              Edit your account!
-            </Link>
-          </div>
-        </div>
+        {userEdit}
         {blogPosts}
       </div>
     );

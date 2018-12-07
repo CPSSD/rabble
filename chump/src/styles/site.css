@@ -120,3 +120,12 @@ html, button, input, select, textarea,
 .follow-list {
   padding-bottom: 1em;
 }
+
+.user-menu {
+  font-family: Lato;
+  text-align: center;
+}
+
+.user-menu a {
+  margin-right: 5%;
+}
