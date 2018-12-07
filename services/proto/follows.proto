@@ -81,10 +81,18 @@ message GetFollowsResponse {
     repeated FollowUser results = 3;
 }
 
+message AcceptFollowRequest {
+  string handle = 1;
+  // display_name from FollowUser is unused in this command.
+  FollowUser follower = 2;
+}
+
 service Follows {
   rpc SendFollowRequest(LocalToAnyFollow) returns (FollowResponse);
   rpc RssFollowRequest(LocalToRss) returns (FollowResponse);
   rpc ReceiveFollowRequest(ForeignToLocalFollow) returns (FollowResponse);
   rpc GetFollowers(GetFollowsRequest) returns (GetFollowsResponse);
   rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);
+  // Accept a follow in PENDING state
+  rpc AcceptFollow(AcceptFollowRequest) returns (FollowResponse);
 }

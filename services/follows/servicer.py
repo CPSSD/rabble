@@ -2,6 +2,7 @@ from get_followers import GetFollowsReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 from rss_follow import RssFollowServicer
+from accept_follow import AcceptFollowServicer
 
 from services.proto import follows_pb2_grpc
 
@@ -24,10 +25,14 @@ class FollowsServicer(follows_pb2_grpc.FollowsServicer):
                                            database_stub, rss_stub)
         self.RssFollowRequest = rss_servicer.RssFollowRequest
         rec_servicer = ReceiveFollowServicer(logger, util, users_util,
-                                             database_stub, approver_stub)
+                                             database_stub)
         self.ReceiveFollowRequest = rec_servicer.ReceiveFollowRequest
 
         get_follows_receiver = GetFollowsReceiver(logger, util, users_util,
                                                   database_stub)
         self.GetFollowers = get_follows_receiver.GetFollowers
         self.GetFollowing = get_follows_receiver.GetFollowing
+
+        accept_follows_servicer = AcceptFollowServicer(logger, util, users_util,
+                                                       database_stub)
+        self.AcceptFollow = accept_follows_servicer.AcceptFollow

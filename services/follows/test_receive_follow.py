@@ -70,7 +70,6 @@ class ReceiveFollowTest(unittest.TestCase):
         self.servicer = ReceiveFollowServicer(Mock(),
                                               util,
                                               user_util,
-                                              Mock(),
                                               Mock())
 
     def tearDown(self):
