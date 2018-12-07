@@ -221,6 +221,14 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	}
 	authorId := author.GlobalId
 
+	if author.Private {
+		// TODO(devoxel): Add DENIAL type of response, so we can explain that
+		// the user is private.
+		// TODO(devoxel): Lookup accessor here and see if they're allowed
+		// to view the posts.
+		return &pb.FeedResponse{}, nil
+	}
+
 	pr := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 		Match: &pb.PostsEntry{
