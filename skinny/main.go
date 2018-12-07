@@ -552,6 +552,46 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to follow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		var af pb.AcceptFollowRequest
+		err = decoder.Decode(&af)
+		if err != nil {
+			log.Printf("Invalid JSON: %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON.\n")
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.follows.AcceptFollow(ctx, &af)
+		if err != nil {
+			log.Printf("Could not accept follow: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not accept follow.\n")
+			return
+		}
+
+		if resp.ResultType != pb.FollowResponse_OK {
+			log.Printf("Could not accept follow: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not accept follow.\n")
+			return
+		}
+
+		w.Write([]byte("OK"))
+	}
+}
+
 func (s *serverWrapper) shutdown() {
 	log.Printf("Stopping skinny server.\n")
 	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
