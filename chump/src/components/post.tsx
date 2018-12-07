@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { FollowButton} from "./follow_button";
 import { IBlogPost } from "../models/posts";
+import { FollowButton} from "./follow_button";
 
 interface IPostProps {
   blogPost: IBlogPost;

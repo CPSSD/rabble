@@ -5,7 +5,7 @@ import { GetPublicPosts, IBlogPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IFeedProps {
-  username: string,
+  username: string;
   queryUsername: string;
 }
 

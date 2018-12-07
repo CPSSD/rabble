@@ -15,7 +15,7 @@ interface ISinglePostProps extends RouteProps {
       user: string,
       article_id: string,
     },
-  }, username: string;
+  }; username: string;
 }
 
 export class SinglePost extends React.Component<ISinglePostProps, ISinglePostState> {
