@@ -40,6 +40,37 @@ class UsersDatabaseServicer:
             return False
         return True
 
+    def PendingFollows(self, request, context):
+        resp = database_pb2.PendingFollowResponse()
+
+        try:
+            user_res = self._db.execute('SELECT global_id FROM users '
+                                        'WHERE handle = ? AND host = ""',
+                                        request.handle)
+            if len(user_res) != 1 or len(user_res[0]) != 1:
+                resp.result_type = database_pb2.PendingFollowResponse.ERROR
+                resp.error = 'couldnt get user response, users: ' + str(user_res)
+                return resp
+            user_id = user_res[0][0]
+            res = self._db.execute('SELECT handle, host FROM users '
+                                   'INNER JOIN follows '
+                                   'ON users.global_id = follows.follower '
+                                   'WHERE follows.followed = ? AND follows.state = ? '
+                                   'ORDER BY users.global_id DESC',
+                                   user_id, database_pb2.Follow.PENDING)
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PendingFollowResponse.ERROR
+            resp.error = str(e)
+            return resp
+
+        for tup in res:
+            if len(tup) != 2:
+                resp.result_type = database_pb2.PendingFollowResponse.ERROR
+                resp.error = 'bad database resposne, got mis-sized tuple ' + str(tup)
+                return
+            resp.followers.add(handle = tup[0], host = tup[1])
+        return resp
+
     def Users(self, request, context):
         response = database_pb2.UsersResponse()
         self._users_type_handlers[request.request_type](request, response)
@@ -69,7 +100,6 @@ class UsersDatabaseServicer:
         resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_update(self, req, resp):
-        print(req)
         update_clause, u_values = util.entry_to_update(req.entry)
         filter_clause, f_values = util.equivalent_filter(req.match)
         values = u_values + f_values
