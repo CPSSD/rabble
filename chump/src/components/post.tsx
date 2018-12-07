@@ -2,15 +2,44 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import { IBlogPost } from "../models/posts";
+import { SendLike } from "../models/like";
 
 interface IPostProps {
   blogPost: IBlogPost;
 }
 
-export class Post extends React.Component<IPostProps, {}> {
+interface IPostState {
+  likesCount: number;
+}
+
+export class Post extends React.Component<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      likesCount: this.props.blogPost.likes_count,
+    };
+    this.handleLike = this.handleLike.bind(this);
+  }
+
+  private handleLike(event: React.MouseEvent<HTMLButtonElement>) {
+    SendLike(this.props.blogPost.global_id)
+      .then((res: any) => {
+        const resp = res!.body;
+        if (resp === null) {
+          alert("Error parsing like: " + res);
+          return;
+        }
+        this.setState({
+          likesCount: this.state.likesCount + 1,
+        });
+      })
+      .catch((err: any) => {
+        let message = err.message;
+        if (err.response) {
+          message = err.response.text;
+        }
+        alert(message);
+      });
   }
 
   public render() {
@@ -42,6 +71,13 @@ export class Post extends React.Component<IPostProps, {}> {
             </Link>
             <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
             But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+            <p> Likes: {this.state.likesCount} </p>
+            <button
+              className="pure-button pure-input-1-3 pure-button-primary"
+              onClick={this.handleLike}
+            >
+              Like
+            </button>
           </div>
         </div>
       </div>

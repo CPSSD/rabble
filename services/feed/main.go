@@ -30,6 +30,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			Title:            r.Title,
 			Body:             r.Body,
 			CreationDatetime: r.CreationDatetime,
+			LikesCount:       r.LikesCount,
 		}
 		fp.Results = append(fp.Results, np)
 	}
