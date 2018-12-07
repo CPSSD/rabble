@@ -105,8 +105,14 @@ class ReceiveFollowServicer:
         self._logger.info('Attempting to accept request')
         self._attempt_to_accept(local_user, request)
 
+        state = database_pb2.Follow.ACTIVE
+        if local_user.private:
+            self._logger.info('PENDING follow request: waiting for approval')
+            state = database_pb2.Follow.PENDING
+
         follow_resp = self._util.create_follow_in_db(foreign_user.global_id,
-                                                     local_user.global_id)
+                                                     local_user.global_id,
+                                                     state=state)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Error creating follow: %s', follow_resp.error)
             resp.result_type = follows_pb2.FollowResponse.ERROR
