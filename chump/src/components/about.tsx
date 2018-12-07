@@ -10,7 +10,7 @@ export const About: React.StatelessComponent<{}> = () => {
         <p>Rabble is a new federated blogging platform that aims to be easy to use, trustworthy, and lightweight.</p>
 
         <h4>Be part of the federation.</h4>
-        <p>This is just one instance in a network of connected servers. You can choose to register on whichever Rabble server you like, and you'll be able to follow and interact with authors on other Rabble servers on the network just like they were on the same one. You are free to choose a server based on what's important to you; be it community rules, uptime, language, interface, or anything else.</p>
+        <p>This is just one instance in a network of connected servers. You can choose to register on whichever Rabble server you like, and you'll be able to follow and interact with authors on other Rabble servers on the network. You are free to choose a server based on what's important to you; be it community rules, uptime, language, interface, or anything else.</p>
         <p>Behind the scenes, Rabble uses the <a href="https://activitypub.rocks">ActivityPub protocol</a> to achieve this federation.</p>
 
         <h4>Go beyond Rabble.</h4>
