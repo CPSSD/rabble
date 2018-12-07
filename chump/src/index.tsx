@@ -57,7 +57,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route path="/about" component={About}/>
             <Route
-              path="/@:user/edit"
+              path="/@/edit"
               component={AccountEdit}
             />
             <Route
@@ -66,7 +66,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/@:user"
-              component={User}
+              render={(props) => <User {...props} username={this.state.username}/>}
             />
             <Route
               path="/login"
@@ -91,7 +91,7 @@ export class App extends React.Component<{}, IAppState> {
               component={Follow}
             />
             <PrivateRoute
-              path="/pending"
+              path="/@/pending"
               username={this.state.username}
               component={Pending}
             />
