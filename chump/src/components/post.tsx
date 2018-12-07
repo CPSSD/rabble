@@ -36,15 +36,23 @@ export class Post extends React.Component<IPostProps, {}> {
               src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
               className="author-thumbnail"
             />
-            <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
-              {this.props.blogPost.author}
-            </Link><br/>
-            <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
-              @{this.props.blogPost.author}
-            </Link>
-            <FollowButton follower={this.props.username} followed={this.props.blogPost.author} />
-            <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
-            But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+            <div style={{width: "100%"}}>
+                <div style={{float: "left"}} >
+                    <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
+                      {this.props.blogPost.author}
+                    </Link><br/>
+                    <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+                      @{this.props.blogPost.author}
+                    </Link>
+                </div>
+                <div style={{float: "right"}} >
+                    <FollowButton follower={this.props.username} followed={this.props.blogPost.author} />
+                </div>
+            </div>
+            <div style={{clear: "both"}}>
+                <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
+                But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+            </div>
           </div>
         </div>
       </div>
