@@ -16,7 +16,10 @@ CREATE TABLE IF NOT EXISTS users (
   display_name      text    NOT NULL,
   password          text    NOT NULL,
   bio               text    NOT NULL,
-  rss               text
+  rss               text,
+  /* account_type refers to the account_type enum in the database.proto file.
+   * In normal cases, this will be 0, a normal user. */
+  private           boolean NOT NULL
 );
 
 /* follower and followed both match global_id in entries in users table. */

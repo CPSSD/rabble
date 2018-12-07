@@ -46,6 +46,7 @@ message UpdateUserRequest {
   string new_password = 3;
   string display_name = 4;
   string bio = 5;
+  bool private = 6;
 }
 
 message UpdateUserResponse {
