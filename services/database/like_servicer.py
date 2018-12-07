@@ -21,7 +21,6 @@ class LikeDatabaseServicer:
                 "SELECT user_id FROM likes "
                 "WHERE article_id = ?",
                 req.article_id)
-            print(res)
             response.liking_user_ids.extend(
                 [u[0] for u in res])
         except sqlite3.Error as e:
