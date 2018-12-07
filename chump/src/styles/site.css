@@ -113,6 +113,10 @@ html, button, input, select, textarea,
   width: 100%;
 }
 
-.bio-form {
-  resize: vertical;
+.edit-wrapper {
+  text-align: right;
+  display: inline-block;
+  width: 59%;
+  padding-left: 4.5%;
+  vertical-align: middle;
 }

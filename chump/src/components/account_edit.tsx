@@ -111,13 +111,17 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
                 />
             </div>
 
-            <button
-              type="submit"
-              className="pure-button pure-input-2-3 pure-button-primary"
-            >
-              Update!
-            </button>
-
+            <div className="pure-control-group">
+              <label/>
+              <div className="edit-wrapper">
+                <button
+                  type="submit"
+                  className="pure-button pure-button-primary edit-button"
+                >
+                  Update!
+                </button>
+              </div>
+            </div>
           </fieldset>
         </form>
       </div>
