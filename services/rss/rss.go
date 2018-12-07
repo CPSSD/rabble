@@ -184,6 +184,13 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 		return rssr, nil
 	}
 
+	if ue.Private {
+		log.Printf("%s is a private user.\n", r.Handle)
+		rssr.ResultType = pb.RssResponse_ERROR
+		rssr.Message = "Can not create RSS feed for private user."
+		return rssr, nil
+	}
+
 	// Get user posts
 	posts, postFindErr := s.GetUserPosts(ctx, ue.GlobalId)
 	if postFindErr != nil {
