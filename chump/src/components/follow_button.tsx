@@ -24,7 +24,10 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
   }
 
   public render() {
-    if (this.props.follower == "") return <div />;
+    alert("follower: " + this.props.follower);
+    if (this.props.follower == "" || this.props.follower == this.props.followed) {
+        return null;
+    }
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
         <div className="pure-control-group">
