@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -183,8 +184,27 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 
 	resp, err := s.db.Posts(ctx, pr)
 	if err != nil {
-		log.Print("Single article db get went wrong. Error: %v", err)
+		log.Printf("Single article db get went wrong. Error: %v", err)
 		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
+	}
+
+	if len(resp.Results) > 1 {
+		log.Print("Single article db get went wrong. Got multiple articles.")
+		return nil, errors.New("feed.Get failed: db.Posts(%v) got multiple articles")
+	}
+
+	if len(resp.Results) == 0 {
+		return &pb.FeedResponse{}, nil
+	}
+
+	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].GlobalId)
+	if err != nil {
+		return nil, err
+	}
+
+	if author.Private {
+		// TODO(devoxel): Lookup followers here
+		return &pb.FeedResponse{}, nil
 	}
 
 	return s.convertDBToFeed(ctx, resp), nil
