@@ -127,7 +127,7 @@ message DbFollowRequest {
   /*
    * If request_type is FIND:
    *   - If match.followed is set, then the service will return all followers
-   *     for this user's ID.
+   *     for this users ID.
    *   - If match.follower is set, the service will return all users this
    *     person follows.
    *   - If both match.followed and match.follower are set, the service will
@@ -163,10 +163,31 @@ message InstanceFeedRequest {
   int32 num_posts = 1;
 }
 
+message PendingFollowRequest {
+  string handle = 1;
+}
+
+message PendingFollowResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+
+  message PendingFollow {
+    string handle = 1;
+    string host = 2;
+  }
+  repeated PendingFollow followers = 3;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
   rpc Follow(DbFollowRequest) returns (DbFollowResponse);
   // Get the N most recent posts from local users.
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
+  // Get PENDING Follows with handles rather than ids
+  rpc PendingFollows(PendingFollowRequest) returns (PendingFollowResponse);
 }
