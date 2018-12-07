@@ -1,6 +1,7 @@
 from follow_servicer import FollowDatabaseServicer
 from posts_servicer import PostsDatabaseServicer
 from users_servicer import UsersDatabaseServicer
+from like_servicer import LikeDatabaseServicer
 
 from services.proto import database_pb2_grpc
 
@@ -18,3 +19,6 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.Users = users_servicer.Users
         follow_servicer = FollowDatabaseServicer(db, logger)
         self.Follow = follow_servicer.Follow
+        like_servicer = LikeDatabaseServicer(db, logger)
+        self.AddLike = like_servicer.AddLike
+

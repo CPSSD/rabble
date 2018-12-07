@@ -509,6 +509,71 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	}
 }
 
+type likeStruct struct {
+	ArticleId int64 `json:"article_id"`
+}
+
+type likeResponse struct {
+	Success  bool   `json:"success"`
+	ErrorStr string `json:"error_str"`
+}
+
+func (s *serverWrapper) handleLike() http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		decoder := json.NewDecoder(req.Body)
+		var t likeStruct
+		var r likeResponse;
+		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json")
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			r.Success = false
+			r.ErrorStr = jsonErr.Error()
+			enc.Encode(r)
+			return
+		}
+
+		handle, err := s.getSessionHandle(req)
+		if err != nil {
+			log.Printf("Like call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			r.Success = false
+			r.ErrorStr = "Login Required"
+			enc.Encode(r)
+			return
+		}
+
+		like := &pb.LikeDetails{
+			ArticleId:   t.ArticleId,
+			LikerHandle: handle,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sLike.SendLikeActivity(ctx, like)
+		if err != nil {
+			log.Printf("Could not send like: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			r.Success = false
+			r.ErrorStr = "Issue with sending like"
+			enc.Encode(r)
+			return
+		} else if resp.ResultType != pb.LikeResponse_OK {
+			log.Printf("Could not send like: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			r.Success = false
+			r.ErrorStr = "Issure with sending like"
+			enc.Encode(r)
+			return
+		}
+		r.Success = true
+		enc.Encode(r)
+	}
+}
+
 func (s *serverWrapper) shutdown() {
 	log.Printf("Stopping skinny server.\n")
 	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownWait)
