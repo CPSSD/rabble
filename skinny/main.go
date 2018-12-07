@@ -29,23 +29,6 @@ const (
 	timeoutDuration = time.Minute * 5
 )
 
-type loginStruct struct {
-	Handle   string `json:"handle"`
-	Password string `json:"password"`
-}
-
-type registerRequest struct {
-	Handle      string `json:"handle"`
-	Password    string `json:"password"`
-	DisplayName string `json:"displayName"`
-	Bio         string `json:"bio"`
-}
-
-type registerResponse struct {
-	Error   string `json:"error"`
-	Success bool   `json:"success"`
-}
-
 type createArticleStruct struct {
 	Author           string `json:"author"`
 	Body             string `json:"body"`

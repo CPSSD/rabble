@@ -171,6 +171,10 @@ message AddLikeResponse {
   string error = 2;
 }
 
+message InstanceFeedRequest {
+  int32 num_posts = 1;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -179,4 +183,6 @@ service Database {
   // The likes table will require a lot of cross-table style requests,
   // this is why the RPC is in a different style.
   rpc AddLike(LikeEntry) returns (AddLikeResponse);
+  // Get the N most recent posts from local users.
+  rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
 }

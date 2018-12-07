@@ -38,6 +38,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/login", s.handleLogin())
 	r.HandleFunc("/c2s/logout", s.handleLogout())
 	r.HandleFunc("/c2s/like", s.handleLike())
+	r.HandleFunc("/c2s/update/user", s.handleUserUpdate())
 
 	approvalHandler := s.handleApprovalActivity()
 	// ActorInbox routes are routed based on the activity type
