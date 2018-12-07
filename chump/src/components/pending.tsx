@@ -1,12 +1,16 @@
 import * as React from "react";
-import { GetPendingFollows, IPendingFollow, IPendingFollows } from "../models/pending_follows";
+import { AcceptFollow, GetPendingFollows, IPendingFollow, IPendingFollows } from "../models/follow";
 
-interface IFeedState {
+interface IPendingProps {
+  username: string;
+}
+
+interface IPendingState {
   pending: IPendingFollows;
 }
 
-export class Pending extends React.Component<{}, IFeedState> {
-  constructor(props: any) {
+export class Pending extends React.Component<IPendingProps, IPendingState> {
+  constructor(props: IPendingProps) {
     super(props);
 
     this.state = {
@@ -18,8 +22,12 @@ export class Pending extends React.Component<{}, IFeedState> {
     this.getFollows();
   }
 
-  public handleGetPostsErr() {
-    alert("Could not handle posts error");
+  public handleGetRequestsErr() {
+    alert("Could not get follow requests.");
+  }
+
+  public handleAcceptErr() {
+    alert("Could not accept follow request.");
   }
 
   public render() {
@@ -37,11 +45,14 @@ export class Pending extends React.Component<{}, IFeedState> {
   }
 
   public renderFollowList() {
-    return this.state.pending.followers.map((e: IPendingFollow, i: number) => {
+    return this.state.pending.followers!.map((e: IPendingFollow, i: number) => {
       let user = e.handle;
-      if (e.host) {
+      if (e.hasOwnProperty("host")) {
         user = e.handle + "@" + e.host;
       }
+      // We create a function on render
+      // This slightly impacts performance, but it's negligible.
+      const accept = () => this.acceptFollow(e, i);
       return (
         <div className="pure-g follow-list" key={i}>
           <div className="pure-u-5-24"/>
@@ -53,6 +64,7 @@ export class Pending extends React.Component<{}, IFeedState> {
             <button
               type="submit"
               className="pure-button  pure-button-primary"
+              onClick={accept}
             >
               Accept
             </button>
@@ -63,11 +75,28 @@ export class Pending extends React.Component<{}, IFeedState> {
     });
   }
 
+  private acceptFollow(follow: IPendingFollow, toDel: number) {
+    AcceptFollow(this.props.username, follow)
+      .then(() => {
+        const followers = this.state.pending.followers!.filter(
+          (_, i: number) => i !== toDel,
+        );
+        this.setState({
+          pending: { followers },
+        });
+      })
+      .catch(this.handleAcceptErr);
+  }
+
   private getFollows() {
     GetPendingFollows()
       .then((follows: IPendingFollows) => {
+        if (!follows.hasOwnProperty("followers")) {
+          this.setState({ pending: { followers: [] }});
+          return;
+        }
         this.setState({ pending: follows });
       })
-      .catch(this.handleGetPostsErr);
+      .catch(this.handleGetRequestsErr);
   }
 }
