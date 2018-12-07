@@ -69,7 +69,6 @@ class UsersDatabaseServicer:
         resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_update(self, req, resp):
-        print(req)
         update_clause, u_values = util.entry_to_update(req.entry)
         filter_clause, f_values = util.equivalent_filter(req.match)
         values = u_values + f_values
