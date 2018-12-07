@@ -15,6 +15,9 @@ interface IPostState {
 export class Post extends React.Component<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
+    if (this.props.blogPost.likes_count === undefined) {
+      this.props.blogPost.likes_count = 0;
+    }
     this.state = {
       likesCount: this.props.blogPost.likes_count,
     };
