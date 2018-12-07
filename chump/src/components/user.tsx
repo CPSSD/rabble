@@ -14,7 +14,8 @@ interface IUserProps extends RouteProps {
     params: {
       user: string,
     },
-  }; username: string;
+  };
+  username: string;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {

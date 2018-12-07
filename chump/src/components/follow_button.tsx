@@ -24,7 +24,9 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
   }
 
   public render() {
-    if (this.props.follower == "" || this.props.follower == null || this.props.follower == this.props.followed) {
+    if (this.props.follower === "" ||
+        typeof this.props.follower === "undefined" ||
+        this.props.follower === this.props.followed) {
         return null;
     }
     return (
