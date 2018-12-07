@@ -69,7 +69,12 @@ class ReceiveFollowServicer:
             return local_user, None
         return local_user, foreign_user
 
-    def _attempt_to_accept(self, request):
+    def _attempt_to_accept(self, local_user, request):
+        if local_user.private:
+            self._logger.info("Follow for a private user "
+                              "will wait for them to accept.")
+            return
+
         s2s_follow = s2s_follow_pb2.FollowDetails(
             follower = s2s_follow_pb2.FollowActivityUser(
                 handle = request.follower_handle,
@@ -98,7 +103,7 @@ class ReceiveFollowServicer:
                           local_user.global_id)
 
         self._logger.info('Attempting to accept request')
-        self._attempt_to_accept(request)
+        self._attempt_to_accept(local_user, request)
 
         follow_resp = self._util.create_follow_in_db(foreign_user.global_id,
                                                      local_user.global_id)
