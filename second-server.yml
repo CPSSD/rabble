@@ -27,7 +27,7 @@ services:
       - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
       - LIKE_SERVICE_HOST=like_service2
-      - APPROVER_SERVICE_HOST=approver_service
+      - APPROVER_SERVICE_HOST=approver_service2
   feed_service:
     build:
       context: ./services/feed
@@ -85,13 +85,13 @@ services:
       - default
     depends_on:
       - "database_service"
-      - "approver_service"
+      - "approver_service2"
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
       - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
-      - APPROVER_SERVICE_HOST=approver_service
+      - APPROVER_SERVICE_HOST=approver_service2
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   logger_service:
     build:
@@ -128,7 +128,7 @@ services:
       - LOGGER_SERVICE_HOST=logger_service
       - ARTICLE_SERVICE_HOST=article_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
-  approver_service:
+  approver_service2:
     build:
       context: ./services/activities/approver
       dockerfile: Dockerfile
