@@ -116,3 +116,7 @@ html, button, input, select, textarea,
 .bio-form {
   resize: vertical;
 }
+
+.follow-list {
+  padding-bottom: 1em;
+}
