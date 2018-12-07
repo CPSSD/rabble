@@ -4,10 +4,10 @@ interface ILikePostBody {
   article_id: number;
 }
 
-export function SendLike(article_id: number) {
+export function SendLike(articleId: number) {
   const endpoint: string = "/c2s/like";
   const postBody: ILikePostBody = {
-    article_id,
+    article_id: articleId,
   };
   return new Promise((resolve, reject) => {
     request
@@ -25,4 +25,3 @@ export function SendLike(article_id: number) {
       });
   });
 }
-

@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { IBlogPost } from "../models/posts";
 import { SendLike } from "../models/like";
+import { IBlogPost } from "../models/posts";
 
 interface IPostProps {
   blogPost: IBlogPost;
@@ -22,27 +22,6 @@ export class Post extends React.Component<IPostProps, IPostState> {
       likesCount: this.props.blogPost.likes_count,
     };
     this.handleLike = this.handleLike.bind(this);
-  }
-
-  private handleLike(event: React.MouseEvent<HTMLButtonElement>) {
-    SendLike(this.props.blogPost.global_id)
-      .then((res: any) => {
-        const resp = res!.body;
-        if (resp === null) {
-          alert("Error parsing like: " + res);
-          return;
-        }
-        this.setState({
-          likesCount: this.state.likesCount + 1,
-        });
-      })
-      .catch((err: any) => {
-        let message = err.message;
-        if (err.response) {
-          message = err.response.text;
-        }
-        alert(message);
-      });
   }
 
   public render() {
@@ -85,5 +64,26 @@ export class Post extends React.Component<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private handleLike(event: React.MouseEvent<HTMLButtonElement>) {
+    SendLike(this.props.blogPost.global_id)
+      .then((res: any) => {
+        const resp = res!.body;
+        if (resp === null) {
+          alert("Error parsing like: " + res);
+          return;
+        }
+        this.setState({
+          likesCount: this.state.likesCount + 1,
+        });
+      })
+      .catch((err: any) => {
+        let message = err.message;
+        if (err.response) {
+          message = err.response.text;
+        }
+        alert(message);
+      });
   }
 }
