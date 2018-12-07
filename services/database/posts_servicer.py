@@ -40,7 +40,8 @@ class PostsDatabaseServicer:
             # If new columns are added to the database, this query must be
             # changed. Change also _handle_insert.
             res = self._db.execute('SELECT posts.global_id, author_id, title, '
-                                   'body, creation_datetime, md_body, ap_id '
+                                   'body, creation_datetime, md_body, ap_id, '
+                                   'likes_count '
                                    'FROM posts '
                                    'INNER JOIN users '
                                    'ON posts.author_id = users.global_id '
