@@ -62,6 +62,16 @@ services:
       - LOGGER_SERVICE_HOST=logger_service
       - DB_SERVICE_HOST=database_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  ldnorm_service:
+    build:
+      context: ./services/ldnormaliser
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
   database_service:
     build:
       context: ./services/database
