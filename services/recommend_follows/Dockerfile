@@ -1,14 +1,8 @@
-FROM alpine:3.7
+FROM rabblenetwork/recommend_follows
 
-RUN apk add --no-cache --update python3 python3-dev gcc g++ linux-headers make musl-dev openblas-dev
-
-# Install gRPC & protobufs for Python
-RUN pip3 install grpcio
-RUN pip3 install protobuf
-RUN pip3 install numpy
-RUN pip3 install scipy
-RUN pip3 install pandas
-RUN python3 -m pip install scikit-surprise
+# TODO(iandioch): Do this in a better way.
+# Requires RUN apk add openblas-dev
+# Then pip3 install numpy, scipy, pandas, scikit-surprise
 
 ENV PYTHONPATH="/repo/build_out"
 
