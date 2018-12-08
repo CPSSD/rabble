@@ -42,6 +42,7 @@ class UpdateHandler:
                 display_name=request.display_name,
                 password=pw,
                 bio=request.bio,
+                private=request.private,
             ),
         )
 

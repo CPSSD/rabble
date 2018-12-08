@@ -6,14 +6,18 @@ export interface IEditUserResult {
   success: boolean;
 }
 
-export function EditUserPromise(bio: string, displayName: string,
-                                currentPassword: string,  newPassword: string) {
+export function EditUserPromise(
+  bio: string, displayName: string,
+  currentPassword: string,  newPassword: string,
+  privateAccount: boolean,
+) {
   const url = "/c2s/update/user";
   const postBody = {
     bio,
     current_password: currentPassword,
     display_name: displayName,
     new_password: newPassword,
+    private: privateAccount,
   };
   return new Promise<IEditUserResult>((resolve, reject) => {
     superagent

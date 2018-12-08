@@ -37,9 +37,10 @@ class SendFollowServicer:
         s2s_follow.followed.host = to_host
         self._follow_activity_stub.SendFollowActivity(s2s_follow)
 
-    def _add_follow(self, resp, follower_id, followed_id, is_foreign):
+    def _add_follow(self, resp, follower_id, followed_id, is_private_followed, is_foreign):
         state = database_pb2.Follow.ACTIVE
-        if is_foreign:
+        if is_foreign or is_private_followed:
+            self._logger.info('PENDING follow request: waiting for approval')
             state = database_pb2.Follow.PENDING
 
         follow_resp = self._util.create_follow_in_db(follower_id, followed_id,
@@ -95,6 +96,7 @@ class SendFollowServicer:
         err = self._add_follow(resp,
                                follower_entry.global_id,
                                followed_entry.global_id,
+                               followed_entry.private,
                                is_foreign)
         if err is not None:
             return resp

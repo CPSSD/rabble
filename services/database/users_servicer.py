@@ -18,7 +18,7 @@ class UsersDatabaseServicer:
         }
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 7:
+        if len(tup) != 8:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -32,6 +32,7 @@ class UsersDatabaseServicer:
             entry.password = tup[4]
             entry.bio = tup[5]
             entry.rss = tup[6]
+            entry.private = tup[7]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -50,14 +51,15 @@ class UsersDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO users '
-                '(handle, host, display_name, password, bio, rss) '
-                'VALUES (?, ?, ?, ?, ?, ?)',
+                '(handle, host, display_name, password, bio, rss, private) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?)',
                 req.entry.handle,
                 req.entry.host,
                 req.entry.display_name,
                 req.entry.password,
                 req.entry.bio,
-                req.entry.rss)
+                req.entry.rss,
+                req.entry.private)
         except sqlite3.Error as e:
             self._logger.info("Error inserting")
             self._logger.error(str(e))
@@ -73,10 +75,10 @@ class UsersDatabaseServicer:
 
         if not filter_clause or not update_clause:
             self._logger.info("Could not generate update SQL: "
-                              "filter = %s, update = %s",
+                              "filter_clause: '%s', update_clause: '%s'",
                               filter_clause, update_clause)
             resp.result_type = database_pb2.UsersResponse.ERROR
-            resp.error = str(e)
+            resp.error = "Bad input: could not generate SQL."
             return
 
         sql = "UPDATE users SET " +  update_clause  + " WHERE " +  filter_clause

@@ -7,6 +7,7 @@ interface IAccountEditState {
   displayName: string;
   currentPassword: string;
   newPassword: string;
+  privateAccount: boolean;
 }
 
 export class AccountEdit extends React.Component<{}, IAccountEditState> {
@@ -19,12 +20,14 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
       currentPassword: "",
       displayName: "",
       newPassword: "",
+      privateAccount: false,
     };
 
     this.handlePassword = this.handlePassword.bind(this);
     this.handleNewPassword = this.handleNewPassword.bind(this);
     this.handleBio = this.handleBio.bind(this);
     this.handleDisplayName = this.handleDisplayName.bind(this);
+    this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
   }
 
@@ -42,10 +45,12 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
 
   public handleUpdate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    EditUserPromise(this.state.bio,
-                    this.state.displayName,
-                    this.state.currentPassword,
-                    this.state.newPassword,
+    EditUserPromise(
+      this.state.bio,
+      this.state.displayName,
+      this.state.currentPassword,
+      this.state.newPassword,
+      this.state.privateAccount,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
         alert("Error editing: " + response.error);
@@ -97,6 +102,16 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
                 />
             </div>
 
+            <div className="pure-control-group">
+              <label htmlFor="private">Private Account</label>
+              <input
+                id="private"
+                type="checkbox"
+                checked={this.state.privateAccount}
+                onChange={this.handlePrivate}
+              />
+            </div>
+
             <legend>Enter your current user account</legend>
             <div className="pure-control-group">
                 <label htmlFor="name">Password</label>
@@ -146,6 +161,14 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
     const target = event.target;
     this.setState({
       bio: target.value,
+    });
+  }
+
+  private handlePrivate(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+
+    this.setState({
+      privateAccount: target.checked,
     });
   }
 

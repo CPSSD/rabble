@@ -66,6 +66,8 @@ message UsersEntry {
   string bio = 6;
   // Rss url if a rss user or None if normal user
   string rss = 7;
+  // If private_account is set the account's posts should not be seen publicly
+  bool private = 8;
 }
 
 message UsersRequest {

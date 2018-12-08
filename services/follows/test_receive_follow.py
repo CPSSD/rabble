@@ -8,6 +8,8 @@ from services.proto import database_pb2
 
 class FakeDatabase:
     def __init__(self):
+        # users_dict keeps what users have been added in memory
+        # (username, host) = global_id
         self.users_dict = {
                 ('exists', None): 1,
                 ('also_exists', None): 2,
@@ -44,13 +46,13 @@ class FakeDatabase:
         self.users_dict[user] = self.current_id
         return self.lookup_user(user)
 
-    def add_follow(self, foriegn, local):
-        self.add_follow_called_with = (foriegn, local)
+    def add_follow(self, foriegn, local, state=None):
+        self.add_follow_called_with = (foriegn, local, state)
         resp = database_pb2.DbFollowResponse()
         ids = set(self.users_dict.values())
         if foriegn not in ids or local not in ids:
             resp.result_type = database_pb2.DbFollowResponse.ERROR
-            return resp 
+            return resp
         resp.result_type = database_pb2.DbFollowResponse.OK
         return resp
 
