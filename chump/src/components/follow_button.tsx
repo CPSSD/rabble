@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { CreateFollow } from "../models/follow";
+import { Response } from "superagent";
 
 interface IFormState {
   clicked: boolean;
@@ -50,7 +51,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     event.preventDefault();
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
-    promise.then((res: any) => {
+    promise.then((res: Response) => {
       let message = "Posted follow with response: ";
       if (res.text) {
         message += res.text;
