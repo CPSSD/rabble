@@ -52,9 +52,9 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
     promise.then((res: Response) => {
-      let message = "Posted follow with response: ";
-      if (res.text) {
-        message += res.text;
+      let message = "Posted follow.";
+      if (res.hasOwnProperty("text")) {
+        message += " Response: " + res.text;
       }
       this.alertUser(message);
     })
