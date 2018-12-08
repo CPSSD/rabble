@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -38,13 +37,25 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		v := mux.Vars(r)
 		recipient := v["username"]
 
-		// We're reading from a stream, so we need to ensure it will
-		// get passed downwards without hitting EOF. We create another
-		// Reader and pass that onwards instead.
-		var newStream bytes.Buffer
-		body := io.TeeReader(r.Body, &newStream)
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		body := buf.String()
 
-		d := json.NewDecoder(body)
+		// Normalise the JSON-LD.
+		nr := &pb.NormaliseRequest{
+			Json: body,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.ldNorm.Normalise(ctx, nr)
+		if err != nil || resp.ResultType == pb.NormaliseResponse_ERROR {
+			log.Printf("Could not normalise JSON. Error: %v", err)
+		} else {
+			body = resp.Normalised  // Success, replace the original body.
+		}
+
+		d := json.NewDecoder(strings.NewReader(body))
 		var a activity
 
 		if err := d.Decode(&a); err != nil {
@@ -67,7 +78,10 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 			return
 		}
 
-		r.Body = ioutil.NopCloser(&newStream)
+		// We're reading from a stream, so we need to ensure it will
+		// get passed downwards without hitting EOF. We create another
+		// Reader and pass that onwards instead.
+		r.Body = ioutil.NopCloser(strings.NewReader(body))
 		m(w, r)
 	}
 }
