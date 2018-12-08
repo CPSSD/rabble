@@ -30,7 +30,7 @@ export const About: React.StatelessComponent<{}> = () => {
         <div className="pure-u-1-8" />
         <img src="https://i.imgur.com/Kzi4Jdy.jpg" className="pure-u-3-4" style={{marginBottom: 0}} />
         <p style={{textAlign: "center", fontStyle: "italic", marginTop: 0}}>The Rabble team</p>
-        <p>Rabble was developed at Dublin City University by Aaron Delaney, Noah Ó Donnaile, Ross O'sullivan, and Cian
+        <p>Rabble was developed at Dublin City University by Aaron Delaney, Noah Ó Donnaile, Ross O'Sullivan, and Cian
         Ruane, under the supervision of Dr. Jennifer Foster and Dr. Andrew McCarren.</p>
       </div>
     </div>
