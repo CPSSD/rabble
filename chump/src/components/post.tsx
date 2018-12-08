@@ -68,8 +68,8 @@ export class Post extends React.Component<IPostProps, IPostState> {
                   className="pure-button pure-input-1-3 pure-button-primary"
                   onClick={this.handleLike}
                 >
-              Like
-              </button>
+                  Like
+                </button>
             </div>
           </div>
         </div>
