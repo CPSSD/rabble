@@ -24,6 +24,7 @@ services:
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service
+      - LDNORM_SERVICE_HOST=ldnorm_service
       - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
       - LIKE_SERVICE_HOST=like_service
@@ -54,12 +55,25 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - testnetwork
+      - default
     depends_on:
       - "logger_service"
     environment:
       - LOGGER_SERVICE_HOST=logger_service
       - DB_SERVICE_HOST=database_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  ldnorm_service:
+    build:
+      context: ./services/ldnormaliser
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
   database_service:
     build:
       context: ./services/database

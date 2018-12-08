@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS posts (
   body              text    NOT NULL,
   creation_datetime integer NOT NULL,
   md_body           text    NOT NULL,
-  ap_id             text    NOT NULL
+  ap_id             text    NOT NULL,
+  likes_count       integer NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -28,4 +29,16 @@ CREATE TABLE IF NOT EXISTS follows (
   state             integer NOT NULL,
   PRIMARY KEY (follower, followed)
 );
+
+/*
+  liker_id is the global_id of a user in the users table
+  liked_article_id is the global_id of the article in the posts table.
+*/
+CREATE TABLE IF NOT EXISTS likes (
+  user_id          integer NOT NULL,
+  article_id       integer NOT NULL,
+  PRIMARY KEY (user_id, article_id)
+);
+
 /* Add other tables here */
+
