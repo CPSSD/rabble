@@ -78,6 +78,8 @@ type serverWrapper struct {
 	approver      pb.ApproverClient
 	rssConn       *grpc.ClientConn
 	rss           pb.RSSClient
+	ldNormConn    *grpc.ClientConn
+	ldNorm        pb.LDNormClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -654,6 +656,11 @@ func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
 	return conn, pb.NewRSSClient(conn)
 }
 
+func createLDNormClient() (*grpc.ClientConn, pb.LDNormClient) {
+	conn := grpcConn("LDNORM_SERVICE_HOST", "1804")
+	return conn, pb.NewLDNormClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -680,6 +687,7 @@ func buildServerWrapper() *serverWrapper {
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
 	rssConn, rssClient := createRSSClient()
+	ldNormConn, ldNormClient := createLDNormClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
@@ -706,6 +714,8 @@ func buildServerWrapper() *serverWrapper {
 		s2sLike:       s2sLikeClient,
 		approver:      approverClient,
 		approverConn:  approverConn,
+		ldNorm:        ldNormClient,
+		ldNormConn:    ldNormConn,
 		rssConn:       rssConn,
 		rss:           rssClient,
 	}

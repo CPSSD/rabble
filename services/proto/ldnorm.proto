@@ -7,12 +7,12 @@ message NormaliseRequest {
 }
 
 message NormaliseResponse {
-  enum ResponseType {
+  enum ResultType {
     OK    = 0;
     ERROR = 1;
   }
 
-  ResponseType response_type = 1;
+  ResultType result_type = 1;
   string normalised = 2;
 }
 

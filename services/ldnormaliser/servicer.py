@@ -15,11 +15,11 @@ class LDNormServicer(ldnorm_pb2_grpc.LDNormServicer):
 
     def Normalise(self, request, context):
         self._logger.debug('Got normalise request for: %s', request.json)
-        resp = lpb2.NormaliseResponse(response_type=lpb2.NormaliseResponse.OK)
+        resp = lpb2.NormaliseResponse(result_type=lpb2.NormaliseResponse.OK)
         try:
             resp.normalised = self._norm(request.json)
         except Exception as e:
             self._logger.error("JSON-LD could not be normalised: %s", str(e))
-            resp.response_type = lpb2.NormaliseResponse.ERROR
+            resp.result_type = lpb2.NormaliseResponse.ERROR
         return resp
 
