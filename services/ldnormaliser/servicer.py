@@ -18,8 +18,11 @@ class LDNormServicer(ldnorm_pb2_grpc.LDNormServicer):
         resp = lpb2.NormaliseResponse(result_type=lpb2.NormaliseResponse.OK)
         try:
             resp.normalised = self._norm(request.json)
-        except Exception as e:
-            self._logger.error("JSON-LD could not be normalised: %s", str(e))
+        except (Exception, jsonld.JsonLdError) as e:
+            # For some reason JsonLdError doesn't inherit from Exception so it
+            # has to be caught seperately, it also has a super long message
+            # (~20 lines) so I truncate it.
+            self._logger.error("JSON-LD could not be normalised: %s", str(e)[:50])
             resp.result_type = lpb2.NormaliseResponse.ERROR
         return resp
 
