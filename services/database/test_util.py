@@ -48,3 +48,15 @@ class UtilTest(unittest.TestCase):
         self.assertIn('body IS NOT ""', clause)
         self.assertIn("Despacito", vals)
         self.assertIn("cool", vals)
+
+    def test_update_filter(self):
+        entry = database_pb2.PostsEntry(
+                title="Megolavania",
+                body="sans is angry",
+        )
+        clause, vals = util.entry_to_update(entry)
+        self.assertIn('title = ?', clause)
+        self.assertIn(', ', clause)
+        self.assertIn('body = ?', clause)
+        self.assertIn("Megolavania", vals)
+        self.assertIn("sans is angry", vals)

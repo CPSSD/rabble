@@ -13,6 +13,7 @@ import {Logout} from "./components/logout";
 import {User} from "./components/user";
 import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
+import {AccountEdit} from "./components/account_edit";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -54,6 +55,10 @@ export class App extends React.Component<{}, IAppState> {
               render={(props) => <Feed {...props} queryUsername="" username={this.state.username} />}
             />
             <Route path="/about" component={About}/>
+            <Route
+              path="/@:user/edit"
+              component={AccountEdit}
+            />
             <Route
               path="/@:user/:article_id"
               username={this.state.username}

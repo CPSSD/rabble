@@ -67,14 +67,19 @@ class UpdateHandlerTest(unittest.TestCase):
         self.assertEqual(resp.result, users_pb2.UpdateUserResponse.ERROR)
 
     def test_correct_password(self):
-        req = self._make_request()
         user = self._make_user()
-        self.db_stub.Users.return_value = database_pb2.UsersResponse(
+        user_lookup = database_pb2.UsersResponse(
             result_type=database_pb2.UsersResponse.OK,
             results=[user],
         )
+        user_update = database_pb2.UsersResponse(
+            result_type=database_pb2.UsersResponse.OK,
+        )
+        self.db_stub.Users.side_effect = [user_lookup, user_update]
+
+        req = self._make_request()
         resp = self.update_handler.Update(req, None)
-        self.assertEqual(resp.result, users_pb2.UpdateUserResponse.ERROR)
+        self.assertEqual(resp.result, users_pb2.UpdateUserResponse.ACCEPTED)
 
     def test_incorrect_password(self):
         req = self._make_request()
