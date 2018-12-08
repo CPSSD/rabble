@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { CreateFollow } from "../models/follow";
 import { Response } from "superagent";
+import { CreateFollow } from "../models/follow";
 
 interface IFormState {
   clicked: boolean;
