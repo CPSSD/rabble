@@ -79,11 +79,15 @@ class GetFollowRecommendationsServicer:
     def _compute_recommendations(self):
         self._logger.debug(
             'Recomputing recommendations. This may take some time.')
-        # It is necessary to reload data each time, as it may have changed.
-        self._data = self._convert_data(self._load_data())
-        self._algo = self._fit_model(self._data)
-        self._predictions = self._top_n(self._algo, self._data)
-        self._logger.debug('Finished computing recommendations.')
+        try:
+            # It is necessary to reload data each time, as it may have changed.
+            self._data = self._convert_data(self._load_data())
+            self._algo = self._fit_model(self._data)
+            self._predictions = self._top_n(self._algo, self._data)
+            self._logger.debug('Finished computing recommendations.')
+        except Exception as e:
+            self._logger.error('Could not compute recommendations:')
+            self._logger.error(str(e))
 
     def GetFollowRecommendations(self, request, context):
         self._logger.debug('GetFollowRecommendations, username = %s',
