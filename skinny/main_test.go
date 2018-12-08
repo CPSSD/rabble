@@ -89,6 +89,17 @@ func (f *FollowsFake) SendFollowRequest(_ context.Context, r *pb.LocalToAnyFollo
 	}, nil
 }
 
+type LDNormFake struct {
+	pb.LDNormClient
+}
+
+func (l *LDNormFake) Normalise(_ context.Context, r *pb.NormaliseRequest, _ ...grpc.CallOption) (*pb.NormaliseResponse, error) {
+	return &pb.NormaliseResponse{
+		ResultType: pb.NormaliseResponse_OK,
+		Normalised: r.Json,
+	}, nil
+}
+
 func newTestServerWrapper() *serverWrapper {
 	// TODO(iandioch): Fake/mock instead of using real dependencies
 	r := mux.NewRouter()
@@ -104,6 +115,7 @@ func newTestServerWrapper() *serverWrapper {
 		feed:         &FeedFake{},
 		follows:      &FollowsFake{},
 		s2sLike:      &LikeFake{},
+		ldNorm:       &LDNormFake{},
 	}
 	s.setupRoutes()
 	return s

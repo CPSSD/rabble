@@ -33,6 +33,20 @@ login() {
     "$1/c2s/login"
 }
 
+like() {
+  # Like an article on a rabble instance
+  # Arguments:
+  #   1: domain - the rabble host (including port).
+  #   2: username - the rabble user (created with script)
+  #   3: article_id - the ID of the article to like.
+  login "$1" "$2"
+  $debug curl -b localsession.db \
+    --header "Content-Type: application/json" \
+    --request POST \
+    --data '{"article_id": '"$3"'}' \
+    "$1/c2s/like"
+}
+
 logout() {
   # Log out of a rabble instance
   # Arguments:

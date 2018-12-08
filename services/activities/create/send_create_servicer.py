@@ -8,7 +8,7 @@ from services.proto import database_pb2
 
 class SendCreateServicer:
 
-    def __init__(self, db_stub, logger, users_util):
+    def __init__(self, db_stub, logger, users_util, activ_util):
         host_name = os.environ.get("HOST_NAME")
         if not host_name:
             print("Please set HOST_NAME env variable")
@@ -17,6 +17,7 @@ class SendCreateServicer:
         self._db_stub = db_stub
         self._logger = logger
         self._users_util = users_util
+        self._activ_util = activ_util
         self._client = urllib3.PoolManager()
 
     def _generate_article_id(self, author, article_id):
@@ -83,7 +84,7 @@ class SendCreateServicer:
     def _post_create_req(self, follower_tuple, req):
         # Target & actor format is host/@handle e.g. banana.com/@banana
         target = follower_tuple[0] + "/@" + follower_tuple[1]
-        actor = self._host_name + "/@" + req.author
+        actor = self._activ_util.build_actor(req.author, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
             "@context": "https://www.w3.org/ns/activitystreams",

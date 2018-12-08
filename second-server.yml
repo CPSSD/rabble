@@ -24,10 +24,12 @@ services:
       - ARTICLE_SERVICE_HOST=article_service
       - FEED_SERVICE_HOST=feed_service
       - CREATE_SERVICE_HOST=create_service2
+      - LDNORM_SERVICE_HOST=ldnorm_service
       - RSS_SERVICE_HOST=rss_service
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service2
-      - LIKE_SERVICE_HOST=like_service
+      - LIKE_SERVICE_HOST=like_service2
       - APPROVER_SERVICE_HOST=approver_service2
+      - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
   feed_service:
     build:
       context: ./services/feed
@@ -47,9 +49,24 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
-  like_service:
+  like_service2:
     build:
       context: ./services/activities/like
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - rabble_testnetwork
+      - default
+    depends_on:
+      - "logger_service"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service
+      - DB_SERVICE_HOST=database_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  ldnorm_service:
+    build:
+      context: ./services/ldnormaliser
       dockerfile: Dockerfile
     volumes:
       - .:/repo
@@ -57,8 +74,6 @@ services:
       - "logger_service"
     environment:
       - LOGGER_SERVICE_HOST=logger_service
-      - DB_SERVICE_HOST=database_service
-      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   database_service:
     build:
       context: ./services/database
@@ -171,3 +186,14 @@ services:
       - ARTICLE_SERVICE_HOST=article_service
       - MDC_SERVICE_HOST=markdown_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  recommend_follows_service:
+    build:
+      context: ./services/recommend_follows
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service

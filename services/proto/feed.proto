@@ -24,6 +24,7 @@ message Post {
   string title = 3;
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
+  int64 likes_count = 6;
 }
 
 message FeedResponse {

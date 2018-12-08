@@ -38,7 +38,31 @@ message LoginResponse {
   int64 global_id = 4;
 }
 
+message UpdateUserRequest {
+  // If the user wants to change anything about their account, we'll check
+  // their password again.
+  string handle = 1;
+  string current_password = 2;
+  string new_password = 3;
+  string display_name = 4;
+  string bio = 5;
+}
+
+message UpdateUserResponse {
+  enum ResultType {
+    ACCEPTED = 0;
+    DENIED   = 1;
+    ERROR    = 2;
+  }
+
+  ResultType result = 1;
+  string error = 2;
+  // This fields are set if the result is ACCEPTED
+  string display_name = 3;
+}
+
 service Users {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Create(CreateUserRequest) returns (CreateUserResponse);
+  rpc Update(UpdateUserRequest) returns (UpdateUserResponse);
 }
