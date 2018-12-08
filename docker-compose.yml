@@ -29,6 +29,7 @@ services:
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service
       - LIKE_SERVICE_HOST=like_service
       - APPROVER_SERVICE_HOST=approver_service
+      - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
   feed_service:
     build:
       context: ./services/feed
@@ -183,3 +184,14 @@ services:
       - ARTICLE_SERVICE_HOST=article_service
       - MDC_SERVICE_HOST=markdown_service
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
+  recommend_follows_service:
+    build:
+      context: ./services/recommend_follows
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service

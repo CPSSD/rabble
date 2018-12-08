@@ -89,4 +89,3 @@ func TestsHandleLikeActivity(t *testing.T) {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
 }
-
