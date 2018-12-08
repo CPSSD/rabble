@@ -80,8 +80,8 @@ type serverWrapper struct {
 	rss                       pb.RSSClient
 	followRecommendationsConn *grpc.ClientConn
 	followRecommendations     pb.FollowRecommendationsClient
-  ldNormConn                *grpc.ClientConn
-  ldNorm                    pb.LDNormClient
+	ldNormConn                *grpc.ClientConn
+	ldNorm                    pb.LDNormClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -526,7 +526,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		decoder := json.NewDecoder(req.Body)
 		var t likeStruct
-		var r likeResponse;
+		var r likeResponse
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json")
 		jsonErr := decoder.Decode(&t)
