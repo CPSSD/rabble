@@ -6,6 +6,7 @@ import { Post } from "./post";
 
 interface IFeedProps {
   username: string;
+  queryUsername: string;
 }
 
 interface IFeedState {
@@ -23,7 +24,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
   }
 
   public getPosts() {
-    GetPublicPosts(this.props.username)
+    GetPublicPosts(this.props.queryUsername)
       .then((posts: IBlogPost[]) => {
         this.setState({ publicBlog: posts });
       })
@@ -38,7 +39,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post blogPost={e}/>
+          <Post username={this.props.username} blogPost={e}/>
         </div>
       );
     });

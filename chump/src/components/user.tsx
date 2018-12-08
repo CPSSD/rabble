@@ -15,6 +15,7 @@ interface IUserProps extends RouteProps {
       user: string,
     },
   };
+  username: string;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {
@@ -59,7 +60,7 @@ export class User extends React.Component<IUserProps, IUserState> {
     return this.state.publicBlog.map((e: IBlogPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post blogPost={e}/>
+          <Post username={this.props.username} blogPost={e}/>
         </div>
       );
     });

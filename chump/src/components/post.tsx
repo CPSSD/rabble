@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 
 import { SendLike } from "../models/like";
 import { IBlogPost } from "../models/posts";
+import { FollowButton} from "./follow_button";
 
 interface IPostProps {
   blogPost: IBlogPost;
+  username: string;
 }
 
 interface IPostState {
@@ -45,21 +47,30 @@ export class Post extends React.Component<IPostProps, IPostState> {
               src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
               className="author-thumbnail"
             />
-            <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
-              {this.props.blogPost.author}
-            </Link><br/>
-            <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
-              @{this.props.blogPost.author}
-            </Link>
-            <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
-            But nothing comes out when they move their lips; just a bunch of gibberish.</p>
-            <p> Likes: {this.state.likesCount} </p>
-            <button
-              className="pure-button pure-input-1-3 pure-button-primary"
-              onClick={this.handleLike}
-            >
-              Like
-            </button>
+            <div style={{width: "100%"}}>
+                <div style={{float: "left"}} >
+                    <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
+                      {this.props.blogPost.author}
+                    </Link><br/>
+                    <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+                      @{this.props.blogPost.author}
+                    </Link>
+                </div>
+                <div style={{float: "right"}} >
+                    <FollowButton follower={this.props.username} followed={this.props.blogPost.author} />
+                </div>
+            </div>
+            <div style={{clear: "both"}}>
+                <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
+                But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+                <p> Likes: {this.state.likesCount} </p>
+                <button
+                  className="pure-button pure-input-1-3 pure-button-primary"
+                  onClick={this.handleLike}
+                >
+                  Like
+                </button>
+            </div>
           </div>
         </div>
       </div>

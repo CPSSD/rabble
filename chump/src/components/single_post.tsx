@@ -16,6 +16,7 @@ interface ISinglePostProps extends RouteProps {
       article_id: string,
     },
   };
+  username: string;
 }
 
 export class SinglePost extends React.Component<ISinglePostProps, ISinglePostState> {
@@ -56,7 +57,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
 
     return (
       <div className="pure-g" key={1}>
-        <Post blogPost={this.state.posts[0]}/>
+        <Post username={this.props.username} blogPost={this.state.posts[0]}/>
       </div>
     );
   }
