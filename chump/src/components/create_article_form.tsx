@@ -25,7 +25,8 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
       post: {
         author: "string",
         body: "string",
-        global_id: "3",
+        global_id: 3,
+        likes_count: 0,
         title: "string",
       },
       showModal: false,
@@ -60,7 +61,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-            <Post blogPost={this.state.post}/>
+            <Post username={this.props.username} blogPost={this.state.post}/>
             </HashRouter>
           </div>
         </RModal>

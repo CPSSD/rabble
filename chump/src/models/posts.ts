@@ -2,10 +2,11 @@ import * as Promise from "bluebird";
 import * as superagent from "superagent";
 
 export interface IBlogPost {
-  global_id: string;
+  global_id: number;
   author: string;
   title: string;
   body: string;
+  likes_count: number;
 }
 
 const feedApiURL = "/c2s/feed";

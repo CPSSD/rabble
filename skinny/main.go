@@ -60,24 +60,28 @@ type serverWrapper struct {
 	// database is the RPC client for talking to the database service.
 	database pb.DatabaseClient
 
-	followsConn   *grpc.ClientConn
-	follows       pb.FollowsClient
-	articleConn   *grpc.ClientConn
-	article       pb.ArticleClient
-	feedConn      *grpc.ClientConn
-	feed          pb.FeedClient
-	createConn    *grpc.ClientConn
-	create        pb.CreateClient
-	usersConn     *grpc.ClientConn
-	users         pb.UsersClient
-	s2sFollowConn *grpc.ClientConn
-	s2sFollow     pb.S2SFollowClient
-	s2sLikeConn   *grpc.ClientConn
-	s2sLike       pb.S2SLikeClient
-	approverConn  *grpc.ClientConn
-	approver      pb.ApproverClient
-	rssConn       *grpc.ClientConn
-	rss           pb.RSSClient
+	followsConn               *grpc.ClientConn
+	follows                   pb.FollowsClient
+	articleConn               *grpc.ClientConn
+	article                   pb.ArticleClient
+	feedConn                  *grpc.ClientConn
+	feed                      pb.FeedClient
+	createConn                *grpc.ClientConn
+	create                    pb.CreateClient
+	usersConn                 *grpc.ClientConn
+	users                     pb.UsersClient
+	s2sFollowConn             *grpc.ClientConn
+	s2sFollow                 pb.S2SFollowClient
+	s2sLikeConn               *grpc.ClientConn
+	s2sLike                   pb.S2SLikeClient
+	approverConn              *grpc.ClientConn
+	approver                  pb.ApproverClient
+	rssConn                   *grpc.ClientConn
+	rss                       pb.RSSClient
+	followRecommendationsConn *grpc.ClientConn
+	followRecommendations     pb.FollowRecommendationsClient
+	ldNormConn                *grpc.ClientConn
+	ldNorm                    pb.LDNormClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -524,8 +528,8 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-
-		resp, err := s.database.PendingFollows(ctx, pr)
+		
+				resp, err := s.database.PendingFollows(ctx, pr)
 		if err != nil {
 			log.Printf("Could not get pending follows. Err: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -589,6 +593,99 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		}
 
 		w.Write([]byte("OK"))
+	}
+}
+
+type likeStruct struct {
+	ArticleId int64 `json:"article_id"`
+}
+
+type likeResponse struct {
+	Success  bool   `json:"success"`
+	ErrorStr string `json:"error_str"`
+}
+
+func (s *serverWrapper) handleLike() http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		decoder := json.NewDecoder(req.Body)
+		var t likeStruct
+		var r likeResponse
+		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json")
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			r.Success = false
+			r.ErrorStr = jsonErr.Error()
+			enc.Encode(r)
+			return
+		}
+
+		handle, err := s.getSessionHandle(req)
+		if err != nil {
+			log.Printf("Like call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			r.Success = false
+			r.ErrorStr = "Login Required"
+			enc.Encode(r)
+			return
+		}
+
+		like := &pb.LikeDetails{
+			ArticleId:   t.ArticleId,
+			LikerHandle: handle,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.s2sLike.SendLikeActivity(ctx, like)
+		if err != nil {
+			log.Printf("Could not send like: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			r.Success = false
+			r.ErrorStr = "Issue with sending like"
+			enc.Encode(r)
+			return
+		} else if resp.ResultType != pb.LikeResponse_OK {
+			log.Printf("Could not send like: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			r.Success = false
+			r.ErrorStr = "Issure with sending like"
+			enc.Encode(r)
+			return
+		}
+		r.Success = true
+		enc.Encode(r)
+	}
+}
+
+func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			return
+		}
+
+		req := &pb.FollowRecommendationRequest{Username: v["username"]}
+		resp, err := s.followRecommendations.GetFollowRecommendations(ctx, req)
+		if err != nil {
+			log.Printf("Error in handleRecommendFollows(%v): %v", *req, err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp.Results)
+		if err != nil {
+			log.Printf("Could not marshal recommended follows: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -672,6 +769,16 @@ func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
 	return conn, pb.NewRSSClient(conn)
 }
 
+func createFollowRecommendationsClient() (*grpc.ClientConn, pb.FollowRecommendationsClient) {
+	conn := grpcConn("FOLLOW_RECOMMENDATIONS_HOST", "1973")
+	return conn, pb.NewFollowRecommendationsClient(conn)
+}
+
+func createLDNormClient() (*grpc.ClientConn, pb.LDNormClient) {
+	conn := grpcConn("LDNORM_SERVICE_HOST", "1804")
+	return conn, pb.NewLDNormClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -698,9 +805,12 @@ func buildServerWrapper() *serverWrapper {
 	createConn, createClient := createCreateClient()
 	usersConn, usersClient := createUsersClient()
 	rssConn, rssClient := createRSSClient()
+	ldNormConn, ldNormClient := createLDNormClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
+	followRecommendationsConn, followRecommendationsClient :=
+		createFollowRecommendationsClient()
 	s := &serverWrapper{
 		router:        r,
 		server:        srv,
@@ -724,8 +834,12 @@ func buildServerWrapper() *serverWrapper {
 		s2sLike:       s2sLikeClient,
 		approver:      approverClient,
 		approverConn:  approverConn,
+		ldNorm:        ldNormClient,
+		ldNormConn:    ldNormConn,
 		rssConn:       rssConn,
 		rss:           rssClient,
+		followRecommendationsConn: followRecommendationsConn,
+		followRecommendations:     followRecommendationsClient,
 	}
 	s.setupRoutes()
 	return s

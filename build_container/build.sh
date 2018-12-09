@@ -60,6 +60,12 @@ cp -R services/activities/approver build_out/activities/
 echo "Building users service"
 cp -R services/users build_out/
 
+echo "Building recommend_follows service"
+cp -R services/recommend_follows build_out/
+
+echo "Building ldnorm service"
+cp -R services/ldnormaliser build_out/
+
 echo "Building logger service and lib"
 cp -R services/logger build_out/
 cp -R services/utils build_out/

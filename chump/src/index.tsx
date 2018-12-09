@@ -53,7 +53,7 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               exact={true}
               path="/"
-              render={(props) => <Feed {...props} username=""/>}
+              render={(props) => <Feed {...props} queryUsername="" username={this.state.username} />}
             />
             <Route path="/about" component={About}/>
             <Route
@@ -62,11 +62,13 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/@:user/:article_id"
+              username={this.state.username}
               component={SinglePost}
             />
             <Route
               path="/@:user"
-              render={(props) => <User {...props} username={this.state.username}/>}
+              username={this.state.username}
+              component={User}
             />
             <Route
               path="/login"
@@ -82,6 +84,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <PrivateRoute
               path="/feed"
+              queryUsername={this.state.username}
               username={this.state.username}
               component={Feed}
             />
