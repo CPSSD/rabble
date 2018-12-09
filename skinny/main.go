@@ -513,6 +513,89 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to follow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		pr := &pb.PendingFollowRequest{
+			Handle: handle,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		
+		resp, err := s.database.PendingFollows(ctx, pr)
+		if err != nil {
+			log.Printf("Could not get pending follows. Err: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with finding pending follows.\n")
+			return
+		}
+
+		if resp.ResultType != pb.PendingFollowResponse_OK {
+			log.Printf("Could not get pending follows. Err: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with finding pending follows.\n")
+			return
+		}
+
+		log.Print(resp)
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("could not marshal pending response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to follow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		var af pb.AcceptFollowRequest
+		err = decoder.Decode(&af)
+		if err != nil {
+			log.Printf("Invalid JSON: %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON.\n")
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.follows.AcceptFollow(ctx, &af)
+		if err != nil {
+			log.Printf("Could not accept follow: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not accept follow.\n")
+			return
+		}
+
+		if resp.ResultType != pb.FollowResponse_OK {
+			log.Printf("Could not accept follow: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not accept follow.\n")
+			return
+		}
+
+		w.Write([]byte("OK"))
+	}
+}
+
 type likeStruct struct {
 	ArticleId int64 `json:"article_id"`
 }
@@ -556,7 +639,6 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-
 		resp, err := s.s2sLike.SendLikeActivity(ctx, like)
 		if err != nil {
 			log.Printf("Could not send like: %v", err)

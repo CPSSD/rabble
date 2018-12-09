@@ -14,6 +14,7 @@ import {User} from "./components/user";
 import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 import {AccountEdit} from "./components/account_edit";
+import {Pending} from "./components/pending";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -56,7 +57,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route path="/about" component={About}/>
             <Route
-              path="/@:user/edit"
+              path="/@/edit"
               component={AccountEdit}
             />
             <Route
@@ -91,6 +92,11 @@ export class App extends React.Component<{}, IAppState> {
               path="/follow"
               username={this.state.username}
               component={Follow}
+            />
+            <PrivateRoute
+              path="/@/pending"
+              username={this.state.username}
+              component={Pending}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>

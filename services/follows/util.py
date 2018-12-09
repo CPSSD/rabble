@@ -1,12 +1,15 @@
 from services.proto import follows_pb2
 from services.proto import database_pb2
+from services.proto import s2s_follow_pb2
+from services.proto import approver_pb2
 
 
 class Util:
 
-    def __init__(self, logger, db_stub):
+    def __init__(self, logger, db_stub, approver_stub):
         self._logger = logger
         self._db = db_stub
+        self._approver_stub = approver_stub
 
     def create_follow_in_db(self, follower_id, followed_id,
                             state=database_pb2.Follow.ACTIVE):
@@ -57,3 +60,21 @@ class Util:
                                  str(e))
             return False
         return True
+
+    def attempt_to_accept(self, local_user, foreign_user, host_name):
+        s2s_follow = s2s_follow_pb2.FollowDetails(
+            follower = s2s_follow_pb2.FollowActivityUser(
+                handle = foreign_user.handle,
+                host = foreign_user.host,
+            ),
+            followed = s2s_follow_pb2.FollowActivityUser(
+                handle = local_user.handle,
+                host = host_name,
+            ),
+        )
+        req = approver_pb2.Approval(
+                accept = True,
+                follow=s2s_follow,
+        )
+        # TODO(devoxel): Add response logic
+        print(self._approver_stub.SendApproval(req))

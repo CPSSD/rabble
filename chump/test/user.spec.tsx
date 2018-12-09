@@ -20,6 +20,7 @@ describe("User", () => {
           user: "cian",
         },
       },
+      username: "",
     };
     const wrapper = mount(
       <MemoryRouter>
@@ -42,9 +43,10 @@ describe("User", () => {
           user: "sips",
         },
       },
+      username: "",
     };
     const wrapper = shallow(<User {...userProps} />);
-    expect(wrapper.find("div")).to.have.lengthOf(7);
+    expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Post")).to.have.lengthOf(0);
 
     wrapper.setState({publicBlog: [
@@ -55,7 +57,22 @@ describe("User", () => {
       },
     ]});
 
-    expect(wrapper.find("div")).to.have.lengthOf(5);
+    expect(wrapper.find("div")).to.have.lengthOf(2);
     expect(wrapper.find("Post")).to.have.lengthOf(1);
   });
+
+  it("should render user links when user is looking at their own page", () => {
+    const userProps = {
+      match: {
+        params: {
+          user: "sips",
+        },
+      },
+      username: "sips",
+    };
+    const wrapper = shallow(<User {...userProps} />);
+    expect(wrapper.find("div")).to.have.lengthOf(7);
+    expect(wrapper.find("Post")).to.have.lengthOf(0);
+  });
+
 });

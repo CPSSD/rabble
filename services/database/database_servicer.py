@@ -17,6 +17,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.InstanceFeed = posts_servicer.InstanceFeed
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
+        self.PendingFollows = users_servicer.PendingFollows
         follow_servicer = FollowDatabaseServicer(db, logger)
         self.Follow = follow_servicer.Follow
         like_servicer = LikeDatabaseServicer(db, logger)
