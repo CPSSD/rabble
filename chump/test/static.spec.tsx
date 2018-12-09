@@ -10,7 +10,7 @@ import { render, shallow } from "./enzyme";
 describe("About", () => {
   it("should render correctly", () => {
     const wrapper = shallow(<About/>);
-    expect(wrapper.find("div")).to.have.lengthOf(3);
+    expect(wrapper.find("div")).to.have.lengthOf(4);
   });
 });
 
