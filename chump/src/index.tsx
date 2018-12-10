@@ -57,18 +57,12 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route path="/about" component={About}/>
             <Route
-              path="/@/edit"
-              component={AccountEdit}
-            />
-            <Route
               path="/@:user/:article_id"
-              username={this.state.username}
-              component={SinglePost}
+              render={(props) => <SinglePost {...props} username={this.state.username} />}
             />
             <Route
               path="/@:user"
-              username={this.state.username}
-              component={User}
+              render={(props) => <User {...props} username={this.state.username} />}
             />
             <Route
               path="/login"
@@ -97,6 +91,11 @@ export class App extends React.Component<{}, IAppState> {
               path="/@/pending"
               username={this.state.username}
               component={Pending}
+            />
+            <PrivateRoute
+              path="/@/edit"
+              username={this.state.username}
+              component={AccountEdit}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>
