@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "google/protobuf/timestamp.proto";
+
+// Request a feed for the given user.
+message ActorRequest {
+  // Required.
+  string username = 1;
+}
+
+message ActorObject {
+  string type = 1;
+  string inbox = 2;
+  string outbox = 3;
+  string name = 4;
+  string preferredUsername = 5;
+}
+
+message ActorResponse {
+  ActorObject actor = 1;
+}
+
+service Actors {
+  rpc Get(ActorRequest) returns (ActorResponse);
+}
