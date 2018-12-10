@@ -88,6 +88,23 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		req := &pb.ActorRequest{
+			Username: u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.Get(ctx, req)
+		if err != nil || resp.Actor == nil {
+			log.Printf("Could not receive return actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
+
+		log.Printf("Created actor successfully.")
 	}
 }
 
