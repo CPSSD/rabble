@@ -197,3 +197,15 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service
       - LOGGER_SERVICE_HOST=logger_service
+  actors_service:
+    build:
+      context: ./services/actors
+      dockerfile: Dockerfile
+    volumes:
+     - .:/repo
+    depends_on:
+      - "database_service"
+    environment:
+      - DB_SERVICE_HOST=database_service
+      - LOGGER_SERVICE_HOST=logger_service
+      - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
