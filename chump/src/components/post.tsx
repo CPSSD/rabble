@@ -27,6 +27,13 @@ export class Post extends React.Component<IPostProps, IPostState> {
   }
 
   public render() {
+    let LikeButton : JSX.Element | boolean = <button
+                    className="pure-button pure-input-1-3 pure-button-primary"
+                    onClick={this.handleLike}>Like</button>;
+    if (this.props.username === "" ||
+        typeof this.props.username === "undefined") {
+        LikeButton = false;
+    }
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -68,12 +75,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                         <p> Likes: {this.state.likesCount} </p>
                     </div>
                     <div style={{float: "right"}}>
-                        <button
-                          className="pure-button pure-input-1-3 pure-button-primary"
-                          onClick={this.handleLike}
-                        >
-                          Like
-                        </button>
+                        {LikeButton}
                     </div>
                 </div>
             </div>
