@@ -86,6 +86,18 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	}
 }
 
+type ActorObjectStruct struct {
+	// The @context in the output JSON-LD
+	Context string `json:"@context"`
+
+	// The same types as the protobuf ActorObject.
+	Type              string `json:"type"`
+	Inbox             string `json:"inbox"`
+	Outbox            string `json:"outbox"`
+	Name              string `json:"name"`
+	PreferredUsername string `json:"preferredUsername"`
+}
+
 func (s *serverWrapper) handleActor() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
@@ -104,6 +116,24 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			return
 		}
 
+		// Unfortunately, there's no easier way to add a field to a struct.
+		actor := &ActorObjectStruct{
+			Context:           "https://www.w3.org/ns/activitystreams",
+			Type:              resp.Actor.Type,
+			Inbox:             resp.Actor.Inbox,
+			Outbox:            resp.Actor.Outbox,
+			Name:              resp.Actor.Name,
+			PreferredUsername: resp.Actor.PreferredUsername,
+		}
+
+		enc := json.NewEncoder(w)
+		err = enc.Encode(actor)
+		if err != nil {
+			log.Printf("Could not marshal Actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
 		log.Printf("Created actor successfully.")
 	}
 }
