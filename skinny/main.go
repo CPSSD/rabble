@@ -82,6 +82,8 @@ type serverWrapper struct {
 	followRecommendations     pb.FollowRecommendationsClient
 	ldNormConn                *grpc.ClientConn
 	ldNorm                    pb.LDNormClient
+	actorsConn                *grpc.ClientConn
+	actors                    pb.ActorsClient
 }
 
 func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
@@ -528,7 +530,7 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		
+
 		resp, err := s.database.PendingFollows(ctx, pr)
 		if err != nil {
 			log.Printf("Could not get pending follows. Err: %v", err)
@@ -704,6 +706,7 @@ func (s *serverWrapper) shutdown() {
 	s.usersConn.Close()
 	s.s2sFollowConn.Close()
 	s.rssConn.Close()
+	s.actorsConn.Close()
 }
 
 func grpcConn(env string, port string) *grpc.ClientConn {
@@ -779,6 +782,11 @@ func createLDNormClient() (*grpc.ClientConn, pb.LDNormClient) {
 	return conn, pb.NewLDNormClient(conn)
 }
 
+func createActorsClient() (*grpc.ClientConn, pb.ActorsClient) {
+	conn := grpcConn("ACTORS_SERVICE_HOST", "1973")
+	return conn, pb.NewActorsClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -811,6 +819,7 @@ func buildServerWrapper() *serverWrapper {
 	approverConn, approverClient := createApproverClient()
 	followRecommendationsConn, followRecommendationsClient :=
 		createFollowRecommendationsClient()
+	actorsConn, actorsClient := createActorsClient()
 	s := &serverWrapper{
 		router:        r,
 		server:        srv,
@@ -840,6 +849,8 @@ func buildServerWrapper() *serverWrapper {
 		rss:           rssClient,
 		followRecommendationsConn: followRecommendationsConn,
 		followRecommendations:     followRecommendationsClient,
+		actorsConn:                actorsConn,
+		actors:                    actorsClient,
 	}
 	s.setupRoutes()
 	return s

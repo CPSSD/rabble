@@ -54,4 +54,5 @@ func (s *serverWrapper) setupRoutes() {
 		"reject": approvalHandler,
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
+	r.HandleFunc("/ap/@{username}", s.handleActor())
 }

@@ -52,7 +52,7 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		if err != nil || resp.ResultType == pb.NormaliseResponse_ERROR {
 			log.Printf("Could not normalise JSON. Error: %v", err)
 		} else {
-			body = resp.Normalised  // Success, replace the original body.
+			body = resp.Normalised // Success, replace the original body.
 		}
 
 		d := json.NewDecoder(strings.NewReader(body))
@@ -83,6 +83,58 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		// Reader and pass that onwards instead.
 		r.Body = ioutil.NopCloser(strings.NewReader(body))
 		m(w, r)
+	}
+}
+
+type ActorObjectStruct struct {
+	// The @context in the output JSON-LD
+	Context string `json:"@context"`
+
+	// The same types as the protobuf ActorObject.
+	Type              string `json:"type"`
+	Inbox             string `json:"inbox"`
+	Outbox            string `json:"outbox"`
+	Name              string `json:"name"`
+	PreferredUsername string `json:"preferredUsername"`
+}
+
+func (s *serverWrapper) handleActor() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		req := &pb.ActorRequest{
+			Username: u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.Get(ctx, req)
+		if err != nil || resp.Actor == nil {
+			log.Printf("Could not receive return actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
+
+		// Unfortunately, there's no easier way to add a field to a struct.
+		actor := &ActorObjectStruct{
+			Context:           "https://www.w3.org/ns/activitystreams",
+			Type:              resp.Actor.Type,
+			Inbox:             resp.Actor.Inbox,
+			Outbox:            resp.Actor.Outbox,
+			Name:              resp.Actor.Name,
+			PreferredUsername: resp.Actor.PreferredUsername,
+		}
+
+		enc := json.NewEncoder(w)
+		err = enc.Encode(actor)
+		if err != nil {
+			log.Printf("Could not marshal Actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
+		log.Printf("Created actor successfully.")
 	}
 }
 
