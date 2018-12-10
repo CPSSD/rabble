@@ -119,7 +119,8 @@ class PostsDatabaseServicer:
                 res = self._db.execute('SELECT * FROM posts')
             else:
                 res = self._db.execute(
-                    'SELECT * FROM posts WHERE ' + filter_clause,
+                    'SELECT * FROM posts WHERE ' + filter_clause +
+                    ' ORDER BY posts.global_id DESC ',
                     *values)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR

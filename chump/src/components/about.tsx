@@ -20,7 +20,7 @@ export const About: React.StatelessComponent<{}> = () => {
         <h4>Go beyond Rabble.</h4>
         <p>You can use Rabble to follow your favourite RSS feeds, and you can follow a Rabble blog from your own RSS
         reader as well. Rabble will also eventually support interacting with other ActivityPub-compliant services,
-        like <a href="https://joinmastodon.org">Mastodon</a>, <a href="https://joinpeertube.org">PeerTube</a>, and
+        like <a href="https://joinmastodon.org">Mastodon</a>, <a href="https://joinpeertube.org">PeerTube</a>, and&nbsp;
         <a href="https://plume-org.github.io/Plume/">Plume</a>.</p>
 
         <h4>Interested?</h4>

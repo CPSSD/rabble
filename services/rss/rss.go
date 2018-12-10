@@ -208,7 +208,11 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 	sort.SliceStable(posts, func(i int, j int) bool {
 		return posts[i].CreationDatetime.GetSeconds() < posts[j].CreationDatetime.GetSeconds()
 	})
-	topTen := posts[:10]
+	n := 10
+	if len(posts) < 10 {
+		n = len(posts)
+	}
+	topTen := posts[:n]
 
 	// Convert each post to rss entry
 	for _, post := range topTen {

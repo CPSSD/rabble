@@ -198,7 +198,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return &pb.FeedResponse{}, nil
 	}
 
-	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].GlobalId)
+	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId)
 	if err != nil {
 		return nil, err
 	}
