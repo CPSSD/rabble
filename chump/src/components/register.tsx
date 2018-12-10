@@ -104,7 +104,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
             </div>
             <button
               type="submit"
-              className="pure-button pure-input-1-3 pure-button-primary"
+              className="pure-button pure-input-1-3 pure-button-primary primary-button"
             >
               Register
             </button>

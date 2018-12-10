@@ -131,7 +131,7 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
               <div className="edit-wrapper">
                 <button
                   type="submit"
-                  className="pure-button pure-button-primary edit-button"
+                  className="pure-button pure-button-primary primary-button edit-button"
                 >
                   Update!
                 </button>

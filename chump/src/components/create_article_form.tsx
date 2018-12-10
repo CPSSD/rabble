@@ -52,7 +52,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           <div className="pure-g topnav">
             <div className="pure-u-10-24">
               <button
-                className="pure-button pure-input-1-3 pure-button-primary"
+                className="pure-button pure-input-1-3 pure-button-primary primary-button"
                 onClick={this.handleClosePreview}
               >
                 Close Preview
@@ -99,13 +99,13 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         <div className="pure-button-group" role="group">
           <button
             onClick={this.handlePreview}
-            className="pure-button pure-input-1-3 pure-button-primary"
+            className="pure-button pure-input-1-3 pure-button-primary primary-button"
           >
             Preview
           </button>
           <button
             type="submit"
-            className="pure-button pure-input-1-3 pure-button-primary"
+            className="pure-button pure-input-1-3 pure-button-primary primary-button"
             form="create_post_form"
           >
             Post

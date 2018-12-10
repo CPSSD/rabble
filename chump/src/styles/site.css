@@ -133,3 +133,7 @@ html, button, input, select, textarea,
 .user-menu a {
   margin-right: 5%;
 }
+
+.primary-button {
+  background: #0097a7;
+}

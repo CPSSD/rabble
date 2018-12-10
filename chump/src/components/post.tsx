@@ -27,6 +27,18 @@ export class Post extends React.Component<IPostProps, IPostState> {
   }
 
   public render() {
+    let LikeButton: JSX.Element | boolean = (
+        <button
+            className="pure-button pure-input-1-3 pure-button-primary primary-button"
+            onClick={this.handleLike}
+        >
+        Like
+        </button>
+    );
+    if (this.props.username === "" ||
+        typeof this.props.username === "undefined") {
+        LikeButton = false;
+    }
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -63,13 +75,14 @@ export class Post extends React.Component<IPostProps, IPostState> {
             <div style={{clear: "both"}}>
                 <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
                 But nothing comes out when they move their lips; just a bunch of gibberish.</p>
-                <p> Likes: {this.state.likesCount} </p>
-                <button
-                  className="pure-button pure-input-1-3 pure-button-primary"
-                  onClick={this.handleLike}
-                >
-                  Like
-                </button>
+                <div style={{width: "100%"}}>
+                    <div style={{float: "left"}}>
+                        <p> Likes: {this.state.likesCount} </p>
+                    </div>
+                    <div style={{float: "right"}}>
+                        {LikeButton}
+                    </div>
+                </div>
             </div>
           </div>
         </div>

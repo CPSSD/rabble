@@ -63,7 +63,7 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
           <div>
             <button
               type="submit"
-              className="pure-button  pure-button-primary"
+              className="pure-button pure-button-primary primary-button"
               onClick={accept}
             >
               Accept
