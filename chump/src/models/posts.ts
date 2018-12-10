@@ -14,7 +14,6 @@ const perUserApiURL = "/c2s/@";
 
 export function SortPosts(b: IBlogPost[]) {
   // TODO: Once creation_datetime is working, sort by that (or global_id)
-  b.reverse();
 }
 
 export function PostsAPIPromise(url: string) {
