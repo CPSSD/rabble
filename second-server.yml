@@ -30,6 +30,7 @@ services:
       - LIKE_SERVICE_HOST=like_service2
       - APPROVER_SERVICE_HOST=approver_service2
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
+      - ACTORS_SERVICE_HOST=actors_service
   feed_service:
     build:
       context: ./services/feed
