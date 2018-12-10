@@ -20,7 +20,8 @@ function createFakeResponse(body: IBlogPost[] | Error | null) {
 const validBody: IBlogPost[] = [{
   author: "aaron",
   body: "rm -rf steely/",
-  global_id: "2",
+  global_id: 2,
+  likes_count: 1,
   title: "how to write a plugin",
 }];
 

@@ -9,12 +9,17 @@ import { IBlogPost } from "../src/models/posts";
 import { Feed } from "../src/components/feed";
 import { mount, shallow } from "./enzyme";
 
+const feedProps = {
+  username: "",
+  queryUsername: "",
+}
+
 describe("Feed", () => {
   it("should call post collecting methods", () => {
     const getPosts = sinon.spy(Feed.prototype, "getPosts");
     const render = sinon.spy(Feed.prototype, "renderPosts");
 
-    const wrapper = mount(<MemoryRouter><Feed username=""/></MemoryRouter>);
+    const wrapper = mount(<MemoryRouter><Feed {...feedProps} /></MemoryRouter>);
 
     expect(getPosts).to.have.property("callCount", 1);
     expect(render).to.have.property("callCount", 1);
@@ -27,7 +32,7 @@ describe("Feed", () => {
   it("should properly render posts", () => {
     const getPosts = sinon.spy(Feed.prototype, "getPosts");
 
-    const wrapper = shallow(<Feed username=""/>);
+    const wrapper = shallow(<Feed {...feedProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Post")).to.have.lengthOf(0);
 

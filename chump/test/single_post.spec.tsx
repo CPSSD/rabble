@@ -18,6 +18,7 @@ const postProps = {
       article_id: "test_id",
     },
   },
+  username: "nice",
 };
 
 describe("SinglePost", () => {
@@ -52,7 +53,7 @@ describe("SinglePost", () => {
     wrapper.setState({posts: [
       {
         author: "sips",
-        global_id: "3",
+        global_id: 3,
         body: "id be in so much trouble<br>i'd never live it down<br>lol",
         title: "the man, the myth, the legend",
       },
