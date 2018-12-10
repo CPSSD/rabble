@@ -53,7 +53,7 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
         </div>
         <button
           type="submit"
-          className="pure-button pure-input-1-3 pure-button-primary"
+          className="pure-button pure-input-1-3 pure-button-primary primary-button"
         >
           Follow
         </button>
