@@ -3,20 +3,29 @@ from services.proto import actors_pb2, actors_pb2_grpc
 
 class ActorsServicer(actors_pb2_grpc.ActorsServicer):
 
-    def __init__(self, logger, users_util, db_stub):
+    def __init__(self, logger, users_util, activities_util, db_stub, host_name):
         self._logger = logger
         self._users_util = users_util
+        self._activities_util = activities_util
         self._db_stub = db_stub
+        self._host_name = host_name
 
     def _create_actor(self, username):
         user = self._users_util.get_user_from_db(handle=username, host=None)
         if user is None:
             self._logger.warning('Could not find user in database.')
             return None
+
+        handle = self._users_util.parse_username(username)[0]
+        inbox_url = self._activities_util.build_inbox_url(handle,
+                                                          self._host_name)
         return actors_pb2.ActorObject(
             type='Person',
-            preferredUsername=self._users_util.parse_username(username)[0],
+            preferredUsername=handle,
             name=user.display_name,
+            inbox=inbox_url,
+            # TODO(iandioch): Create outbox URL when we have outboxes.
+            outbox=None,
         )
 
     def Get(self, request, context):

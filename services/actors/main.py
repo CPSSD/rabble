@@ -8,6 +8,7 @@ import time
 
 from utils.logger import get_logger
 from utils.users import UsersUtil
+from utils.activities import ActivitiesUtil
 from servicer import ActorsServicer
 
 from services.proto import database_pb2_grpc
@@ -32,6 +33,14 @@ def get_database_service_address(logger):
     return addr
 
 
+def get_host_name(logger):
+    host = os.environ.get('HOST_NAME')
+    if not host:
+        logger.error('HOST_NAME env var not set.')
+        sys.exit(1)
+    return host
+
+
 def main():
     args = get_args()
     logger = get_logger('actors_service', args.v)
@@ -43,11 +52,14 @@ def main():
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
 
         users_util = UsersUtil(logger, db_stub)
+        activities_util = ActivitiesUtil(logger)
+        host_name = get_host_name(logger)
+
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-        servicer = ActorsServicer(logger, users_util, db_stub)
-        actors_pb2_grpc.add_ActorsServicer_to_server(servicer,
-                                                     server)
+        servicer = ActorsServicer(logger, users_util, activities_util,
+                                  db_stub, host_name)
+        actors_pb2_grpc.add_ActorsServicer_to_server(servicer, server)
 
         server.add_insecure_port('0.0.0.0:1973')
         logger.info('Starting server')
