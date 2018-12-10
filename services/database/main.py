@@ -30,7 +30,8 @@ def main():
     logger.info("Creating DB with path: " + args.db_path)
     database = build_database(logger, args.schema, args.db_path)
     logger.info("Creating server")
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    # TODO(CianLR): Work out why we've to single thread the DB
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     logger.info("Creating database servicer")
     database_pb2_grpc.add_DatabaseServicer_to_server(
         DatabaseServicer(database, logger), server)
