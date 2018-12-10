@@ -528,7 +528,7 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		
+
 		resp, err := s.database.PendingFollows(ctx, pr)
 		if err != nil {
 			log.Printf("Could not get pending follows. Err: %v", err)

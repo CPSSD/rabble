@@ -52,7 +52,7 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		if err != nil || resp.ResultType == pb.NormaliseResponse_ERROR {
 			log.Printf("Could not normalise JSON. Error: %v", err)
 		} else {
-			body = resp.Normalised  // Success, replace the original body.
+			body = resp.Normalised // Success, replace the original body.
 		}
 
 		d := json.NewDecoder(strings.NewReader(body))
@@ -83,6 +83,11 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		// Reader and pass that onwards instead.
 		r.Body = ioutil.NopCloser(strings.NewReader(body))
 		m(w, r)
+	}
+}
+
+func (s *serverWrapper) handleActor() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
