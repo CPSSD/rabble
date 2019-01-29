@@ -2,8 +2,6 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-import "google/protobuf/timestamp.proto";
-
 // Request a feed for the given user.
 message FeedRequest {
   // To request all posts on this instance, send a blank username.
@@ -23,7 +21,7 @@ message Post {
   string author = 2;
   string title = 3;
   string body = 4;
-  google.protobuf.Timestamp creation_datetime = 5;
+  string published = 5;
   int64 likes_count = 6;
 }
 
