@@ -43,7 +43,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
-          <p className="article-byline">Published 1st January 1970</p>
+          <p className="article-byline">Published {this.props.blogPost.parsed_date.toLocaleString()}</p>
           <Link
             to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
             className="article-title"

@@ -7,13 +7,23 @@ export interface IBlogPost {
   title: string;
   body: string;
   likes_count: number;
+  published: string;
+  parsed_date: Date;
 }
 
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
 
 export function SortPosts(b: IBlogPost[]) {
+  // convert published string to js datetime obj
+  b.map((e: IBlogPost) => {
+    e.parsed_date = new Date(e.published);
+    return e;
+  });
   // TODO: Once creation_datetime is working, sort by that (or global_id)
+  b.sort((n: IBlogPost, m: IBlogPost) => {
+    return m.parsed_date.getTime() - n.parsed_date.getTime();
+  });
 }
 
 export function PostsAPIPromise(url: string) {

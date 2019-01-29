@@ -27,6 +27,8 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         body: "string",
         global_id: 3,
         likes_count: 0,
+        parsed_date: new Date(),
+        published: "",
         title: "string",
       },
       showModal: false,
