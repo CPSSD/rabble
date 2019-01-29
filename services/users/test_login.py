@@ -87,3 +87,15 @@ class LoginHandlerTest(unittest.TestCase):
         resp = self.login_handler.Login(req, None)
         self.assertEqual(resp.result, users_pb2.LoginResponse.DENIED)
 
+    def test_blank_password(self):
+        req = self._make_request()
+        req.password = ""
+        resp = self.login_handler.Login(req, None)
+        self.assertEqual(resp.result, users_pb2.LoginResponse.ERROR)
+
+    def test_blank_username(self):
+        req = self._make_request()
+        req.handle = ""
+        resp = self.login_handler.Login(req, None)
+        self.assertEqual(resp.result, users_pb2.LoginResponse.ERROR)
+
