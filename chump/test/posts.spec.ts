@@ -7,6 +7,7 @@ import * as superagent from "superagent";
 import { GetPublicPosts, GetSinglePost, IBlogPost } from "../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
+const now: Date = new Date();
 
 function createFakeResponse(body: IBlogPost[] | Error | null) {
   const end = (cb: any) => {
@@ -22,6 +23,8 @@ const validBody: IBlogPost[] = [{
   body: "rm -rf steely/",
   global_id: 2,
   likes_count: 1,
+  parsed_date: now,
+  published: "",
   title: "how to write a plugin",
 }];
 
