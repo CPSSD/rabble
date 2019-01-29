@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
   rss               text,
   /* account_type refers to the account_type enum in the database.proto file.
    * In normal cases, this will be 0, a normal user. */
-  private           boolean NOT NULL
+  private           boolean NOT NULL,
+  UNIQUE (handle, host)
 );
 
 /* follower and followed both match global_id in entries in users table. */
