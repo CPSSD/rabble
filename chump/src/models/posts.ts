@@ -20,9 +20,9 @@ export function SortPosts(b: IBlogPost[]) {
   // convert published string to js datetime obj
   b.map((e: IBlogPost) => {
     e.parsed_date = new Date(e.published);
-    if (e.bio === "") {
+    if (e.bio === undefined || e.bio === "") {
       e.bio = "Nowadays everybody wanna talk like they got something to say. \
-      But nothing comes out when they move their lips; just a bunch of gibberish."
+      But nothing comes out when they move their lips; just a bunch of gibberish.";
     }
     return e;
   });

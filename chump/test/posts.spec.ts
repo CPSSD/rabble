@@ -20,8 +20,10 @@ function createFakeResponse(body: IBlogPost[] | Error | null) {
 
 const validBody: IBlogPost[] = [{
   author: "aaron",
+  bio: "bio",
   body: "rm -rf steely/",
   global_id: 2,
+  image: "",
   likes_count: 1,
   parsed_date: now,
   published: "",
