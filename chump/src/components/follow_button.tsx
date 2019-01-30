@@ -5,6 +5,7 @@ import { CreateFollow } from "../models/follow";
 
 interface IFormState {
   clicked: boolean;
+  following: boolean; // true if active user already follows the other user.
 }
 
 export interface IFormProps {
@@ -18,6 +19,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
 
     this.state = {
       clicked: false,
+      following: false,
     };
 
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
@@ -35,7 +37,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
         <div className="pure-control-group">
           <input
             type="submit"
-            value="Follow"
+            value={this.state.following? "Unfollow" : "TODO Follow"}
             className="pure-button pure-button-primary primary-button"
           />
         </div>
@@ -57,6 +59,10 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
         message += " Response: " + res.text;
       }
       this.alertUser(message);
+      // TODO: Check no error.
+      this.setState({
+        following: true,
+      });
     })
     .catch((err: any) => {
       let status = err.message;
