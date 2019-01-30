@@ -24,7 +24,8 @@ RUN go get -u \
   github.com/gorilla/sessions \
   github.com/gomarkdown/markdown \
   github.com/microcosm-cc/bluemonday \
-  github.com/mmcdole/gofeed
+  github.com/mmcdole/gofeed \
+  github.com/blevesearch/bleve/...
 
 # Dependencies for auth service
 RUN apk add --no-cache libffi-dev
