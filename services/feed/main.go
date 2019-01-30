@@ -18,6 +18,7 @@ import (
 const (
 	MaxItemsReturned = 50
 	timeParseFormat  = "2006-01-02T15:04:05.000Z"
+	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 )
 
 // convert timestamp into a format readable by JS on Front end
@@ -49,11 +50,13 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 		np := &pb.Post{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:           author.Handle,
-			Title:            r.Title,
-			Body:             r.Body,
-			Published: s.convertPbTimestamp(ctx, r.CreationDatetime),
-			LikesCount:       r.LikesCount,
+			Author:     author.Handle,
+			Title:      r.Title,
+			Bio:        author.Bio,
+			Body:       r.Body,
+			Image:      defaultImage,
+			LikesCount: r.LikesCount,
+			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
 		}
 		fp.Results = append(fp.Results, np)
 	}

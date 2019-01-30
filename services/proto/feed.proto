@@ -23,6 +23,8 @@ message Post {
   string body = 4;
   string published = 5;
   int64 likes_count = 6;
+  string bio = 7;
+  string image = 8;
 }
 
 message FeedResponse {
