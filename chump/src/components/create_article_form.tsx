@@ -24,8 +24,11 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
       blogText: "",
       post: {
         author: "string",
+        bio: "Nowadays everybody wanna talk like they got something to say. \
+        But nothing comes out when they move their lips; just a bunch of gibberish.",
         body: "string",
         global_id: 3,
+        image: "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp",
         likes_count: 0,
         parsed_date: new Date(),
         published: "",

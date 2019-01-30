@@ -56,7 +56,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <div className="pure-u-3-24">
           <div className="author-about">
             <img
-              src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+              src={this.props.blogPost.image}
               className="author-thumbnail"
             />
             <div style={{width: "100%"}}>
@@ -73,8 +73,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                 </div>
             </div>
             <div style={{clear: "both"}}>
-                <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
-                But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+                <p className="author-bio">{this.props.blogPost.bio}</p>
                 <div style={{width: "100%"}}>
                     <div style={{float: "left"}}>
                         <p> Likes: {this.state.likesCount} </p>
