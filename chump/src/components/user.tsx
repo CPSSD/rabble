@@ -1,11 +1,11 @@
 import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
-import { GetUsersPosts, IBlogPost } from "../models/posts";
+import { GetUsersPosts, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IUserState {
-  publicBlog: IBlogPost[];
+  publicBlog: IParsedPost[];
   // user that we're looking at, filled when we complete our lookup
   user: string;
 }
@@ -30,7 +30,7 @@ export class User extends React.Component<IUserProps, IUserState> {
 
   public getPosts() {
     GetUsersPosts(this.props.match.params.user)
-      .then((posts: IBlogPost[]) => {
+      .then((posts: IParsedPost[]) => {
         this.setState({
           publicBlog: posts,
           user: this.props.match.params.user,
@@ -58,7 +58,7 @@ export class User extends React.Component<IUserProps, IUserState> {
         </div>
       );
     }
-    return this.state.publicBlog.map((e: IBlogPost, i: number) => {
+    return this.state.publicBlog.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
           <Post username={this.props.username} blogPost={e}/>

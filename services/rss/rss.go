@@ -241,7 +241,7 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	}
 
 	handle := s.convertRssUrlToHandle(r.RssUrl)
-	bio := "RSS/Atom feed from " + handle + " converted to rabble user"
+	bio := "RSS/Atom feed from " + handle + " converted to a Rabble user"
 	// add new user with feed details
 	urInsert := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_INSERT,

@@ -21,7 +21,7 @@ const (
 	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 )
 
-// convert timestamp into a format readable by JS on Front end
+// convertPbTimestamp converts a timestamp into a format readable by the frontend
 func (s *server) convertPbTimestamp(ctx context.Context, t *tspb.Timestamp) string {
 	goTime, err := ptypes.Timestamp(t)
 	if err != nil {

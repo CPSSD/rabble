@@ -2,12 +2,12 @@ import * as React from "react";
 import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
 import { CreateArticle, CreatePreview } from "../models/article";
-import { IBlogPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IFormState {
   blogText: string;
-  post: IBlogPost;
+  post: IParsedPost;
   showModal: boolean;
   title: string;
 }

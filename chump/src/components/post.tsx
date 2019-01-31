@@ -2,11 +2,11 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import { SendLike } from "../models/like";
-import { IBlogPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 
 interface IPostProps {
-  blogPost: IBlogPost;
+  blogPost: IParsedPost;
   username: string;
 }
 
