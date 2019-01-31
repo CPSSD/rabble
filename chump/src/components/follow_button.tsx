@@ -11,6 +11,7 @@ interface IFormState {
 export interface IFormProps {
   follower: string;
   followed: string;
+  following: boolean;
 }
 
 export class FollowButton extends React.Component<IFormProps, IFormState> {
@@ -19,7 +20,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
 
     this.state = {
       clicked: false,
-      following: false,
+      following: props.following,
     };
 
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
@@ -37,7 +38,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
         <div className="pure-control-group">
           <input
             type="submit"
-            value={this.state.following? "Unfollow" : "TODO Follow"}
+            value={this.state.following ? "Unfollow" : "TODO Follow"}
             className="pure-button pure-button-primary primary-button"
           />
         </div>

@@ -33,6 +33,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         parsed_date: new Date(),
         published: "",
         title: "string",
+        is_followed: false,
       },
       showModal: false,
       title: "",

@@ -69,7 +69,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                     </Link>
                 </div>
                 <div style={{float: "right"}} >
-                    <FollowButton follower={this.props.username} followed={this.props.blogPost.author} />
+                    <FollowButton follower={this.props.username} followed={this.props.blogPost.author} following={this.props.blogPost.is_followed} />
                 </div>
             </div>
             <div style={{clear: "both"}}>
