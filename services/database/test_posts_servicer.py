@@ -4,6 +4,7 @@ import os
 
 import posts_servicer
 import users_servicer
+import like_servicer
 import database
 from services.proto import database_pb2
 
@@ -28,6 +29,7 @@ class PostsDatabaseHelper(unittest.TestCase):
         self.addCleanup(clean_database)
         self.posts = posts_servicer.PostsDatabaseServicer(self.db, logger)
         self.users = users_servicer.UsersDatabaseServicer(self.db, logger)
+        self.like = like_servicer.LikeDatabaseServicer(self.db, logger)
         self.ctx = fake_context()
 
     def add_post(self, author_id=None, title=None, body=None):
@@ -47,6 +49,15 @@ class PostsDatabaseHelper(unittest.TestCase):
                             database_pb2.PostsResponse.ERROR)
         return add_res
 
+    def add_like(self, liker_id, article_id):
+        req = database_pb2.LikeEntry(
+            user_id=liker_id,
+            article_id=article_id,
+        )
+        res = self.like.AddLike(req, self.ctx)
+        self.assertNotEqual(res.result_type, database_pb2.AddLikeResponse.ERROR)
+        return res
+
     def add_user(self, handle=None, host=None):
         user_entry = database_pb2.UsersEntry(
             handle=handle,
@@ -62,12 +73,24 @@ class PostsDatabaseHelper(unittest.TestCase):
                             database_pb2.UsersResponse.ERROR)
         return add_res
 
-    def instance_feed(self, n):
+    def instance_feed(self, n, user=None):
         req = database_pb2.InstanceFeedRequest(num_posts=n)
+        if user is not None:
+            req.user_global_id.value = user
         res = self.posts.InstanceFeed(req, self.ctx)
         self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
         return res
 
+    def find_post(self, user, author_id=None):
+        req = database_pb2.PostsRequest(
+            request_type=database_pb2.PostsRequest.FIND
+        )
+        if author_id is not None:
+            req.match.author_id = author_id
+        req.user_global_id.value = user
+        res = self.posts.Posts(req, self.ctx)
+        self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
+        return res
 
 class PostsDatabase(PostsDatabaseHelper):
 
@@ -112,3 +135,88 @@ class PostsDatabase(PostsDatabaseHelper):
         self.assertEqual(len(res.results), 2)
         self.assertIn(want0, res.results)
         self.assertIn(want1, res.results)
+
+    def test_instance_feed_is_liked(self):
+        self.add_user(handle='tayne', host=None)
+        self.add_user(handle='paul', host=None)
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_like(liker_id=2, article_id=1)
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+
+        res = self.instance_feed(n=2, user=2)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+            likes_count=1,
+            is_liked=True,
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+            is_liked=False,
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+
+    def test_posts_is_liked(self):
+        self.add_user(handle='tayne', host=None)
+        self.add_user(handle='paul', host=None)
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_like(liker_id=2, article_id=1)
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        self.add_post(author_id=2, title='72 kissies', body='for the noah')
+
+        res = self.find_post(user=2, author_id=1)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+            likes_count=1,
+            is_liked=True,
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+            is_liked=False,
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+
+    def test_posts_no_filter(self):
+        self.add_user(handle='tayne', host=None)  # local user, id 1
+        self.add_user(handle='tayne2', host=None)  # local user, id 2
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        
+        res = self.find_post(user=2)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+

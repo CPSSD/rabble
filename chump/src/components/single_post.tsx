@@ -1,11 +1,11 @@
 import * as React from "react";
 import { RouteProps } from "react-router-dom";
 
-import { GetSinglePost, IBlogPost } from "../models/posts";
+import { GetSinglePost, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
 interface ISinglePostState {
-  posts: IBlogPost[];
+  posts: IParsedPost[];
   user: string;
 }
 
@@ -30,7 +30,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
 
   public componentDidMount() {
     GetSinglePost(this.props.match.params.user, this.props.match.params.article_id)
-      .then((posts: IBlogPost[]) => {
+      .then((posts: IParsedPost[]) => {
         this.setState({
           posts,
           user: this.props.match.params.user,

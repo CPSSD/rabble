@@ -25,6 +25,14 @@ def get_user_and_check_pw(logger, db_stub, handle, pw):
         if their password is incorrect: returns None, Error
         if their password is correct: returns UserEntry, None
     """
+    if not handle:
+        err = "Received blank username"
+        logger.warning(err)
+        raise ValueError(err)
+    if not pw:
+        err = "Received blank password"
+        logger.warning(err)
+        raise ValueError(err)
     find_request = database_pb2.UsersRequest(
         request_type=database_pb2.UsersRequest.FIND,
         match=database_pb2.UsersEntry(

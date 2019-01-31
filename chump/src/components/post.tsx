@@ -2,11 +2,11 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import { SendLike } from "../models/like";
-import { IBlogPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 
 interface IPostProps {
-  blogPost: IBlogPost;
+  blogPost: IParsedPost;
   username: string;
 }
 
@@ -43,7 +43,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
-          <p className="article-byline">Published 1st January 1970</p>
+          <p className="article-byline">Published {this.props.blogPost.parsed_date.toLocaleString()}</p>
           <Link
             to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
             className="article-title"
@@ -56,7 +56,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <div className="pure-u-3-24">
           <div className="author-about">
             <img
-              src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+              src={this.props.blogPost.image}
               className="author-thumbnail"
             />
             <div style={{width: "100%"}}>
@@ -73,8 +73,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                 </div>
             </div>
             <div style={{clear: "both"}}>
-                <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
-                But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+                <p className="author-bio">{this.props.blogPost.bio}</p>
                 <div style={{width: "100%"}}>
                     <div style={{float: "left"}}>
                         <p> Likes: {this.state.likesCount} </p>

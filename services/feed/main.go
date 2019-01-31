@@ -10,10 +10,26 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
+	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
 )
 
-const MaxItemsReturned = 50
+const (
+	MaxItemsReturned = 50
+	timeParseFormat  = "2006-01-02T15:04:05.000Z"
+	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+)
+
+// convertPbTimestamp converts a timestamp into a format readable by the frontend
+func (s *server) convertPbTimestamp(ctx context.Context, t *tspb.Timestamp) string {
+	goTime, err := ptypes.Timestamp(t)
+	if err != nil {
+		log.Print(err)
+		return time.Now().Format(timeParseFormat)
+	}
+	return goTime.Format(timeParseFormat)
+}
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
@@ -34,11 +50,13 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 		np := &pb.Post{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:           author.Handle,
-			Title:            r.Title,
-			Body:             r.Body,
-			CreationDatetime: r.CreationDatetime,
-			LikesCount:       r.LikesCount,
+			Author:     author.Handle,
+			Title:      r.Title,
+			Bio:        author.Bio,
+			Body:       r.Body,
+			Image:      defaultImage,
+			LikesCount: r.LikesCount,
+			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
 		}
 		fp.Results = append(fp.Results, np)
 	}
