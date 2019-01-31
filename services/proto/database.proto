@@ -18,6 +18,9 @@ message PostsEntry {
   // True if the user in the request has liked this post
   // Note: defaults to false.
   bool is_liked = 9;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 10;
 }
 
 message PostsRequest {
