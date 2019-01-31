@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 message PostsEntry {
   int64 global_id = 1;
@@ -14,6 +15,9 @@ message PostsEntry {
   string md_body = 6;
   string ap_id = 7;  // This is the URL ID, i.e. http://a.b/@cian/123
   int64 likes_count = 8;
+  // True if the user in the request has liked this post
+  // Note: defaults to false.
+  bool is_liked = 9;
 }
 
 message PostsRequest {
@@ -33,6 +37,9 @@ message PostsRequest {
 
   // Entry to INSERT or fields to UPDATE.
   PostsEntry entry = 3;
+
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.UInt64Value user_global_id = 4;
 }
 
 message PostsResponse {
@@ -204,6 +211,8 @@ message LikesCollectionResponse {
 
 message InstanceFeedRequest {
   int32 num_posts = 1;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.UInt64Value user_global_id = 2;
 }
 
 message PendingFollowRequest {
