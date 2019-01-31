@@ -21,9 +21,11 @@ class PostsDatabaseServicer:
             "SELECT "
             "p.global_id, p.author_id, p.title, p.body, "
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
-            "l.user_id IS NOT NULL "
+            "l.user_id IS NOT NULL, f.follower IS NOT NULL "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
+            "LEFT OUTER JOIN follows f ON "
+            "f.followed=p.author_id AND f.follower=? "
         )
         self._type_handlers = {
             database_pb2.PostsRequest.INSERT: self._handle_insert,
@@ -54,7 +56,7 @@ class PostsDatabaseServicer:
                                    'ON p.author_id = u.global_id '
                                    'WHERE u.host = "" AND u.private = 0 '
                                    'ORDER BY p.global_id DESC '
-                                   'LIMIT ?', user_id, n)
+                                   'LIMIT ?', user_id, user_id, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
@@ -97,7 +99,7 @@ class PostsDatabaseServicer:
         resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 9:
+        if len(tup) != 10:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -113,6 +115,7 @@ class PostsDatabaseServicer:
             entry.ap_id = tup[6]
             entry.likes_count = tup[7]
             entry.is_liked = tup[8]
+            entry.is_followed = tup[9]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
@@ -127,13 +130,13 @@ class PostsDatabaseServicer:
             user_id = req.user_global_id.value
         try:
             if not filter_clause:
-                res = self._db.execute(self._select_base, user_id)
+                res = self._db.execute(self._select_base, user_id, user_id)
             else:
                 res = self._db.execute(
                     self._select_base +
                     "WHERE " + filter_clause +
                     " ORDER BY p.global_id DESC",
-                    *([user_id] + values))
+                    *([user_id, user_id] + values))
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
