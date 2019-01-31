@@ -108,6 +108,7 @@ message Follow {
     PENDING = 1;
     REJECTED = 2;
     TIMED_OUT = 3;
+    DELETED = 4;
   }
   int64 follower = 1;
   int64 followed = 2;
