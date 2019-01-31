@@ -81,11 +81,12 @@ class PostsDatabaseHelper(unittest.TestCase):
         self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
         return res
 
-    def find_post(self, author_id, user):
+    def find_post(self, user, author_id=None):
         req = database_pb2.PostsRequest(
-            request_type=database_pb2.PostsRequest.FIND,
-            match=database_pb2.PostsEntry(author_id=author_id),
+            request_type=database_pb2.PostsRequest.FIND
         )
+        if author_id is not None:
+            req.match.author_id = author_id
         req.user_global_id.value = user
         res = self.posts.Posts(req, self.ctx)
         self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
@@ -172,7 +173,7 @@ class PostsDatabase(PostsDatabaseHelper):
         self.add_post(author_id=1, title='2 kissies', body='for the boys')
         self.add_post(author_id=2, title='72 kissies', body='for the noah')
 
-        res = self.find_post(author_id=1, user=2)
+        res = self.find_post(user=2, author_id=1)
         want0 = database_pb2.PostsEntry(
             global_id=1,
             author_id=1,
@@ -193,3 +194,29 @@ class PostsDatabase(PostsDatabaseHelper):
         self.assertEqual(len(res.results), 2)
         self.assertIn(want0, res.results)
         self.assertIn(want1, res.results)
+
+    def test_posts_no_filter(self):
+        self.add_user(handle='tayne', host=None)  # local user, id 1
+        self.add_user(handle='tayne2', host=None)  # local user, id 2
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        
+        res = self.find_post(user=2)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+
