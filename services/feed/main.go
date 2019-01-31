@@ -218,6 +218,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 
 	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId)
 	if err != nil {
+		// TODO(devoxel): Use FeedResponse.Error here and properly handle the error
 		return nil, err
 	}
 
@@ -236,16 +237,15 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 
 	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
 	if err != nil {
-		return nil, err
+		log.Print(err)
+		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil
 	}
 	authorId := author.GlobalId
 
 	if author.Private {
-		// TODO(devoxel): Add DENIAL type of response, so we can explain that
-		// the user is private.
 		// TODO(devoxel): Lookup accessor here and see if they're allowed
 		// to view the posts.
-		return &pb.FeedResponse{}, nil
+		return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
 	}
 
 	pr := &pb.PostsRequest{
