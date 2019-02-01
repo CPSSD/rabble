@@ -5,71 +5,119 @@ interface IHeaderProps {
   username: string;
 }
 
-export const Header: React.StatelessComponent<IHeaderProps> = (props) => {
+interface IHeaderState {
+  display: string;
+}
 
-  let Login = (
-    <li className="pure-menu-item">
-      <Link to="/login" className="pure-menu-link">Login</Link>
-    </li>
-  );
+export class Header extends React.Component<IHeaderProps, IHeaderState> {
+  constructor(props: IHeaderProps) {
+    super(props);
 
-  let RegisterOrLogout = (
-    <li className="pure-menu-item">
-      <Link to="/register" className="pure-menu-link">Register</Link>
-    </li>
-  );
+    this.state = {
+      display: "none",
+    };
 
-  let Feed: JSX.Element | boolean = false;
-  let Follow: JSX.Element | boolean = false;
+    this.toggleDropdown = this.toggleDropdown.bind(this);
+    this.renderMenu = this.renderMenu.bind(this);
+    this.resetDropdown = this.resetDropdown.bind(this);
+  }
 
-  if (props.username !== "") {
-    Login = (
+  public render() {
+    const Login = (
       <li className="pure-menu-item">
-        <Link
-          to={`/@${props.username}`}
-          className="pure-menu-link"
-        >
-          {props.username}
-        </Link>
+        <Link to="/login" className="pure-menu-link">Login</Link>
       </li>
     );
-    RegisterOrLogout = (
+
+    const RegisterOrLogout = (
       <li className="pure-menu-item">
-        <Link to="/logout" className="pure-menu-link">Logout</Link>
+        <Link to="/register" className="pure-menu-link">Register</Link>
       </li>
     );
-    Feed = (
-        <li className="pure-menu-item">
-          <Link to="/feed" className="pure-menu-link">Feed</Link>
-        </li>
+
+    let Menu = (
+      <ul className="pure-menu-list home-menu">
+        {Login}
+        {RegisterOrLogout}
+      </ul>
     );
-    Follow = (
-        <li className="pure-menu-item">
-          <Link to="/follow" className="pure-menu-link">Follow</Link>
-        </li>
+
+    if (this.props.username !== "") {
+      Menu = this.renderMenu();
+    }
+    return (
+      <div className="pure-g topnav">
+        <div className="pure-u-1-24"/>
+        <div className="pure-u-6-24 centre-brand">
+          <Link to="/" className="brand" onClick={this.resetDropdown}>Rabble</Link>
+        </div>
+        <div className="pure-u-13-24"/>
+        <div className="pure-u-3-24">
+          <div className="pure-menu pure-menu-horizontal">
+            {Menu}
+          </div>
+        </div>
+        <div className="pure-u-1-24"/>
+      </div>
     );
   }
 
-  return (
-    <div className="pure-g topnav">
-      <div className="pure-u-5-24"/>
-      <div className="pure-u-1-4 centre-brand">
-        <Link to="/" className="brand">Rabble</Link>
-      </div>
-      <div className="pure-u-1-24"/>
-      <div className="pure-u-3-24">
-        <div className="pure-menu pure-menu-horizontal">
-          <ul className="pure-menu-list">
-            <li className="pure-menu-item">
-              <Link to="/write" className="pure-menu-link">Write</Link>
-            </li>
-            {Follow}
-            {Feed}
-            {Login}
-            {RegisterOrLogout}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
+  private renderMenu() {
+    const UserMenu = (
+      <li className="pure-menu-item pure-menu-has-children">
+        <button onClick={this.toggleDropdown} className="button-link pure-menu-link">{this.props.username}</button>
+        <ul id="dropdown" className="menu-dropdown pure-menu-children" style={{display: this.state.display}}>
+          <li className="pure-menu-item">
+            <Link to={`/@${this.props.username}`} className="pure-menu-link" onClick={this.resetDropdown}>
+              Profile
+            </Link>
+          </li>
+          <li className="pure-menu-item">
+            <Link to="/follow" className="pure-menu-link" onClick={this.resetDropdown}>
+              Follow
+            </Link>
+          </li>
+          <li className="pure-menu-item">
+            <Link to="/logout" className="pure-menu-link" onClick={this.resetDropdown}>
+              Logout
+            </Link>
+          </li>
+        </ul>
+      </li>
+    );
+    const Feed = (
+        <li className="pure-menu-item">
+          <Link to="/feed" className="pure-menu-link" onClick={this.resetDropdown}>Feed</Link>
+        </li>
+    );
+    const Write = (
+      <li className="pure-menu-item">
+        <Link to="/write" className="pure-menu-link" onClick={this.resetDropdown}>Write</Link>
+      </li>
+    );
+    return (
+      <ul className="pure-menu-list home-menu">
+        {Feed}
+        {Write}
+        {UserMenu}
+      </ul>
+    );
+  }
+
+  private toggleDropdown(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    let target = "none";
+    if (this.state.display === "none") {
+      target = "inherit";
+    }
+    this.setState({
+      display: target,
+    });
+  }
+
+  private resetDropdown(event: React.MouseEvent<HTMLAnchorElement>) {
+    this.setState({
+      display: "none",
+    });
+  }
+}

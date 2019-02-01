@@ -1,6 +1,5 @@
 html {
   font-family: sans;
-
 }
 
 html, button, input, select, textarea,
@@ -132,6 +131,22 @@ html, button, input, select, textarea,
 
 .user-menu a {
   margin-right: 5%;
+}
+
+.home-menu  {
+  float: right;
+  text-align: left;
+}
+
+.menu-dropdown {
+  background-color: #0097a7;
+  color: #FFF;
+}
+
+.button-link {
+  background:none;
+  border:none;
+  padding:0;
 }
 
 .primary-button {
