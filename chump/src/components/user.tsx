@@ -100,7 +100,7 @@ export class User extends React.Component<IUserProps, IUserState> {
   }
 
   public userLinks() {
-    // TODO: Putting links here is a bit of a hack
+    // TODO(devoxel): Putting links here is a bit of a hack
     if (! (this.props.username === this.props.match.params.user)) {
       return false;
     }
