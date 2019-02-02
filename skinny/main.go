@@ -137,6 +137,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
 			log.Printf("Error in feed.Get(%v): %v\n", *fr, err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
