@@ -28,7 +28,14 @@ message Post {
 }
 
 message FeedResponse {
+  enum FeedError {
+    NO_ERROR = 0;
+    USER_NOT_FOUND = 1;
+    UNAUTHORIZED = 2;
+  }
+
   repeated Post results = 1;
+  FeedError error = 2;
 }
 
 service Feed {

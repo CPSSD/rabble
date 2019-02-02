@@ -137,6 +137,8 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
 			log.Printf("Error in feed.Get(%v): %v\n", *fr, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -152,19 +154,31 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 }
 
 func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
+	errorMap := map[pb.FeedResponse_FeedError]int{
+		pb.FeedResponse_USER_NOT_FOUND: 404,
+		pb.FeedResponse_UNAUTHORIZED:   401,
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
 		v := mux.Vars(r)
 		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
+
 		fr := &pb.FeedRequest{Username: v["username"]}
 		resp, err := s.feed.PerUser(ctx, fr)
+		if resp.Error != pb.FeedResponse_NO_ERROR {
+			w.WriteHeader(errorMap[resp.Error])
+			return
+		}
+
 		if err != nil {
 			log.Printf("Error in feed.PerUser(%v): %v", *fr, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -821,32 +835,32 @@ func buildServerWrapper() *serverWrapper {
 		createFollowRecommendationsClient()
 	actorsConn, actorsClient := createActorsClient()
 	s := &serverWrapper{
-		router:        r,
-		server:        srv,
-		store:         cookie_store,
-		shutdownWait:  20 * time.Second,
-		databaseConn:  databaseConn,
-		database:      databaseClient,
-		articleConn:   articleConn,
-		article:       articleClient,
-		followsConn:   followsConn,
-		follows:       followsClient,
-		feedConn:      feedConn,
-		feed:          feedClient,
-		createConn:    createConn,
-		create:        createClient,
-		usersConn:     usersConn,
-		users:         usersClient,
-		s2sFollowConn: s2sFollowConn,
-		s2sFollow:     s2sFollowClient,
-		s2sLikeConn:   s2sLikeConn,
-		s2sLike:       s2sLikeClient,
-		approver:      approverClient,
-		approverConn:  approverConn,
-		ldNorm:        ldNormClient,
-		ldNormConn:    ldNormConn,
-		rssConn:       rssConn,
-		rss:           rssClient,
+		router:                    r,
+		server:                    srv,
+		store:                     cookie_store,
+		shutdownWait:              20 * time.Second,
+		databaseConn:              databaseConn,
+		database:                  databaseClient,
+		articleConn:               articleConn,
+		article:                   articleClient,
+		followsConn:               followsConn,
+		follows:                   followsClient,
+		feedConn:                  feedConn,
+		feed:                      feedClient,
+		createConn:                createConn,
+		create:                    createClient,
+		usersConn:                 usersConn,
+		users:                     usersClient,
+		s2sFollowConn:             s2sFollowConn,
+		s2sFollow:                 s2sFollowClient,
+		s2sLikeConn:               s2sLikeConn,
+		s2sLike:                   s2sLikeClient,
+		approver:                  approverClient,
+		approverConn:              approverConn,
+		ldNorm:                    ldNormClient,
+		ldNormConn:                ldNormConn,
+		rssConn:                   rssConn,
+		rss:                       rssClient,
 		followRecommendationsConn: followRecommendationsConn,
 		followRecommendations:     followRecommendationsClient,
 		actorsConn:                actorsConn,
