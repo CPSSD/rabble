@@ -6,6 +6,7 @@ import os
 import sys
 import time
 
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import FollowsServicer
@@ -25,55 +26,20 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
-
-def get_database_service_address(logger):
-    host = os.environ.get('DB_SERVICE_HOST')
-    if not host:
-        logger.error('DB_SERVICE_HOST env var not set.')
-        sys.exit(1)
-    addr = host + ':1798'
-    return addr
-
-
-def get_follow_activity_service_address(logger):
-    host = os.environ.get('FOLLOW_ACTIVITY_SERVICE_HOST')
-    if not host:
-        logger.error('FOLLOW_ACTIVITY_SERVICE_HOST env var not set.')
-        sys.exit(1)
-    addr = host + ':1922'
-    return addr
-
-def get_approver_service_address(logger):
-    host = os.environ.get('APPROVER_SERVICE_HOST')
-    if not host:
-        logger.error('APPROVER_SERVICE_HOST env var not set.')
-        sys.exit(1)
-    addr = host + ':2077'
-    return addr
-
-def get_rss_service_address(logger):
-    host = os.environ.get('RSS_SERVICE_HOST')
-    if not host:
-        logger.error('RSS_SERVICE_HOST env var not set.')
-        sys.exit(1)
-    addr = host + ':1973'
-    return addr
-
-
 def main():
     args = get_args()
     logger = get_logger('follows_service', args.v)
     logger.info('Creating server')
 
-    db_addr = get_database_service_address(logger)
-    follow_addr = get_follow_activity_service_address(logger)
-    approver_addr = get_approver_service_address(logger)
-    rss_addr = get_rss_service_address(logger)
+    db_env = 'DB_SERVICE_HOST'
+    follow_env = 'FOLLOW_ACTIVITY_SERVICE_HOST'
+    approver_env = 'APPROVER_SERVICE_HOST'
+    rss_env = 'RSS_SERVICE_HOST'
 
-    with grpc.insecure_channel(db_addr) as db_chan, \
-         grpc.insecure_channel(follow_addr) as follow_chan, \
-         grpc.insecure_channel(approver_addr) as approver_chan, \
-         grpc.insecure_channel(rss_addr) as rss_chan:
+    with get_service_channel(logger, db_env, 1798) as db_chan, \
+         get_service_channel(logger, follow_env, 1922) as follow_chan, \
+         get_service_channel(logger, approver_env, 2077) as approver_chan, \
+         get_service_channel(logger, rss_env, 1973) as rss_chan:
 
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         rss_stub = rss_pb2_grpc.RSSStub(rss_chan)
