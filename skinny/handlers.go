@@ -677,29 +677,29 @@ func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 
 func (s *serverWrapper) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		// defer cancel()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
 		v := mux.Vars(r)
 		if query, ok := v["query"]; !ok || query == "" {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
-
-		// req := &pb.FollowRecommendationRequest{Username: v["username"]}
-		// resp, err := s.followRecommendations.GetFollowRecommendations(ctx, req)
-		// if err != nil {
-		// 	log.Printf("Error in handleRecommendFollows(%v): %v", *req, err)
-		// }
+		sq := &pb.SearchQuery{QueryText: v["query"]}
+		req := &pb.SearchRequest{Query: sq}
+		resp, err := s.search.Search(ctx, req)
+		if err != nil {
+			log.Printf("Error in Search(%v): %v", *req, err)
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		// err = enc.Encode(resp.Results)
-		// if err != nil {
-		// 	log.Printf("Could not marshal recommended follows: %v", err)
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
+		err = enc.Encode(resp.Results)
+		if err != nil {
+			log.Printf("Could not marshal recommended follows: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
