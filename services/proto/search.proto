@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "services/proto/database.proto";
+import "services/proto/feed.proto";
 
 message SearchQuery {
 	string query_text = 1;
@@ -12,10 +13,18 @@ message SearchRequest {
 	SearchQuery query = 1;
 }
 
-message SearchResponse {
+message BleveSearchResponse {
 	repeated PostsEntry results = 1;
+}
+
+message SearchResponse {
+	repeated Post results = 1;
 }
 
 service Search {
 	rpc Search(SearchRequest) returns (SearchResponse);
+}
+
+service BleveSearch {
+	rpc BleveSearch(SearchRequest) returns (BleveSearchResponse);
 }

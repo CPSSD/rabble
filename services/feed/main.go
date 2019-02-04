@@ -9,99 +9,26 @@ import (
 	"os"
 	"time"
 
+	utils "github.com/cpssd/rabble/services/utils"
 	pb "github.com/cpssd/rabble/services/proto"
-	"github.com/golang/protobuf/ptypes"
-	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
 )
 
 const (
 	MaxItemsReturned = 50
-	timeParseFormat  = "2006-01-02T15:04:05.000Z"
-	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 )
 
-// convertPbTimestamp converts a timestamp into a format readable by the frontend
-func (s *server) convertPbTimestamp(ctx context.Context, t *tspb.Timestamp) string {
-	goTime, err := ptypes.Timestamp(t)
-	if err != nil {
-		log.Print(err)
-		return time.Now().Format(timeParseFormat)
-	}
-	return goTime.Format(timeParseFormat)
-}
-
-// convertDBToFeed converts PostsResponses to FeedResponses.
-// Hopefully this will removed once we fix proto building.
-func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.FeedResponse {
-	fp := &pb.FeedResponse{}
-	for i, r := range p.Results {
-		if i >= MaxItemsReturned {
-			// Have hit limit for number of items returned for this request.
-			break
-		}
-
-		// TODO(iandioch): Find a way to avoid or cache these requests.
-		author, err := s.getAuthorFromDb(ctx, "", "", r.AuthorId)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		np := &pb.Post{
-			GlobalId:   r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
-			Author:     author.Handle,
-			Title:      r.Title,
-			Bio:        author.Bio,
-			Body:       r.Body,
-			Image:      defaultImage,
-			LikesCount: r.LikesCount,
-			IsLiked:    r.IsLiked,
-			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
-		}
-		fp.Results = append(fp.Results, np)
-	}
-	return fp
+type server struct {
+	db pb.DatabaseClient
 }
 
 func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range posts {
-		r := s.convertDBToFeed(ctx, p)
-		fp.Results = append(fp.Results, r.Results...)
+		r := utils.ConvertDBToFeed(ctx, p, s.db)
+		fp.Results = append(fp.Results, r...)
 	}
 	return fp
-}
-
-func (s *server) getAuthorFromDb(ctx context.Context, handle string, host string, globalId int64) (*pb.UsersEntry, error) {
-	const errFmt = "Could not find user %v@%v. error: %v"
-	r := &pb.UsersRequest{
-		RequestType: pb.UsersRequest_FIND,
-		Match: &pb.UsersEntry{
-			Handle:   handle,
-			Host:     host,
-			GlobalId: globalId,
-		},
-	}
-
-	resp, err := s.db.Users(ctx, r)
-	if err != nil {
-		return nil, fmt.Errorf(errFmt, handle, host, err)
-	}
-
-	if resp.ResultType != pb.UsersResponse_OK {
-		return nil, fmt.Errorf(errFmt, handle, host, resp.Error)
-	}
-
-	if len(resp.Results) == 0 {
-		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
-	}
-
-	return resp.Results[0], nil
-}
-
-type server struct {
-	db pb.DatabaseClient
 }
 
 func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow, error) {
@@ -132,7 +59,7 @@ func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow
 func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	const feedErr = "feed.GetUserFeed(%v) failed: %v"
 
-	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
+	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", 0, s.db)
 	if err != nil {
 		err := fmt.Errorf(feedErr, r.Username, err)
 		log.Print(err)
@@ -191,8 +118,10 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 	if err != nil {
 		return nil, fmt.Errorf("feed.Get failed: db.InstanceFeed(%v) error: %v", *pr, err)
 	}
+	fp := &pb.FeedResponse{}
+	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
 
-	return s.convertDBToFeed(ctx, resp), nil
+	return fp, nil
 }
 
 func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.FeedResponse, error) {
@@ -220,7 +149,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return &pb.FeedResponse{}, nil
 	}
 
-	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId)
+	author, err := utils.GetAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId, s.db)
 	if err != nil {
 		// TODO(devoxel): Use FeedResponse.Error here and properly handle the error
 		return nil, err
@@ -230,8 +159,10 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		// TODO(devoxel): Lookup followers here
 		return &pb.FeedResponse{}, nil
 	}
+	fp := &pb.FeedResponse{}
+	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
 
-	return s.convertDBToFeed(ctx, resp), nil
+	return fp, nil
 }
 
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
@@ -239,7 +170,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
 
-	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
+	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", 0, s.db)
 	if err != nil {
 		log.Print(err)
 		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil
@@ -265,7 +196,9 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
-	return s.convertDBToFeed(ctx, resp), nil
+	fp := &pb.FeedResponse{}
+	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
+	return fp, nil
 }
 
 func newServer(c *grpc.ClientConn) *server {
