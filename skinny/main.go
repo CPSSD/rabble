@@ -147,6 +147,11 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		v := mux.Vars(r)
 
 		fr := &pb.FeedRequest{Username: v["username"]}
+		global_id, err := s.getSessionGlobalId(r)
+		if err == nil {
+			// If the user is logged in then propagate their global ID.
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+		}
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
 			log.Printf("Error in feed.Get(%v): %v\n", *fr, err)
@@ -175,6 +180,11 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 			return
 		}
 		fr := &pb.FeedRequest{Username: v["username"]}
+		global_id, err := s.getSessionGlobalId(r)
+		if err == nil {
+			// If the user is logged in then propagate their global ID.
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+		}
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
 			log.Printf("Error in feed.PerUser(%v): %v", *fr, err)

@@ -212,7 +212,7 @@ message LikesCollectionResponse {
 message InstanceFeedRequest {
   int32 num_posts = 1;
   // The global ID of the user making this request, not set if none.
-  google.protobuf.UInt64Value user_global_id = 2;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 message PendingFollowRequest {

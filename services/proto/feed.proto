@@ -9,6 +9,7 @@ import "google/protobuf/wrappers.proto";
 message FeedRequest {
   // To request all posts on this instance, send a blank username.
   string username = 1;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 // To request for a specific article
