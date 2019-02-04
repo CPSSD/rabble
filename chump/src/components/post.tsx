@@ -8,6 +8,7 @@ import { FollowButton} from "./follow_button";
 interface IPostProps {
   blogPost: IParsedPost;
   username: string;
+  preview: boolean;
 }
 
 interface IPostState {
@@ -36,7 +37,8 @@ export class Post extends React.Component<IPostProps, IPostState> {
         </button>
     );
     if (this.props.username === "" ||
-        typeof this.props.username === "undefined") {
+        typeof this.props.username === "undefined" ||
+        this.props.preview === true) {
         LikeButton = false;
     }
     return (

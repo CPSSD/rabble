@@ -93,7 +93,7 @@ export class User extends React.Component<IUserProps, IUserState> {
     return this.state.publicBlog.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e}/>
+          <Post username={this.props.username} blogPost={e} preview={false}/>
         </div>
       );
     });
