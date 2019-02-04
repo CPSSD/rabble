@@ -24,7 +24,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
     this.renderMenu = this.renderMenu.bind(this);
     this.resetDropdown = this.resetDropdown.bind(this);
-    this.submitSearch = this.submitSearch.bind(this);
+    this.handleSubmitSearch = this.handleSubmitSearch.bind(this);
   }
 
   public render() {
@@ -58,7 +58,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
         </div>
         <div className="pure-u-3-24"/>
         <div className="pure-u-8-24">
-          <form className="pure-form search-form" onSubmit={this.submitSearch}>
+          <form className="pure-form search-form" onSubmit={this.handleSubmitSearch}>
             <input
               type="text"
               name="query"
@@ -127,7 +127,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     );
   }
 
-  private submitSearch(event: React.FormEvent<HTMLFormElement>) {
+  private handleSubmitSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     alert("Sorry SafeSearch is on");
     this.setState({

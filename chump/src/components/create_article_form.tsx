@@ -101,6 +101,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               onChange={this.handleTextAreaChange}
               className="pure-input-1 blog-input"
               placeholder="Start here"
+              rows={20}
             />
           </div>
         </form>
