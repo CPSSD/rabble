@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { Search } from "react-feather";
+import { Link } from "react-router-dom";
 
 interface IHeaderProps {
   username: string;
@@ -66,10 +66,12 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
               placeholder="Search posts"
               value={this.state.query}
               onChange={this.handleSearchInputChange}
-              required
+              required={true}
             />
             <button
-              type="submit" className="pure-button pure-button-primary search-button">
+              type="submit"
+              className="pure-button pure-button-primary search-button"
+            >
               <Search />
             </button>
           </form>
