@@ -134,7 +134,7 @@ html, button, input, select, textarea,
 }
 
 .home-menu  {
-  float: right;
+  float: left;
   text-align: left;
 }
 
@@ -149,6 +149,33 @@ html, button, input, select, textarea,
   padding:0;
 }
 
+.pure-menu-has-children > .button-link::after {
+  font-size: medium;
+}
+
+.pure-form .search-rounded[name="query"] {
+  color: #0097a7;
+  border-radius:2em;
+  padding: .1em 0.5em;
+}
+
+.search-form {
+  float: right;
+}
+
+.search-button {
+  color: #0097a7;
+  background-color: #FFF;
+  border-radius: 1em;
+  padding: .2em 0.2em;
+}
+
 .primary-button {
   background: #0097a7;
+}
+
+@media only screen and (max-width: 700px) {
+    .search-form {
+        display: none;
+    }
 }

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { Search } from "react-feather";
 
 interface IHeaderProps {
   username: string;
@@ -7,6 +8,7 @@ interface IHeaderProps {
 
 interface IHeaderState {
   display: string;
+  query: string;
 }
 
 export class Header extends React.Component<IHeaderProps, IHeaderState> {
@@ -15,11 +17,14 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
 
     this.state = {
       display: "none",
+      query: "",
     };
 
     this.toggleDropdown = this.toggleDropdown.bind(this);
+    this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
     this.renderMenu = this.renderMenu.bind(this);
     this.resetDropdown = this.resetDropdown.bind(this);
+    this.submitSearch = this.submitSearch.bind(this);
   }
 
   public render() {
@@ -48,16 +53,32 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     return (
       <div className="pure-g topnav">
         <div className="pure-u-1-24"/>
-        <div className="pure-u-6-24 centre-brand">
+        <div className="pure-u-5-24 centre-brand">
           <Link to="/" className="brand" onClick={this.resetDropdown}>Rabble</Link>
         </div>
-        <div className="pure-u-13-24"/>
-        <div className="pure-u-3-24">
+        <div className="pure-u-3-24"/>
+        <div className="pure-u-8-24">
+          <form className="pure-form search-form" onSubmit={this.submitSearch}>
+            <input
+              type="text"
+              name="query"
+              className="search-rounded pure-input-3-4"
+              placeholder="Search posts"
+              value={this.state.query}
+              onChange={this.handleSearchInputChange}
+              required
+            />
+            <button
+              type="submit" className="pure-button pure-button-primary search-button">
+              <Search />
+            </button>
+          </form>
+        </div>
+        <div className="pure-u-7-24">
           <div className="pure-menu pure-menu-horizontal">
             {Menu}
           </div>
         </div>
-        <div className="pure-u-1-24"/>
       </div>
     );
   }
@@ -102,6 +123,21 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
         {UserMenu}
       </ul>
     );
+  }
+
+  private submitSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    alert("Sorry SafeSearch is on");
+    this.setState({
+      query: "",
+    });
+  }
+
+  private handleSearchInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+    this.setState({
+      query: target.value,
+    });
   }
 
   private toggleDropdown(event: React.MouseEvent<HTMLButtonElement>) {
