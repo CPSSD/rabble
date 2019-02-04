@@ -1,20 +1,42 @@
 import * as Promise from "bluebird";
 import * as superagent from "superagent";
 
-export interface IBlogPost {
-  global_id: number;
+interface IBlogPost {
   author: string;
-  title: string;
+  bio: string;
   body: string;
+  global_id: number;
+  image: string;
   likes_count: number;
   is_liked: boolean;
+  published: string;
+  title: string;
+}
+
+export interface IParsedPost extends IBlogPost {
+  // parsed_date is a javascript Date object built from published key in
+  // IBlogPost
+  parsed_date: Date;
 }
 
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
 
 export function SortPosts(b: IBlogPost[]) {
-  // TODO: Once creation_datetime is working, sort by that (or global_id)
+  b = b as IParsedPost[];
+  // convert published string to js datetime obj
+  b.map((e: IParsedPost) => {
+    e.parsed_date = new Date(e.published);
+    if (e.bio === undefined || e.bio === "") {
+      e.bio = "Nowadays everybody wanna talk like they got something to say. \
+      But nothing comes out when they move their lips; just a bunch of gibberish.";
+    }
+    return e;
+  });
+  b.sort((n: IParsedPost, m: IParsedPost) => {
+    return m.parsed_date.getTime() - n.parsed_date.getTime();
+  });
+  return b;
 }
 
 export function PostsAPIPromise(url: string) {
@@ -32,8 +54,8 @@ export function PostsAPIPromise(url: string) {
         if (posts === null) {
           posts = [];
         }
-        SortPosts(posts);
-        resolve(posts);
+        const parsedPosts = SortPosts(posts);
+        resolve(parsedPosts);
       });
   });
 }

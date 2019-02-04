@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 // Request a feed for the given user.
@@ -26,13 +25,22 @@ message Post {
   string author = 2;
   string title = 3;
   string body = 4;
-  google.protobuf.Timestamp creation_datetime = 5;
+  string published = 5;
   int64 likes_count = 6;
-  bool is_liked = 7;
+  string bio = 7;
+  string image = 8;
+  bool is_liked = 9;
 }
 
 message FeedResponse {
+  enum FeedError {
+    NO_ERROR = 0;
+    USER_NOT_FOUND = 1;
+    UNAUTHORIZED = 2;
+  }
+
   repeated Post results = 1;
+  FeedError error = 2;
 }
 
 service Feed {

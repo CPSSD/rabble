@@ -4,11 +4,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { GetPublicPosts, GetSinglePost, IBlogPost } from "../src/models/posts";
+import { GetPublicPosts, GetSinglePost, IParsedPost } from "../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
+const now: Date = new Date();
 
-function createFakeResponse(body: IBlogPost[] | Error | null) {
+function createFakeResponse(body: IParsedPost[] | Error | null) {
   const end = (cb: any) => {
       cb(null, {ok: true, body });
   };
@@ -17,11 +18,15 @@ function createFakeResponse(body: IBlogPost[] | Error | null) {
   return sandbox.stub(superagent, "get").returns(root);
 }
 
-const validBody: IBlogPost[] = [{
+const validBody: IParsedPost[] = [{
   author: "aaron",
+  bio: "bio",
   body: "rm -rf steely/",
   global_id: 2,
+  image: "",
   likes_count: 1,
+  parsed_date: now,
+  published: "",
   title: "how to write a plugin",
 }];
 
@@ -33,7 +38,7 @@ describe("GetPublicPosts", () => {
 
   it("should call api", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetPublicPosts().then((posts: IBlogPost[]) => {
+    GetPublicPosts().then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
       expect(posts).to.eql(validBody);
@@ -43,7 +48,7 @@ describe("GetPublicPosts", () => {
 
   it("should handle a username", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetPublicPosts("username").then((posts: IBlogPost[]) => {
+    GetPublicPosts("username").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed/username")).to.be.ok;
       expect(posts).to.eql(validBody);
@@ -53,7 +58,7 @@ describe("GetPublicPosts", () => {
 
   it("should handle a null response", (done) => {
     const getRequest = createFakeResponse(null);
-    GetPublicPosts().then((posts: IBlogPost[]) => {
+    GetPublicPosts().then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
       expect(posts).to.eql([]);
@@ -75,7 +80,7 @@ describe("GetPublicPosts", () => {
 
   it("should handle a single Post request", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetSinglePost("username", "id").then((posts: IBlogPost[]) => {
+    GetSinglePost("username", "id").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/@username/id")).to.be.ok;
       expect(posts).to.eql(validBody);

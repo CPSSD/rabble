@@ -127,7 +127,7 @@ class PostsDatabaseServicer:
             user_id = req.user_global_id.value
         try:
             if not filter_clause:
-                res = self._db.execute(select_base, user_id)
+                res = self._db.execute(self._select_base, user_id)
             else:
                 res = self._db.execute(
                     self._select_base +

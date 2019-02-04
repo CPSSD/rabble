@@ -8,11 +8,15 @@ import * as article from "../../src/models/article";
 import { mount } from "../enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
+const now: Date = new Date();
 
 const examplePost = {
   author: "sips",
   body: "id be in so much trouble<br>i'd never live it down<br>lol",
   global_id: "3",
+  likes_count: 1,
+  parsed_date: now,
+  published: "",
   title: "the man, the myth, the legend",
 };
 

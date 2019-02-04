@@ -10,10 +10,26 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
+	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
 )
 
-const MaxItemsReturned = 50
+const (
+	MaxItemsReturned = 50
+	timeParseFormat  = "2006-01-02T15:04:05.000Z"
+	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+)
+
+// convertPbTimestamp converts a timestamp into a format readable by the frontend
+func (s *server) convertPbTimestamp(ctx context.Context, t *tspb.Timestamp) string {
+	goTime, err := ptypes.Timestamp(t)
+	if err != nil {
+		log.Print(err)
+		return time.Now().Format(timeParseFormat)
+	}
+	return goTime.Format(timeParseFormat)
+}
 
 // convertDBToFeed converts PostsResponses to FeedResponses.
 // Hopefully this will removed once we fix proto building.
@@ -32,14 +48,16 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			continue
 		}
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
+			GlobalId:   r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:           author.Handle,
-			Title:            r.Title,
-			Body:             r.Body,
-			CreationDatetime: r.CreationDatetime,
-			LikesCount:       r.LikesCount,
-			IsLiked:          r.IsLiked,
+			Author:     author.Handle,
+			Title:      r.Title,
+			Bio:        author.Bio,
+			Body:       r.Body,
+			Image:      defaultImage,
+			LikesCount: r.LikesCount,
+			IsLiked:    r.IsLiked,
+			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
 		}
 		fp.Results = append(fp.Results, np)
 	}
@@ -204,6 +222,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 
 	author, err := s.getAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId)
 	if err != nil {
+		// TODO(devoxel): Use FeedResponse.Error here and properly handle the error
 		return nil, err
 	}
 
@@ -222,16 +241,15 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 
 	author, err := s.getAuthorFromDb(ctx, r.Username, "", 0)
 	if err != nil {
-		return nil, err
+		log.Print(err)
+		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil
 	}
 	authorId := author.GlobalId
 
 	if author.Private {
-		// TODO(devoxel): Add DENIAL type of response, so we can explain that
-		// the user is private.
 		// TODO(devoxel): Lookup accessor here and see if they're allowed
 		// to view the posts.
-		return &pb.FeedResponse{}, nil
+		return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
 	}
 
 	pr := &pb.PostsRequest{
