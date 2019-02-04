@@ -20,7 +20,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
     if (this.props.blogPost.likes_count === undefined) {
       this.props.blogPost.likes_count = 0;
     }
-    if (this.props.blogPost.is_liked == undefined) {
+    if (this.props.blogPost.is_liked === undefined) {
       this.props.blogPost.is_liked = false;
     }
     this.state = {
