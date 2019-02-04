@@ -31,6 +31,7 @@ services:
       - APPROVER_SERVICE_HOST=approver_service
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
       - ACTORS_SERVICE_HOST=actors_service
+      - SEARCH_SERVICE_HOST=search_service
   feed_service:
     build:
       context: ./services/feed
