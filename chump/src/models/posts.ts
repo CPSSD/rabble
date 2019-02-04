@@ -7,6 +7,7 @@ export interface IBlogPost {
   title: string;
   body: string;
   likes_count: number;
+  is_liked: boolean;
 }
 
 const feedApiURL = "/c2s/feed";
