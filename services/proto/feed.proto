@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 // Request a feed for the given user.
 message FeedRequest {
@@ -13,6 +14,7 @@ message FeedRequest {
 // To request for a specific article
 message ArticleRequest {
   int64 article_id = 1;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 // These responses will eventually be database.PostsResponse or at least use
@@ -25,6 +27,7 @@ message Post {
   string body = 4;
   google.protobuf.Timestamp creation_datetime = 5;
   int64 likes_count = 6;
+  bool is_liked = 7;
 }
 
 message FeedResponse {

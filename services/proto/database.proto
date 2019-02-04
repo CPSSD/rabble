@@ -39,7 +39,7 @@ message PostsRequest {
   PostsEntry entry = 3;
 
   // The global ID of the user making this request, not set if none.
-  google.protobuf.UInt64Value user_global_id = 4;
+  google.protobuf.Int64Value user_global_id = 4;
 }
 
 message PostsResponse {

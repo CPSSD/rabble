@@ -18,6 +18,7 @@ import (
 	pb "github.com/cpssd/rabble/services/proto"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
+	wrapperpb "github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"google.golang.org/grpc"
@@ -124,6 +125,18 @@ func (s *serverWrapper) getSessionHandle(r *http.Request) (string, error) {
 		return "", fmt.Errorf("Handle doesn't exist, user not logged in")
 	}
 	return session.Values["handle"].(string), nil
+}
+
+func (s *serverWrapper) getSessionGlobalId(r *http.Request) (int64, error) {
+	session, err := s.store.Get(r, "rabble-session")
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		return 0, err
+	}
+	if _, ok := session.Values["global_id"]; !ok {
+		return 0, fmt.Errorf("Global ID doesn't exist, user not logged in")
+	}
+	return session.Values["global_id"].(int64), nil
 }
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
@@ -237,6 +250,11 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		}
 
 		fr := &pb.ArticleRequest{ArticleId: articleId}
+		global_id, err := s.getSessionGlobalId(r)
+		if err == nil {
+			// If the user is logged in then propagate their global ID.
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+		}
 		resp, err := s.feed.PerArticle(ctx, fr)
 		if err != nil {
 			log.Printf("Error in getting per Article page: %v", err)

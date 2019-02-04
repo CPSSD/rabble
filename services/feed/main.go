@@ -39,6 +39,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			Body:             r.Body,
 			CreationDatetime: r.CreationDatetime,
 			LikesCount:       r.LikesCount,
+			IsLiked:          r.IsLiked,
 		}
 		fp.Results = append(fp.Results, np)
 	}
@@ -181,6 +182,10 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		Match: &pb.PostsEntry{
 			GlobalId: r.ArticleId,
 		},
+	}
+	if r.GetUserGlobalId() != nil {
+		pr.UserGlobalId = r.UserGlobalId
+		log.Printf("Global ID: %d\n", r.UserGlobalId);
 	}
 
 	resp, err := s.db.Posts(ctx, pr)
