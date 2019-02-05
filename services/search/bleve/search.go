@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -30,11 +29,18 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
+type PostGetter interface {
+	Posts(ctx context.Context, in *pb.PostsRequest, opts ...grpc.CallOption) (*pb.PostsResponse, error)
+}
+
 type Server struct {
 	dbConn *grpc.ClientConn
-	db     pb.DatabaseClient
+	db     PostGetter
 
 	index bleve.Index
+	// idToDoc is a hack to speed up article lookups.
+	// TODO(devoxel): Figure out how to this using bleve.Index
+	idToDoc map[int64]*pb.PostsEntry
 }
 
 func newServer() *Server {
@@ -47,9 +53,10 @@ func newServer() *Server {
 	}
 
 	s := &Server{
-		db:     dbClient,
-		dbConn: dbConn,
-		index:  index,
+		db:      dbClient,
+		dbConn:  dbConn,
+		index:   index,
+		idToDoc: map[int64]*pb.PostsEntry{},
 	}
 
 	s.createIndex()
@@ -57,25 +64,20 @@ func newServer() *Server {
 }
 
 func (s *Server) createIndex() {
-	// Startup index is created by finding all articles
 	req := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 	}
 
 	res, err := s.db.Posts(context.Background(), req)
 	if err != nil {
-		// ERROR HERRE
 		log.Fatalf("Failed to create index: %v", err)
 	}
 
 	for _, blog := range res.Results {
 		id := strconv.FormatInt(blog.GlobalId, 10)
 		s.index.Index(id, blog)
+		s.idToDoc[blog.GlobalId] = blog
 	}
-
-	fmt.Println(s.Search(context.Background(), &pb.SearchRequest{
-		Query: &pb.SearchQuery{QueryText: "ipsum"},
-	}))
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
@@ -88,8 +90,7 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 	}
 
 	resp := &pb.SearchResponse{}
-	log.Printf("Search Results %v", searchRes)
-
+	// TODO(devoxel) Add a search limit & pagination
 	for _, hit := range searchRes.Hits {
 		id, err := strconv.ParseInt(hit.ID, 10, 64)
 		if err != nil {
@@ -97,9 +98,12 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 			continue
 		}
 
-		resp.Results = append(resp.Results, &pb.PostsEntry{
-			GlobalId: id,
-		})
+		doc, exists := s.idToDoc[id]
+		if !exists {
+			log.Printf("WARNING: doc found in search does not exist for id: %d", id)
+		}
+
+		resp.Results = append(resp.Results, doc)
 	}
 
 	return resp, nil
