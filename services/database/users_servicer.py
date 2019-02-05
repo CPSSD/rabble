@@ -5,6 +5,9 @@ import util
 from services.proto import database_pb2
 
 
+DEFAULT_NUM_USERS = 10
+
+
 class UsersDatabaseServicer:
 
     def __init__(self, db, logger):
@@ -69,6 +72,27 @@ class UsersDatabaseServicer:
                 resp.error = 'bad database resposne, got mis-sized tuple ' + str(tup)
                 return
             resp.followers.add(handle = tup[0], host = tup[1])
+        return resp
+
+    def SearchArticles(self, request, context):
+        resp = database_pb2.PostsResponse()
+        n = request.num_users
+        if not n:
+            n = DEFAULT_NUM_USERS
+        self._logger.info('Reading up to {} users for search users'.format(n))
+        try:
+            res = self._db.execute(
+                'SELECT * FROM users' +
+                'WHERE MATCH (title,content)' +
+                'AGAINST (? IN NATURAL LANGUAGE MODE)' +
+                'LIMIT ?', request.query, n)
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
         return resp
 
     def Users(self, request, context):

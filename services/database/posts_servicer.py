@@ -64,6 +64,27 @@ class PostsDatabaseServicer:
             return resp
         return resp
 
+    def SearchArticles(self, request, context):
+        resp = database_pb2.PostsResponse()
+        n = request.num_posts
+        if not n:
+            n = DEFAULT_NUM_POSTS
+        self._logger.info('Reading up to {} posts for search articles'.format(n))
+        try:
+            res = self._db.execute(
+                'SELECT * FROM posts' +
+                'WHERE MATCH (handle)' +
+                'AGAINST (? IN NATURAL LANGUAGE MODE)' +
+                'LIMIT ?', request.query, n)
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
     def _handle_insert(self, req, resp):
         try:
             # If new columns are added to the database, this query must be
