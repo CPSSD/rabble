@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	pb "github.com/cpssd/rabble/services/proto"
 	"google.golang.org/grpc"
 
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/mapping"
 )
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
@@ -33,21 +34,75 @@ type Server struct {
 	dbConn *grpc.ClientConn
 	db     pb.DatabaseClient
 
-	index *mapping.IndexMappingImpl
+	index bleve.Index
 }
 
 func newServer() *Server {
 	dbConn, dbClient := createDatabaseClient()
 
-	return &Server{
+	indexMapping := bleve.NewIndexMapping()
+	index, err := bleve.NewMemOnly(indexMapping)
+	if err != nil {
+		log.Fatalf("Failed to init bleve index: %v", err)
+	}
+
+	s := &Server{
 		db:     dbClient,
 		dbConn: dbConn,
-		index:  bleve.NewIndexMapping(),
+		index:  index,
 	}
+
+	s.createIndex()
+	return s
+}
+
+func (s *Server) createIndex() {
+	// Startup index is created by finding all articles
+	req := &pb.PostsRequest{
+		RequestType: pb.PostsRequest_FIND,
+	}
+
+	res, err := s.db.Posts(context.Background(), req)
+	if err != nil {
+		// ERROR HERRE
+		log.Fatalf("Failed to create index: %v", err)
+	}
+
+	for _, blog := range res.Results {
+		id := strconv.FormatInt(blog.GlobalId, 10)
+		s.index.Index(id, blog)
+	}
+
+	fmt.Println(s.Search(context.Background(), &pb.SearchRequest{
+		Query: &pb.SearchQuery{QueryText: "ipsum"},
+	}))
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	return &pb.SearchResponse{}, nil
+	q := bleve.NewMatchQuery(r.Query.QueryText)
+	search := bleve.NewSearchRequest(q)
+	searchRes, err := s.index.Search(search)
+	if err != nil {
+		log.Printf("Failed to search index: %v", err)
+		return nil, err
+	}
+
+	resp := &pb.SearchResponse{}
+	log.Printf("Search Results %v", searchRes)
+
+	for _, hit := range searchRes.Hits {
+		id, err := strconv.ParseInt(hit.ID, 10, 64)
+		if err != nil {
+			log.Printf("Bad id (%s) in search index: %v", hit.ID, err)
+			continue
+		}
+
+		resp.Results = append(resp.Results, &pb.PostsEntry{
+			GlobalId: id,
+		})
+	}
+
+	return resp, nil
 }
 
 func main() {
