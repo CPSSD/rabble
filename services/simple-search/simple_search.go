@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	utils "github.com/cpssd/rabble/services/utils"
 	pb "github.com/cpssd/rabble/services/proto"
 	"google.golang.org/grpc"
 )
@@ -41,11 +42,30 @@ func newServer() *Server {
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	return &pb.SearchResponse{}, nil
+	log.Printf("Query: %s\n", r.Query)
+	if r.Query == "" {
+		return &pb.SearchResponse{}, nil
+	}
+
+	sReq := &pb.SearchRequest{
+		Query: r.Query,
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	resp, err := s.db.SearchArticles(ctx, sReq)
+	if err != nil {
+		return nil, fmt.Errorf("simple-search.SearchArticles failed: db.Posts(%v) error: %v", *pr, err)
+	}
+	sr := &pb.SearchResponse{}
+	sr.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
+
+	return sr, nil
 }
 
 func main() {
-	log.Print("Starting search service.")
+	log.Print("Starting simple-search service.")
 
 	lis, err := net.Listen("tcp", ":1886")
 	if err != nil {
