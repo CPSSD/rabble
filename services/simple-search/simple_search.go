@@ -8,22 +8,19 @@ import (
 
 	pb "github.com/cpssd/rabble/services/proto"
 	"google.golang.org/grpc"
-
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/mapping"
 )
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	// TODO(devoxel): would be nice to use skinny.grpcConn here
 	host := os.Getenv("DB_SERVICE_HOST")
 	if host == "" {
-		log.Fatal("DB_SERVICE_HOST env var not set for rss service.")
+		log.Fatal("DB_SERVICE_HOST env var not set for search service.")
 	}
 	addr := host + ":1798"
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Rss server did not connect to db: %v", err)
+		log.Fatalf("Search server did not connect to db: %v", err)
 	}
 	client := pb.NewDatabaseClient(conn)
 	return conn, client
@@ -32,8 +29,6 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 type Server struct {
 	dbConn *grpc.ClientConn
 	db     pb.DatabaseClient
-
-	index *mapping.IndexMappingImpl
 }
 
 func newServer() *Server {
@@ -42,16 +37,11 @@ func newServer() *Server {
 	return &Server{
 		db:     dbClient,
 		dbConn: dbConn,
-		index:  bleve.NewIndexMapping(),
 	}
 }
 
-func (s *Server) PlainTextSearch(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	return &pb.SearchResponse{}, nil
-}
-
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	return s.PlainTextSearch(ctx, r)
+	return &pb.SearchResponse{}, nil
 }
 
 func main() {

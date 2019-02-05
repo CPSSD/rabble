@@ -213,7 +213,7 @@ services:
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   search_service:
     build:
-      context: ./services/search
+      context: ./services/simple-search
       dockerfile: Dockerfile
     volumes:
       - .:/repo
