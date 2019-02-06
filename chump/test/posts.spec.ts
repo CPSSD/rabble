@@ -24,6 +24,7 @@ const validBody: IParsedPost[] = [{
   body: "rm -rf steely/",
   global_id: 2,
   image: "",
+  is_liked: false,
   likes_count: 1,
   parsed_date: now,
   published: "",

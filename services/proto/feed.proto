@@ -2,15 +2,19 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
+import "google/protobuf/wrappers.proto";
+
 // Request a feed for the given user.
 message FeedRequest {
   // To request all posts on this instance, send a blank username.
   string username = 1;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 // To request for a specific article
 message ArticleRequest {
   int64 article_id = 1;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 // These responses will eventually be database.PostsResponse or at least use
@@ -25,6 +29,7 @@ message Post {
   int64 likes_count = 6;
   string bio = 7;
   string image = 8;
+  bool is_liked = 9;
 }
 
 message FeedResponse {

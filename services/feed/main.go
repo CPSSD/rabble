@@ -48,7 +48,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			continue
 		}
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
+			GlobalId:   r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:     author.Handle,
 			Title:      r.Title,
@@ -56,6 +56,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			Body:       r.Body,
 			Image:      defaultImage,
 			LikesCount: r.LikesCount,
+			IsLiked:    r.IsLiked,
 			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
 		}
 		fp.Results = append(fp.Results, np)
@@ -148,8 +149,9 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 	posts := []*pb.PostsResponse{}
 	for _, f := range follows {
 		pr := &pb.PostsRequest{
-			RequestType: pb.PostsRequest_FIND,
-			Match:       &pb.PostsEntry{AuthorId: f.Followed},
+			RequestType:  pb.PostsRequest_FIND,
+			Match:        &pb.PostsEntry{AuthorId: f.Followed},
+			UserGlobalId: r.UserGlobalId,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -179,6 +181,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 
 	pr := &pb.InstanceFeedRequest{
 		NumPosts: MaxItemsReturned,
+		UserGlobalId: r.UserGlobalId,
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
@@ -186,7 +189,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 
 	resp, err := s.db.InstanceFeed(ctx, pr)
 	if err != nil {
-		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
+		return nil, fmt.Errorf("feed.Get failed: db.InstanceFeed(%v) error: %v", *pr, err)
 	}
 
 	return s.convertDBToFeed(ctx, resp), nil
@@ -196,6 +199,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 	log.Printf("In per article, ID: %d\n", r.ArticleId)
 	pr := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
+		UserGlobalId: r.UserGlobalId,
 		Match: &pb.PostsEntry{
 			GlobalId: r.ArticleId,
 		},
@@ -250,6 +254,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 
 	pr := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
+		UserGlobalId: r.UserGlobalId,
 		Match: &pb.PostsEntry{
 			AuthorId: authorId,
 		},
