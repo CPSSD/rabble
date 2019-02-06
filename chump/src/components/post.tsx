@@ -32,26 +32,15 @@ export class Post extends React.Component<IPostProps, IPostState> {
   }
 
   public render() {
-    let LikeButton: JSX.Element | boolean = false;
-    if (this.props.blogPost.is_liked) {
-      LikeButton = (
-        <button
-            className="pure-button pure-input-1-3 pure-button-primary primary-button"
-            onClick={this.handleUnlike}
-        >
-        Unlike
-        </button>
-      );
-    } else {
-      LikeButton = (
-        <button
-            className="pure-button pure-input-1-3 pure-button-primary primary-button"
-            onClick={this.handleLike}
-        >
-        Like
-        </button>
-      );
-    }
+    const likeHandler = this.props.blogPost.is_liked ? this.handleUnlike : this.handleLike;
+    let LikeButton: JSX.Element | boolean = (
+      <button
+          className="pure-button pure-input-1-3 pure-button-primary primary-button"
+          onClick={likeHandler}
+      >
+      {this.props.blogPost.is_liked ? "Unlike" : "Like"}
+      </button>
+    );
     if (this.props.username === "" ||
         typeof this.props.username === "undefined" ||
         this.props.preview === true) {
