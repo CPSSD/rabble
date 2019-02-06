@@ -24,24 +24,36 @@ interface IAppState {
   username: string
 }
 
+const LOCAL_STORAGE_USERNAME : string = "username";
+
 export class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {
     super(props);
 
     this.state = {
-      username: "",
+      username: this.getUsername(),
     }
 
+    this.getUsername = this.getUsername.bind(this);
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
   }
 
+  getUsername() : string {
+    if (!localStorage.hasOwnProperty(LOCAL_STORAGE_USERNAME)) {
+      return "";
+    }
+    return localStorage.getItem(LOCAL_STORAGE_USERNAME)!;
+  }
+
   login(username: string) {
-    this.setState({username})
+    this.setState({username});
+    localStorage.setItem(LOCAL_STORAGE_USERNAME, username);
   }
 
   logout() {
     this.setState({username: ""});
+    localStorage.removeItem(LOCAL_STORAGE_USERNAME);
   }
 
   render() {
