@@ -695,7 +695,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			log.Printf("Could not send like: %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
 			r.Success = false
-			r.ErrorStr = "Issure with sending like"
+			r.ErrorStr = "Issue with sending like"
 			enc.Encode(r)
 			return
 		}

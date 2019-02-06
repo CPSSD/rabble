@@ -70,7 +70,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-            <Post username={this.props.username} blogPost={this.state.post}/>
+            <Post username={this.props.username} blogPost={this.state.post} preview={true}/>
             </HashRouter>
           </div>
         </RModal>
@@ -102,6 +102,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               onChange={this.handleTextAreaChange}
               className="pure-input-1 blog-input"
               placeholder="Start here"
+              rows={20}
             />
           </div>
         </form>
