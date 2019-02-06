@@ -9,8 +9,8 @@ DEFAULT_TIMEOUT = 5
 def get_future_channel(logger, env_var, port):
     """
     Returns a ready grpc channel without waiting for it to be ready.
-    This is ONLY nessary when we have a circular dependency. Should try to
-    avoid using this at all costs.
+    This is ONLY necessary when we have a circular dependency.
+    We should try to avoid using this at all costs.
 
     Arguments:
       logger: Rabble logger
