@@ -27,7 +27,6 @@ interface IAppState {
 const LOCAL_STORAGE_USERNAME : string = "username";
 
 export class App extends React.Component<{}, IAppState> {
-
   constructor(props: {}) {
     super(props);
 
