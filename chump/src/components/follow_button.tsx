@@ -14,6 +14,29 @@ export interface IFormProps {
   following: boolean;
 }
 
+interface IFollowOrUnfollowProps {
+  following: boolean;
+}
+
+const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
+  if (props.following) {
+    return (
+        <input
+             type="submit"
+             value="Unfollow"
+             className="pure-button pure-button-primary primary-button unfollow"
+        />
+    );
+  }
+  return (
+    <input
+        type="submit"
+        value="Follow"
+        className="pure-button pure-button-primary primary-button follow"
+    />
+  );
+};
+
 export class FollowButton extends React.Component<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
@@ -36,9 +59,10 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
         <div className="pure-control-group">
+          <FollowOrUnfollowButton following={this.state.following} />
           <input
             type="submit"
-            value={this.state.following ? "Unfollow" : "TODO Follow"}
+            value={this.state.following ? "Unfollow" : "Follow"}
             className="pure-button pure-button-primary primary-button"
           />
         </div>
@@ -50,7 +74,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     alert(message);
   }
 
-  private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
+  private handleSubmitFormFollow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
@@ -74,5 +98,17 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
       }
       this.alertUser(message);
     });
+  }
+
+  private handleSubmitFormUnfollow(event: React.FormEvent<HTMLFormElement>) {
+    this.alertUser("Woah there big fella! This cow hasn't gone to pasture yet.");
+  }
+
+  private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
+    if (this.state.following) {
+        this.handleSubmitFormUnfollow(event);
+    } else {
+        this.handleSubmitFormFollow(event);
+    }
   }
 }
