@@ -6,6 +6,7 @@ import os
 import sys
 import time
 
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from utils.activities import ActivitiesUtil
@@ -23,16 +24,6 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
-
-def get_database_service_address(logger):
-    host = os.environ.get('DB_SERVICE_HOST')
-    if not host:
-        logger.error('DB_SERVICE_HOST env var not set.')
-        sys.exit(1)
-    addr = host + ':1798'
-    return addr
-
-
 def get_host_name(logger):
     host = os.environ.get('HOST_NAME')
     if not host:
@@ -46,9 +37,7 @@ def main():
     logger = get_logger('actors_service', args.v)
     logger.info('Creating server')
 
-    db_addr = get_database_service_address(logger)
-
-    with grpc.insecure_channel(db_addr) as db_chan:
+    with get_service_channel(logger, "DB_SERVICE_HOST", 1798) as db_chan:
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
 
         users_util = UsersUtil(logger, db_stub)

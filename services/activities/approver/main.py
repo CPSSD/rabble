@@ -8,6 +8,7 @@ import os
 import sys
 
 from utils.activities import ActivitiesUtil
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import ApproverServicer
@@ -34,7 +35,7 @@ def main():
     activ_util = ActivitiesUtil(logger)
     logger.info("Creating db connection")
 
-    with grpc.insecure_channel(get_db_channel_address(logger)) as db_chan:
+    with get_service_channel(logger, "DB_SERVICE_HOST", 1798) as db_chan:
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         users_util = UsersUtil(logger, db_stub)
 

@@ -6,6 +6,7 @@ import time
 import os
 import sys
 
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import ArticleServicer
@@ -22,45 +23,17 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
-
-def get_db_channel(logger):
-    db_service_host = os.environ.get("DB_SERVICE_HOST")
-    if not db_service_host:
-        logger.error("Please set DB_SERVICE_HOST env variable")
-        sys.exit(1)
-    db_service_address = db_service_host + ":1798"
-    return grpc.insecure_channel(db_service_address)
-
-
-def get_create_channel(logger):
-    create_service_host = os.environ.get("CREATE_SERVICE_HOST")
-    if not create_service_host:
-        logger.error("Please set CREATE_SERVICE_HOST env variable")
-        sys.exit(1)
-    create_service_address = create_service_host + ":1922"
-    return grpc.insecure_channel(create_service_address)
-
-
-def get_mdc_channel(logger):
-    mdc_service_host = os.environ.get("MDC_SERVICE_HOST")
-    if not mdc_service_host:
-        logger.error("Please set MDC_SERVICE_HOST env variable")
-        sys.exit(1)
-    mdc_service_address = mdc_service_host + ":1937"
-    return grpc.insecure_channel(mdc_service_address)
-
-
 def main():
     args = get_args()
     logger = get_logger("article_service", args.v)
     logger.info("Creating db connection")
-    db_channel = get_db_channel(logger)
+    db_channel = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
     logger.info("Creating create connection")
-    create_channel = get_create_channel(logger)
+    create_channel = get_service_channel(logger, "CREATE_SERVICE_HOST", 1922)
     create_stub = create_pb2_grpc.CreateStub(create_channel)
     logger.info("Creating article server")
-    mdc_channel = get_mdc_channel(logger)
+    mdc_channel = get_service_channel(logger, "MDC_SERVICE_HOST", 1937)
     mdc_stub = mdc_pb2_grpc.ConverterStub(mdc_channel)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)
