@@ -101,7 +101,7 @@ func TestSearch(t *testing.T) {
 		Query: &pb.SearchQuery{QueryText: searchText},
 	}
 
-	res, err := s.Search(context.Background(), r)
+	res, err := s.BleveSearch(context.Background(), r)
 	if err != nil {
 		t.Fatalf("Failed to search: %v", err)
 	}
