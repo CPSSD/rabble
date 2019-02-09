@@ -675,6 +675,11 @@ func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 	}
 }
 
+type SearchResult struct {
+	Posts []*pb.Post `json:"posts"`
+	Users []*pb.User `json:"users"`
+}
+
 func (s *serverWrapper) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -699,7 +704,8 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(resp.Results)
+		body := &SearchResult{ Users: resp.UResults, Posts: resp.Results, }
+		err = enc.Encode(body)
 		if err != nil {
 			log.Printf("Could not marshal recommended follows: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)

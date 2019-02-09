@@ -86,3 +86,22 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db pb.DatabaseCli
 	}
 	return pe
 }
+
+// ConvertDBToUsers converts database.UserResponses to search.Users[]
+func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db pb.DatabaseClient) []*pb.User {
+	ue := []*pb.User{}
+	for i, r := range p.Results {
+		if i >= MaxItemsReturned {
+			// Have hit limit for number of items returned for this request.
+			break
+		}
+		np := &pb.User{
+			GlobalId: r.GlobalId,
+			Handle:   r.Handle,
+			Bio:      r.Bio,
+			Host:     r.Host,
+		}
+		ue = append(ue, np)
+	}
+	return ue
+}

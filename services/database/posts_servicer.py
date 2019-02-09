@@ -67,7 +67,7 @@ class PostsDatabaseServicer:
     def SearchArticles(self, request, context):
         self._logger.info('Search query' + request.query)
         resp = database_pb2.PostsResponse()
-        n = request.num_posts
+        n = request.num_responses
         if not n:
             n = DEFAULT_NUM_POSTS
         user_id = -1

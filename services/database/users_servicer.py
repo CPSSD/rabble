@@ -5,7 +5,7 @@ import util
 from services.proto import database_pb2
 
 
-DEFAULT_NUM_USERS = 10
+DEFAULT_NUM_USERS = 50
 
 
 class UsersDatabaseServicer:
@@ -76,7 +76,7 @@ class UsersDatabaseServicer:
 
     def SearchUsers(self, request, context):
         resp = database_pb2.UsersResponse()
-        n = request.num_users
+        n = request.num_responses
         if not n:
             n = DEFAULT_NUM_USERS
         self._logger.info('Reading up to {} users for search users'.format(n))

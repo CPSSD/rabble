@@ -19,7 +19,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.CreatePostsIndex = posts_servicer.CreatePostsIndex
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
-        self.SearchUsers = users_servicer.Users
+        self.SearchUsers = users_servicer.SearchUsers
         self.PendingFollows = users_servicer.PendingFollows
         self.CreateUsersIndex = users_servicer.CreateUsersIndex
         follow_servicer = FollowDatabaseServicer(db, logger)

@@ -236,7 +236,7 @@ message PendingFollowResponse {
 
 message DatabaseSearchRequest {
   string query = 1;
-  int32 num_posts = 2;
+  int32 num_responses = 2;
   // The global ID of the user making this request, not set if none.
   google.protobuf.Int64Value user_global_id = 3;
 }
@@ -260,7 +260,7 @@ service Database {
   // Get Article search results
   rpc SearchArticles(DatabaseSearchRequest) returns (PostsResponse);
   // Get User search results
-  rpc SearchUsers(DatabaseSearchRequest) returns (PostsResponse);
+  rpc SearchUsers(DatabaseSearchRequest) returns (UsersResponse);
   // Create Database Indices
   rpc CreatePostsIndex(DatabaseSearchRequest) returns (PostsResponse);
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);

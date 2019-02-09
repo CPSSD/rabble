@@ -71,15 +71,21 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 		UserGlobalId: r.UserGlobalId,
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second * 2)
 	defer cancel()
 
-	resp, err := s.db.SearchArticles(ctx, sReq)
-	if err != nil {
-		return nil, fmt.Errorf("simple-search.Search failed: db.SearchArticles(%v) error: %v", *sReq, err)
+	pResp, pErr := s.db.SearchArticles(ctx, sReq)
+	if pErr != nil {
+		return nil, fmt.Errorf("simple-search.Search failed: db.SearchArticles(%v) error: %v", *sReq, pErr)
 	}
 	sr := &pb.SearchResponse{}
-	sr.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
+	sr.Results = utils.ConvertDBToFeed(ctx, pResp, s.db)
+
+	uResp, uErr := s.db.SearchUsers(ctx, sReq)
+	if uErr != nil {
+		return nil, fmt.Errorf("simple-search.Search failed: db.SearchUsers(%v) error: %v", *sReq, uErr)
+	}
+	sr.UResults = utils.ConvertDBToUsers(ctx, uResp, s.db)
 
 	return sr, nil
 }

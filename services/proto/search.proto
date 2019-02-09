@@ -6,6 +6,14 @@ import "services/proto/database.proto";
 import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
+message User {
+	string handle = 1;
+  string host = 2;
+  int64 global_id = 3;
+  // Plaintext biography of the user
+  string bio = 4;
+}
+
 message SearchQuery {
 	string query_text = 1;
 }
@@ -22,6 +30,7 @@ message BleveSearchResponse {
 
 message SearchResponse {
 	repeated Post results = 1;
+	repeated User u_results = 2;
 }
 
 service Search {
