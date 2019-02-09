@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"os"
@@ -59,11 +60,23 @@ func newServer() *Server {
 		idToDoc: map[int64]*pb.PostsEntry{},
 	}
 
-	s.createIndex()
+	s.initIndex()
 	return s
 }
 
-func (s *Server) createIndex() {
+func (s *Server) addToIndex(b *pb.PostsEntry) error {
+	if _, exists := s.idToDoc[b.GlobalId]; exists {
+		log.Printf("WARNING: %d id already exists in index.", b.GlobalId)
+		return errors.New("document already exists with that id")
+	}
+
+	id := strconv.FormatInt(b.GlobalId, 10)
+	s.index.Index(id, b)
+	s.idToDoc[b.GlobalId] = b
+	return nil
+}
+
+func (s *Server) initIndex() {
 	req := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 	}
@@ -74,10 +87,13 @@ func (s *Server) createIndex() {
 	}
 
 	for _, blog := range res.Results {
-		id := strconv.FormatInt(blog.GlobalId, 10)
-		s.index.Index(id, blog)
-		s.idToDoc[blog.GlobalId] = blog
+		if err := s.addToIndex(blog); err != nil {
+			log.Fatalf("initIndex: cannot add blog (id %b) to index: %v",
+				blog.GlobalId, err)
+		}
 	}
+
+	log.Printf("Built index of length %d", len(res.Results))
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
@@ -101,12 +117,23 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 		doc, exists := s.idToDoc[id]
 		if !exists {
 			log.Printf("WARNING: doc found in search does not exist for id: %d", id)
+			continue
 		}
 
 		resp.Results = append(resp.Results, doc)
 	}
 
 	return resp, nil
+}
+
+func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexResponse, error) {
+	if err := s.addToIndex(r.Post); err != nil {
+		return &pb.IndexResponse{
+			ResultType: pb.IndexResponse_ERROR,
+			Error:      err.Error(),
+		}, nil
+	}
+	return &pb.IndexResponse{}, nil
 }
 
 func main() {
