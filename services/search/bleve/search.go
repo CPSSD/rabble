@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/mapping"
 )
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
@@ -30,6 +31,41 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
+func createIndexMapping() mapping.IndexMapping {
+	indexMapping := bleve.NewIndexMapping()
+	doc := mapping.NewDocumentStaticMapping()
+
+	text := mapping.NewTextFieldMapping()
+	// TODO(devoxel): figure out field mapping for author name.
+	//  should we do a database lookup on index or should we JOIN that
+	//  field to PostsEntry?
+	// TODO(devoxel): figure out field mapping for creation timestamp
+	doc.AddFieldMappingsAt("body", text)
+	doc.AddFieldMappingsAt("title", text)
+
+	// This sets the document mapping such that any document added uses
+	// the document mapping defined above. Since it's static, this only
+	// searches explicitly declared fields.
+	indexMapping.AddDocumentMapping("_default", doc)
+
+	// TODO(devoxel): Ideally, we should annotate a PostsEntry type with
+	// the Type() functions, allowing more complex search conversions
+	// This allows custom character filters by type, or custom language
+	// analysis by type.
+	return indexMapping
+}
+
+func createIndex() (bleve.Index, error) {
+	indexMapping := createIndexMapping()
+	path := os.Getenv("INDEX_PATH")
+	if path == "" {
+		log.Print("INDEX_PATH not found, using memory index.")
+		return bleve.NewMemOnly(indexMapping)
+	}
+
+	return bleve.New(path, indexMapping)
+}
+
 type PostGetter interface {
 	Posts(ctx context.Context, in *pb.PostsRequest, opts ...grpc.CallOption) (*pb.PostsResponse, error)
 }
@@ -42,19 +78,6 @@ type Server struct {
 	// idToDoc is a hack to speed up article lookups.
 	// TODO(devoxel): Figure out how to this using bleve.Index
 	idToDoc map[int64]*pb.PostsEntry
-}
-
-func createIndex() (bleve.Index, error) {
-	// TODO(devoxel): create a custom index mapping to hide certain fields
-	indexMapping := bleve.NewIndexMapping()
-
-	path := os.Getenv("INDEX_PATH")
-	if path == "" {
-		log.Print("INDEX_PATH not found, using memory index.")
-		return bleve.NewMemOnly(indexMapping)
-	}
-
-	return bleve.New(path, indexMapping)
 }
 
 func newServer() *Server {

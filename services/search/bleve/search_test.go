@@ -32,8 +32,8 @@ func (m *DBMock) buildFakePost(seed int64) *pb.PostsEntry {
 		GlobalId:   seed,
 		AuthorId:   seed % 4,
 		Title:      fmt.Sprintf("TITLE %d", seed),
-		Body:       fmt.Sprintf("<h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
-		MdBody:     fmt.Sprintf("# %d \n\n %s", seed, words[seed]),
+		Body:       fmt.Sprintf("HTML <h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
+		MdBody:     fmt.Sprintf("MARKDOWN # %d \n\n %s", seed, words[seed]),
 		LikesCount: seed + LEN_TEST_POST + 10,
 	}
 }
@@ -55,7 +55,7 @@ func (m *DBMock) Posts(_ context.Context, in *pb.PostsRequest, opts ...grpc.Call
 }
 
 func newMockedServer(t *testing.T) *Server {
-	indexMapping := bleve.NewIndexMapping()
+	indexMapping := createIndexMapping()
 	index, err := bleve.NewMemOnly(indexMapping)
 	if err != nil {
 		t.Fatalf("Failed to init bleve index: %v", err)
@@ -113,8 +113,47 @@ func TestSearch(t *testing.T) {
 		t.Fatalf("Failed to find article %d: %v", foundArticle, err)
 	}
 
-	if res.Results[0].Title != fmt.Sprintf("%d", foundArticle) {
-		t.Fatalf("Expected to find title to be \"%d\", got %#v",
+	if res.Results[0].Title != fmt.Sprintf("TITLE %d", foundArticle) {
+		t.Fatalf("Expected to find title to be \"TITLE %d\", got %#v",
 			foundArticle, res.Results[0].Title)
+	}
+}
+
+func TestFieldsSearch(t *testing.T) {
+	tests := []struct {
+		query      string
+		lenResults int
+	}{
+		{
+			query:      "TITLE",
+			lenResults: LEN_TEST_POST,
+		},
+		{
+			query:      "HTML",
+			lenResults: LEN_TEST_POST,
+		},
+		{
+			query:      "MARKDOWN",
+			lenResults: 0,
+		},
+	}
+
+	s := newMockedServer(t)
+	s.initIndex()
+
+	for _, tcase := range tests {
+		r := &pb.SearchRequest{
+			Query: &pb.SearchQuery{QueryText: tcase.query},
+		}
+
+		res, err := s.Search(context.Background(), r)
+		if err != nil {
+			t.Fatalf("Failed to search: %v", err)
+		}
+
+		if len(res.Results) != tcase.lenResults {
+			t.Fatalf("Expected to find %d results for search %s, found %d",
+				tcase.lenResults, tcase.query, len(res.Results))
+		}
 	}
 }
