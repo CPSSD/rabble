@@ -105,7 +105,10 @@ func (s *Server) addToIndex(b *pb.PostsEntry) error {
 	}
 
 	id := strconv.FormatInt(b.GlobalId, 10)
-	s.index.Index(id, b)
+	err := s.index.Index(id, b)
+	if err != nil {
+		return err
+	}
 	s.idToDoc[b.GlobalId] = b
 	return nil
 }
@@ -131,8 +134,13 @@ func (s *Server) initIndex() {
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
+	const (
+		MAX_RESULTS = 20
+	)
+
 	q := bleve.NewMatchQuery(r.Query.QueryText)
 	search := bleve.NewSearchRequest(q)
+	search.Size = MAX_RESULTS
 	searchRes, err := s.index.Search(search)
 	if err != nil {
 		log.Printf("Failed to search index: %v", err)
@@ -156,7 +164,6 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 
 		resp.Results = append(resp.Results, doc)
 	}
-
 	return resp, nil
 }
 

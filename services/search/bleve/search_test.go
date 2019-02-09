@@ -11,21 +11,24 @@ import (
 )
 
 const (
-	LEN_TEST_POST = 10
+	LEN_TEST_POST = 15
+	MAX_TEST_POST = 20
 )
 
-type DBMock struct {
-	t *testing.T
-}
-
-func (m *DBMock) buildFakePost(seed int64) *pb.PostsEntry {
+func buildFakePost(t *testing.T, seed int64) *pb.PostsEntry {
 	words := []string{
 		"grandest", "greatest", "great", "cpssd", "flown",
 		"tayne", "flower", "mangled", "mange", "typ0",
+		"grandayy", "dolandark", "scrubs", "geralt", "rivia",
+		"caleb", "jester", "nott", "fjord", "yasha", "beau", "cad",
 	}
 
-	if seed < 0 || seed > (LEN_TEST_POST-1) {
-		m.t.Fatalf("seed is not in range 0-%d", LEN_TEST_POST-1)
+	if len(words) < MAX_TEST_POST {
+		t.Fatalf("words array exceeds max of %d", MAX_TEST_POST)
+	}
+
+	if seed < 0 || seed > (MAX_TEST_POST-1) {
+		t.Fatalf("seed is not in range 0-%d", MAX_TEST_POST-1)
 	}
 
 	return &pb.PostsEntry{
@@ -34,8 +37,12 @@ func (m *DBMock) buildFakePost(seed int64) *pb.PostsEntry {
 		Title:      fmt.Sprintf("TITLE %d", seed),
 		Body:       fmt.Sprintf("HTML <h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
 		MdBody:     fmt.Sprintf("MARKDOWN # %d \n\n %s", seed, words[seed]),
-		LikesCount: seed + LEN_TEST_POST + 10,
+		LikesCount: seed + MAX_TEST_POST + 10,
 	}
+}
+
+type DBMock struct {
+	t *testing.T
 }
 
 func (m *DBMock) Posts(_ context.Context, in *pb.PostsRequest, opts ...grpc.CallOption) (*pb.PostsResponse, error) {
@@ -45,8 +52,7 @@ func (m *DBMock) Posts(_ context.Context, in *pb.PostsRequest, opts ...grpc.Call
 
 	posts := []*pb.PostsEntry{}
 	for i := 0; i < LEN_TEST_POST; i++ {
-		posts = append(posts, m.buildFakePost(int64(i)))
-
+		posts = append(posts, buildFakePost(m.t, int64(i)))
 	}
 
 	m.t.Log(posts)
@@ -156,4 +162,43 @@ func TestFieldsSearch(t *testing.T) {
 				tcase.lenResults, tcase.query, len(res.Results))
 		}
 	}
+}
+
+func TestIndex(t *testing.T) {
+	s := newMockedServer(t)
+	s.initIndex()
+
+	checkSearch := func(results int) {
+		r := &pb.SearchRequest{
+			Query: &pb.SearchQuery{QueryText: "HTML"},
+		}
+		res, err := s.Search(context.Background(), r)
+		if err != nil {
+			t.Fatalf("Failed to search: %v", err)
+		}
+
+		if len(res.Results) != results {
+			t.Fatalf("Expcted to find %d posts, got %v",
+				results, len(res.Results))
+		}
+	}
+
+	currentId := LEN_TEST_POST
+	addToIndex := func() {
+		i := &pb.IndexRequest{Post: buildFakePost(t, int64(currentId))}
+		res, err := s.Index(context.Background(), i)
+		if err != nil {
+			t.Fatalf("Failed to call Index(%v): %v", *i, err)
+		}
+		if res.ResultType != pb.IndexResponse_OK {
+			t.Fatalf("Failed to call Index(%v): %v", *i, res.Error)
+		}
+		currentId += 1
+	}
+
+	checkSearch(LEN_TEST_POST)
+	addToIndex()
+	checkSearch(LEN_TEST_POST + 1)
+	addToIndex()
+	checkSearch(LEN_TEST_POST + 2)
 }
