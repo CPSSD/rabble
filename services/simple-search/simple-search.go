@@ -5,6 +5,9 @@ import (
 	"log"
 	"net"
 	"os"
+	"fmt"
+	"time"
+
 
 	utils "github.com/cpssd/rabble/services/utils"
 	pb "github.com/cpssd/rabble/services/proto"
@@ -35,20 +38,37 @@ type Server struct {
 func newServer() *Server {
 	dbConn, dbClient := createDatabaseClient()
 
-	return &Server{
+	x := &Server{
 		db:     dbClient,
 		dbConn: dbConn,
+	}
+	x.CreateIndices()
+	return x
+}
+func (s *Server) CreateIndices() {
+	log.Println("Creating Indices\n")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+	defer cancel()
+	_, postErr := s.db.CreatePostsIndex(ctx, &pb.DatabaseSearchRequest{})
+	if postErr != nil {
+		log.Fatalf("simple-search.CreatePostsIndex failed. error: %v", postErr)
+	}
+	_, userErr := s.db.CreateUsersIndex(ctx, &pb.DatabaseSearchRequest{})
+	if userErr != nil {
+		log.Fatalf("simple-search.CreateUsersIndex failed. error: %v", userErr)
 	}
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	log.Printf("Query: %s\n", r.Query)
-	if r.Query == "" {
+	log.Printf("Query: %s\n", r.Query.QueryText)
+	if r.Query.QueryText == "" {
+		log.Printf("Empty query\n")
 		return &pb.SearchResponse{}, nil
 	}
 
-	sReq := &pb.SearchRequest{
-		Query: r.Query,
+	sReq := &pb.DatabaseSearchRequest{
+		Query: r.Query.QueryText,
+		UserGlobalId: r.UserGlobalId,
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
@@ -56,7 +76,7 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 
 	resp, err := s.db.SearchArticles(ctx, sReq)
 	if err != nil {
-		return nil, fmt.Errorf("simple-search.SearchArticles failed: db.Posts(%v) error: %v", *pr, err)
+		return nil, fmt.Errorf("simple-search.Search failed: db.SearchArticles(%v) error: %v", *sReq, err)
 	}
 	sr := &pb.SearchResponse{}
 	sr.Results = utils.ConvertDBToFeed(ctx, resp, s.db)

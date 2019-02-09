@@ -234,9 +234,11 @@ message PendingFollowResponse {
   repeated PendingFollow followers = 3;
 }
 
-message SearchRequest {
+message DatabaseSearchRequest {
   string query = 1;
   int32 num_posts = 2;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 3;
 }
 
 service Database {
@@ -256,7 +258,10 @@ service Database {
   // Get PENDING Follows with handles rather than ids
   rpc PendingFollows(PendingFollowRequest) returns (PendingFollowResponse);
   // Get Article search results
-  rpc SearchArticles(SearchRequest) returns (PostsResponse);
+  rpc SearchArticles(DatabaseSearchRequest) returns (PostsResponse);
   // Get User search results
-  rpc SearchUsers(SearchRequest) returns (PostsResponse);
+  rpc SearchUsers(DatabaseSearchRequest) returns (PostsResponse);
+  // Create Database Indices
+  rpc CreatePostsIndex(DatabaseSearchRequest) returns (PostsResponse);
+  rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 }

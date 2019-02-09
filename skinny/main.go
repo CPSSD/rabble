@@ -83,6 +83,7 @@ func (s *serverWrapper) shutdown() {
 	s.s2sFollowConn.Close()
 	s.rssConn.Close()
 	s.actorsConn.Close()
+	s.searchConn.Close()
 }
 
 func grpcConn(env string, port string) *grpc.ClientConn {

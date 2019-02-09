@@ -4,6 +4,7 @@ option go_package = "services/proto";
 
 import "services/proto/database.proto";
 import "services/proto/feed.proto";
+import "google/protobuf/wrappers.proto";
 
 message SearchQuery {
 	string query_text = 1;
@@ -11,6 +12,8 @@ message SearchQuery {
 
 message SearchRequest {
 	SearchQuery query = 1;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 message BleveSearchResponse {

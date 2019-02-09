@@ -680,13 +680,17 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		v := mux.Vars(r)
-		if query, ok := v["query"]; !ok || query == "" {
+		query := r.URL.Query().Get("query")
+		if query == "" {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
-		sq := &pb.SearchQuery{QueryText: v["query"]}
+		sq := &pb.SearchQuery{QueryText: query}
 		req := &pb.SearchRequest{Query: sq}
+		if global_id, gIErr := s.getSessionGlobalId(r); gIErr == nil {
+			// If the user is logged in then propagate their global ID.
+			req.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+		}
 		resp, err := s.search.Search(ctx, req)
 		if err != nil {
 			log.Printf("Error in Search(%v): %v", *req, err)
