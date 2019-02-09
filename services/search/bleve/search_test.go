@@ -31,7 +31,7 @@ func (m *DBMock) buildFakePost(seed int64) *pb.PostsEntry {
 	return &pb.PostsEntry{
 		GlobalId:   seed,
 		AuthorId:   seed % 4,
-		Title:      fmt.Sprintf("%d", seed),
+		Title:      fmt.Sprintf("TITLE %d", seed),
 		Body:       fmt.Sprintf("<h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
 		MdBody:     fmt.Sprintf("# %d \n\n %s", seed, words[seed]),
 		LikesCount: seed + LEN_TEST_POST + 10,
@@ -74,7 +74,7 @@ func newMockedServer(t *testing.T) *Server {
 
 func TestCreateIndex(t *testing.T) {
 	s := newMockedServer(t)
-	s.createIndex()
+	s.initIndex()
 
 	c, err := s.index.DocCount()
 	if err != nil {
@@ -87,7 +87,6 @@ func TestCreateIndex(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
-
 	const (
 		searchText   = "cpssd"
 		foundArticle = 3
@@ -95,7 +94,7 @@ func TestSearch(t *testing.T) {
 
 	// TODO: expand search once more features are added
 	s := newMockedServer(t)
-	s.createIndex()
+	s.initIndex()
 
 	r := &pb.SearchRequest{
 		Query: &pb.SearchQuery{QueryText: searchText},
@@ -115,6 +114,7 @@ func TestSearch(t *testing.T) {
 	}
 
 	if res.Results[0].Title != fmt.Sprintf("%d", foundArticle) {
-		t.Fatalf("Expected to find title to be \"%d\", got %#v", foundArticle, res.Results[0].Title)
+		t.Fatalf("Expected to find title to be \"%d\", got %#v",
+			foundArticle, res.Results[0].Title)
 	}
 }

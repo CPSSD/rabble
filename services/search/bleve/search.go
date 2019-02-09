@@ -44,11 +44,22 @@ type Server struct {
 	idToDoc map[int64]*pb.PostsEntry
 }
 
+func createIndex() (bleve.Index, error) {
+	// TODO(devoxel): create a custom index mapping to hide certain fields
+	indexMapping := bleve.NewIndexMapping()
+
+	path := os.Getenv("INDEX_PATH")
+	if path == "" {
+		log.Print("INDEX_PATH not found, using memory index.")
+		return bleve.NewMemOnly(indexMapping)
+	}
+
+	return bleve.New(path, indexMapping)
+}
+
 func newServer() *Server {
 	dbConn, dbClient := createDatabaseClient()
-
-	indexMapping := bleve.NewIndexMapping()
-	index, err := bleve.NewMemOnly(indexMapping)
+	index, err := createIndex()
 	if err != nil {
 		log.Fatalf("Failed to init bleve index: %v", err)
 	}

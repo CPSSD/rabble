@@ -218,3 +218,4 @@ services:
       - "database_service"
     environment:
       - DB_SERVICE_HOST=database_service
+      - INDEX_PATH=/tmp/rabble/index
