@@ -101,20 +101,20 @@ func TestSearch(t *testing.T) {
 		Query: &pb.SearchQuery{QueryText: searchText},
 	}
 
-	res, err := s.BleveSearch(context.Background(), r)
+	res, err := s.Search(context.Background(), r)
 	if err != nil {
 		t.Fatalf("Failed to search: %v", err)
 	}
 
-	if len(res.Results) != 1 {
+	if len(res.BResults) != 1 {
 		t.Fatal("Expected to find single article")
 	}
 
-	if res.Results[0].GlobalId != foundArticle {
+	if res.BResults[0].GlobalId != foundArticle {
 		t.Fatalf("Failed to find article %d: %v", foundArticle, err)
 	}
 
-	if res.Results[0].Title != fmt.Sprintf("%d", foundArticle) {
+	if res.BResults[0].Title != fmt.Sprintf("%d", foundArticle) {
 		t.Fatalf("Expected to find title to be \"%d\", got %#v", foundArticle, res.Results[0].Title)
 	}
 }

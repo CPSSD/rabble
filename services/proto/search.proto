@@ -7,7 +7,7 @@ import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
 message User {
-	string handle = 1;
+  string handle = 1;
   string host = 2;
   int64 global_id = 3;
   // Plaintext biography of the user
@@ -15,28 +15,21 @@ message User {
 }
 
 message SearchQuery {
-	string query_text = 1;
+  string query_text = 1;
 }
 
 message SearchRequest {
-	SearchQuery query = 1;
+  SearchQuery query = 1;
   // The global ID of the user making this request, not set if none.
   google.protobuf.Int64Value user_global_id = 2;
 }
 
-message BleveSearchResponse {
-	repeated PostsEntry results = 1;
-}
-
 message SearchResponse {
-	repeated Post results = 1;
-	repeated User u_results = 2;
+  repeated Post results = 1;
+  repeated User u_results = 2;
+  repeated PostsEntry b_results = 3;
 }
 
 service Search {
-	rpc Search(SearchRequest) returns (SearchResponse);
-}
-
-service BleveSearch {
-	rpc BleveSearch(SearchRequest) returns (BleveSearchResponse);
+  rpc Search(SearchRequest) returns (SearchResponse);
 }

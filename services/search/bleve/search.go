@@ -80,7 +80,7 @@ func (s *Server) createIndex() {
 	}
 }
 
-func (s *Server) BleveSearch(ctx context.Context, r *pb.SearchRequest) (*pb.BleveSearchResponse, error) {
+func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
 	q := bleve.NewMatchQuery(r.Query.QueryText)
 	search := bleve.NewSearchRequest(q)
 	searchRes, err := s.index.Search(search)
@@ -89,7 +89,7 @@ func (s *Server) BleveSearch(ctx context.Context, r *pb.SearchRequest) (*pb.Blev
 		return nil, err
 	}
 
-	resp := &pb.BleveSearchResponse{}
+	resp := &pb.SearchResponse{}
 	// TODO(devoxel) Add a search limit & pagination
 	for _, hit := range searchRes.Hits {
 		id, err := strconv.ParseInt(hit.ID, 10, 64)
@@ -103,7 +103,7 @@ func (s *Server) BleveSearch(ctx context.Context, r *pb.SearchRequest) (*pb.Blev
 			log.Printf("WARNING: doc found in search does not exist for id: %d", id)
 		}
 
-		resp.Results = append(resp.Results, doc)
+		resp.BResults = append(resp.BResults, doc)
 	}
 
 	return resp, nil
@@ -118,6 +118,6 @@ func main() {
 	}
 
 	grpcSrv := grpc.NewServer()
-	pb.RegisterBleveSearchServer(grpcSrv, newServer())
+	pb.RegisterSearchServer(grpcSrv, newServer())
 	grpcSrv.Serve(lis)
 }

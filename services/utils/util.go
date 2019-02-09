@@ -1,20 +1,20 @@
 package util
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"time"
-  "fmt"
-  "log"
-  "context"
 
-  "github.com/golang/protobuf/ptypes"
 	pb "github.com/cpssd/rabble/services/proto"
+	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 )
 
 const (
 	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
-  MaxItemsReturned = 50
-  timeParseFormat  = "2006-01-02T15:04:05.000Z"
+	MaxItemsReturned = 50
+	timeParseFormat  = "2006-01-02T15:04:05.000Z"
 )
 
 // ConvertPbTimestamp converts a timestamp into a format readable by the frontend
