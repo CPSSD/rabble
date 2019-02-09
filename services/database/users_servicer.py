@@ -74,22 +74,62 @@ class UsersDatabaseServicer:
             resp.followers.add(handle = tup[0], host = tup[1])
         return resp
 
-    def SearchArticles(self, request, context):
-        resp = database_pb2.PostsResponse()
+    def SearchUsers(self, request, context):
+        resp = database_pb2.UsersResponse()
         n = request.num_users
         if not n:
             n = DEFAULT_NUM_USERS
         self._logger.info('Reading up to {} users for search users'.format(n))
         try:
             res = self._db.execute(
-                'SELECT * FROM users' +
-                'WHERE MATCH (title,content)' +
-                'AGAINST (? IN NATURAL LANGUAGE MODE)' +
-                'LIMIT ?', request.query, n)
+                'SELECT * FROM users WHERE global_id IN ' +
+                '(SELECT rowid FROM users_idx WHERE users_idx '
+                'MATCH ? LIMIT ?)', request.query, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
         except sqlite3.Error as e:
+            self._logger.info("Error searching for users")
+            self._logger.error(str(e))
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
+    def CreateUsersIndex(self, request, context):
+        self._logger.info('Creating User Index')
+        resp = database_pb2.PostsResponse()
+        try:
+            res = self._db.execute(
+                'CREATE VIRTUAL TABLE IF NOT EXISTS users_idx USING ' +
+                'fts5(handle, content=users, content_rowid=global_id)')
+            self._logger.info('Updating users index')
+            res = self._db.execute(
+                "insert into users_idx(users_idx) values('rebuild')")
+            self._logger.info('Adding Triggers, Insert')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS users_ai AFTER INSERT ON users BEGIN\n' +
+                '  INSERT INTO users_idx(rowid, handle) ' +
+                'VALUES (new.global_id, new.handle); \n' +
+                'END;')
+            self._logger.info('Adding Triggers, Delete')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN\n' +
+                '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
+                "VALUES ('delete', new.global_id, new.handle); \n" +
+                'END;')
+            self._logger.info('Adding Triggers, Update')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN\n' +
+                '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
+                "VALUES ('delete', new.global_id, new.handle);\n" +
+                '  INSERT INTO users_idx(rowid, handle) ' +
+                'VALUES (new.global_id, new.handle);\n' +
+                'END;')
+            resp.result_type = database_pb2.PostsResponse.OK
+        except sqlite3.Error as e:
+            self._logger.info("Error creating users index")
+            self._logger.error(str(e))
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
             return resp
