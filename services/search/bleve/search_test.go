@@ -70,7 +70,7 @@ func (m *DBMock) Users(_ context.Context, in *pb.UsersRequest, opts ...grpc.Call
 
 	u := &pb.UsersEntry{
 		Handle:      fmt.Sprintf("HANDLE %d", in.Match.GlobalId),
-		DisplayName: fmt.Sprintf("DISPLAYNAME %d", in.Match.GlobalId),
+		DisplayName: fmt.Sprintf("DISPLAY_NAME %d", in.Match.GlobalId),
 		GlobalId:    in.Match.GlobalId,
 	}
 
@@ -156,6 +156,14 @@ func TestFieldsSearch(t *testing.T) {
 		{
 			query:      "HTML",
 			lenResults: LEN_TEST_POST,
+		},
+		{
+			query:      "HANDLE",
+			lenResults: LEN_TEST_POST,
+		},
+		{
+			query:      "DISPLAY_NAME",
+			lenResults: 0,
 		},
 		{
 			query:      "MARKDOWN",

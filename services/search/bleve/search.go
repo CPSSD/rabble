@@ -10,10 +10,10 @@ import (
 
 	pb "github.com/cpssd/rabble/services/proto"
 	util "github.com/cpssd/rabble/services/utils"
-	"google.golang.org/grpc"
 
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
+	"google.golang.org/grpc"
 )
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
@@ -37,12 +37,10 @@ func createIndexMapping() mapping.IndexMapping {
 	doc := mapping.NewDocumentStaticMapping()
 
 	text := mapping.NewTextFieldMapping()
-	// TODO(devoxel): figure out field mapping for author name.
-	//  should we do a database lookup on index or should we JOIN that
-	//  field to PostsEntry?
 	// TODO(devoxel): figure out field mapping for creation timestamp
 	doc.AddFieldMappingsAt("body", text)
 	doc.AddFieldMappingsAt("title", text)
+	doc.AddFieldMappingsAt("author", text)
 
 	// This sets the document mapping such that any document added uses
 	// the document mapping defined above. Since it's static, this only
