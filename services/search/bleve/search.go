@@ -162,7 +162,7 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 			continue
 		}
 
-		resp.Results = append(resp.Results, doc)
+		resp.BResults = append(resp.BResults, doc)
 	}
 	return resp, nil
 }

@@ -111,17 +111,17 @@ func TestSearch(t *testing.T) {
 		t.Fatalf("Failed to search: %v", err)
 	}
 
-	if len(res.Results) != 1 {
+	if len(res.BResults) != 1 {
 		t.Fatal("Expected to find single article")
 	}
 
-	if res.Results[0].GlobalId != foundArticle {
+	if res.BResults[0].GlobalId != foundArticle {
 		t.Fatalf("Failed to find article %d: %v", foundArticle, err)
 	}
 
-	if res.Results[0].Title != fmt.Sprintf("TITLE %d", foundArticle) {
+	if res.BResults[0].Title != fmt.Sprintf("TITLE %d", foundArticle) {
 		t.Fatalf("Expected to find title to be \"TITLE %d\", got %#v",
-			foundArticle, res.Results[0].Title)
+			foundArticle, res.BResults[0].Title)
 	}
 }
 
