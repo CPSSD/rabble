@@ -24,7 +24,6 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
     this.renderMenu = this.renderMenu.bind(this);
     this.resetDropdown = this.resetDropdown.bind(this);
-    this.handleSubmitSearch = this.handleSubmitSearch.bind(this);
   }
 
   public render() {
@@ -58,7 +57,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
         </div>
         <div className="pure-u-3-24"/>
         <div className="pure-u-8-24">
-          <form className="pure-form search-form" onSubmit={this.handleSubmitSearch}>
+          <form className="pure-form search-form">
             <input
               type="text"
               name="query"
@@ -68,12 +67,19 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
               onChange={this.handleSearchInputChange}
               required={true}
             />
-            <button
-              type="submit"
-              className="pure-button pure-button-primary search-button"
-            >
-              <Search />
-            </button>
+            <Link to={"/results/" + this.state.query}>
+              <button
+                type="submit"
+                className="pure-button pure-button-primary search-button"
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                  this.setState({
+                    query: "",
+                  });
+                }}
+              >
+                <Search />
+              </button>
+            </Link>
           </form>
         </div>
         <div className="pure-u-7-24">
@@ -125,14 +131,6 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
         {UserMenu}
       </ul>
     );
-  }
-
-  private handleSubmitSearch(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    alert("Sorry SafeSearch is on");
-    this.setState({
-      query: "",
-    });
   }
 
   private handleSearchInputChange(event: React.ChangeEvent<HTMLInputElement>) {

@@ -15,6 +15,7 @@ import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 import {AccountEdit} from "./components/account_edit";
 import {Pending} from "./components/pending";
+import {SearchResults} from "./components/search_results";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -87,6 +88,11 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               path="/register"
               component={Register}
+            />
+            <Route
+              path="/results/:query"
+              username={this.state.username}
+              component={SearchResults}
             />
             <PrivateRoute
               path="/feed"
