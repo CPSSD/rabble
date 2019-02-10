@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	util "github.com/cpssd/rabble/services/utils"
 	"google.golang.org/grpc"
 
 	"github.com/blevesearch/bleve"
@@ -68,6 +69,8 @@ func createIndex() (bleve.Index, error) {
 
 type PostGetter interface {
 	Posts(ctx context.Context, in *pb.PostsRequest, opts ...grpc.CallOption) (*pb.PostsResponse, error)
+	// Users is required for util.ConvertDBToFeed
+	Users(ctx context.Context, in *pb.UsersRequest, opts ...grpc.CallOption) (*pb.UsersResponse, error)
 }
 
 type Server struct {
@@ -77,7 +80,7 @@ type Server struct {
 	index bleve.Index
 	// idToDoc is a hack to speed up article lookups.
 	// TODO(devoxel): Figure out how to this using bleve.Index
-	idToDoc map[int64]*pb.PostsEntry
+	idToDoc map[int64]*pb.Post
 }
 
 func newServer() *Server {
@@ -91,14 +94,14 @@ func newServer() *Server {
 		db:      dbClient,
 		dbConn:  dbConn,
 		index:   index,
-		idToDoc: map[int64]*pb.PostsEntry{},
+		idToDoc: map[int64]*pb.Post{},
 	}
 
 	s.initIndex()
 	return s
 }
 
-func (s *Server) addToIndex(b *pb.PostsEntry) error {
+func (s *Server) addToIndex(b *pb.Post) error {
 	if _, exists := s.idToDoc[b.GlobalId]; exists {
 		log.Printf("WARNING: %d id already exists in index.", b.GlobalId)
 		return errors.New("document already exists with that id")
@@ -110,6 +113,7 @@ func (s *Server) addToIndex(b *pb.PostsEntry) error {
 		return err
 	}
 	s.idToDoc[b.GlobalId] = b
+
 	return nil
 }
 
@@ -118,12 +122,15 @@ func (s *Server) initIndex() {
 		RequestType: pb.PostsRequest_FIND,
 	}
 
-	res, err := s.db.Posts(context.Background(), req)
+	ctx := context.Background()
+	res, err := s.db.Posts(ctx, req)
 	if err != nil {
 		log.Fatalf("Failed to create index: %v", err)
 	}
 
-	for _, blog := range res.Results {
+	results := util.ConvertDBToFeed(ctx, res, s.db)
+
+	for _, blog := range results {
 		if err := s.addToIndex(blog); err != nil {
 			log.Fatalf("initIndex: cannot add blog (id %b) to index: %v",
 				blog.GlobalId, err)
@@ -162,7 +169,7 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 			continue
 		}
 
-		resp.BResults = append(resp.BResults, doc)
+		resp.Results = append(resp.Results, doc)
 	}
 	return resp, nil
 }

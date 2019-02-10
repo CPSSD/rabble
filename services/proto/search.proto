@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-import "services/proto/database.proto";
 import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -25,11 +24,12 @@ message SearchRequest {
 }
 
 message SearchResponse {
-  repeated PostsEntry results = 1;
+  repeated Post results = 1;
+  repeated User u_results = 2;
 }
 
 message IndexRequest {
-  PostsEntry post = 1;
+  Post post = 1;
 }
 
 message IndexResponse {
@@ -39,12 +39,6 @@ message IndexResponse {
   }
   ResultType result_type = 1;
   string error = 2;
-}
-
-message SearchResponse {
-  repeated Post results = 1;
-  repeated User u_results = 2;
-  repeated PostsEntry b_results = 3;
 }
 
 service Search {

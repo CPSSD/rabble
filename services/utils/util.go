@@ -9,6 +9,7 @@ import (
 	pb "github.com/cpssd/rabble/services/proto"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -27,7 +28,11 @@ func ConvertPbTimestamp(t *tspb.Timestamp) string {
 	return goTime.Format(timeParseFormat)
 }
 
-func GetAuthorFromDb(ctx context.Context, handle string, host string, globalId int64, db pb.DatabaseClient) (*pb.UsersEntry, error) {
+type UsersGetter interface {
+	Users(ctx context.Context, in *pb.UsersRequest, opts ...grpc.CallOption) (*pb.UsersResponse, error)
+}
+
+func GetAuthorFromDb(ctx context.Context, handle string, host string, globalId int64, db UsersGetter) (*pb.UsersEntry, error) {
 	const errFmt = "Could not find user %v@%v. error: %v"
 	r := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
@@ -56,7 +61,7 @@ func GetAuthorFromDb(ctx context.Context, handle string, host string, globalId i
 
 // convertDBToFeed converts PostsResponses to PostsEntry[]
 // Hopefully this will removed once we fix proto building.
-func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db pb.DatabaseClient) []*pb.Post {
+func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) []*pb.Post {
 	pe := []*pb.Post{}
 	for i, r := range p.Results {
 		if i >= MaxItemsReturned {
@@ -88,7 +93,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db pb.DatabaseCli
 }
 
 // ConvertDBToUsers converts database.UserResponses to search.Users[]
-func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db pb.DatabaseClient) []*pb.User {
+func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db UsersGetter) []*pb.User {
 	ue := []*pb.User{}
 	for i, r := range p.Results {
 		if i >= MaxItemsReturned {

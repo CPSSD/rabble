@@ -7,6 +7,8 @@ import (
 
 	"github.com/blevesearch/bleve"
 	pb "github.com/cpssd/rabble/services/proto"
+	util "github.com/cpssd/rabble/services/utils"
+	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 )
 
@@ -31,13 +33,16 @@ func buildFakePost(t *testing.T, seed int64) *pb.PostsEntry {
 		t.Fatalf("seed is not in range 0-%d", MAX_TEST_POST-1)
 	}
 
+	now := ptypes.TimestampNow()
+
 	return &pb.PostsEntry{
-		GlobalId:   seed,
-		AuthorId:   seed % 4,
-		Title:      fmt.Sprintf("TITLE %d", seed),
-		Body:       fmt.Sprintf("HTML <h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
-		MdBody:     fmt.Sprintf("MARKDOWN # %d \n\n %s", seed, words[seed]),
-		LikesCount: seed + MAX_TEST_POST + 10,
+		GlobalId:         seed,
+		AuthorId:         seed % 4,
+		Title:            fmt.Sprintf("TITLE %d", seed),
+		Body:             fmt.Sprintf("HTML <h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
+		MdBody:           fmt.Sprintf("MARKDOWN # %d \n\n %s", seed, words[seed]),
+		LikesCount:       seed + MAX_TEST_POST + 10,
+		CreationDatetime: now,
 	}
 }
 
@@ -55,9 +60,23 @@ func (m *DBMock) Posts(_ context.Context, in *pb.PostsRequest, opts ...grpc.Call
 		posts = append(posts, buildFakePost(m.t, int64(i)))
 	}
 
-	m.t.Log(posts)
-
 	return &pb.PostsResponse{Results: posts}, nil
+}
+
+func (m *DBMock) Users(_ context.Context, in *pb.UsersRequest, opts ...grpc.CallOption) (*pb.UsersResponse, error) {
+	if in.RequestType != pb.UsersRequest_FIND {
+		return nil, fmt.Errorf("DBMock: should only use a FIND Request")
+	}
+
+	u := &pb.UsersEntry{
+		Handle:      fmt.Sprintf("HANDLE %d", in.Match.GlobalId),
+		DisplayName: fmt.Sprintf("DISPLAYNAME %d", in.Match.GlobalId),
+		GlobalId:    in.Match.GlobalId,
+	}
+
+	return &pb.UsersResponse{
+		Results: []*pb.UsersEntry{u},
+	}, nil
 }
 
 func newMockedServer(t *testing.T) *Server {
@@ -72,7 +91,7 @@ func newMockedServer(t *testing.T) *Server {
 	s := &Server{
 		db:      dbMock,
 		index:   index,
-		idToDoc: map[int64]*pb.PostsEntry{},
+		idToDoc: map[int64]*pb.Post{},
 	}
 
 	return s
@@ -111,17 +130,17 @@ func TestSearch(t *testing.T) {
 		t.Fatalf("Failed to search: %v", err)
 	}
 
-	if len(res.BResults) != 1 {
+	if len(res.Results) != 1 {
 		t.Fatal("Expected to find single article")
 	}
 
-	if res.BResults[0].GlobalId != foundArticle {
+	if res.Results[0].GlobalId != foundArticle {
 		t.Fatalf("Failed to find article %d: %v", foundArticle, err)
 	}
 
-	if res.BResults[0].Title != fmt.Sprintf("TITLE %d", foundArticle) {
+	if res.Results[0].Title != fmt.Sprintf("TITLE %d", foundArticle) {
 		t.Fatalf("Expected to find title to be \"TITLE %d\", got %#v",
-			foundArticle, res.BResults[0].Title)
+			foundArticle, res.Results[0].Title)
 	}
 }
 
@@ -185,7 +204,14 @@ func TestIndex(t *testing.T) {
 
 	currentId := LEN_TEST_POST
 	addToIndex := func() {
-		i := &pb.IndexRequest{Post: buildFakePost(t, int64(currentId))}
+		entry := &pb.PostsResponse{
+			Results: []*pb.PostsEntry{
+				buildFakePost(t, int64(currentId)),
+			},
+		}
+		post := util.ConvertDBToFeed(context.Background(), entry, s.db)
+
+		i := &pb.IndexRequest{Post: post[0]}
 		res, err := s.Index(context.Background(), i)
 		if err != nil {
 			t.Fatalf("Failed to call Index(%v): %v", *i, err)

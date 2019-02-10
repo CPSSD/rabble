@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
-	"fmt"
 	"time"
 
-
-	utils "github.com/cpssd/rabble/services/utils"
 	pb "github.com/cpssd/rabble/services/proto"
+	utils "github.com/cpssd/rabble/services/utils"
 	"google.golang.org/grpc"
 )
 
@@ -47,7 +46,7 @@ func newServer() *Server {
 }
 func (s *Server) CreateIndices() {
 	log.Println("Creating Indices\n")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	_, postErr := s.db.CreatePostsIndex(ctx, &pb.DatabaseSearchRequest{})
 	if postErr != nil {
@@ -59,6 +58,11 @@ func (s *Server) CreateIndices() {
 	}
 }
 
+func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexResponse, error) {
+	// hey there, i'm all good, i dont need to index, thanks for asking
+	return &pb.IndexResponse{}, nil
+}
+
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
 	log.Printf("Query: %s\n", r.Query.QueryText)
 	if r.Query.QueryText == "" {
@@ -67,11 +71,11 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 	}
 
 	sReq := &pb.DatabaseSearchRequest{
-		Query: r.Query.QueryText,
+		Query:        r.Query.QueryText,
 		UserGlobalId: r.UserGlobalId,
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second * 2)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*2)
 	defer cancel()
 
 	pResp, pErr := s.db.SearchArticles(ctx, sReq)
