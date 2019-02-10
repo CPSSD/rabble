@@ -22,6 +22,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
 
     this.toggleDropdown = this.toggleDropdown.bind(this);
     this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
+    this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
     this.renderMenu = this.renderMenu.bind(this);
     this.resetDropdown = this.resetDropdown.bind(this);
   }
@@ -71,11 +72,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
               <button
                 type="submit"
                 className="pure-button pure-button-primary search-button"
-                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                  this.setState({
-                    query: "",
-                  });
-                }}
+                onClick={this.handleSearchSubmit}
               >
                 <Search />
               </button>
@@ -137,6 +134,12 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     const target = event.target;
     this.setState({
       query: target.value,
+    });
+  }
+
+  private handleSearchSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+    this.setState({
+      query: "",
     });
   }
 

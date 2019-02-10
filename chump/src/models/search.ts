@@ -39,7 +39,7 @@ export function SearchAPIPromise(endpoint: string) {
   });
 }
 
-export function Search(query: string) {
+export function Search(query= "") {
   const endpoint: string = '/c2s/search?query="' + query + '"';
   return SearchAPIPromise(endpoint);
 }

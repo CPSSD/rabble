@@ -61,9 +61,9 @@ describe("Header", () => {
   });
 
   it("can submit query form", (done) => {
-    const submitStub: any = sandbox.stub(Header.prototype, "handleSubmitSearch" as any);
+    const submitStub: any = sandbox.stub(Header.prototype, "handleSearchSubmit" as any);
     mountHeader();
-    testComponent.find("form").first().simulate("submit");
+    testComponent.find(".search-button").first().simulate("click");
     expect(submitStub.called).to.equal(true);
     done();
   });

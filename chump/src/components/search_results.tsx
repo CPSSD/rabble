@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
 import { IParsedPost } from "../models/posts";
-import { IParsedUser, Search, ISearchResponse } from "../models/search";
+import { IParsedUser, ISearchResponse, Search } from "../models/search";
 import { Post } from "./post";
 
 interface IFeedProps extends RouteProps {
@@ -24,7 +24,7 @@ export class SearchResults extends React.Component<IFeedProps, IFeedState> {
     super(props);
     this.state = {
       foundPosts: [],
-      query: this.props.match.params.query
+      query: this.props.match.params.query,
     };
   }
 
