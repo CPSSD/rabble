@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"os"
 	"strconv"
 
 	pb "github.com/cpssd/rabble/services/proto"
-	"google.golang.org/grpc"
+	util "github.com/cpssd/rabble/services/utils"
 
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/mapping"
+	"google.golang.org/grpc"
 )
 
 func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
@@ -29,8 +32,43 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
+func createIndexMapping() mapping.IndexMapping {
+	indexMapping := bleve.NewIndexMapping()
+	doc := mapping.NewDocumentStaticMapping()
+
+	text := mapping.NewTextFieldMapping()
+	// TODO(devoxel): figure out field mapping for creation timestamp
+	doc.AddFieldMappingsAt("body", text)
+	doc.AddFieldMappingsAt("title", text)
+	doc.AddFieldMappingsAt("author", text)
+
+	// This sets the document mapping such that any document added uses
+	// the document mapping defined above. Since it's static, this only
+	// searches explicitly declared fields.
+	indexMapping.AddDocumentMapping("_default", doc)
+
+	// TODO(devoxel): Ideally, we should annotate a PostsEntry type with
+	// the Type() functions, allowing more complex search conversions
+	// This allows custom character filters by type, or custom language
+	// analysis by type.
+	return indexMapping
+}
+
+func createIndex() (bleve.Index, error) {
+	indexMapping := createIndexMapping()
+	path := os.Getenv("INDEX_PATH")
+	if path == "" {
+		log.Print("INDEX_PATH not found, using memory index.")
+		return bleve.NewMemOnly(indexMapping)
+	}
+
+	return bleve.New(path, indexMapping)
+}
+
 type PostGetter interface {
 	Posts(ctx context.Context, in *pb.PostsRequest, opts ...grpc.CallOption) (*pb.PostsResponse, error)
+	// Users is required for util.ConvertDBToFeed
+	Users(ctx context.Context, in *pb.UsersRequest, opts ...grpc.CallOption) (*pb.UsersResponse, error)
 }
 
 type Server struct {
@@ -40,14 +78,12 @@ type Server struct {
 	index bleve.Index
 	// idToDoc is a hack to speed up article lookups.
 	// TODO(devoxel): Figure out how to this using bleve.Index
-	idToDoc map[int64]*pb.PostsEntry
+	idToDoc map[int64]*pb.Post
 }
 
 func newServer() *Server {
 	dbConn, dbClient := createDatabaseClient()
-
-	indexMapping := bleve.NewIndexMapping()
-	index, err := bleve.NewMemOnly(indexMapping)
+	index, err := createIndex()
 	if err != nil {
 		log.Fatalf("Failed to init bleve index: %v", err)
 	}
@@ -56,33 +92,60 @@ func newServer() *Server {
 		db:      dbClient,
 		dbConn:  dbConn,
 		index:   index,
-		idToDoc: map[int64]*pb.PostsEntry{},
+		idToDoc: map[int64]*pb.Post{},
 	}
 
-	s.createIndex()
+	s.initIndex()
 	return s
 }
 
-func (s *Server) createIndex() {
+func (s *Server) addToIndex(b *pb.Post) error {
+	if _, exists := s.idToDoc[b.GlobalId]; exists {
+		log.Printf("WARNING: %d id already exists in index.", b.GlobalId)
+		return errors.New("document already exists with that id")
+	}
+
+	id := strconv.FormatInt(b.GlobalId, 10)
+	err := s.index.Index(id, b)
+	if err != nil {
+		return err
+	}
+	s.idToDoc[b.GlobalId] = b
+
+	return nil
+}
+
+func (s *Server) initIndex() {
 	req := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 	}
 
-	res, err := s.db.Posts(context.Background(), req)
+	ctx := context.Background()
+	res, err := s.db.Posts(ctx, req)
 	if err != nil {
 		log.Fatalf("Failed to create index: %v", err)
 	}
 
-	for _, blog := range res.Results {
-		id := strconv.FormatInt(blog.GlobalId, 10)
-		s.index.Index(id, blog)
-		s.idToDoc[blog.GlobalId] = blog
+	results := util.ConvertDBToFeed(ctx, res, s.db)
+
+	for _, blog := range results {
+		if err := s.addToIndex(blog); err != nil {
+			log.Fatalf("initIndex: cannot add blog (id %b) to index: %v",
+				blog.GlobalId, err)
+		}
 	}
+
+	log.Printf("Built index of length %d", len(res.Results))
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
+	const (
+		MAX_RESULTS = 50
+	)
+
 	q := bleve.NewMatchQuery(r.Query.QueryText)
 	search := bleve.NewSearchRequest(q)
+	search.Size = MAX_RESULTS
 	searchRes, err := s.index.Search(search)
 	if err != nil {
 		log.Printf("Failed to search index: %v", err)
@@ -101,12 +164,22 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 		doc, exists := s.idToDoc[id]
 		if !exists {
 			log.Printf("WARNING: doc found in search does not exist for id: %d", id)
+			continue
 		}
 
-		resp.BResults = append(resp.BResults, doc)
+		resp.Results = append(resp.Results, doc)
 	}
-
 	return resp, nil
+}
+
+func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexResponse, error) {
+	if err := s.addToIndex(r.Post); err != nil {
+		return &pb.IndexResponse{
+			ResultType: pb.IndexResponse_ERROR,
+			Error:      err.Error(),
+		}, nil
+	}
+	return &pb.IndexResponse{}, nil
 }
 
 func main() {
