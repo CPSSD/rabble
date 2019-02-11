@@ -2,6 +2,8 @@ import * as React from "react";
 import { Search } from "react-feather";
 import { Link } from "react-router-dom";
 
+const Config = require("Config");
+
 interface IHeaderProps {
   username: string;
 }
@@ -54,7 +56,9 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
       <div className="pure-g topnav">
         <div className="pure-u-1-24"/>
         <div className="pure-u-5-24 centre-brand">
-          <Link to="/" className="brand" onClick={this.resetDropdown}>Rabble</Link>
+          <Link to="/" className="brand" onClick={this.resetDropdown}>
+            {Config.header_title}
+          </Link>
         </div>
         <div className="pure-u-3-24"/>
         <div className="pure-u-8-24">
