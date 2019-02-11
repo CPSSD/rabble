@@ -3,13 +3,16 @@ from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
 
+from utils import posts
+
 
 class NewArticleServicer:
 
-    def __init__(self, create_stub, db_stub, md_stub, logger, users_util):
+    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util):
         self._create_stub = create_stub
         self._db_stub = db_stub
         self._md_stub = md_stub
+        self._search_stub = search_stub
         self._logger = logger
         self._users_util = users_util
 
@@ -40,6 +43,9 @@ class NewArticleServicer:
         posts_resp = self._db_stub.Posts(pr)
         if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
             self._logger.error('Could not insert into db: %s', posts_resp.error)
+
+        pe.global_id = posts_resp.global_id
+        posts.index(self._logger, self._search_stub, pe)
 
         return posts_resp.result_type, posts_resp.global_id
 

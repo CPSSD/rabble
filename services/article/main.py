@@ -14,6 +14,7 @@ from services.proto import article_pb2_grpc
 from services.proto import database_pb2_grpc
 from services.proto import create_pb2_grpc
 from services.proto import mdc_pb2_grpc
+from services.proto import search_pb2_grpc
 
 
 def get_args():
@@ -26,19 +27,27 @@ def get_args():
 def main():
     args = get_args()
     logger = get_logger("article_service", args.v)
+
     logger.info("Creating db connection")
     db_channel = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
+
     logger.info("Creating create connection")
     create_channel = get_service_channel(logger, "CREATE_SERVICE_HOST", 1922)
     create_stub = create_pb2_grpc.CreateStub(create_channel)
+
+    logger.info("Creating search connection")
+    search_channel = get_service_channel(logger, "SEARCH_SERVICE_HOST", 1886)
+    search_stub = search_pb2_grpc.SearchStub(search_channel)
+
     logger.info("Creating article server")
     mdc_channel = get_service_channel(logger, "MDC_SERVICE_HOST", 1937)
     mdc_stub = mdc_pb2_grpc.ConverterStub(mdc_channel)
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)
     article_pb2_grpc.add_ArticleServicer_to_server(
-        ArticleServicer(create_stub, db_stub, mdc_stub, logger, users_util),
+        ArticleServicer(create_stub, db_stub, mdc_stub, search_stub, logger, users_util),
         server
         )
     server.add_insecure_port('0.0.0.0:1601')
