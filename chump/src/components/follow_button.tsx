@@ -60,11 +60,6 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
         <div className="pure-control-group">
           <FollowOrUnfollowButton following={this.state.following} />
-          <input
-            type="submit"
-            value={this.state.following ? "Unfollow" : "Follow"}
-            className="pure-button pure-button-primary primary-button"
-          />
         </div>
       </form>
     );
