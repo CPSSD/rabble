@@ -1,8 +1,8 @@
 import * as React from "react";
+import { UserCheck, UserMinus, UserPlus } from "react-feather";
 import { Link } from "react-router-dom";
 import { Response } from "superagent";
 import { CreateFollow } from "../models/follow";
-import { UserPlus, UserCheck, UserMinus } from "react-feather";
 
 interface IFormState {
   clicked: boolean;
@@ -20,9 +20,9 @@ interface IFollowOrUnfollowProps {
 }
 
 const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
-  const iconStyle:React.CSSProperties = {
+  const iconStyle: React.CSSProperties = {
     float: "left",
-    paddingRight: "0.5em"
+    paddingRight: "0.5em",
   };
   if (props.following) {
     /* We use CSS to hide and show the Feather icons and associated button text depending
