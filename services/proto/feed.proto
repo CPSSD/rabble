@@ -25,6 +25,7 @@ message Post {
   int64 likes_count = 6;
   string bio = 7;
   string image = 8;
+  bool is_followed = 9;
 }
 
 message FeedResponse {

@@ -57,6 +57,7 @@ func (s *server) convertDBToFeed(ctx context.Context, p *pb.PostsResponse) *pb.F
 			Image:      defaultImage,
 			LikesCount: r.LikesCount,
 			Published:  s.convertPbTimestamp(ctx, r.CreationDatetime),
+            IsFollowed: r.IsFollowed,
 		}
 		fp.Results = append(fp.Results, np)
 	}
