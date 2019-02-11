@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { Response } from "superagent";
 import { CreateFollow } from "../models/follow";
+import { UserPlus, UserCheck, UserMinus } from "react-feather";
 
 interface IFormState {
   clicked: boolean;
@@ -20,20 +21,25 @@ interface IFollowOrUnfollowProps {
 
 const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
   if (props.following) {
+    /* We use CSS to hide and show the Feather icons and associated button text depending
+       on the button :hover state (along with background colour, etc).*/
     return (
-        <input
+        <button
              type="submit"
-             value="Unfollow"
-             className="pure-button pure-button-primary primary-button unfollow"
-        />
+             className="pure-button pure-button-primary primary-button follow-button unfollow"
+        >
+            <div className="following-button-content"><UserCheck /> Following</div>
+            <div className="unfollow-button-content"><UserMinus /> Unfollow</div>
+        </button>
     );
   }
   return (
-    <input
+    <button
         type="submit"
-        value="Follow"
-        className="pure-button pure-button-primary primary-button follow"
-    />
+        className="pure-button pure-button-primary primary-button follow-button follow"
+    >
+        <div className="follow-button-content"><UserPlus /> Follow</div>
+    </button>
   );
 };
 
@@ -58,7 +64,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     }
     return (
       <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmitForm}>
-        <div className="pure-control-group">
+        <div className="pure-control-group follow-button-container">
           <FollowOrUnfollowButton following={this.state.following} />
         </div>
       </form>
