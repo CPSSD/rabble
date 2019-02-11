@@ -20,6 +20,10 @@ interface IFollowOrUnfollowProps {
 }
 
 const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
+  const iconStyle:React.CSSProperties = {
+    float: "left",
+    paddingRight: "0.5em"
+  };
   if (props.following) {
     /* We use CSS to hide and show the Feather icons and associated button text depending
        on the button :hover state (along with background colour, etc).*/
@@ -28,8 +32,8 @@ const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
              type="submit"
              className="pure-button pure-button-primary primary-button follow-button unfollow"
         >
-            <div className="following-button-content"><UserCheck /> Following</div>
-            <div className="unfollow-button-content"><UserMinus /> Unfollow</div>
+            <div className="following-button-content"><UserCheck size="1em" style={iconStyle} /> Following</div>
+            <div className="unfollow-button-content"><UserMinus size="1em" style={iconStyle} /> Unfollow</div>
         </button>
     );
   }
@@ -38,7 +42,7 @@ const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
         type="submit"
         className="pure-button pure-button-primary primary-button follow-button follow"
     >
-        <div className="follow-button-content"><UserPlus /> Follow</div>
+        <div className="follow-button-content"><UserPlus size="1em" style={iconStyle} /> Follow</div>
     </button>
   );
 };

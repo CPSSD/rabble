@@ -180,6 +180,12 @@ html, button, input, select, textarea,
     }
 }
 
+button.follow-button {
+    text-align: right;
+    min-width: 8em;
+    font-size: 0.9em;
+}
+
 /* When it is not hovered, Unfollow button says "Following" and is grey. */
 button.follow-button.unfollow {
     background-color: #938d8b;
