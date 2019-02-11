@@ -8,6 +8,7 @@ import { FollowButton} from "./follow_button";
 interface IPostProps {
   blogPost: IParsedPost;
   username: string;
+  preview: boolean;
 }
 
 interface IPostState {
@@ -20,24 +21,30 @@ export class Post extends React.Component<IPostProps, IPostState> {
     if (this.props.blogPost.likes_count === undefined) {
       this.props.blogPost.likes_count = 0;
     }
+    if (this.props.blogPost.is_liked === undefined) {
+      this.props.blogPost.is_liked = false;
+    }
     this.state = {
       likesCount: this.props.blogPost.likes_count,
     };
     this.handleLike = this.handleLike.bind(this);
+    this.handleUnlike = this.handleUnlike.bind(this);
   }
 
   public render() {
+    const likeHandler = this.props.blogPost.is_liked ? this.handleUnlike : this.handleLike;
     let LikeButton: JSX.Element | boolean = (
-        <button
-            className="pure-button pure-input-1-3 pure-button-primary primary-button"
-            onClick={this.handleLike}
-        >
-        Like
-        </button>
+      <button
+          className="pure-button pure-input-1-3 pure-button-primary primary-button"
+          onClick={likeHandler}
+      >
+      {this.props.blogPost.is_liked ? "Unlike" : "Like"}
+      </button>
     );
     if (this.props.username === "" ||
-        typeof this.props.username === "undefined") {
-        LikeButton = false;
+        typeof this.props.username === "undefined" ||
+        this.props.preview === true) {
+      LikeButton = false;
     }
     return (
       <div className="blog-post-holder">
@@ -112,5 +119,9 @@ export class Post extends React.Component<IPostProps, IPostState> {
         }
         alert(message);
       });
+  }
+
+  private handleUnlike(event: React.MouseEvent<HTMLButtonElement>) {
+    alert("Not implemented, give out likes more carefully.");
   }
 }

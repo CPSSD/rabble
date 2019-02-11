@@ -42,7 +42,7 @@ message PostsRequest {
   PostsEntry entry = 3;
 
   // The global ID of the user making this request, not set if none.
-  google.protobuf.UInt64Value user_global_id = 4;
+  google.protobuf.Int64Value user_global_id = 4;
 }
 
 message PostsResponse {
@@ -215,7 +215,7 @@ message LikesCollectionResponse {
 message InstanceFeedRequest {
   int32 num_posts = 1;
   // The global ID of the user making this request, not set if none.
-  google.protobuf.UInt64Value user_global_id = 2;
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 message PendingFollowRequest {
@@ -237,6 +237,13 @@ message PendingFollowResponse {
   repeated PendingFollow followers = 3;
 }
 
+message DatabaseSearchRequest {
+  string query = 1;
+  int32 num_responses = 2;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 3;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -253,4 +260,11 @@ service Database {
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
   // Get PENDING Follows with handles rather than ids
   rpc PendingFollows(PendingFollowRequest) returns (PendingFollowResponse);
+  // Get Article search results
+  rpc SearchArticles(DatabaseSearchRequest) returns (PostsResponse);
+  // Get User search results
+  rpc SearchUsers(DatabaseSearchRequest) returns (UsersResponse);
+  // Create Database Indices
+  rpc CreatePostsIndex(DatabaseSearchRequest) returns (PostsResponse);
+  rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 }

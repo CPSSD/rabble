@@ -6,6 +6,7 @@ import os
 import sys
 import time
 
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from users_servicer import UsersServicer
 from services.proto import users_pb2_grpc
@@ -13,15 +14,8 @@ from services.proto import database_pb2_grpc
 
 
 def get_db_stub(logger):
-    db_host = os.environ.get('DB_SERVICE_HOST')
-    if not db_host:
-        logger.error("%s variable not set", DBVAR)
-        sys.exit(1)
-    db_address = db_host + ":1798"
-    logger.info("Connecting to database at %s", db_address)
-    chan = grpc.insecure_channel(db_address)
+    chan = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     return database_pb2_grpc.DatabaseStub(chan)
-
 
 def get_args():
     parser = argparse.ArgumentParser('Run the Rabble users microservice')

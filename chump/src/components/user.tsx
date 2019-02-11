@@ -4,10 +4,14 @@ import { Link, RouteProps } from "react-router-dom";
 import { GetUsersPosts, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
+import * as superagent from "superagent";
+
 interface IUserState {
   publicBlog: IParsedPost[];
   // user that we're looking at, filled when we complete our lookup
   user: string;
+  // used to determine what error message to display.
+  error: string;
 }
 
 interface IUserProps extends RouteProps {
@@ -23,9 +27,12 @@ export class User extends React.Component<IUserProps, IUserState> {
   constructor(props: IUserProps) {
     super(props);
     this.state = {
+      error: "",
       publicBlog: [],
       user: "",
     };
+
+    this.handleGetPostsErr = this.handleGetPostsErr.bind(this);
   }
 
   public getPosts() {
@@ -39,21 +46,46 @@ export class User extends React.Component<IUserProps, IUserState> {
       .catch(this.handleGetPostsErr);
   }
 
-  public handleGetPostsErr() {
-    alert("could not communicate with server :(");
+  public handleGetPostsErr(e: superagent.ResponseError) {
+    let msg: string = "";
+
+    switch (e.status) {
+      case 404:
+        msg = "User not found.";
+        break;
+      case 401:
+        msg = "Not allowed to access this user's feed.";
+        break;
+      default:
+        const names = ["Ross'", "Noah's", "Cian's", "Aaron's"];
+        const your = names[Math.floor(Math.random() * names.length)];
+        msg = "An error occured, it was probably " + your + " fault.";
+    }
+
+    // We need to set user as well in the error handler because we use
+    // it as a mechanism for detecting when we've already sent our first
+    // request.
+    this.setState({
+      error: msg,
+      user: this.props.match.params.user,
+    });
   }
 
   public renderPosts() {
     if (this.props.match.params.user !== this.state.user) {
       this.getPosts();
     }
+
     if (this.state.publicBlog.length === 0) {
-      // TODO(CianLR): Detect which case this is and serve different messages.
+      let error = "No blogs here, yet!";
+      if (this.state.error !== "") {
+        error = this.state.error;
+      }
       return (
         <div>
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
-            <p>User has no posts or does not exist</p>
+            <p>{error}</p>
           </div>
         </div>
       );
@@ -61,13 +93,14 @@ export class User extends React.Component<IUserProps, IUserState> {
     return this.state.publicBlog.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e}/>
+          <Post username={this.props.username} blogPost={e} preview={false}/>
         </div>
       );
     });
   }
 
   public userLinks() {
+    // TODO(devoxel): Putting links here is a bit of a hack
     if (! (this.props.username === this.props.match.params.user)) {
       return false;
     }

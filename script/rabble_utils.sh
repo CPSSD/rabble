@@ -47,6 +47,21 @@ like() {
     "$1/c2s/like"
 }
 
+per_article() {
+  # Call the per-article endpoint to get a single article
+  # Arguments:
+  #   1: domain - the rabble host (including port).
+  #   2: article_user - the rabble user (created with script)
+  #   3: article_id - the ID of the article.
+  #   4: login_user - Optional, login as this user
+  if ! [ -z "$4" ]; then
+    login "$1" "$4"
+    $debug curl -b localsession.db "$1/c2s/@$2/$3"
+  else
+    $debug curl "$1/c2s/@$2/$3"
+  fi
+}
+
 logout() {
   # Log out of a rabble instance
   # Arguments:
