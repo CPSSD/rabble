@@ -9,6 +9,7 @@ import sys
 from services.proto import database_pb2_grpc
 from services.proto import like_pb2_grpc
 from utils.activities import ActivitiesUtil
+from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 
@@ -24,13 +25,7 @@ def get_args():
 
 
 def get_db_stub(logger):
-    db_host = os.environ.get('DB_SERVICE_HOST')
-    if not db_host:
-        logger.error("%s variable not set", DBVAR)
-        sys.exit(1)
-    db_address = db_host + ":1798"
-    logger.info("Connecting to database at %s", db_address)
-    chan = grpc.insecure_channel(db_address)
+    chan = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     return database_pb2_grpc.DatabaseStub(chan)
 
 

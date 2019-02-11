@@ -2,12 +2,12 @@ import * as React from "react";
 import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
 import { CreateArticle, CreatePreview } from "../models/article";
-import { IBlogPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IFormState {
   blogText: string;
-  post: IBlogPost;
+  post: IParsedPost;
   showModal: boolean;
   title: string;
 }
@@ -15,6 +15,10 @@ interface IFormState {
 export interface IFormProps {
   username: string;
 }
+
+const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
+But nothing comes out when they move their lips; just a bunch of gibberish.";
+const defaultImage = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
 
 export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
   constructor(props: IFormProps) {
@@ -24,9 +28,14 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
       blogText: "",
       post: {
         author: "string",
+        bio: defaultBio,
         body: "string",
         global_id: 3,
+        image: defaultImage,
+        is_liked: false,
         likes_count: 0,
+        parsed_date: new Date(),
+        published: "",
         title: "string",
       },
       showModal: false,
@@ -61,7 +70,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-            <Post username={this.props.username} blogPost={this.state.post}/>
+            <Post username={this.props.username} blogPost={this.state.post} preview={true}/>
             </HashRouter>
           </div>
         </RModal>
@@ -93,6 +102,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               onChange={this.handleTextAreaChange}
               className="pure-input-1 blog-input"
               placeholder="Start here"
+              rows={20}
             />
           </div>
         </form>
@@ -148,6 +158,10 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           this.alertUser("Could not preview");
           return;
         }
+        post.parsed_date = new Date();
+        post.bio = defaultBio;
+        post.likes_count = 0;
+        post.image = defaultImage;
         this.setState({
           post,
           showModal: true,

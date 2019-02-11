@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { GetPublicPosts, IBlogPost } from "../models/posts";
+import { GetPublicPosts, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
 interface IFeedProps {
@@ -10,7 +10,7 @@ interface IFeedProps {
 }
 
 interface IFeedState {
-  publicBlog: IBlogPost[];
+  publicBlog: IParsedPost[];
 }
 
 export class Feed extends React.Component<IFeedProps, IFeedState> {
@@ -25,7 +25,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
 
   public getPosts() {
     GetPublicPosts(this.props.queryUsername)
-      .then((posts: IBlogPost[]) => {
+      .then((posts: IParsedPost[]) => {
         this.setState({ publicBlog: posts });
       })
       .catch(this.handleGetPostsErr);
@@ -36,10 +36,10 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
   }
 
   public renderPosts() {
-    return this.state.publicBlog.map((e: IBlogPost, i: number) => {
+    return this.state.publicBlog.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e}/>
+          <Post username={this.props.username} blogPost={e} preview={false}/>
         </div>
       );
     });

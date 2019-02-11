@@ -4,6 +4,7 @@ import logging
 from services.proto import logger_pb2
 from services.proto import logger_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
+from utils.connect import get_service_channel
 
 
 LOGGER_ENV_VAR = 'LOGGER_SERVICE_HOST'
@@ -17,12 +18,12 @@ def get_logger(name, level):
     sh = logging.StreamHandler()
     sh.setLevel(level)
     logger.addHandler(sh)
-    logger_host = os.environ.get(LOGGER_ENV_VAR)
-    if logger_host:
-        logger.addHandler(GrpcHandler(name, logger_host + ':1867'))
+
+    if not os.environ.get(LOGGER_ENV_VAR):
+        logger.warning(LOGGER_ENV_VAR,
+                       'env var not set, only logging locally')
     else:
-        logger.warning(LOGGER_ENV_VAR + ' env var not set, ' +
-                       'only logging locally')
+        logger.addHandler(GrpcHandler(logger, name))
     return logger
 
 
@@ -31,7 +32,7 @@ class LoggerConnectionException(Exception):
 
 
 class GrpcHandler(logging.Handler):
-    def __init__(self, source_name, logger_addr, timeout=5):
+    def __init__(self, err_logger, source_name, timeout=50):
         super(GrpcHandler, self).__init__()
         self.source_name = source_name
         self.level_to_sev = {
@@ -41,16 +42,10 @@ class GrpcHandler(logging.Handler):
             'ERROR': logger_pb2.Log.ERROR,
             'CRITICAL': logger_pb2.Log.CRITICAL,
         }
-        self.channel = grpc.insecure_channel(logger_addr)
+
+        self.channel = get_service_channel(err_logger, LOGGER_ENV_VAR, 1867)
         self.stub = logger_pb2_grpc.LoggerStub(self.channel)
-        chan_future = grpc.channel_ready_future(self.channel)
-        try:
-            chan_future.result(timeout=timeout)
-        except grpc.FutureTimeoutError:
-            raise LoggerConnectionException(
-                "Timed out after {} seconds connecting to {}"
-                    .format(timeout, logger_addr))
-    
+
     def emit(self, record):
         t = Timestamp()
         t.seconds = int(record.created)
@@ -65,7 +60,4 @@ class GrpcHandler(logging.Handler):
     def close(self):
         self.channel.close()
         super(GrpcHandler, self).close()
-
-    
-
 

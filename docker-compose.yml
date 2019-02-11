@@ -31,6 +31,7 @@ services:
       - APPROVER_SERVICE_HOST=approver_service
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service
       - ACTORS_SERVICE_HOST=actors_service
+      - SEARCH_SERVICE_HOST=search_service
   feed_service:
     build:
       context: ./services/feed
@@ -210,7 +211,7 @@ services:
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   search_service:
     build:
-      context: ./services/search
+      context: ./services/search/simple-search
       dockerfile: Dockerfile
     volumes:
       - .:/repo
@@ -218,3 +219,4 @@ services:
       - "database_service"
     environment:
       - DB_SERVICE_HOST=database_service
+      - INDEX_PATH=/tmp/rabble/index

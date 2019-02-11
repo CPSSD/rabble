@@ -15,6 +15,7 @@ import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 import {AccountEdit} from "./components/account_edit";
 import {Pending} from "./components/pending";
+import {SearchResults} from "./components/search_results";
 
 require("./styles/site.css"); // tslint:disable-line
 
@@ -24,24 +25,36 @@ interface IAppState {
   username: string
 }
 
+const LOCAL_STORAGE_USERNAME : string = "username";
+
 export class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {
     super(props);
 
     this.state = {
-      username: "",
+      username: this.getUsername(),
     }
 
+    this.getUsername = this.getUsername.bind(this);
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
   }
 
+  getUsername() : string {
+    if (!localStorage.hasOwnProperty(LOCAL_STORAGE_USERNAME)) {
+      return "";
+    }
+    return localStorage.getItem(LOCAL_STORAGE_USERNAME)!;
+  }
+
   login(username: string) {
-    this.setState({username})
+    this.setState({username});
+    localStorage.setItem(LOCAL_STORAGE_USERNAME, username);
   }
 
   logout() {
     this.setState({username: ""});
+    localStorage.removeItem(LOCAL_STORAGE_USERNAME);
   }
 
   render() {
@@ -75,6 +88,11 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               path="/register"
               component={Register}
+            />
+            <Route
+              path="/search/:query"
+              username={this.state.username}
+              component={SearchResults}
             />
             <PrivateRoute
               path="/feed"

@@ -2,12 +2,13 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import { SendLike } from "../models/like";
-import { IBlogPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 
 interface IPostProps {
-  blogPost: IBlogPost;
+  blogPost: IParsedPost;
   username: string;
+  preview: boolean;
 }
 
 interface IPostState {
@@ -20,30 +21,36 @@ export class Post extends React.Component<IPostProps, IPostState> {
     if (this.props.blogPost.likes_count === undefined) {
       this.props.blogPost.likes_count = 0;
     }
+    if (this.props.blogPost.is_liked === undefined) {
+      this.props.blogPost.is_liked = false;
+    }
     this.state = {
       likesCount: this.props.blogPost.likes_count,
     };
     this.handleLike = this.handleLike.bind(this);
+    this.handleUnlike = this.handleUnlike.bind(this);
   }
 
   public render() {
+    const likeHandler = this.props.blogPost.is_liked ? this.handleUnlike : this.handleLike;
     let LikeButton: JSX.Element | boolean = (
-        <button
-            className="pure-button pure-input-1-3 pure-button-primary primary-button"
-            onClick={this.handleLike}
-        >
-        Like
-        </button>
+      <button
+          className="pure-button pure-input-1-3 pure-button-primary primary-button"
+          onClick={likeHandler}
+      >
+      {this.props.blogPost.is_liked ? "Unlike" : "Like"}
+      </button>
     );
     if (this.props.username === "" ||
-        typeof this.props.username === "undefined") {
-        LikeButton = false;
+        typeof this.props.username === "undefined" ||
+        this.props.preview === true) {
+      LikeButton = false;
     }
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
-          <p className="article-byline">Published 1st January 1970</p>
+          <p className="article-byline">Published {this.props.blogPost.parsed_date.toLocaleString()}</p>
           <Link
             to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
             className="article-title"
@@ -56,7 +63,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <div className="pure-u-3-24">
           <div className="author-about">
             <img
-              src="https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+              src={this.props.blogPost.image}
               className="author-thumbnail"
             />
             <div style={{width: "100%"}}>
@@ -73,8 +80,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                 </div>
             </div>
             <div style={{clear: "both"}}>
-                <p className="author-bio">Nowadays everybody wanna talk like they got something to say.
-                But nothing comes out when they move their lips; just a bunch of gibberish.</p>
+                <p className="author-bio">{this.props.blogPost.bio}</p>
                 <div style={{width: "100%"}}>
                     <div style={{float: "left"}}>
                         <p> Likes: {this.state.likesCount} </p>
@@ -109,5 +115,9 @@ export class Post extends React.Component<IPostProps, IPostState> {
         }
         alert(message);
       });
+  }
+
+  private handleUnlike(event: React.MouseEvent<HTMLButtonElement>) {
+    alert("Not implemented, give out likes more carefully.");
   }
 }

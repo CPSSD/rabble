@@ -2,20 +2,46 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-import "services/proto/database.proto";
+import "services/proto/feed.proto";
+import "google/protobuf/wrappers.proto";
+
+message User {
+  string handle = 1;
+  string host = 2;
+  int64 global_id = 3;
+  // Plaintext biography of the user
+  string bio = 4;
+}
 
 message SearchQuery {
-	string query_text = 1;
+  string query_text = 1;
 }
 
 message SearchRequest {
-	SearchQuery query = 1;
+  SearchQuery query = 1;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 2;
 }
 
 message SearchResponse {
-	repeated PostsEntry results = 1;
+  repeated Post results = 1;
+  repeated User u_results = 2;
+}
+
+message IndexRequest {
+  Post post = 1;
+}
+
+message IndexResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
 }
 
 service Search {
-	rpc Search(SearchRequest) returns (SearchResponse);
+  rpc Search(SearchRequest) returns (SearchResponse);
+  rpc Index(IndexRequest) returns (IndexResponse);
 }
