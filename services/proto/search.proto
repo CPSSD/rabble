@@ -2,6 +2,7 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
+import "services/proto/database.proto";
 import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -29,7 +30,7 @@ message SearchResponse {
 }
 
 message IndexRequest {
-  Post post = 1;
+  PostsEntry post = 1;
 }
 
 message IndexResponse {
