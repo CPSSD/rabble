@@ -124,6 +124,7 @@ services:
       - LOGGER_SERVICE_HOST=logger_service
       - CREATE_SERVICE_HOST=create_service
       - MDC_SERVICE_HOST=markdown_service
+      - SEARCH_SERVICE_HOST=search_service
   create_service:
     build:
       context: ./services/activities/create
@@ -211,7 +212,7 @@ services:
       - HOST_NAME=${SKINNY_SERVER_HOST}:${SKINNY_SERVER_PORT}
   search_service:
     build:
-      context: ./services/search/simple-search
+      context: ./services/search/bleve
       dockerfile: Dockerfile
     volumes:
       - .:/repo
