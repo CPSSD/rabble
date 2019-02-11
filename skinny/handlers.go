@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"time"
@@ -690,6 +691,13 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request
 			return
 		}
+		query, qUErr := url.QueryUnescape(query)
+		if qUErr != nil {
+			log.Printf("Error in Search(%v) query unescape: %v", query, qUErr)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			return
+		}
+
 		sq := &pb.SearchQuery{QueryText: query}
 		req := &pb.SearchRequest{Query: sq}
 		if global_id, gIErr := s.getSessionGlobalId(r); gIErr == nil {

@@ -70,6 +70,16 @@ describe("Search", () => {
     });
   });
 
+  it("should handle encoded query", (done) => {
+    const getRequest = createFakeResponse(validBody);
+    Search("who?").then((resp: ISearchResponse) => {
+      expect(getRequest).to.have.property("callCount", 1);
+      expect(getRequest.calledWith('/c2s/search?query="who%3F"')).to.equal(true);
+      expect(resp).to.eql(validBody);
+      done();
+    });
+  });
+
   it("should handle a null response", (done) => {
     const getRequest = createFakeResponse(null);
     Search("test").then((resp: ISearchResponse) => {

@@ -5,7 +5,7 @@ import { IParsedPost } from "../models/posts";
 import { IParsedUser, ISearchResponse, Search } from "../models/search";
 import { Post } from "./post";
 
-interface IFeedProps extends RouteProps {
+interface ISearchResultsProps extends RouteProps {
   match: {
     params: {
       query: string,
@@ -14,13 +14,13 @@ interface IFeedProps extends RouteProps {
   username: string;
 }
 
-interface IFeedState {
+interface ISearchResultsState {
   foundPosts: IParsedPost[];
   query: string;
 }
 
-export class SearchResults extends React.Component<IFeedProps, IFeedState> {
-  constructor(props: IFeedProps) {
+export class SearchResults extends React.Component<ISearchResultsProps, ISearchResultsState> {
+  constructor(props: ISearchResultsProps) {
     super(props);
     this.state = {
       foundPosts: [],

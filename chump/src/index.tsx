@@ -90,7 +90,7 @@ export class App extends React.Component<{}, IAppState> {
               component={Register}
             />
             <Route
-              path="/results/:query"
+              path="/search/:query"
               username={this.state.username}
               component={SearchResults}
             />

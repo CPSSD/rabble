@@ -56,7 +56,7 @@ module.exports = {
                 "https://fonts.googleapis.com/css?family=Lato",
             ],
             scripts: [
-                "https://unpkg.com/feather-icons",
+                "https://unpkg.com/feather-icons@4.17.0/dist/feather.min.js",
                 "https://unpkg.com/react@16/umd/react.development.js",
                 "https://unpkg.com/react-dom@16/umd/react-dom.development.js",
             ]

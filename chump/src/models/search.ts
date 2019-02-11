@@ -1,7 +1,7 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
 
-import { IParsedPost, SortPosts } from "./posts";
+import { IParsedPost, ParsePosts } from "./posts";
 
 export interface IParsedUser {
   handle: string;
@@ -33,13 +33,13 @@ export function SearchAPIPromise(endpoint: string) {
         }
         const posts = body!.posts || [];
         const users = body!.users || [];
-        const parsedPosts = SortPosts(posts);
+        const parsedPosts = ParsePosts(posts);
         resolve({posts: parsedPosts, users});
       });
   });
 }
 
 export function Search(query= "") {
-  const endpoint: string = '/c2s/search?query="' + query + '"';
+  const endpoint: string = '/c2s/search?query="' + encodeURIComponent(query) + '"';
   return SearchAPIPromise(endpoint);
 }

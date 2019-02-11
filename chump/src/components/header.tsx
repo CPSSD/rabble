@@ -68,7 +68,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
               onChange={this.handleSearchInputChange}
               required={true}
             />
-            <Link to={"/results/" + this.state.query}>
+            <Link to={"/search/" + encodeURIComponent(this.state.query)}>
               <button
                 type="submit"
                 className="pure-button pure-button-primary search-button"
