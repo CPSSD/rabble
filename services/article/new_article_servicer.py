@@ -2,8 +2,7 @@ from services.proto import article_pb2
 from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
-
-from utils import posts
+from services.proto import search_pb2
 
 
 class NewArticleServicer:
@@ -20,6 +19,22 @@ class NewArticleServicer:
         convert_req = mdc_pb2.MDRequest(md_body=body)
         res = self._md_stub.MarkdownToHTML(convert_req)
         return res.html_body
+
+    def index(self, post_entry):
+        """
+        index takes a post proto and indexes it in the search service/
+
+        Arguments:
+        - post_entry (database.PostsEntry): A proto representing the post.
+          This should have a valid global_id field.
+        """
+        req = search_pb2.IndexRequest(post = post_entry)
+        resp = self._search_stub.Index(req)
+
+        if resp.error:
+            self._logger.warning("Error indexing post: %s", resp.error)
+
+        return resp.result_type == search_pb2.IndexResponse.ResultType.Value("OK")
 
     def send_insert_request(self, req):
         author = self._users_util.get_user_from_db(handle=req.author,
@@ -45,7 +60,7 @@ class NewArticleServicer:
             self._logger.error('Could not insert into db: %s', posts_resp.error)
 
         pe.global_id = posts_resp.global_id
-        posts.index(self._logger, self._search_stub, pe)
+        self.index(pe)
 
         return posts_resp.result_type, posts_resp.global_id
 
