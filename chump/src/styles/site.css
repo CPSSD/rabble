@@ -211,3 +211,8 @@ button.follow-button:hover .following-button-content {
 button.follow-button:hover .unfollow-button-content {
     display: block;
 }
+
+button.follow-button svg {
+    float: left;
+    padding-right: 0.5em;
+}
