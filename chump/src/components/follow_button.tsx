@@ -5,7 +5,6 @@ import { Response } from "superagent";
 import { CreateFollow } from "../models/follow";
 
 interface IFormState {
-  clicked: boolean;
   following: boolean; // true if active user already follows the other user.
 }
 
@@ -52,7 +51,6 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     super(props);
 
     this.state = {
-      clicked: false,
       following: props.following,
     };
 
