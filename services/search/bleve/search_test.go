@@ -7,7 +7,6 @@ import (
 
 	"github.com/blevesearch/bleve"
 	pb "github.com/cpssd/rabble/services/proto"
-	util "github.com/cpssd/rabble/services/utils"
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 )
@@ -212,14 +211,7 @@ func TestIndex(t *testing.T) {
 
 	currentId := LEN_TEST_POST
 	addToIndex := func() {
-		entry := &pb.PostsResponse{
-			Results: []*pb.PostsEntry{
-				buildFakePost(t, int64(currentId)),
-			},
-		}
-		post := util.ConvertDBToFeed(context.Background(), entry, s.db)
-
-		i := &pb.IndexRequest{Post: post[0]}
+		i := &pb.IndexRequest{Post: buildFakePost(t, int64(currentId))}
 		res, err := s.Index(context.Background(), i)
 		if err != nil {
 			t.Fatalf("Failed to call Index(%v): %v", *i, err)
