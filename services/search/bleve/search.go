@@ -139,9 +139,7 @@ func (s *Server) initIndex() {
 }
 
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
-	const (
-		MAX_RESULTS = 50
-	)
+	const MAX_RESULTS = 50
 
 	q := bleve.NewMatchQuery(r.Query.QueryText)
 	search := bleve.NewSearchRequest(q)
