@@ -5,8 +5,8 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { IParsedPost } from "../src/models/posts";
-import { SinglePost } from "../src/components/single_post";
+import { IParsedPost } from "../../src/models/posts";
+import { SinglePost } from "../../src/components/single_post";
 import { mount, shallow } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();

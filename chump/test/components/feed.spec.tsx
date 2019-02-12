@@ -5,8 +5,8 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { IParsedPost } from "../src/models/posts";
-import { Feed } from "../src/components/feed";
+import { IParsedPost } from "../../src/models/posts";
+import { Feed } from "../../src/components/feed";
 import { mount, shallow } from "./enzyme";
 
 const feedProps = {

@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { GetPublicPosts, GetSinglePost, IParsedPost } from "../src/models/posts";
+import { GetPublicPosts, GetSinglePost, IParsedPost } from "../../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();

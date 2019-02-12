@@ -5,7 +5,7 @@ import * as sinon from "sinon";
 
 import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
-import { mount } from "../enzyme";
+import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();

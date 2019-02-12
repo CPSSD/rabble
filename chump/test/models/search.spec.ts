@@ -3,8 +3,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { IParsedPost } from "../src/models/posts";
-import { IParsedUser, ISearchResponse, Search } from "../src/models/search";
+import { IParsedPost } from "../../src/models/posts";
+import { IParsedUser, ISearchResponse, Search } from "../../src/models/search";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
