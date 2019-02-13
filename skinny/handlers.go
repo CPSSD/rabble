@@ -783,3 +783,31 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 		}
 	}
 }
+
+func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Called user details without logging in: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		// call databsae user lookup to get this
+		user := &pb.User{
+			GlobalId: 6,
+			Handle:   handle,
+			Bio:      "whaddup",
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(user)
+		if err != nil {
+			log.Printf("could not marshal blogs: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
