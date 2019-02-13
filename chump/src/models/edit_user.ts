@@ -6,6 +6,25 @@ export interface IEditUserResult {
   success: boolean;
 }
 
+export function GetUserInfo() {
+  const url = "/c2s/details/user";
+  return new Promise<IEditUserResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        console.log(res.body);
+        resolve();
+      });
+  });
+}
+
 export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,

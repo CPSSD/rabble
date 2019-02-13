@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Redirect } from "react-router-dom";
-import {EditUserPromise, IEditUserResult} from "../models/edit_user";
+import {GetUserInfo, EditUserPromise, IEditUserResult} from "../models/edit_user";
 
 interface IAccountEditState {
   bio: string;
@@ -36,6 +36,8 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+
+    GetUserInfo();
   }
 
   public render() {
