@@ -40,8 +40,7 @@ module.exports = {
     // generated index.html.
     externals: {
         "react": "React",
-        "react-dom": "ReactDOM",
-        "Config": JSON.stringify(require("./rabble_config.json"))
+        "react-dom": "ReactDOM"
     },
 
     plugins: [
