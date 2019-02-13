@@ -8,14 +8,24 @@ then
   exit 1
 fi
 
-export SKINNY_SERVER_PORT=1917
-export SKINNY_SERVER_HOST=skinny2
-
 echo "Downing any existing docker-compose instance"
-docker-compose -p two -f second-server.yml down
+docker-compose \
+  -f build_out/containers/second.yml \
+  --project-directory . \
+  -p two \
+  down
 
 echo "Building docker-compose images"
-docker-compose -p two -f second-server.yml build
+docker-compose \
+  -f build_out/containers/second.yml \
+  --project-directory . \
+  -p two \
+  build
 
 echo "Starting docker-compose"
-docker-compose -p two -f second-server.yml up
+docker-compose \
+  -f build_out/containers/second.yml \
+  --project-directory . \
+  -p two \
+  up
+
