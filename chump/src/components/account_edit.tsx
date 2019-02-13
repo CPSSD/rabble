@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import {EditUserPromise, IEditUserResult} from "../models/edit_user";
+import { Redirect } from "react-router-dom";
 
 interface IAccountEditState {
   bio: string;
@@ -8,10 +9,14 @@ interface IAccountEditState {
   currentPassword: string;
   newPassword: string;
   privateAccount: boolean;
+  cancel: boolean;
 }
 
-export class AccountEdit extends React.Component<{}, IAccountEditState> {
+interface IAccountEditProps {
+  username: string;
+}
 
+export class AccountEdit extends React.Component<IAccountEditProps, IAccountEditState> {
   constructor(props: any) {
     super(props);
 
@@ -21,6 +26,7 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
       displayName: "",
       newPassword: "",
       privateAccount: false,
+      cancel: false,
     };
 
     this.handlePassword = this.handlePassword.bind(this);
@@ -29,9 +35,14 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
     this.handleDisplayName = this.handleDisplayName.bind(this);
     this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
   public render() {
+    if (this.state.cancel) {
+      return <Redirect to={{ pathname: '/@' + this.props.username  }} />
+    }
+
     return (
       <div>
         <div className="pure-u-5-24"/>
@@ -130,6 +141,13 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
               <label/>
               <div className="edit-wrapper">
                 <button
+                  onClick={this.handleCancel}
+                  className="pure-button cancel-button edit-button"
+                >
+                  Cancel
+                </button>
+
+                <button
                   type="submit"
                   className="pure-button pure-button-primary primary-button edit-button"
                 >
@@ -141,6 +159,12 @@ export class AccountEdit extends React.Component<{}, IAccountEditState> {
         </form>
       </div>
     );
+  }
+
+  private handleCancel(event: React.FormEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    this.setState({ cancel: true });
+    console.log(this.props.username);
   }
 
   private handleNewPassword(event: React.ChangeEvent<HTMLInputElement>) {
