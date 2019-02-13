@@ -793,17 +793,31 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			return
 		}
 
-		// call databsae user lookup to get this
-		user := &pb.User{
-			GlobalId: 6,
-			Handle:   handle,
-			Bio:      "whaddup",
+		ur := &pb.UsersRequest{
+			RequestType: pb.UsersRequest_FIND,
+			Match: &pb.UsersEntry{
+				Handle: handle,
+				Host:   "",
+			},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.database.Users(ctx, ur)
+		if err != nil {
+			log.Printf("could not get user, error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if len(resp.Results) != 1 {
+			log.Printf("could not get user, got %v results", len(resp.Results))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(user)
+		err = enc.Encode(resp.Results[0])
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
