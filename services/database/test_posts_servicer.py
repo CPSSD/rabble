@@ -5,6 +5,7 @@ import os
 import posts_servicer
 import users_servicer
 import like_servicer
+import follow_servicer
 import database
 from services.proto import database_pb2
 
@@ -30,6 +31,7 @@ class PostsDatabaseHelper(unittest.TestCase):
         self.posts = posts_servicer.PostsDatabaseServicer(self.db, logger)
         self.users = users_servicer.UsersDatabaseServicer(self.db, logger)
         self.like = like_servicer.LikeDatabaseServicer(self.db, logger)
+        self.follow = follow_servicer.FollowDatabaseServicer(self.db, logger)
         self.ctx = fake_context()
 
     def add_post(self, author_id=None, title=None, body=None):
@@ -56,6 +58,22 @@ class PostsDatabaseHelper(unittest.TestCase):
         )
         res = self.like.AddLike(req, self.ctx)
         self.assertNotEqual(res.result_type, database_pb2.AddLikeResponse.ERROR)
+        return res
+
+    def add_follow(self, follower_id, followed_id,
+                   state=database_pb2.Follow.ACTIVE):
+        entry = database_pb2.Follow(
+            follower=follower_id,
+            followed=followed_id,
+            state=state,
+        )
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.INSERT,
+            entry=entry,
+        )
+        res = self.follow.Follow(req, self.ctx)
+        self.assertNotEqual(res.result_type,
+                            database_pb2.DbFollowResponse.ERROR)
         return res
 
     def add_user(self, handle=None, host=None):
@@ -190,6 +208,74 @@ class PostsDatabase(PostsDatabaseHelper):
             body='for the boys',
             creation_datetime={},
             is_liked=False,
+        )
+        self.assertEqual(len(res.results), 2)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+
+    def test_instance_feed_is_followed(self):
+        self.add_user(handle='tayne', host=None)
+        self.add_user(handle='paul', host=None)
+        self.add_user(handle='rudd', host=None)
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_follow(follower_id=2, followed_id=1)
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        self.add_post(author_id=3, title='3 kissies', body='for the boys')
+
+        res = self.instance_feed(n=3, user=2)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+            is_followed=True,
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+            is_followed=True,
+        )
+        want2 = database_pb2.PostsEntry(
+            global_id=3,
+            author_id=3,
+            title='3 kissies',
+            body='for the boys',
+            creation_datetime={},
+            is_followed=False,
+        )
+        self.assertEqual(len(res.results), 3)
+        self.assertIn(want0, res.results)
+        self.assertIn(want1, res.results)
+        self.assertIn(want2, res.results)
+
+    def test_posts_is_followed(self):
+        self.add_user(handle='tayne', host=None)
+        self.add_user(handle='paul', host=None)
+        self.add_post(author_id=1, title='1 kissie', body='for the boys')
+        self.add_follow(follower_id=2, followed_id=1)
+        self.add_post(author_id=1, title='2 kissies', body='for the boys')
+        self.add_post(author_id=2, title='72 kissies', body='for the noah')
+
+        res = self.find_post(user=2, author_id=1)
+        want0 = database_pb2.PostsEntry(
+            global_id=1,
+            author_id=1,
+            title='1 kissie',
+            body='for the boys',
+            creation_datetime={},
+            is_followed=True,
+        )
+        want1 = database_pb2.PostsEntry(
+            global_id=2,
+            author_id=1,
+            title='2 kissies',
+            body='for the boys',
+            creation_datetime={},
+            is_followed=True,
         )
         self.assertEqual(len(res.results), 2)
         self.assertIn(want0, res.results)

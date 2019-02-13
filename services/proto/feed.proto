@@ -30,6 +30,7 @@ message Post {
   string bio = 7;
   string image = 8;
   bool is_liked = 9;
+  bool is_followed = 10;
 }
 
 message FeedResponse {

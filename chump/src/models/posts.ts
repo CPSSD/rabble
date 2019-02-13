@@ -11,6 +11,7 @@ interface IBlogPost {
   is_liked: boolean;
   published: string;
   title: string;
+  is_followed: boolean;
 }
 
 export interface IParsedPost extends IBlogPost {
