@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import {EditUserPromise, IEditUserResult} from "../models/edit_user";
 import { Redirect } from "react-router-dom";
+import {EditUserPromise, IEditUserResult} from "../models/edit_user";
 
 interface IAccountEditState {
   bio: string;
@@ -22,11 +22,11 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
     this.state = {
       bio: "",
+      cancel: false,
       currentPassword: "",
       displayName: "",
       newPassword: "",
       privateAccount: false,
-      cancel: false,
     };
 
     this.handlePassword = this.handlePassword.bind(this);
@@ -40,7 +40,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
   public render() {
     if (this.state.cancel) {
-      return <Redirect to={{ pathname: '/@' + this.props.username  }} />
+      return (<Redirect to={{ pathname: "/@" + this.props.username  }} />);
     }
 
     return (
@@ -164,7 +164,6 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
   private handleCancel(event: React.FormEvent<HTMLButtonElement>) {
     event.preventDefault();
     this.setState({ cancel: true });
-    console.log(this.props.username);
   }
 
   private handleNewPassword(event: React.ChangeEvent<HTMLInputElement>) {
