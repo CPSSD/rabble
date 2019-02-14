@@ -6,13 +6,15 @@ from receive_follow import ReceiveFollowServicer
 from services.proto import follows_pb2
 from services.proto import database_pb2
 
+
 class FakeDatabase:
+
     def __init__(self):
         # users_dict keeps what users have been added in memory
         # (username, host) = global_id
         self.users_dict = {
-                ('exists', None): 1,
-                ('also_exists', None): 2,
+            ('exists', None): 1,
+            ('also_exists', None): 2,
         }
         self.current_id = 2
         self.reset()
@@ -24,11 +26,12 @@ class FakeDatabase:
         self.get_user_called_with = None
         self.get_or_create_user_called_with = None
         self.add_follow_called_with = None
+        self.follow_called_with = None
 
     def lookup_user(self, user):
         if user not in self.users_dict:
             return None
-        return database_pb2.UsersEntry(global_id = self.users_dict[user])
+        return database_pb2.UsersEntry(global_id=self.users_dict[user])
 
     def get_user(self, handle=None, host=None):
         self.get_user_called_with = (handle, host)
@@ -46,6 +49,14 @@ class FakeDatabase:
         self.users_dict[user] = self.current_id
         return self.lookup_user(user)
 
+    def parse_username(self, username):
+        parts = username.split('@')
+        if len(parts) == 1:
+            return parts[0], None
+        elif len(parts) == 2:
+            return parts[0], parts[1]
+        return None, None
+
     def add_follow(self, foriegn, local, state=None):
         self.add_follow_called_with = (foriegn, local, state)
         resp = database_pb2.DbFollowResponse()
@@ -56,8 +67,16 @@ class FakeDatabase:
         resp.result_type = database_pb2.DbFollowResponse.OK
         return resp
 
+    def Follow(self, follow_req):
+        '''Stands in for database_stub.Follow'''
+        self.follow_called_with = follow_req
+        resp = database_pb2.DbFollowResponse()
+        resp.result_type = database_pb2.DbFollowResponse.OK
+        return resp
+
 
 class ReceiveFollowTest(unittest.TestCase):
+
     def setUp(self):
         os.environ["HOST_NAME"] = "cianisharrypotter.secret"
         self.db = FakeDatabase()
@@ -77,9 +96,9 @@ class ReceiveFollowTest(unittest.TestCase):
 
     def test_good_request(self):
         req = follows_pb2.ForeignToLocalFollow(
-            follower_host = 'http://whatever.com',
-            follower_handle = 'jim_pickens',
-            followed = 'exists',
+            follower_host='http://whatever.com',
+            follower_handle='jim_pickens',
+            followed='exists',
         )
         res = self.servicer.ReceiveFollowRequest(req, Mock())
         self.assertEqual(res.result_type, follows_pb2.FollowResponse.OK)
@@ -88,9 +107,9 @@ class ReceiveFollowTest(unittest.TestCase):
 
     def test_errors_when_local_user_does_not_exist(self):
         req = follows_pb2.ForeignToLocalFollow(
-            follower_host = 'http://whatever.com',
-            follower_handle = 'jim_pickens',
-            followed = 'bore_ragnarock',
+            follower_host='http://whatever.com',
+            follower_handle='jim_pickens',
+            followed='bore_ragnarock',
         )
         res = self.servicer.ReceiveFollowRequest(req, Mock())
         self.assertEqual(res.result_type, follows_pb2.FollowResponse.ERROR)
@@ -107,8 +126,8 @@ class ReceiveFollowTest(unittest.TestCase):
 
     def test_errors_when_bad_host(self):
         req = follows_pb2.ForeignToLocalFollow(
-            follower_handle = 'jim_pickens',
-            followed = 'bore_ragnarock',
+            follower_handle='jim_pickens',
+            followed='bore_ragnarock',
         )
         res = self.servicer.ReceiveFollowRequest(req, Mock())
         self.assertEqual(res.result_type, follows_pb2.FollowResponse.ERROR)
