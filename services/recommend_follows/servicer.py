@@ -16,8 +16,6 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
 
     def _get_recommendations(self, user_id):
         # TODO(iandioch): Allow for combining the results of multiple systems.
-        self._logger.info("Getting recommendations.")
-        print('yo')
         return self.recommender.get_recommendations(user_id)
 
     def GetFollowRecommendations(self, request, context):
@@ -43,6 +41,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         resp.result_type = \
             recommend_follows_pb2.FollowRecommendationResponse.OK
 
+        # Get the recommendations and package them into proto.
         for p in self._get_recommendations(user.global_id):
             a = self._users_util.get_or_create_user_from_db(global_id=p[0])
             user_obj = resp.results.add()
