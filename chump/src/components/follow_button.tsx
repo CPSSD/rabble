@@ -2,7 +2,7 @@ import * as React from "react";
 import { UserCheck, UserMinus, UserPlus } from "react-feather";
 import { Link } from "react-router-dom";
 import { Response } from "superagent";
-import { CreateFollow } from "../models/follow";
+import { CreateFollow, Unfollow } from "../models/follow";
 
 interface IFormState {
   following: boolean; // true if active user already follows the other user.
@@ -74,7 +74,6 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
   }
 
   private handleSubmitFormFollow(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
     promise.then((res: Response) => {
@@ -100,10 +99,31 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
   }
 
   private handleSubmitFormUnfollow(event: React.FormEvent<HTMLFormElement>) {
-    this.alertUser("Woah there big fella! This cow hasn't gone to pasture yet.");
+    const promise = Unfollow(this.props.follower, this.props.followed);
+    promise.then((res: Response) => {
+      let message = "Posted unfollow.";
+      if (res.hasOwnProperty("text")) {
+        message += " Response: " + res.text;
+      }
+      this.alertUser(message);
+      // TODO: Check no error.
+      this.setState({
+        following: false,
+      });
+    })
+    .catch((err: any) => {
+      let status = err.message;
+      let message = err.message;
+      if (err.response) {
+        status = err.response.status;
+        message = err.response.text;
+      }
+      this.alertUser(message);
+    });
   }
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (this.state.following) {
         this.handleSubmitFormUnfollow(event);
     } else {
