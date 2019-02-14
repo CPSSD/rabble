@@ -13,7 +13,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         'surprise': SurpriseRecommender,
     }
     DEFAULT_RECOMMENDER = 'surprise'
-    ENV_VAR = 'follow_recommender'
+    ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
 
     def __init__(self, logger, users_util, db_stub):
         self._logger = logger
