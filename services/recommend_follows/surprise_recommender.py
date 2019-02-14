@@ -10,7 +10,7 @@ from surprise import Dataset, Reader, SVD
 from surprise.model_selection import cross_validate
 
 
-class GetFollowRecommendationsServicer:
+class SurpriseRecommender:
 
     def __init__(self, logger, users_util, database_stub):
         self._logger = logger
@@ -89,7 +89,16 @@ class GetFollowRecommendationsServicer:
             self._logger.error('Could not compute recommendations:')
             self._logger.error(str(e))
 
-    def GetFollowRecommendations(self, request, context):
+    def get_recommendations(self, user_id):
+        print('In surprise recommender.')
+        if user_id not in self._predictions:
+            print('no recommendations for this user')
+            return []
+        print('predicc:', self._predictions[user_id])
+        return self._predictions[user_id]
+
+    def __GetFollowRecommendations(self, request, context):
+        # TODO(iandioch): Remove.
         self._logger.debug('GetFollowRecommendations, username = %s',
                            request.username)
 
