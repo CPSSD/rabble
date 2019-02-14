@@ -23,7 +23,6 @@ class SendUnfollowServicer:
                        resp,
                        follower_id,
                        followed_id):
-        # TODO(iandioch): Do not log if follow was already in state DELETED.
         match = database_pb2.Follow(follower=follower_id,
                                     followed=followed_id)
 
