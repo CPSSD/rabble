@@ -284,3 +284,24 @@ class TestDeleteDatabase(FollowDatabaseHelper):
 
         find_res = self.find_follow(followed=2)
         self.assertEqual(len(find_res.results), 0)
+
+    def test_delete_follow_doesnt_delete_others(self):
+        self.add_follow(follower=1, followed=2)
+        find_res = self.find_follow(followed=2)
+        want = database_pb2.Follow(
+            follower=1,
+            followed=2,
+            state=database_pb2.Follow.ACTIVE
+        )
+        self.assertEqual(len(find_res.results), 1)
+        self.assertIn(want, find_res.results)
+
+        # As the follower and followed are different, this should no-op.
+        self.delete_follow(follower=2, followed=1)
+
+        want = database_pb2.Follow(follower=1,
+                                   followed=2,
+                                   state=database_pb2.Follow.ACTIVE)
+        find_res = self.find_follow(followed=2)
+        self.assertEqual(len(find_res.results), 1)
+        self.assertEqual(find_res.results[0], want)
