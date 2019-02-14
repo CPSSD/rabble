@@ -57,11 +57,11 @@ class FakeDatabase:
             return parts[0], parts[1]
         return None, None
 
-    def add_follow(self, foriegn, local, state=None):
-        self.add_follow_called_with = (foriegn, local, state)
+    def add_follow(self, foreign, local, state=None):
+        self.add_follow_called_with = (foreign, local, state)
         resp = database_pb2.DbFollowResponse()
         ids = set(self.users_dict.values())
-        if foriegn not in ids or local not in ids:
+        if foreign not in ids or local not in ids:
             resp.result_type = database_pb2.DbFollowResponse.ERROR
             return resp
         resp.result_type = database_pb2.DbFollowResponse.OK
