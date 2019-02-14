@@ -6,10 +6,9 @@ from services.proto import follows_pb2
 from services.proto import s2s_follow_pb2
 
 
-class SendFollowServicer:
+class SendUnfollowServicer:
 
-    def __init__(self, logger, util, users_util,
-                 database_stub, follow_activity_stub):
+    def __init__(self, logger, util, users_util, database_stub):
         host_name = os.environ.get("HOST_NAME")
         if not host_name:
             print("Please set HOST_NAME env variable")
@@ -23,21 +22,14 @@ class SendFollowServicer:
     def _remove_follow(self,
                        resp,
                        follower_id,
-                       followed_id,
-                       is_private_followed,
-                       is_foreign):
-        entry = database_pb2.Follow(follower=follower_id,
-                                    followed=followed_id,
-                                    state=database_pb2.Follow.DELETED)
-
+                       followed_id):
         # TODO(iandioch): Do not log if follow was already in state DELETED.
         match = database_pb2.Follow(follower=follower_id,
                                     followed=followed_id)
 
         req = database_pb2.DbFollowRequest(
-            request_type=database_pb2.DbFollowRequest.UPDATE,
-            match=match,
-            entry=entry,
+            request_type=database_pb2.DbFollowRequest.DELETE,
+            match=match
         )
 
         follow_resp = self._database_stub.Follow(req)
@@ -48,9 +40,8 @@ class SendFollowServicer:
             return resp.error
 
     def SendUnfollow(self, request, context):
-        # TODO: iandioch
         resp = follows_pb2.FollowResponse()
-        self._logger.info('Sending follow request.')
+        self._logger.info('Setting unfollow.')
 
         from_handle, from_instance = self._users_util.parse_username(
             request.follower)
@@ -92,10 +83,9 @@ class SendFollowServicer:
         is_foreign = to_instance is not None
         err = self._remove_follow(resp,
                                   follower_entry.global_id,
-                                  followed_entry.global_id,
-                                  followed_entry.private,
-                                  is_foreign)
+                                  followed_entry.global_id)
         if err is not None:
+            # If there was an error during unfollowing, return it.
             return resp
         if is_foreign:
             # TODO(#319): Propagate unfollow to other server.
