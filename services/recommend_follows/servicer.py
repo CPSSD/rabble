@@ -20,26 +20,38 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         self._users_util = users_util
         self._db_stub = db_stub
 
+        # self.active_recommenders contains one or more recommender system
+        # objects (out of the constructors in self.RECOMMENDERS).
         self.active_recommenders = self._get_active_recommenders()
 
     def _get_active_recommenders(self):
-        # TODO(iandioch): Explain this func.
+        '''Get the list of recommender system objects based on an env
+        var (self.ENV_VAR) provided by the user. The user can give a
+        comma-separated list of system names (from self.RECOMMENDERS), and
+        this function will return the recommender objects for these names.
+
+        If the env var is not set, or no valid names are provided, then a
+        default system (self.DEFAULT_RECOMMENDER) will be used.'''
         keys = [self.DEFAULT_RECOMMENDER]
         if self.ENV_VAR not in os.environ:
             self._logger.warning('No value set for "follow_recommender" ' +
                                  'environment variable, using default of ' +
                                  '"{}".'.format(self.DEFAULT_RECOMMENDER))
         else:
+            # Parse the given recommender names.
             keys = set()
             for a in os.environ[self.ENV_VAR].split(','):
+                a = a.strip()
                 if a in self.RECOMMENDERS:
-                    keys.append(a)
+                    keys.add(a)
                 else:
-                    self._logger.warning('Follow recommender {} '.format(a) +
+                    self._logger.warning('Follow recommender "{}" '.format(a) +
                                          'requested, but no such system found. '
                                          'Skipping.')
+
             if len(keys) == 0:
-                self._logger.warning('No valid values given for follow '
+                # User didn't give any valid names.
+                self._logger.warning('No valid values given for follow ' +
                                      'recommender, using default of ' +
                                      '"{}".'.format(self.DEFAULT_RECOMMENDER))
                 keys = [self.DEFAULT_RECOMMENDER]
@@ -54,6 +66,9 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         return recommenders
 
     def _get_recommendations(self, user_id):
+        '''Get recommendations for users for the given user_id to follow, using
+        the one or more systems in self.active_recommenders. Could return empty
+        list if there are no good recommendations.'''
         # TODO(iandioch): Allow for combining the results of multiple systems
         # in a smarter way than just concatenation.
         for r in self.active_recommenders:
