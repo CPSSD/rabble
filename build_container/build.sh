@@ -28,6 +28,11 @@ trap chown_trap SIGINT
 
 echo "Running build"
 
+echo "Building docker-compose configs"
+cp -R containers/ build_out/
+. build_out/containers/gen_first_config.sh
+. build_out/containers/gen_second_config.sh
+
 # Add build commands here.
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
