@@ -77,11 +77,6 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
     promise.then((res: Response) => {
-      let message = "Posted follow.";
-      if (res.hasOwnProperty("text")) {
-        message += " Response: " + res.text;
-      }
-      this.alertUser(message);
       // TODO: Check no error.
       this.setState({
         following: true,
@@ -101,11 +96,6 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
   private handleSubmitFormUnfollow(event: React.FormEvent<HTMLFormElement>) {
     const promise = Unfollow(this.props.follower, this.props.followed);
     promise.then((res: Response) => {
-      let message = "Posted unfollow.";
-      if (res.hasOwnProperty("text")) {
-        message += " Response: " + res.text;
-      }
-      this.alertUser(message);
       // TODO: Check no error.
       this.setState({
         following: false,
