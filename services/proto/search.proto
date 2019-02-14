@@ -12,6 +12,9 @@ message User {
   int64 global_id = 3;
   // Plaintext biography of the user
   string bio = 4;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 5;
 }
 
 message SearchQuery {

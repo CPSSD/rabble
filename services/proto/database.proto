@@ -78,6 +78,9 @@ message UsersEntry {
   string rss = 7;
   // If private_account is set the account's posts should not be seen publicly
   bool private = 8;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 9;
 }
 
 message UsersRequest {
@@ -93,6 +96,9 @@ message UsersRequest {
   UsersEntry match = 2;
   // Equivalent of PostsRequests.entry.
   UsersEntry entry = 3;
+
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 4;
 }
 
 message UsersResponse {

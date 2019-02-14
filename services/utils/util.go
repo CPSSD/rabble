@@ -106,6 +106,7 @@ func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db UsersGetter) 
 			Handle:   r.Handle,
 			Bio:      r.Bio,
 			Host:     r.Host,
+			IsFollowed: r.IsFollowed,
 		}
 		ue = append(ue, np)
 	}
