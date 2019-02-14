@@ -179,3 +179,40 @@ html, button, input, select, textarea,
         display: none;
     }
 }
+
+button.follow-button {
+    text-align: right;
+    min-width: 8em;
+    font-size: 0.9em;
+}
+
+/* When it is not hovered, Unfollow button says "Following" and is grey. */
+button.follow-button.unfollow {
+    background-color: #938d8b;
+}
+
+button.follow-button .unfollow-button-content {
+    display: none;
+}
+
+button.follow-button .following-button-content {
+    display: block;
+}
+
+/* When it is hovered, Unfollow button says "Unfollow" and turns red. */
+button.follow-button.unfollow:hover {
+    background-color: #a8201a;
+}
+
+button.follow-button:hover .following-button-content {
+    display: none;
+}
+
+button.follow-button:hover .unfollow-button-content {
+    display: block;
+}
+
+button.follow-button svg {
+    float: left;
+    padding-right: 0.5em;
+}

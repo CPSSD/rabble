@@ -8,7 +8,8 @@
     "jsx": "react",
     "lib": ["es5", "es6", "dom"],
     "noImplicitAny": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "resolveJsonModule": true
   },
   "include": [
     "./src/**/*"

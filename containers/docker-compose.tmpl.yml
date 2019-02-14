@@ -1,0 +1,223 @@
+version: '2'
+
+networks:
+  [[NETWORK_NAME]]:
+    [[NETWORK_CONFIG]]
+
+services:
+  [[SKINNY_HOST]]:
+    ports:
+      - "[[SKINNY_PORT]]:[[SKINNY_PORT]]"
+    build:
+      context: ./skinny
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    environment:
+      - SKINNY_SERVER_PORT=[[SKINNY_PORT]]
+      - USERS_SERVICE_HOST=users_service_[[INSTANCE_ID]]
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
+      - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
+      - FEED_SERVICE_HOST=feed_service_[[INSTANCE_ID]]
+      - CREATE_SERVICE_HOST=create_service_[[INSTANCE_ID]]
+      - LDNORM_SERVICE_HOST=ldnorm_service_[[INSTANCE_ID]]
+      - RSS_SERVICE_HOST=rss_service_[[INSTANCE_ID]]
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
+      - LIKE_SERVICE_HOST=like_service_[[INSTANCE_ID]]
+      - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
+      - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service_[[INSTANCE_ID]]
+      - ACTORS_SERVICE_HOST=actors_service_[[INSTANCE_ID]]
+      - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
+  feed_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/feed
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+  users_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/users
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+  like_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/like
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  ldnorm_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/ldnormaliser
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+  database_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/database
+      dockerfile: Dockerfile
+      args:
+        - DBPATH=[[DBPATH]]
+    volumes:
+      - .:/repo
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+  follows_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/follows
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+      - "follow_activity_service_[[INSTANCE_ID]]"
+      - "approver_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - RSS_SERVICE_HOST=rss_service_[[INSTANCE_ID]]
+      - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
+      - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  logger_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/logger
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+  article_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/article
+      dockerfile: Dockerfile
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    volumes:
+      - .:/repo
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - CREATE_SERVICE_HOST=create_service_[[INSTANCE_ID]]
+      - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
+      - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
+  create_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/create
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  approver_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/approver
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  follow_activity_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/follow
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
+  markdown_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/mdc
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+  rss_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/rss
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
+      - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  recommend_follows_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/recommend_follows
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+  actors_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/actors
+      dockerfile: Dockerfile
+    volumes:
+     - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+  search_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/search/bleve
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - INDEX_PATH=/tmp/rabble/index
