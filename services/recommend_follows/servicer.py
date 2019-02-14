@@ -26,7 +26,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         # TODO(iandioch): Explain this func.
         keys = [self.DEFAULT_RECOMMENDER]
         if self.ENV_VAR not in os.environ:
-            self._logger.warning('No value set for "follow_recommender" ' + 
+            self._logger.warning('No value set for "follow_recommender" ' +
                                  'environment variable, using default of ' +
                                  '"{}".'.format(self.DEFAULT_RECOMMENDER))
         else:
@@ -52,7 +52,6 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             r = constructor(self._logger, self._users_util, self._db_stub)
             recommenders.append(r)
         return recommenders
-
 
     def _get_recommendations(self, user_id):
         # TODO(iandioch): Allow for combining the results of multiple systems
