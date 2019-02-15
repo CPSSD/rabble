@@ -49,6 +49,7 @@ docker run \
   --volume $REPO_ROOT:/repo \
   -e LOCAL_USER_ID=$USER_ID \
   -e TEST_RABBLE=$_TEST_RABBLE \
+  -e RABBLE_SEARCH_TYPE=$RABBLE_SEARCH_TYPE \
   $IMAGE_NAME
 
 echo "Done build"

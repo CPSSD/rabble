@@ -30,6 +30,8 @@ echo "Running build"
 
 echo "Building docker-compose configs"
 cp -R containers/ build_out/
+# Set default value for env vars
+export RABBLE_SEARCH_TYPE="${RABBLE_SEARCH_TYPE:-bleve}"
 . build_out/containers/gen_first_config.sh
 . build_out/containers/gen_second_config.sh
 
