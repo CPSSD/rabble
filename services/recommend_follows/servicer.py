@@ -2,6 +2,7 @@ import os
 
 from surprise_recommender import SurpriseRecommender
 from noop_recommender import NoopRecommender
+from cn_recommender import CNRecommender
 
 from services.proto import follows_pb2_grpc
 from services.proto import database_pb2
@@ -13,6 +14,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
     RECOMMENDERS = {
         'surprise': SurpriseRecommender,
         'none': NoopRecommender,
+        'cn': CNRecommender,
     }
     DEFAULT_RECOMMENDER = 'none'
     ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
