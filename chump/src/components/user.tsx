@@ -21,13 +21,14 @@ export class User extends React.Component<IUserProps, {}> {
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
         <div className="pure-u-14-24">
-          <div className="pure-u-1-3">
+          <div className="pure-u-5-24">
             <img
               src={this.props.blogUser.image}
               className="author-thumbnail"
             />
           </div>
-          <div className="pure-u-2-3">
+          <div className="pure-u-1-24"/>
+          <div className="pure-u-18-24">
             <div className="pure-u-1-3 username-holder">
                 <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
                   {this.props.blogUser.display_name}

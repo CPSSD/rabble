@@ -108,6 +108,8 @@ html, button, input, select, textarea,
 
 .author-bio {
   word-break: break-all;
+  color: #666;
+  font-size: 0.75em;
 }
 
 .author-handle:hover {
@@ -234,10 +236,6 @@ button.follow-button svg {
 .user-dropdown {
     background-color: #0097a7;
     color: #FFF;
-}
-
-.search-divider {
-
 }
 
 .full-search-form {

@@ -35,9 +35,12 @@ const validParsedPost: IParsedPost[] = [{
 
 const validUser: IParsedUser[] = [{
   bio: "bio",
+  display_name: "the.aaron",
   global_id: "4",
   handle: "aaron",
   host: "google.com",
+  image: "test",
+  is_followed: true,
 }];
 
 const validBody: ISearchResponse = {

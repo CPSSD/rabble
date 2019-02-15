@@ -123,7 +123,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
     }
     if (this.state.foundUsers.length === 1) {
       return (
-        <div className="pure-g pure-u-1" key={0}>
+        <div className="pure-g pure-u-1" key={this.state.foundPosts.length}>
           <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={showItem}/>
         </div>
       );
@@ -131,20 +131,20 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
     const blogUsers = this.state.foundUsers.map((e: IParsedUser, i: number) => {
       if (i === 0) {
         return (
-          <div className="pure-g pure-u-1" key={i}>
+          <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
             <User username={this.props.username} blogUser={e} display={showItem}/>
           </div>
         );
       }
       return (
-        <div className="pure-g pure-u-1" key={i}>
+        <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
           <User username={this.props.username} blogUser={e} display={this.state.display}/>
         </div>
       );
     });
 
     blogUsers.push((
-      <div className="pure-u-1">
+      <div className="pure-u-1" key={this.state.foundPosts.length + this.state.foundUsers.length}>
         <div className="pure-u-10-24"/>
         <button onClick={this.toggleDropdown} className="pure-button user-dropdown">
           <ExpandOrClose display={this.state.display} />
@@ -187,8 +187,8 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
           <div className="pure-u-10-24">
             <h3 className="search-divider">Users</h3>
           </div>
+          {userSection}
         </div>
-        {userSection}
         <div className="pure-g">
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
