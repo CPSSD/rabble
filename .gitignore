@@ -58,3 +58,5 @@ __pycache__/
 *_pb2.py
 *_pb2_grpc.py
 *.pb.go
+# research metadata files
+research/.ipynb_checkpoints/*

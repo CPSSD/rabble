@@ -15,6 +15,8 @@ message User {
   // True if the user in the request is following the author of this post (and
   // this follow is accepted and not pending).
   bool is_followed = 5;
+  string image = 6;
+  string display_name = 7;
 }
 
 message SearchQuery {

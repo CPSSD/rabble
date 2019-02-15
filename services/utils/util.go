@@ -102,10 +102,12 @@ func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db UsersGetter) 
 			break
 		}
 		np := &pb.User{
+			Bio:      r.Bio,
+			DisplayName: r.DisplayName,
 			GlobalId: r.GlobalId,
 			Handle:   r.Handle,
-			Bio:      r.Bio,
 			Host:     r.Host,
+			Image:      defaultImage,
 			IsFollowed: r.IsFollowed,
 		}
 		ue = append(ue, np)
