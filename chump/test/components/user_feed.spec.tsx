@@ -5,8 +5,8 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { IParsedPost } from "../../src/models/posts";
 import { User } from "../../src/components/user_feed";
+import { IParsedPost } from "../../src/models/posts";
 import { mount, shallow } from "./enzyme";
 
 describe("User", () => {
@@ -25,7 +25,7 @@ describe("User", () => {
     const wrapper = mount(
       <MemoryRouter>
         <User {...userProps} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(getPosts).to.have.property("callCount", 1);

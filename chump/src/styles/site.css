@@ -74,6 +74,7 @@ html, button, input, select, textarea,
 
 .article-body {
   padding-bottom: 1em;
+  word-break: break-all;
 }
 
 .author-about {
@@ -89,6 +90,7 @@ html, button, input, select, textarea,
 
 .author-displayname {
   margin: 0;
+  margin-right: 10px;
   font-weight: bold;
   font-size: 1.15em;
   color: #666;
@@ -102,6 +104,10 @@ html, button, input, select, textarea,
 .author-handle {
   font-style: italic;
   color: #888;
+}
+
+.author-bio {
+  word-break: break-all;
 }
 
 .author-handle:hover {
@@ -215,4 +221,25 @@ button.follow-button:hover .unfollow-button-content {
 button.follow-button svg {
     float: left;
     padding-right: 0.5em;
+}
+
+.follow-holder {
+    float: right;
+}
+
+.username-holder {
+    float: left;
+}
+
+.user-dropdown {
+    background-color: #0097a7;
+    color: #FFF;
+}
+
+.search-divider {
+
+}
+
+.full-search-form {
+  width: 100%;
 }

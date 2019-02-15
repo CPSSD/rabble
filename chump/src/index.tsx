@@ -91,8 +91,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/search/:query"
-              username={this.state.username}
-              component={SearchResults}
+              render={(props) => <SearchResults {...props} username={this.state.username} />}
             />
             <PrivateRoute
               path="/feed"
