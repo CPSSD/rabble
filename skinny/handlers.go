@@ -340,7 +340,6 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 }
 
 func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
-	// TODO(iandioch): This.
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var j pb.LocalToAnyFollow
