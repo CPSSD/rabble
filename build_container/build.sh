@@ -32,6 +32,7 @@ echo "Building docker-compose configs"
 cp -R containers/ build_out/
 # Set default value for env vars
 export RABBLE_SEARCH_TYPE="${RABBLE_SEARCH_TYPE:-bleve}"
+export RABBLE_FOLLOW_RECOMMENDER_METHOD="${RABBLE_FOLLOW_RECOMMENDER_METHOD:-none}"
 . build_out/containers/gen_first_config.sh
 . build_out/containers/gen_second_config.sh
 
