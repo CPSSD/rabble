@@ -10,9 +10,7 @@ interface IUserProps {
   display: string;
 }
 
-interface IUserState {}
-
-export class User extends React.Component<IUserProps, IUserState> {
+export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
     super(props);
     this.state = {};

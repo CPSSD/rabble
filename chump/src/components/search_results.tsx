@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Search, ChevronDown, ChevronUp } from "react-feather";
+import { ChevronDown, ChevronUp, Search } from "react-feather";
 import { Link, RouteProps } from "react-router-dom";
 
 import { IParsedPost } from "../models/posts";
@@ -49,10 +49,10 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   constructor(props: ISearchResultsProps) {
     super(props);
     this.state = {
+      display: "none",
       foundPosts: [],
       foundUsers: [],
       query: this.props.match.params.query,
-      display: "none",
     };
 
     this.toggleDropdown = this.toggleDropdown.bind(this);
@@ -61,15 +61,26 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   }
 
   public componentDidMount() {
-    this.getResults();
+    this.getResults("");
   }
 
-  public getResults() {
-    SearchRequest(this.state.query)
+  public componentDidUpdate(prevProps: ISearchResultsProps) {
+    if (prevProps.match.params.query !== this.props.match.params.query) {
+      this.getResults(this.props.match.params.query);
+    }
+  }
+
+  public getResults(query: string) {
+    let searchQuery = this.state.query;
+    if (query !== "") {
+      searchQuery = query;
+    }
+    SearchRequest(searchQuery)
       .then((resp: ISearchResponse) => {
         this.setState({
           foundPosts: resp.posts,
-          foundUsers: resp.users
+          foundUsers: resp.users,
+          query: searchQuery,
         });
       })
       .catch(this.handleGetPostsErr);
@@ -80,7 +91,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   }
 
   public renderPosts() {
-    if (this.state.foundPosts.length == 0) {
+    if (this.state.foundPosts.length === 0) {
       return (
         <div className="pure-g pure-u-1">
           <div className="pure-u-5-24"/>
@@ -100,7 +111,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   }
 
   public renderUserSection() {
-    if (this.state.foundUsers.length == 0) {
+    if (this.state.foundUsers.length === 0) {
       return (
         <div className="pure-g pure-u-1">
           <div className="pure-u-5-24"/>
@@ -110,14 +121,14 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
         </div>
       );
     }
-    if (this.state.foundUsers.length == 1) {
+    if (this.state.foundUsers.length === 1) {
       return (
         <div className="pure-g pure-u-1" key={0}>
           <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={showItem}/>
         </div>
       );
     }
-    let blogUsers = this.state.foundUsers.map((e: IParsedUser, i: number) => {
+    const blogUsers = this.state.foundUsers.map((e: IParsedUser, i: number) => {
       if (i === 0) {
         return (
           <div className="pure-g pure-u-1" key={i}>
@@ -132,7 +143,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
       );
     });
 
-    return blogUsers.push((
+    blogUsers.push((
       <div className="pure-u-1">
         <div className="pure-u-10-24"/>
         <button onClick={this.toggleDropdown} className="pure-button user-dropdown">
@@ -140,6 +151,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
         </button>
       </div>
     ));
+    return blogUsers;
   }
 
   public render() {
@@ -197,7 +209,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
 
   private handleSearchSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    this.getResults();
+    this.getResults("");
   }
 
   private toggleDropdown(event: React.MouseEvent<HTMLButtonElement>) {
