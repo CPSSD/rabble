@@ -129,6 +129,7 @@ message DbFollowRequest {
     INSERT = 0;
     FIND = 1;
     UPDATE = 2;
+    DELETE = 3;
   }
 
   RequestType request_type = 1;

@@ -305,7 +305,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 			enc.Encode(e)
 			return
 		}
-		// Even if the request was sent with a different follower user the
+		// Even if the request was sent with a different follower, use the
 		// handle of the logged in user.
 		j.Follower = handle
 
@@ -329,6 +329,68 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("Could not marshal follow result: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+		}
+	}
+}
+
+func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var j pb.LocalToAnyFollow
+		err := decoder.Decode(&j)
+		enc := json.NewEncoder(w)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Call to unfollow by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Login required",
+			}
+			enc.Encode(e)
+			return
+		}
+		// Even if the request was sent with a different follower, use the
+		// handle of the logged in user.
+		j.Follower = handle
+
+		ts := ptypes.TimestampNow()
+		j.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.follows.SendUnfollow(ctx, &j)
+		if err != nil {
+			log.Printf("Could not send unfollow: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			e := &pb.FollowResponse{
+				ResultType: pb.FollowResponse_ERROR,
+				Error:      "Invalid JSON",
+			}
+			enc.Encode(e)
+			return
+		}
+
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal unfollow result: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			e := &pb.FollowResponse{
 				ResultType: pb.FollowResponse_ERROR,
@@ -712,7 +774,7 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		body := &SearchResult{ Users: resp.UResults, Posts: resp.Results, }
+		body := &SearchResult{Users: resp.UResults, Posts: resp.Results}
 		err = enc.Encode(body)
 		if err != nil {
 			log.Printf("Could not marshal recommended follows: %v", err)
