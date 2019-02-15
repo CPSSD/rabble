@@ -3,7 +3,15 @@ from collections import defaultdict
 from services.proto import database_pb2
 
 class CNRecommender:
-    '''Recommend based on the "common neighbours" similarity metric.'''
+    '''Recommend based on the "common neighbours" similarity metric. This metric
+    uses the number of friends two users have in common to suggest if they
+    should connect.
+
+    In our case, this metric suggests U will follow V if U follows many people
+    who follow V.
+    This works intuitively, however in a decentralised network it could favour
+    recommending local users, as it doesn't always know if some other user
+    follows V when V is on another instance.'''
 
     # The minimum number of common neighbours required for another user to be
     # recommended. If this number is higher, the system will only recommend
@@ -28,6 +36,10 @@ class CNRecommender:
         return follow_resp
 
     def _convert_data(self, follow_resp):
+        '''Given the database response with all follows, create the sets of
+        out-links and in-links for each user, along with a set of all user IDs
+        appearing in the follow graph.'''
+
         # out_links[x] is the set of nodes with a directed edge from x;
         # ie. the users that x follows.
         out_links = defaultdict(set)
@@ -38,6 +50,8 @@ class CNRecommender:
         # a set of all user ids with associated follows
         users = set()
         for follow in follow_resp.results:
+            # We don't want to suggest the user follow someone who doesn't
+            # accept follows, so only consider ACTIVE follows.
             if follow.state == follow.ACTIVE:
                 out_links[follow.follower].add(follow.followed)
                 in_links[follow.followed].add(follow.follower)
@@ -47,11 +61,26 @@ class CNRecommender:
         return users, out_links, in_links
 
     def _compute_similarity_matrix(self, users, out_links, in_links):
-        # todo: comment explaining what similarity matrix is.
+        '''Compute the similarity matrix for all the users in the users set.
+        This is a 2d matrix S where S[u][v] holds the similarity between u
+        and v. This is used as the confidence that the system has in
+        recommending u should follow v. In this directed graph, S[u][v] may not
+        be equal to S[v][u].'''
+
         def cn(u, v):
-            # todo: comment
+            '''The common neighbours metric suggests if my friends are all
+            friends with you, then maybe I would be friends with you too.
+            In this directed graph, we interpret this as if many of the people
+            I am interested in (ie. the people I follow) are interested in you
+            (ie. they follow you) then I will be interested in you (ie. I should
+            follow you).
+            The CN similarity of me to you is the size of this set of "common
+            neighbours". We can compute this by getting the size of the
+            intersection of the set of users I follow and the set of users who
+            follow you.'''
             return len(out_links[u] & in_links[v])
 
+        # Create a 2D matrix to hold the similarity of all user pairs.
         similarity = defaultdict(lambda: defaultdict(int))
         for u in users:
             for v in users:
@@ -68,13 +97,14 @@ class CNRecommender:
                     # follow themselves too.
                     continue
                 if v in out_links[u]:
-                    # v already follows u, no need to giverecommendation.
+                    # v already follows u, no need to give this recommendation.
                     continue
                 similarity = similarity_matrix[u][v]
                 if similarity < self.THRESHOLD:
                     continue
                 r.append((v, similarity))
-            # Sort by confidence, descending.
+
+            # Sort by similarity (the most confident recommendation first).
             r.sort(key=lambda x:-x[1])
             if len(r):
                 recommendations[u] = r
@@ -100,8 +130,6 @@ class CNRecommender:
 
 
     def get_recommendations(self, user_id):
-        print('Recommendations for', user_id)
         if user_id in self._recommendations:
-            print(self._recommendations[user_id])
             return self._recommendations[user_id]
         return []
