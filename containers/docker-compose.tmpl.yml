@@ -198,6 +198,7 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - FOLLOW_RECOMMENDER_METHOD=cn
   actors_service_[[INSTANCE_ID]]:
     build:
       context: ./services/actors
