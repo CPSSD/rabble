@@ -5,6 +5,12 @@ from services.proto import database_pb2
 class CNRecommender:
     '''Recommend based on the "common neighbours" similarity metric.'''
 
+    # The minimum number of common neighbours required for another user to be
+    # recommended. If this number is higher, the system will only recommend
+    # a user if it is quite confident in the link, however users with fewer
+    # connections will likely have no recommendations.
+    THRESHOLD = 1
+
     def __init__(self, logger, users_util, database_stub):
         self._logger = logger
         self._users_util = users_util
@@ -64,7 +70,10 @@ class CNRecommender:
                 if v in out_links[u]:
                     # v already follows u, no need to giverecommendation.
                     continue
-                r.append((v, similarity_matrix[u][v]))
+                similarity = similarity_matrix[u][v]
+                if similarity < self.THRESHOLD:
+                    continue
+                r.append((v, similarity))
             # Sort by confidence, descending.
             r.sort(key=lambda x:-x[1])
             if len(r):
@@ -91,6 +100,8 @@ class CNRecommender:
 
 
     def get_recommendations(self, user_id):
+        print('Recommendations for', user_id)
         if user_id in self._recommendations:
+            print(self._recommendations[user_id])
             return self._recommendations[user_id]
         return []
