@@ -8,7 +8,8 @@ import * as superagent from "superagent";
 
 interface IUserState {
   publicBlog: IParsedPost[];
-  // user that we're looking at, filled when we complete our lookup
+  // username whose page we're looking at, filled when we complete our lookup
+  // In state so we can tell when switching to a different user's page
   user: string;
   // used to determine what error message to display.
   error: string;

@@ -27,11 +27,12 @@ interface IExpandOrClose {
   display: string;
 }
 
-const showItem = "inherit";
+const SHOW_ITEM = "inherit";
+const HIDE_ITEM = "none";
 
 const ExpandOrClose: React.SFC<IExpandOrClose> = (props) => {
   // If User items are hidden show expand icon. Else show close
-  if (props.display === "none") {
+  if (props.display === HIDE_ITEM) {
     return (
         <div>
           More Users <ChevronDown size="1em"/>
@@ -49,7 +50,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   constructor(props: ISearchResultsProps) {
     super(props);
     this.state = {
-      display: "none",
+      display: HIDE_ITEM,
       foundPosts: [],
       foundUsers: [],
       query: this.props.match.params.query,
@@ -61,7 +62,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   }
 
   public componentDidMount() {
-    this.getResults("");
+    this.getResults(this.state.query);
   }
 
   public componentDidUpdate(prevProps: ISearchResultsProps) {
@@ -70,17 +71,17 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
     }
   }
 
+  /* getResults is passed a query string so it can be called using
+   * the state when using the on page search and a prop when the header
+   * search is used.
+   */
   public getResults(query: string) {
-    let searchQuery = this.state.query;
-    if (query !== "") {
-      searchQuery = query;
-    }
-    SearchRequest(searchQuery)
+    SearchRequest(query)
       .then((resp: ISearchResponse) => {
         this.setState({
           foundPosts: resp.posts,
           foundUsers: resp.users,
-          query: searchQuery,
+          query,
         });
       })
       .catch(this.handleGetPostsErr);
@@ -124,7 +125,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
     if (this.state.foundUsers.length === 1) {
       return (
         <div className="pure-g pure-u-1" key={this.state.foundPosts.length}>
-          <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={showItem}/>
+          <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={SHOW_ITEM}/>
         </div>
       );
     }
@@ -132,7 +133,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
       if (i === 0) {
         return (
           <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
-            <User username={this.props.username} blogUser={e} display={showItem}/>
+            <User username={this.props.username} blogUser={e} display={SHOW_ITEM}/>
           </div>
         );
       }
@@ -209,14 +210,14 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
 
   private handleSearchSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    this.getResults("");
+    this.getResults(this.state.query);
   }
 
   private toggleDropdown(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    let target = "none";
-    if (this.state.display === "none") {
-      target = showItem;
+    let target = HIDE_ITEM;
+    if (this.state.display === HIDE_ITEM) {
+      target = SHOW_ITEM;
     }
     this.setState({
       display: target,
