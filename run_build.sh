@@ -43,6 +43,21 @@ if [ "$1" = "--only-image" ]; then
   exit 0
 fi
 
+for i in "$@"
+do
+  case $i in
+    --search-type=*)
+      RABBLE_SEARCH_TYPE="${i#*=}"
+      shift
+      ;;
+    --follow-recommender-method=*)
+      RABBLE_FOLLOW_RECOMMENDER_METHOD="${i#*=}"
+      ;;
+    *)
+      ;;
+  esac
+done
+
 echo "Running build container"
 docker run \
   --rm -it \
