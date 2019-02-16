@@ -14,6 +14,7 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	util "github.com/cpssd/rabble/services/utils"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	wrapperpb "github.com/golang/protobuf/ptypes/wrappers"
@@ -817,7 +818,7 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(resp.Results[0])
+		err = enc.Encode(util.StripUser(resp.Results[0]))
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
