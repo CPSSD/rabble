@@ -11,6 +11,7 @@ interface IBlogPost {
   is_liked: boolean;
   published: string;
   title: string;
+  is_followed: boolean;
 }
 
 export interface IParsedPost extends IBlogPost {
@@ -22,7 +23,7 @@ export interface IParsedPost extends IBlogPost {
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
 
-export function SortPosts(b: IBlogPost[]) {
+export function ParsePosts(b: IBlogPost[]) {
   b = b as IParsedPost[];
   // convert published string to js datetime obj
   b.map((e: IParsedPost) => {
@@ -33,6 +34,11 @@ export function SortPosts(b: IBlogPost[]) {
     }
     return e;
   });
+  return b;
+}
+
+export function SortPosts(b: IBlogPost[]) {
+  b = ParsePosts(b);
   b.sort((n: IParsedPost, m: IParsedPost) => {
     return m.parsed_date.getTime() - n.parsed_date.getTime();
   });
@@ -71,6 +77,6 @@ export function GetSinglePost(username: string, id: string) {
 }
 
 export function GetPublicPosts(username= "") {
-  const url = username === "" ? feedApiURL : `${feedApiURL}/${username}`;
+  const url = username === "" ? feedApiURL : `${feedApiURL}/${encodeURIComponent(username)}`;
   return PostsAPIPromise(url);
 }

@@ -6,6 +6,7 @@ import time
 import os
 import sys
 
+from utils.connect import get_service_channel, get_future_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
 from servicer import CreateServicer
@@ -22,33 +23,16 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
-def get_db_channel(logger):
-    db_service_host = os.environ.get("DB_SERVICE_HOST")
-    if not db_service_host:
-        logger.error("Please set DB_SERVICE_HOST env variable")
-        sys.exit(1)
-    db_service_address = db_service_host + ":1798"
-    return grpc.insecure_channel(db_service_address)
-
-def get_article_channel(logger):
-    article_service_host = os.environ.get("ARTICLE_SERVICE_HOST")
-    if not article_service_host:
-        logger.error("Please set ARTICLE_SERVICE_HOST env variable")
-        sys.exit(1)
-    article_service_address = article_service_host + ":1601"
-    return grpc.insecure_channel(article_service_address)
-
 def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
 
     logger.info("Creating db connection")
-    db_channel = get_db_channel(logger)
+    db_channel = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
     logger.info("Creating article connection")
-    article_channel = get_article_channel(logger)
+    article_channel = get_future_channel(logger, "ARTICLE_SERVICE_HOST", 1601)
     article_stub = article_pb2_grpc.ArticleStub(article_channel)
-
     logger.info("Creating create server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)

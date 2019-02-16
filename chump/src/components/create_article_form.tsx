@@ -33,6 +33,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         body: "string",
         global_id: 3,
         image: defaultImage,
+        is_followed: false,
         is_liked: false,
         likes_count: 0,
         parsed_date: new Date(),

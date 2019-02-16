@@ -18,6 +18,9 @@ message PostsEntry {
   // True if the user in the request has liked this post
   // Note: defaults to false.
   bool is_liked = 9;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 10;
 }
 
 message PostsRequest {
@@ -126,6 +129,7 @@ message DbFollowRequest {
     INSERT = 0;
     FIND = 1;
     UPDATE = 2;
+    DELETE = 3;
   }
 
   RequestType request_type = 1;
@@ -234,6 +238,13 @@ message PendingFollowResponse {
   repeated PendingFollow followers = 3;
 }
 
+message DatabaseSearchRequest {
+  string query = 1;
+  int32 num_responses = 2;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 3;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -250,4 +261,11 @@ service Database {
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
   // Get PENDING Follows with handles rather than ids
   rpc PendingFollows(PendingFollowRequest) returns (PendingFollowResponse);
+  // Get Article search results
+  rpc SearchArticles(DatabaseSearchRequest) returns (PostsResponse);
+  // Get User search results
+  rpc SearchUsers(DatabaseSearchRequest) returns (UsersResponse);
+  // Create Database Indices
+  rpc CreatePostsIndex(DatabaseSearchRequest) returns (PostsResponse);
+  rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 }

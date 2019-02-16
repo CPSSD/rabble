@@ -2,14 +2,16 @@ from services.proto import article_pb2
 from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
+from services.proto import search_pb2
 
 
 class NewArticleServicer:
 
-    def __init__(self, create_stub, db_stub, md_stub, logger, users_util):
+    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util):
         self._create_stub = create_stub
         self._db_stub = db_stub
         self._md_stub = md_stub
+        self._search_stub = search_stub
         self._logger = logger
         self._users_util = users_util
 
@@ -17,6 +19,22 @@ class NewArticleServicer:
         convert_req = mdc_pb2.MDRequest(md_body=body)
         res = self._md_stub.MarkdownToHTML(convert_req)
         return res.html_body
+
+    def index(self, post_entry):
+        """
+        index takes a post proto and indexes it in the search service/
+
+        Arguments:
+        - post_entry (database.PostsEntry): A proto representing the post.
+          This should have a valid global_id field.
+        """
+        req = search_pb2.IndexRequest(post = post_entry)
+        resp = self._search_stub.Index(req)
+
+        if resp.error:
+            self._logger.warning("Error indexing post: %s", resp.error)
+
+        return resp.result_type == search_pb2.IndexResponse.ResultType.Value("OK")
 
     def send_insert_request(self, req):
         author = self._users_util.get_user_from_db(handle=req.author,
@@ -40,6 +58,9 @@ class NewArticleServicer:
         posts_resp = self._db_stub.Posts(pr)
         if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
             self._logger.error('Could not insert into db: %s', posts_resp.error)
+
+        pe.global_id = posts_resp.global_id
+        self.index(pe)
 
         return posts_resp.result_type, posts_resp.global_id
 

@@ -82,6 +82,22 @@ class FollowDatabaseHelper(unittest.TestCase):
                             database_pb2.DbFollowResponse.ERROR)
         return find_res
 
+    def delete_follow(self, follower=None, followed=None):
+        match = database_pb2.Follow(
+            follower=follower,
+            followed=followed,
+        )
+
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.DELETE,
+            match=match,
+        )
+
+        delete_res = self.service.Follow(req, self.ctx)
+        self.assertNotEqual(delete_res.result_type,
+                            database_pb2.DbFollowResponse.ERROR)
+        return delete_res
+
 
 class FollowDatabase(FollowDatabaseHelper):
 
@@ -250,3 +266,42 @@ class FollowFindAllDatabase(FollowDatabaseHelper):
         self.assertNotIn(do_not_want[0], find_res.results)
         self.assertNotIn(do_not_want[1], find_res.results)
         self.assertEqual(len(find_res.results), 3)
+
+class TestDeleteDatabase(FollowDatabaseHelper):
+
+    def test_delete_follow(self):
+        self.add_follow(follower=1, followed=2)
+        find_res = self.find_follow(followed=2)
+        want = database_pb2.Follow(
+            follower=1,
+            followed=2,
+            state=database_pb2.Follow.ACTIVE
+        )
+        self.assertEqual(len(find_res.results), 1)
+        self.assertIn(want, find_res.results)
+
+        self.delete_follow(follower=1, followed=2)
+
+        find_res = self.find_follow(followed=2)
+        self.assertEqual(len(find_res.results), 0)
+
+    def test_delete_follow_doesnt_delete_others(self):
+        self.add_follow(follower=1, followed=2)
+        find_res = self.find_follow(followed=2)
+        want = database_pb2.Follow(
+            follower=1,
+            followed=2,
+            state=database_pb2.Follow.ACTIVE
+        )
+        self.assertEqual(len(find_res.results), 1)
+        self.assertIn(want, find_res.results)
+
+        # As the follower and followed are different, this should no-op.
+        self.delete_follow(follower=2, followed=1)
+
+        want = database_pb2.Follow(follower=1,
+                                   followed=2,
+                                   state=database_pb2.Follow.ACTIVE)
+        find_res = self.find_follow(followed=2)
+        self.assertEqual(len(find_res.results), 1)
+        self.assertEqual(find_res.results[0], want)

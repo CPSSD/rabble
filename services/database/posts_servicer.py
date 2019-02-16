@@ -21,9 +21,11 @@ class PostsDatabaseServicer:
             "SELECT "
             "p.global_id, p.author_id, p.title, p.body, "
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
-            "l.user_id IS NOT NULL "
+            "l.user_id IS NOT NULL, f.follower IS NOT NULL "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
+            "LEFT OUTER JOIN follows f ON "
+            "f.followed=p.author_id AND f.follower=? "
         )
         self._type_handlers = {
             database_pb2.PostsRequest.INSERT: self._handle_insert,
@@ -54,11 +56,76 @@ class PostsDatabaseServicer:
                                    'ON p.author_id = u.global_id '
                                    'WHERE u.host = "" AND u.private = 0 '
                                    'ORDER BY p.global_id DESC '
-                                   'LIMIT ?', user_id, n)
+                                   'LIMIT ?', user_id, user_id, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
         except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
+    def SearchArticles(self, request, context):
+        self._logger.info('Search query' + request.query)
+        resp = database_pb2.PostsResponse()
+        n = request.num_responses
+        if not n:
+            n = DEFAULT_NUM_POSTS
+        user_id = -1
+        if request.HasField("user_global_id"):
+            user_id = request.user_global_id.value
+        self._logger.info('Reading up to {} posts for search articles'.format(n))
+        try:
+            res = self._db.execute(self._select_base +
+                'WHERE global_id IN ' +
+                '(SELECT rowid FROM posts_idx WHERE posts_idx '
+                "MATCH ? LIMIT ?)", user_id, request.query, n)
+            for tup in res:
+                if not self._db_tuple_to_entry(tup, resp.results.add()):
+                    del resp.results[-1]
+        except sqlite3.Error as e:
+            self._logger.info("Error searching for posts")
+            self._logger.error(str(e))
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
+    def CreatePostsIndex(self, request, context):
+        self._logger.info('Creating Post Index')
+        resp = database_pb2.PostsResponse()
+        try:
+            res = self._db.execute(
+                'CREATE VIRTUAL TABLE IF NOT EXISTS posts_idx USING ' +
+                'fts5(title, body, content=posts, content_rowid=global_id)')
+            self._logger.info('Updating post index')
+            res = self._db.execute(
+                "insert into posts_idx(posts_idx) values('rebuild')")
+            self._logger.info('Adding Triggers, Insert')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(rowid, title, body) ' +
+                'VALUES (new.global_id, new.title, new.body); \n' +
+                'END;')
+            self._logger.info('Adding Triggers, Delete')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
+                "VALUES ('delete', new.global_id, new.title, new.body); \n" +
+                'END;')
+            self._logger.info('Adding Triggers, Update')
+            res = self._db.execute(
+                'CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
+                "VALUES ('delete', new.global_id, new.title, new.body);\n" +
+                '  INSERT INTO posts_idx(rowid, title, body) ' +
+                'VALUES (new.global_id, new.title, new.body);\n' +
+                'END;')
+            resp.result_type = database_pb2.PostsResponse.OK
+        except sqlite3.Error as e:
+            self._logger.info("Error creating posts index")
+            self._logger.error(str(e))
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)
             return resp
@@ -97,7 +164,7 @@ class PostsDatabaseServicer:
         resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 9:
+        if len(tup) != 10:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -113,6 +180,7 @@ class PostsDatabaseServicer:
             entry.ap_id = tup[6]
             entry.likes_count = tup[7]
             entry.is_liked = tup[8]
+            entry.is_followed = tup[9]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
@@ -127,13 +195,13 @@ class PostsDatabaseServicer:
             user_id = req.user_global_id.value
         try:
             if not filter_clause:
-                res = self._db.execute(self._select_base, user_id)
+                res = self._db.execute(self._select_base, user_id, user_id)
             else:
                 res = self._db.execute(
                     self._select_base +
                     "WHERE " + filter_clause +
                     " ORDER BY p.global_id DESC",
-                    *([user_id] + values))
+                    *([user_id, user_id] + values))
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)

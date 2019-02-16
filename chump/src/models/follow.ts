@@ -6,6 +6,11 @@ interface ICreateFollowPostBody {
   follower: string;
 }
 
+interface IUnfollowPostBody {
+  followed: string;
+  follower: string;
+}
+
 interface ICreateRssFollowPostBody {
   feed_url: string;
   follower: string;
@@ -14,6 +19,29 @@ interface ICreateRssFollowPostBody {
 export function CreateFollow(username: string, followedUsername: string) {
   const endpoint: string = "/c2s/follow";
   const postBody: ICreateFollowPostBody = {
+    followed: followedUsername,
+    follower: username,
+  };
+  return new Promise((resolve, reject) => {
+    request
+      .post(endpoint)
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .send(postBody)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(res);
+      });
+  });
+}
+
+export function Unfollow(username: string, followedUsername: string) {
+  const endpoint: string = "/c2s/unfollow";
+  const postBody: IUnfollowPostBody = {
     followed: followedUsername,
     follower: username,
   };
