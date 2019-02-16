@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import {GetLoginPromise, ILoginResult} from "../models/login";
 
 interface ILoginProps extends RouteProps {
@@ -64,7 +65,7 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
                 value={this.state.username}
                 onChange={this.handleUsername}
                 className="pure-input-1-2"
-                placeholder="Username"
+                placeholder={config.username}
               />
             </div>
             <div className="pure-control-group">
@@ -74,14 +75,14 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
                 value={this.state.password}
                 onChange={this.handlePassword}
                 className="pure-input-1-2"
-                placeholder="Password"
+                placeholder={config.password}
               />
             </div>
             <button
               type="submit"
               className="pure-button pure-input-1-3 pure-button-primary primary-button"
             >
-              Login
+              {config.login_text}
             </button>
           </form>
         </div>

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
+import * as config from "../../rabble_config.json";
 import { GetUsersPosts, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 
@@ -110,10 +111,10 @@ export class User extends React.Component<IUserProps, IUserState> {
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24 user-menu">
           <Link to={"/@/edit"} className="pure-button">
-            Edit account
+            {config.edit_account}
           </Link>
           <Link to={"/@/pending"} className="pure-button">
-            Follow requests
+            {config.follow_requests}
           </Link>
         </div>
       </div>

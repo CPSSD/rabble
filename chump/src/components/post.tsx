@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
+import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
@@ -50,7 +51,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         <div className="pure-u-10-24">
-          <p className="article-byline">Published {this.props.blogPost.parsed_date.toLocaleString()}</p>
+          <p className="article-byline">{config.published} {this.props.blogPost.parsed_date.toLocaleString()}</p>
           <Link
             to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
             className="article-title"

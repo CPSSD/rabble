@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Response } from "superagent";
+import * as config from "../../rabble_config.json";
 import { CreateFollow } from "../models/follow";
 
 interface IFormState {
@@ -35,7 +36,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
         <div className="pure-control-group">
           <input
             type="submit"
-            value="Follow"
+            value={config.follow_text}
             className="pure-button pure-button-primary primary-button"
           />
         </div>

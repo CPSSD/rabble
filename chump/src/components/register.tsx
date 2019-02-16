@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import {GetRegisterPromise, IRegisterResult} from "../models/register";
 
 interface IRegisterState {
@@ -69,7 +70,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.displayName}
                 onChange={this.handleDisplayName}
                 className="pure-input-1-2"
-                placeholder="Display Name"
+                placeholder={config.display_name}
               />
             </div>
             <div className="pure-control-group">
@@ -79,7 +80,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.username}
                 onChange={this.handleUsername}
                 className="pure-input-1-2"
-                placeholder="Username"
+                placeholder={config.username}
               />
             </div>
             <div className="pure-control-group">
@@ -89,7 +90,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.password}
                 onChange={this.handlePassword}
                 className="pure-input-1-2"
-                placeholder="Password"
+                placeholder={config.password}
               />
             </div>
             <div className="pure-control-group">
@@ -99,14 +100,14 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.bio}
                 onChange={this.handleBio}
                 className="pure-input-1 blog-input"
-                placeholder="Something about you"
+                placeholder={config.bio_placeholder}
               />
             </div>
             <button
               type="submit"
               className="pure-button pure-input-1-3 pure-button-primary primary-button"
             >
-              Register
+              {config.register_text}
             </button>
           </form>
         </div>

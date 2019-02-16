@@ -1,4 +1,31 @@
 {
   "header_title": "Rabble",
-  "feed_title": "Your blog post could be here!"
+  "feed_title": "Your blog post could be here!",
+  "follow_text": "Follow",
+  "logout_text": "Logout",
+  "feed_text": "Feed",
+  "write_text": "Write",
+  "login_text": "Login",
+  "register_text": "Register",
+  "search_action": "Search Posts",
+  "edit_profile_title": "Edit Your Profile",
+  "new_password": "New Password",
+  "display_name": "Display Name",
+  "bio": "Bio",
+  "private_account": "Private Account",
+  "password": "Password",
+  "update_button": "Update!",
+  "title_text": "Title",
+  "start_here": "Start here",
+  "write_box_rows": 20,
+  "preview": "Preview",
+  "post": "Post",
+  "close_preview": "Close Preview",
+  "type": "Type",
+  "username": "Username",
+  "follow_requests": "Follow Requests",
+  "published": "Published",
+  "bio_placeholder": "Something about you",
+  "edit_account": "Edit Account"
 }
+
