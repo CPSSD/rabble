@@ -106,6 +106,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               onChange={this.handleTitleInputChange}
               className="pure-input-1-2"
               placeholder="Title"
+              required={true}
             />
             <textarea
               name="blogText"

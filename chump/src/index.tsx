@@ -87,7 +87,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/register"
-              component={Register}
+              render={(props) => <Register {...props} loginCallback={this.login} />}
             />
             <Route
               path="/search/:query"
