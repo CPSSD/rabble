@@ -221,10 +221,10 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
   }
 
   private handleUpdateError(e: any) {
-    alert("Error attempting to update.", e);
+    alert("Error attempting to update: " + e.toString());
   }
 
   private handleGetError(e: any) {
-    alert("Error getting user details: ", e);
+    alert("Error getting user details: " + e.toString());
   }
 }
