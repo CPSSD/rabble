@@ -19,6 +19,14 @@ class UsersDatabaseServicer:
             database_pb2.UsersRequest.FIND_NOT: self._users_handle_find_not,
             database_pb2.UsersRequest.UPDATE: self._users_handle_update,
         }
+        self._filter_defer = {
+            'private': self._private_to_filter
+        }
+
+    def _private_to_filter(self, entry):
+        if not entry.HasField("private"):
+            return None
+        return entry.private.value
 
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 8:
@@ -35,7 +43,7 @@ class UsersDatabaseServicer:
             entry.password = tup[4]
             entry.bio = tup[5]
             entry.rss = tup[6]
-            entry.private = tup[7]
+            entry.private.value = tup[7]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -154,7 +162,7 @@ class UsersDatabaseServicer:
                 req.entry.password,
                 req.entry.bio,
                 req.entry.rss,
-                req.entry.private)
+                req.entry.private.value)
         except sqlite3.Error as e:
             self._logger.info("Error inserting")
             self._logger.error(str(e))
@@ -164,8 +172,10 @@ class UsersDatabaseServicer:
         resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_update(self, req, resp):
-        update_clause, u_values = util.entry_to_update(req.entry)
-        filter_clause, f_values = util.equivalent_filter(req.match)
+        update_clause, u_values = util.entry_to_update(
+                req.entry, deferred = self._filter_defer)
+        filter_clause, f_values = util.equivalent_filter(
+                req.match, deferred = self._filter_defer)
         values = u_values + f_values
 
         if not filter_clause or not update_clause:
@@ -196,11 +206,13 @@ class UsersDatabaseServicer:
         resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_find_not(self, req, resp):
-        filter_clause, values = util.not_equivalent_filter(req.match)
+        filter_clause, values = util.not_equivalent_filter(
+                req.match, deferred = self._filter_defer)
         self._user_find_op(resp, filter_clause, [])
 
     def _users_handle_find(self, req, resp):
-        filter_clause, values = util.equivalent_filter(req.match)
+        filter_clause, values = util.equivalent_filter(
+                req.match, deferred = self._filter_defer)
         self._user_find_op(resp, filter_clause, values)
 
     def _user_find_op(self, resp, filter_clause, values):
