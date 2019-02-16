@@ -6,12 +6,14 @@ import "services/proto/database.proto";
 import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
+// This user is a stripped down version of UsersEntry, see database.proto
 message User {
   string handle = 1;
   string host = 2;
   int64 global_id = 3;
-  // Plaintext biography of the user
   string bio = 4;
+  google.protobuf.BoolValue private = 5;
+  string display_name = 6;
 }
 
 message SearchQuery {
