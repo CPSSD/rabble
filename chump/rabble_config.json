@@ -26,6 +26,8 @@
   "follow_requests": "Follow Requests",
   "published": "Published",
   "bio_placeholder": "Something about you",
-  "edit_account": "Edit Account"
+  "edit_account": "Edit Account",
+  "following": "Following",
+  "unfollow": "Unfollow"
 }
 

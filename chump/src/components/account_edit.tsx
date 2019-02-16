@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import * as config from "../../rabble_config.json";
 import { Redirect } from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import {EditUserPromise, IEditUserResult} from "../models/edit_user";
 
 interface IAccountEditState {
