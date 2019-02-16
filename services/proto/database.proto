@@ -115,6 +115,9 @@ message UsersResponse {
   // If the result_type is OK, and the query being responded to requires some
   // entries in return (eg. a FIND query), then those entries are provided here.
   repeated UsersEntry results = 3;
+
+  // If the request was an INSERT this is the global_id of the inserted user.
+  int64 global_id = 4;
 }
 
 

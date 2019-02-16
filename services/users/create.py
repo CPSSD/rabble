@@ -32,6 +32,5 @@ class CreateHandler:
             )
         return users_pb2.CreateUserResponse(
             result_type=users_pb2.CreateUserResponse.OK,
+            global_id=db_resp.global_id,
         )
-
-

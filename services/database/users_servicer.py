@@ -168,13 +168,22 @@ class UsersDatabaseServicer:
                 req.entry.bio,
                 req.entry.rss,
                 req.entry.private)
+            res = self._db.execute(
+                'SELECT last_insert_rowid() FROM users LIMIT 1')
         except sqlite3.Error as e:
             self._logger.info("Error inserting")
             self._logger.error(str(e))
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)
             return
+        if len(res) != 1 or len(res[0]) != 1:
+            err = "Global ID data in weird format: " + str(res)
+            self._logger.error(err)
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = err
+            return
         resp.result_type = database_pb2.UsersResponse.OK
+        resp.global_id = res[0][0]
 
     def _users_handle_update(self, req, resp):
         update_clause, u_values = util.entry_to_update(req.entry)
