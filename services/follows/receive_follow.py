@@ -78,12 +78,12 @@ class ReceiveFollowServicer:
                           local_user.global_id)
 
 
-        if not local_user.private:
+        if not local_user.private.value:
             self._logger.info('Accepting follow request')
             self._util.attempt_to_accept(local_user, foreign_user, self._host_name)
 
         state = database_pb2.Follow.ACTIVE
-        if local_user.private:
+        if local_user.private.value:
             self._logger.info('Follow private user: waiting for approval')
             state = database_pb2.Follow.PENDING
 

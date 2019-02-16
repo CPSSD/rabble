@@ -96,7 +96,7 @@ class SendFollowServicer:
         err = self._add_follow(resp,
                                follower_entry.global_id,
                                followed_entry.global_id,
-                               followed_entry.private,
+                               followed_entry.private.value,
                                is_foreign)
         if err is not None:
             return resp
