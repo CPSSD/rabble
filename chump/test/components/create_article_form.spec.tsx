@@ -5,7 +5,7 @@ import * as sinon from "sinon";
 
 import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
-import { mount } from "../enzyme";
+import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -38,8 +38,7 @@ describe("CreateArticleForm", () => {
 
   it("can handle title input", (done) => {
     testComponent = mount(<CreateArticleForm username={"ross"}/>);
-    testComponent.find("[name=\"title\"]")
-      .simulate("change", {
+    testComponent.find("[name=\"title\"]").simulate("change", {
         target: {
           name: "title",
           value: "Great Title",
@@ -51,8 +50,7 @@ describe("CreateArticleForm", () => {
 
   it("can handle TextArea input", (done) => {
     testComponent = mount(<CreateArticleForm username={"ross"}/>);
-    testComponent.find("[name=\"blogText\"]")
-      .simulate("change", {
+    testComponent.find("[name=\"blogText\"]").simulate("change", {
         target: {
           name: "blogText",
           value: "Clickbait",
@@ -84,6 +82,12 @@ describe("CreateArticleForm", () => {
         resolve({ text: alertMessage });
       });
       createStub.returns(promise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       promise.finally(() => {
@@ -93,6 +97,15 @@ describe("CreateArticleForm", () => {
       });
     });
 
+    it("and block submissions without a title", (done) => {
+      const alertMessage: string = "A post cannot have an empty title";
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent.find("form").first().simulate("submit");
+      expect(alertStub.called).to.equal(true);
+      expect(alertStub.calledWith(alertMessage)).to.equal(true);
+      done();
+    });
+
     it("and handle a 403: permission denied", (done) => {
       const alertMessage: string = "403";
       testComponent = mount(<CreateArticleForm username={"ross"}/>);
@@ -100,6 +113,12 @@ describe("CreateArticleForm", () => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       setTimeout(() => {
@@ -116,6 +135,12 @@ describe("CreateArticleForm", () => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       setTimeout(() => {
@@ -132,6 +157,12 @@ describe("CreateArticleForm", () => {
         reject(new Error(alertMessage));
       });
       createStub.returns(promise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       setTimeout(() => {
@@ -164,6 +195,36 @@ describe("CreateArticleForm", () => {
       });
     });
 
+    it("and successfully post from preview", (done) => {
+      const submitStub: any = sandbox.stub(CreateArticleForm.prototype, "handleSubmitForm" as any);
+      const alertMessage: string = "Request went well";
+      const promise = new bluebird.Promise((resolve) => {
+        resolve({ body: examplePost });
+      });
+      const createPromise = new bluebird.Promise((resolve) => {
+        resolve({ text: alertMessage });
+      });
+      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      previewStub.returns(promise);
+      createStub.returns(createPromise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
+      testComponent.find("button").at(0).simulate("click");
+      expect(previewStub.called).to.equal(true);
+      promise.finally(() => {
+        expect(testComponent.state()).to.have.property("showModal", true);
+        expect(testComponent.state().post).to.have.property("author", "sips");
+        testComponent.update();
+        testComponent.find(".preview-post").first().simulate("click");
+        expect(submitStub.called).to.equal(true);
+        done();
+      });
+    });
+
     it("and handle req error", (done) => {
       const alertMessage: string = "500";
       testComponent = mount(<CreateArticleForm username={"ross"}/>);
@@ -171,6 +232,12 @@ describe("CreateArticleForm", () => {
         reject(new Error(alertMessage));
       });
       previewStub.returns(promise);
+      testComponent.find("[name=\"title\"]").simulate("change", {
+          target: {
+            name: "title",
+            value: "Great Title",
+          },
+        });
       testComponent.find("button").at(0).simulate("click");
       expect(previewStub.called).to.equal(true);
       setTimeout(() => {

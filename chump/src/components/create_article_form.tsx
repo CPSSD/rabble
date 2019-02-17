@@ -19,6 +19,7 @@ export interface IFormProps {
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
 But nothing comes out when they move their lips; just a bunch of gibberish.";
 const defaultImage = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
+const EMPTY_TITLE_ERROR = "A post cannot have an empty title";
 
 export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
   constructor(props: IFormProps) {
@@ -66,6 +67,15 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
                 onClick={this.handleClosePreview}
               >
                 Close Preview
+              </button>
+            </div>
+            <div className="pure-u-10-24"/>
+            <div className="pure-u-4-24">
+              <button
+                className="pure-button pure-input-1-3 pure-button-primary primary-button preview-post"
+                onClick={this.handleSubmitForm}
+              >
+                Post
               </button>
             </div>
           </div>
@@ -177,8 +187,18 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
       });
   }
 
-  private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
+  private handleSubmitForm(event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
+    if (this.state.title === "") {
+      this.alertUser(EMPTY_TITLE_ERROR);
+      return;
+    }
+
+    // if posted from modal, need to close modal after post
+    let showModal = this.state.showModal;
+    if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
+      showModal = false;
+    }
     const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText);
     promise
       .then((res: any) => {
@@ -189,6 +209,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         this.alertUser(message);
         this.setState({
           blogText: "",
+          showModal,
           title: "",
         });
       })

@@ -10,7 +10,7 @@ import {Register} from "./components/register";
 import {Write} from "./components/write";
 import {Login} from "./components/login";
 import {Logout} from "./components/logout";
-import {User} from "./components/user";
+import {User} from "./components/user_feed";
 import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 import {AccountEdit} from "./components/account_edit";
@@ -91,8 +91,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/search/:query"
-              username={this.state.username}
-              component={SearchResults}
+              render={(props) => <SearchResults {...props} username={this.state.username} />}
             />
             <PrivateRoute
               path="/feed"

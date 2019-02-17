@@ -16,7 +16,7 @@ class PostsDatabaseServicer:
         self._db = db
         self._logger = logger
         # If new columns are added to the database, this query must be
-        # changed. Change also _handle_insert.
+        # changed. Change also _handle_insert & SearchArticles.
         self._select_base = (
             "SELECT "
             "p.global_id, p.author_id, p.title, p.body, "
@@ -80,7 +80,7 @@ class PostsDatabaseServicer:
             res = self._db.execute(self._select_base +
                 'WHERE global_id IN ' +
                 '(SELECT rowid FROM posts_idx WHERE posts_idx '
-                "MATCH ? LIMIT ?)", user_id, request.query, n)
+                "MATCH ? LIMIT ?)", user_id, user_id, request.query, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]

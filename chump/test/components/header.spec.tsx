@@ -4,7 +4,7 @@ import { HashRouter } from "react-router-dom";
 import * as sinon from "sinon";
 
 import { Header } from "../../src/components/header";
-import { mount } from "../enzyme";
+import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 

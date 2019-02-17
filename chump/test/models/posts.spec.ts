@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { GetPublicPosts, GetSinglePost, IParsedPost } from "../src/models/posts";
+import { GetPublicPosts, GetSinglePost, IParsedPost } from "../../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -24,6 +24,7 @@ const validBody: IParsedPost[] = [{
   body: "rm -rf steely/",
   global_id: 2,
   image: "",
+  is_followed: false,
   is_liked: false,
   likes_count: 1,
   parsed_date: now,
