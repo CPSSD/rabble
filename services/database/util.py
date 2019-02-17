@@ -5,6 +5,9 @@ def equivalent_filter(entry, defaults=[], deferred={}):
 def not_equivalent_filter(entry, defaults=[], deferred={}):
     return entry_to_filter(entry, defaults, ' IS NOT ""', deferred)
 
+def build_filter_list(fields, comp, deferred):
+    return [f.name + comp for f, _ in fields if f.name not in deferred]
+
 
 def entry_to_filter(entry, defaults, comparison, deferred={}):
     """
@@ -29,17 +32,8 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
     """
     fields = entry.ListFields()
 
-    names = set()
-    for f, _ in fields:
-        if f.name in deferred:
-            continue
-        names.add(f.name)
-
-    filter_list = []
-    for f, _ in fields:
-        if f.name in deferred:
-            continue
-        filter_list.append(f.name + comparison)
+    names = {f.name for f, _ in fields if f.name not in deferred}
+    filter_list = build_filter_list(fields, comparison, deferred)
 
     for name, _ in defaults:
         if name not in names:
@@ -98,12 +92,7 @@ def entry_to_update(entry, deferred={}):
          "bio = ?, display_name = ?" ["my bio", "my name"]
     """
     fields = entry.ListFields()
-
-    update_list = []
-    for f, _ in fields:
-        if f.name in deferred:
-            continue
-        update_list.append(f.name + " = ?")
+    update_list = build_filter_list(fields, " = ?", deferred)
 
     values = []
     handle_deferred = []
