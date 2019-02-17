@@ -1,134 +1,57 @@
 import * as React from "react";
-import { Link, RouteProps } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import * as config from "../../rabble_config.json";
-import { GetUsersPosts, IParsedPost } from "../models/posts";
-import { Post } from "./post";
+import { IParsedUser } from "../models/search";
+import { FollowButton} from "./follow_button";
 
-import * as superagent from "superagent";
-
-interface IUserState {
-  publicBlog: IParsedPost[];
-  // user that we're looking at, filled when we complete our lookup
-  user: string;
-  // used to determine what error message to display.
-  error: string;
-}
-
-interface IUserProps extends RouteProps {
-  match: {
-    params: {
-      user: string,
-    },
-  };
+interface IUserProps {
   username: string;
+  blogUser: IParsedUser;
+  display: string;
 }
 
-export class User extends React.Component<IUserProps, IUserState> {
+export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
     super(props);
-    this.state = {
-      error: "",
-      publicBlog: [],
-      user: "",
-    };
-
-    this.handleGetPostsErr = this.handleGetPostsErr.bind(this);
-  }
-
-  public getPosts() {
-    GetUsersPosts(this.props.match.params.user)
-      .then((posts: IParsedPost[]) => {
-        this.setState({
-          publicBlog: posts,
-          user: this.props.match.params.user,
-        });
-      })
-      .catch(this.handleGetPostsErr);
-  }
-
-  public handleGetPostsErr(e: superagent.ResponseError) {
-    let msg: string = "";
-
-    switch (e.status) {
-      case 404:
-        msg = "User not found.";
-        break;
-      case 401:
-        msg = "Not allowed to access this user's feed.";
-        break;
-      default:
-        const names = ["Ross'", "Noah's", "Cian's", "Aaron's"];
-        const your = names[Math.floor(Math.random() * names.length)];
-        msg = "An error occured, it was probably " + your + " fault.";
-    }
-
-    // We need to set user as well in the error handler because we use
-    // it as a mechanism for detecting when we've already sent our first
-    // request.
-    this.setState({
-      error: msg,
-      user: this.props.match.params.user,
-    });
-  }
-
-  public renderPosts() {
-    if (this.props.match.params.user !== this.state.user) {
-      this.getPosts();
-    }
-
-    if (this.state.publicBlog.length === 0) {
-      let error = "No blogs here, yet!";
-      if (this.state.error !== "") {
-        error = this.state.error;
-      }
-      return (
-        <div>
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-10-24">
-            <p>{error}</p>
-          </div>
-        </div>
-      );
-    }
-    return this.state.publicBlog.map((e: IParsedPost, i: number) => {
-      return (
-        <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e} preview={false}/>
-        </div>
-      );
-    });
-  }
-
-  public userLinks() {
-    // TODO(devoxel): Putting links here is a bit of a hack
-    if (! (this.props.username === this.props.match.params.user)) {
-      return false;
-    }
-
-    return (
-      <div>
-        <div className="pure-u-5-24"/>
-        <div className="pure-u-10-24 user-menu">
-          <Link to={"/@/edit"} className="pure-button">
-            {config.edit_account}
-          </Link>
-          <Link to={"/@/pending"} className="pure-button">
-            {config.follow_requests}
-          </Link>
-        </div>
-      </div>
-    );
+    this.state = {};
   }
 
   public render() {
-    // TODO: Make "Edit your account" button less ugly.
-    const userEdit = this.userLinks();
-    const blogPosts = this.renderPosts();
     return (
-      <div>
-        {userEdit}
-        {blogPosts}
+      <div className="blog-post-holder" style={{display: this.props.display}}>
+        <div className="pure-u-5-24"/>
+        <div className="pure-u-14-24">
+          <div className="pure-u-5-24">
+            <img
+              src={this.props.blogUser.image}
+              className="author-thumbnail"
+            />
+          </div>
+          <div className="pure-u-1-24"/>
+          <div className="pure-u-18-24">
+            <div className="pure-u-1-3 username-holder">
+                <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
+                  {this.props.blogUser.display_name}
+                </Link>
+                <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
+                  @{this.props.blogUser.handle}
+                </Link>
+            </div>
+            <div className="pure-u-1-3"/>
+            <div className="pure-u-1-3 follow-holder">
+                <FollowButton
+                    follower={this.props.username}
+                    followed={this.props.blogUser.handle}
+                    following={this.props.blogUser.is_followed}
+                />
+            </div>
+            <div className="pure-u-1">
+                <p className="author-bio">{this.props.blogUser.bio}</p>
+            </div>
+          </div>
+        </div>
+        <div className="pure-u-5-24"/>
       </div>
     );
   }

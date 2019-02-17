@@ -28,6 +28,8 @@
   "bio_placeholder": "Something about you",
   "edit_account": "Edit Account",
   "following": "Following",
-  "unfollow": "Unfollow"
+  "unfollow": "Unfollow",
+  "user_feed_title": "Your feed",
+  "defaults_to_username": "Defaults to username"
 }
 

@@ -39,10 +39,11 @@ class CreateHandlerTest(unittest.TestCase):
         req = self._make_request("CianLR")
         self.db_stub.Users.return_value = database_pb2.UsersResponse(
             result_type=database_pb2.UsersResponse.OK,
+            global_id=2
         )
         resp = self.create_handler.Create(req, None)
         self.assertEqual(resp.result_type, users_pb2.CreateUserResponse.OK)
+        self.assertEqual(resp.global_id, 2)
         self.assertNotEqual(self.db_stub.Users.call_args, None)
         db_req = self.db_stub.Users.call_args[0][0]
         self.assertEqual(db_req.entry.handle, "CianLR")
-

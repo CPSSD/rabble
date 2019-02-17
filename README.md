@@ -2,9 +2,27 @@
 
 ## Building
 
+### Requirements
+
 The only requirement to build Rabble is to have docker installed.
+
+### Steps
+
 Run `run_build.sh` and the output binaries will be written to a `build_out`
 directory.
+
+### Configuration
+
+There are a few parameters you can use to configure your Rabble instance.
+To change these options set the corresponding environment variable when running
+`run_build.sh`. Unset values have sensible defaults.
+
+ - `RABBLE_SEARCH_TYPE`:
+   - bleve (default)
+   - simple-search
+ - `RABBLE_FOLLOW_RECOMMENDER_METHOD`:
+   - none (default)
+   - surprise
 
 ## Running Rabble
 

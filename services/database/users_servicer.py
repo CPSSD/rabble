@@ -13,6 +13,15 @@ class UsersDatabaseServicer:
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
+        # If new columns are added to the database, this query must be
+        # changed. Change also _user_find_op & SearchUsers.
+        self._select_base = (
+            "SELECT u.global_id, u.handle, u.host, u.display_name, "
+            "u.password, u.bio, u.rss, u.private, "
+            "f.follower IS NOT NULL FROM users u "
+            "LEFT OUTER JOIN follows f ON "
+            "f.followed=u.global_id AND f.follower=? "
+        )
         self._users_type_handlers = {
             database_pb2.UsersRequest.INSERT: self._users_handle_insert,
             database_pb2.UsersRequest.FIND: self._users_handle_find,
@@ -21,7 +30,7 @@ class UsersDatabaseServicer:
         }
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 8:
+        if len(tup) != 9:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -36,6 +45,7 @@ class UsersDatabaseServicer:
             entry.bio = tup[5]
             entry.rss = tup[6]
             entry.private = tup[7]
+            entry.is_followed = tup[8]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -79,12 +89,15 @@ class UsersDatabaseServicer:
         n = request.num_responses
         if not n:
             n = DEFAULT_NUM_USERS
+        user_id = -1
+        if request.HasField("user_global_id"):
+            user_id = request.user_global_id.value
         self._logger.info('Reading up to {} users for search users'.format(n))
         try:
-            res = self._db.execute(
-                'SELECT * FROM users WHERE global_id IN ' +
-                '(SELECT rowid FROM users_idx WHERE users_idx '
-                'MATCH ? LIMIT ?)', request.query, n)
+            res = self._db.execute(self._select_base +
+                'WHERE global_id IN ' +
+                '(SELECT rowid FROM users_idx WHERE users_idx ' +
+                'MATCH ? LIMIT ?)', user_id, request.query, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
@@ -154,14 +167,24 @@ class UsersDatabaseServicer:
                 req.entry.password,
                 req.entry.bio,
                 req.entry.rss,
-                req.entry.private)
+                req.entry.private,
+                commit=False)
+            res = self._db.execute(
+                'SELECT last_insert_rowid() FROM users LIMIT 1')
         except sqlite3.Error as e:
             self._logger.info("Error inserting")
             self._logger.error(str(e))
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)
             return
+        if len(res) != 1 or len(res[0]) != 1:
+            err = "Global ID data in weird format: " + str(res)
+            self._logger.error(err)
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = err
+            return
         resp.result_type = database_pb2.UsersResponse.OK
+        resp.global_id = res[0][0]
 
     def _users_handle_update(self, req, resp):
         update_clause, u_values = util.entry_to_update(req.entry)
@@ -196,21 +219,26 @@ class UsersDatabaseServicer:
         resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_find_not(self, req, resp):
+        user_id = -1
+        if req.HasField("user_global_id"):
+            user_id = req.user_global_id.value
         filter_clause, values = util.not_equivalent_filter(req.match)
-        self._user_find_op(resp, filter_clause, [])
+        self._user_find_op(resp, filter_clause, [], user_id)
 
     def _users_handle_find(self, req, resp):
+        user_id = -1
+        if req.HasField("user_global_id"):
+            user_id = req.user_global_id.value
         filter_clause, values = util.equivalent_filter(req.match)
-        self._user_find_op(resp, filter_clause, values)
+        self._user_find_op(resp, filter_clause, values, user_id)
 
-    def _user_find_op(self, resp, filter_clause, values):
+    def _user_find_op(self, resp, filter_clause, values, user_id):
         try:
             if not filter_clause:
-                res = self._db.execute('SELECT * FROM users')
+                res = self._db.execute(self._select_base)
             else:
-                res = self._db.execute(
-                    'SELECT * FROM users WHERE ' + filter_clause,
-                    *values)
+                res = self._db.execute(self._select_base +
+                    'WHERE ' + filter_clause, user_id, *values)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)
