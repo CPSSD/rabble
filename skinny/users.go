@@ -152,15 +152,15 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 		} else {
 			session, err := s.store.Get(r, "rabble-session")
 			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintf(w, "Issue with login after create\n")
-				return
+				log.Printf("Error getting session store after create: %s", err)
+				jsonResp.Error = "Issue with login after create\n"
+				jsonResp.Success = false
+			} else {
+				session.Values["handle"] = req.Handle
+				session.Values["global_id"] = resp.GlobalId
+				session.Values["display_name"] = req.DisplayName
+				session.Save(r, w)
 			}
-			session.Values["handle"] = req.Handle
-			session.Values["global_id"] = resp.GlobalId
-			session.Values["display_name"] = req.DisplayName
-			session.Save(r, w)
 		}
 		enc.Encode(jsonResp)
 	}

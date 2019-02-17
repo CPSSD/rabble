@@ -167,7 +167,8 @@ class UsersDatabaseServicer:
                 req.entry.password,
                 req.entry.bio,
                 req.entry.rss,
-                req.entry.private)
+                req.entry.private,
+                commit=False)
             res = self._db.execute(
                 'SELECT last_insert_rowid() FROM users LIMIT 1')
         except sqlite3.Error as e:
