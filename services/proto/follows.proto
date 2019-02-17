@@ -95,4 +95,6 @@ service Follows {
   rpc GetFollowing(GetFollowsRequest) returns (GetFollowsResponse);
   // Accept a follow in PENDING state
   rpc AcceptFollow(AcceptFollowRequest) returns (FollowResponse);
+  // Acknowledge a local user unfollowing any other user.
+  rpc SendUnfollow(LocalToAnyFollow) returns (FollowResponse);
 }

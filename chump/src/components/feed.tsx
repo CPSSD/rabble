@@ -49,12 +49,16 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
 
   public render() {
     const blogPosts = this.renderPosts();
+    let feedHeader = config.feed_title;
+    if (this.props.queryUsername !== "") {
+      feedHeader = config.user_feed_title;
+    }
     return (
       <div>
         <div className="pure-g">
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
-            <h3 className="article-title">{config.feed_title}</h3>
+            <h3 className="article-title">{feedHeader}</h3>
             <p>Check out our <Link to="/about">about</Link> page for more info!</p>
           </div>
         </div>

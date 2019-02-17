@@ -49,7 +49,7 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
   public render() {
     if (this.state.redirect) {
       // TODO: Add smarter redirect
-      return <Redirect to={{ pathname: "/feed" }}/>;
+      return <Redirect to={{ pathname: "/" }}/>;
     }
 
     return (

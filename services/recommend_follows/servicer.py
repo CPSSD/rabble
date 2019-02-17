@@ -37,7 +37,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         If the env var is not set, or no valid names are provided, then a
         default system (self.DEFAULT_RECOMMENDER) will be used.'''
         keys = [self.DEFAULT_RECOMMENDER]
-        if self.ENV_VAR not in os.environ:
+        if self.ENV_VAR not in os.environ or os.environ[self.ENV_VAR] == "":
             self._logger.warning('No value set for "follow_recommender" ' +
                                  'environment variable, using default of ' +
                                  '"{}".'.format(self.DEFAULT_RECOMMENDER))

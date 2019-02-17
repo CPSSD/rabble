@@ -3,8 +3,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 
-import { About } from "../src/components/about";
-import { Header } from "../src/components/header";
+import { About } from "../../src/components/about";
+import { Header } from "../../src/components/header";
 import { render, shallow } from "./enzyme";
 
 describe("About", () => {

@@ -14,6 +14,7 @@ class FollowDatabaseServicer:
             database_pb2.DbFollowRequest.INSERT: self._follow_handle_insert,
             database_pb2.DbFollowRequest.FIND: self._follow_handle_find,
             database_pb2.DbFollowRequest.UPDATE: self._follow_handle_update,
+            database_pb2.DbFollowRequest.DELETE: self._follow_handle_delete,
         }
 
     def _db_tuple_to_entry(self, tup, entry):
@@ -126,4 +127,18 @@ class FollowDatabaseServicer:
             self._logger.warning(err)
             resp.error = err
 
+        resp.result_type = database_pb2.DbFollowResponse.OK
+
+    def _follow_handle_delete(self, req, resp):
+        self._logger.info('Deleting follow from Follow database.')
+        try:
+            filter_clause, values = util.equivalent_filter(req.match)
+            query = 'DELETE FROM follows WHERE ' + filter_clause
+            # TODO(iandioch): Count affected rows.
+            self._db.execute(query, *values)
+        except sqlite3.Error as e:
+            self._logger.error(str(e))
+            resp.result_type = database_pb2.DbFollowResponse.ERROR
+            resp.error = str(e)
+            return
         resp.result_type = database_pb2.DbFollowResponse.OK

@@ -194,7 +194,7 @@ func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexRespon
 }
 
 func main() {
-	log.Print("Starting search service.")
+	log.Print("Starting bleve search service.")
 
 	lis, err := net.Listen("tcp", ":1886")
 	if err != nil {

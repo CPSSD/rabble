@@ -3,8 +3,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { IParsedPost } from "../src/models/posts";
-import { IParsedUser, ISearchResponse, Search } from "../src/models/search";
+import { IParsedPost } from "../../src/models/posts";
+import { IParsedUser, ISearchResponse, SearchRequest } from "../../src/models/search";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -25,6 +25,7 @@ const validParsedPost: IParsedPost[] = [{
   body: "rm -rf steely/",
   global_id: 2,
   image: "",
+  is_followed: false,
   is_liked: false,
   likes_count: 1,
   parsed_date: now,
@@ -34,9 +35,12 @@ const validParsedPost: IParsedPost[] = [{
 
 const validUser: IParsedUser[] = [{
   bio: "bio",
+  display_name: "the.aaron",
   global_id: "4",
   handle: "aaron",
   host: "google.com",
+  image: "test",
+  is_followed: true,
 }];
 
 const validBody: ISearchResponse = {
@@ -52,7 +56,7 @@ describe("Search", () => {
 
   it("should call api", (done) => {
     const getRequest = createFakeResponse(validBody);
-    Search("test").then((resp: ISearchResponse) => {
+    SearchRequest("test").then((resp: ISearchResponse) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith('/c2s/search?query="test"')).to.equal(true);
       expect(resp).to.eql(validBody);
@@ -62,7 +66,7 @@ describe("Search", () => {
 
   it("should handle no query", (done) => {
     const getRequest = createFakeResponse(validBody);
-    Search().then((resp: ISearchResponse) => {
+    SearchRequest().then((resp: ISearchResponse) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith('/c2s/search?query=""')).to.equal(true);
       expect(resp).to.eql(validBody);
@@ -72,7 +76,7 @@ describe("Search", () => {
 
   it("should handle encoded query", (done) => {
     const getRequest = createFakeResponse(validBody);
-    Search("who?").then((resp: ISearchResponse) => {
+    SearchRequest("who?").then((resp: ISearchResponse) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith('/c2s/search?query="who%3F"')).to.equal(true);
       expect(resp).to.eql(validBody);
@@ -82,7 +86,7 @@ describe("Search", () => {
 
   it("should handle a null response", (done) => {
     const getRequest = createFakeResponse(null);
-    Search("test").then((resp: ISearchResponse) => {
+    SearchRequest("test").then((resp: ISearchResponse) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith('/c2s/search?query="test"')).to.equal(true);
       expect(resp).to.eql({ users: [], posts: []});
@@ -92,7 +96,7 @@ describe("Search", () => {
 
   it("should handle an error", (done) => {
     const getRequest = createFakeResponse(Error("bad"));
-    Search("test").then(() => {
+    SearchRequest("test").then(() => {
       expect.fail();
       done();
     }).catch(() => {

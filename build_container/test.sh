@@ -9,6 +9,11 @@ cd chump/ && npm run lint && npm run test && cd ..
 echo "Running go tests"
 go test github.com/cpssd/rabble/...
 
+echo "Running python unit tests for containers/"
+cd build_out/containers
+python3 -B -m unittest discover
+cd ../../
+
 echo "Running python unit tests for utils/"
 cd build_out/utils
 python3 -B -m unittest discover
@@ -38,4 +43,3 @@ echo "Running python unit tests for activities/like"
 cd build_out/activities/like
 python3 -B -m unittest discover
 cd ../../../
-

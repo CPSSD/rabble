@@ -11,6 +11,10 @@ import (
 	pb "github.com/cpssd/rabble/services/proto"
 )
 
+const (
+	invalidJSONError = "Invalid JSON"
+)
+
 type loginStruct struct {
 	Handle   string `json:"handle"`
 	Password string `json:"password"`
@@ -120,7 +124,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Invalid JSON, error: %v\n", err)
 			w.WriteHeader(http.StatusBadRequest)
-			jsonResp.Error = "Invalid JSON"
+			jsonResp.Error = invalidJSONError
 			jsonResp.Success = false
 			enc.Encode(jsonResp)
 			return
@@ -145,6 +149,18 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			log.Printf("Error creating user: %s", resp.Error)
 			jsonResp.Error = resp.Error
 			jsonResp.Success = false
+		} else {
+			session, err := s.store.Get(r, "rabble-session")
+			if err != nil {
+				log.Printf("Error getting session store after create: %s", err)
+				jsonResp.Error = "Issue with login after create\n"
+				jsonResp.Success = false
+			} else {
+				session.Values["handle"] = req.Handle
+				session.Values["global_id"] = resp.GlobalId
+				session.Values["display_name"] = req.DisplayName
+				session.Save(r, w)
+			}
 		}
 		enc.Encode(jsonResp)
 	}
@@ -167,7 +183,7 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Call to update user by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
-			resp.Error = "Invalid JSON"
+			resp.Error = invalidJSONError
 			resp.Success = false
 			enc.Encode(resp)
 			return
@@ -178,7 +194,7 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Invalid JSON, error: %v\n", err)
 			w.WriteHeader(http.StatusBadRequest)
-			resp.Error = "Invalid JSON"
+			resp.Error = invalidJSONError
 			resp.Success = false
 			enc.Encode(resp)
 			return
