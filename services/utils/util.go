@@ -95,12 +95,14 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 
 func StripUser(p *pb.UsersEntry) *pb.User {
 	return &pb.User{
-		GlobalId:    p.GlobalId,
 		Handle:      p.Handle,
-		Bio:         p.Bio,
 		Host:        p.Host,
-		Private:     p.Private,
+		GlobalId:    p.GlobalId,
+		Bio:         p.Bio,
+		IsFollowed:  p.IsFollowed,
+		Image:       defaultImage,
 		DisplayName: p.DisplayName,
+		Private:     p.Private,
 	}
 }
 

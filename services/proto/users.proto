@@ -19,6 +19,9 @@ message CreateUserResponse {
 
   ResultType result_type = 1;
   string error = 2;
+
+  // global id of created user
+  int64 global_id = 3;
 }
 
 message LoginRequest {

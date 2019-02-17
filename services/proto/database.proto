@@ -78,6 +78,9 @@ message UsersEntry {
   string rss = 7;
   // If private_account is set the account's posts should not be seen publicly
   google.protobuf.BoolValue private = 8;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 9;
 }
 
 message UsersRequest {
@@ -93,6 +96,9 @@ message UsersRequest {
   UsersEntry match = 2;
   // Equivalent of PostsRequests.entry.
   UsersEntry entry = 3;
+
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 4;
 }
 
 message UsersResponse {
@@ -109,6 +115,9 @@ message UsersResponse {
   // If the result_type is OK, and the query being responded to requires some
   // entries in return (eg. a FIND query), then those entries are provided here.
   repeated UsersEntry results = 3;
+
+  // If the request was an INSERT this is the global_id of the inserted user.
+  int64 global_id = 4;
 }
 
 

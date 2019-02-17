@@ -2,6 +2,10 @@ import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import {GetRegisterPromise, IRegisterResult} from "../models/register";
 
+interface IRegisterProps extends RouteProps {
+  loginCallback(username: string): void;
+}
+
 interface IRegisterState {
   bio: string;
   displayName: string;
@@ -10,8 +14,8 @@ interface IRegisterState {
   redirect: boolean;
 }
 
-export class Register extends React.Component<RouteProps, IRegisterState> {
-  constructor(props: RouteProps) {
+export class Register extends React.Component<IRegisterProps, IRegisterState> {
+  constructor(props: IRegisterProps) {
     super(props);
 
     this.state = {
@@ -32,18 +36,23 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
   public handleRegister(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (this.state.username === "" ||
-        this.state.password === "" ||
-        this.state.displayName === "") {
+        this.state.password === "") {
+      alert("username or password not filled in");
       return;
+    }
+    let displayName = this.state.displayName;
+    if (displayName === "") {
+      displayName = this.state.username;
     }
     GetRegisterPromise(this.state.username,
                        this.state.password,
-                       this.state.displayName,
+                       displayName,
                        this.state.bio)
       .then((response: IRegisterResult) => {
         if (!response.success) {
           alert("Error registering: " + response.error);
         } else {
+          this.props.loginCallback(this.state.username);
           this.setState({
             redirect: true,
           });
@@ -54,12 +63,12 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
 
   public render() {
     if (this.state.redirect) {
-      return <Redirect to={{ pathname: "/login" }}/>;
+      return <Redirect to={{ pathname: "/" }}/>;
     }
 
     return (
       <div className="pure-g">
-        <div className="pure-u-1-3"/>
+        <div className="pure-u-1-5"/>
         <div className="pure-u-3-5">
           <form className="pure-form pure-form-aligned" onSubmit={this.handleRegister}>
             <div className="pure-control-group">
@@ -69,7 +78,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.displayName}
                 onChange={this.handleDisplayName}
                 className="pure-input-1-2"
-                placeholder="Display Name"
+                placeholder="Display Name - defaults to username"
               />
             </div>
             <div className="pure-control-group">
@@ -79,7 +88,8 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.username}
                 onChange={this.handleUsername}
                 className="pure-input-1-2"
-                placeholder="Username"
+                placeholder="Username*"
+                required={true}
               />
             </div>
             <div className="pure-control-group">
@@ -89,7 +99,8 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
                 value={this.state.password}
                 onChange={this.handlePassword}
                 className="pure-input-1-2"
-                placeholder="Password"
+                placeholder="Password*"
+                required={true}
               />
             </div>
             <div className="pure-control-group">
@@ -109,6 +120,7 @@ export class Register extends React.Component<RouteProps, IRegisterState> {
               Register
             </button>
           </form>
+          <p>* = required</p>
         </div>
       </div>
     );

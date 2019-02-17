@@ -5,8 +5,8 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { IParsedPost } from "../src/models/posts";
-import { SinglePost } from "../src/components/single_post";
+import { SinglePost } from "../../src/components/single_post";
+import { IParsedPost } from "../../src/models/posts";
 import { mount, shallow } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
@@ -14,8 +14,8 @@ const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const postProps = {
   match: {
     params: {
-      user: "test_user",
       article_id: "test_id",
+      user: "test_user",
     },
   },
   username: "nice",
@@ -34,7 +34,7 @@ describe("SinglePost", () => {
     const wrapper = mount(
       <MemoryRouter>
         <SinglePost {...postProps} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(componentDidMount).to.have.property("callCount", 1);
@@ -53,8 +53,8 @@ describe("SinglePost", () => {
     wrapper.setState({posts: [
       {
         author: "sips",
-        global_id: 3,
         body: "id be in so much trouble<br>i'd never live it down<br>lol",
+        global_id: 3,
         title: "the man, the myth, the legend",
       },
     ]});

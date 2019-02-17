@@ -12,8 +12,11 @@ message User {
   string host = 2;
   int64 global_id = 3;
   string bio = 4;
-  google.protobuf.BoolValue private = 5;
-  string display_name = 6;
+  // True if the user in the request is following the author of this post (and this follow is accepted and not pending).
+  bool is_followed = 5;
+  string image = 6;
+  string display_name = 7;
+  google.protobuf.BoolValue private = 8;
 }
 
 message SearchQuery {
