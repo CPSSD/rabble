@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
@@ -66,7 +67,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
                 className="pure-button pure-input-1-3 pure-button-primary primary-button"
                 onClick={this.handleClosePreview}
               >
-                Close Preview
+                {config.close_preview}
               </button>
             </div>
             <div className="pure-u-10-24"/>
@@ -105,7 +106,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               value={this.state.title}
               onChange={this.handleTitleInputChange}
               className="pure-input-1-2"
-              placeholder="Title"
+              placeholder={config.title_text}
               required={true}
             />
             <textarea
@@ -113,8 +114,8 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
               value={this.state.blogText}
               onChange={this.handleTextAreaChange}
               className="pure-input-1 blog-input"
-              placeholder="Start here"
-              rows={20}
+              placeholder={config.start_here}
+              rows={config.write_box_rows}
             />
           </div>
         </form>
@@ -123,14 +124,14 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
             onClick={this.handlePreview}
             className="pure-button pure-input-1-3 pure-button-primary primary-button"
           >
-            Preview
+            {config.preview}
           </button>
           <button
             type="submit"
             className="pure-button pure-input-1-3 pure-button-primary primary-button"
             form="create_post_form"
           >
-            Post
+            {config.post}
           </button>
         </div>
         {previewModel}

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import { CreateFollow, CreateRssFollow } from "../models/follow";
 
 interface IFormState {
@@ -39,14 +40,14 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
             placeholder="user[@instance.com]"
           />
           <label>
-            Type: &nbsp;
+            {config.type}: &nbsp;
             <select
               id="type"
               className="pure-input-4-5"
               onChange={this.handleDropdownChange}
               value={this.state.type}
             >
-                <option value="username">Username</option>
+                <option value="username">{config.username}</option>
                 <option value="url">Rss/Atom</option>
             </select>
           </label>
@@ -55,7 +56,7 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
           type="submit"
           className="pure-button pure-input-1-3 pure-button-primary primary-button"
         >
-          Follow
+          {config.follow_text}
         </button>
       </form>
     );

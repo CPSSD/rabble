@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { Redirect } from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import {EditUserPromise, IEditUserResult} from "../models/edit_user";
 
 interface IAccountEditState {
@@ -47,7 +48,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       <div>
         <div className="pure-u-5-24"/>
         <div className="pure-u-14-24">
-          <h2>Edit Your Profile</h2>
+          <h2>{config.edit_profile_title}</h2>
           {this.form()}
         </div>
       </div>
@@ -81,18 +82,18 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
           <fieldset>
             <legend>Blank fields are left unchanged</legend>
             <div className="pure-control-group">
-                <label htmlFor="newPassword">New Password</label>
+                <label htmlFor="newPassword">{config.new_password}</label>
                 <input
                   id="newPassword"
                   type="password"
-                  placeholder="New Password"
+                  placeholder={config.new_password}
                   className="pure-input-2-3"
                   value={this.state.newPassword}
                   onChange={this.handleNewPassword}
                 />
             </div>
             <div className="pure-control-group">
-                <label htmlFor="name">Display Name</label>
+                <label htmlFor="name">{config.display_name}</label>
                 <input
                   id="diplay_name"
                   type="text"
@@ -103,7 +104,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                 />
             </div>
             <div className="pure-control-group">
-                <label htmlFor="name">Bio</label>
+                <label htmlFor="name">{config.bio}</label>
                 <textarea
                   id="bio"
                   placeholder="Bio"
@@ -114,7 +115,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
             </div>
 
             <div className="pure-control-group">
-              <label htmlFor="private">Private Account</label>
+              <label htmlFor="private">{config.private_account}</label>
               <input
                 id="private"
                 type="checkbox"
@@ -125,7 +126,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
             <legend>Enter your current user account</legend>
             <div className="pure-control-group">
-                <label htmlFor="name">Password</label>
+                <label htmlFor="name">{config.password}</label>
                 <input
                   id="password"
                   type="password"
@@ -151,7 +152,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                   type="submit"
                   className="pure-button pure-button-primary primary-button edit-button"
                 >
-                  Update!
+                  {config.update_button}
                 </button>
               </div>
             </div>
