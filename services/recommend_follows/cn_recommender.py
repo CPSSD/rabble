@@ -1,3 +1,5 @@
+import os
+
 from collections import defaultdict
 
 from services.proto import database_pb2
@@ -18,11 +20,22 @@ class CNRecommender:
     # a user if it is quite confident in the link, however users with fewer
     # connections will likely have no recommendations.
     THRESHOLD = 1
+    THRESHOLD_ENV_VAR = 'CN_FOLLOW_RECOMMENDER_THRESHOLD'
 
     def __init__(self, logger, users_util, database_stub):
         self._logger = logger
         self._users_util = users_util
         self._db = database_stub
+
+        if (self.THRESHOLD_ENV_VAR in os.environ and
+            len(os.environ[self.THRESHOLD_ENV_VAR])):
+            try:
+                self.THRESHOLD = int(os.environ[self.THRESHOLD_ENV_VAR])
+            except e:
+                self._logger.warning('Could not load threshold from env var:',
+                                     str(e))
+        self._logger.debug("CN threshold = {}.".format(self.THRESHOLD))
+
         self._compute_recommendations()
 
     def _load_data(self):
