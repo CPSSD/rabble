@@ -198,6 +198,7 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - FOLLOW_RECOMMENDER_METHOD=[[FOLLOW_RECOMMENDER_METHOD]]
   actors_service_[[INSTANCE_ID]]:
     build:
       context: ./services/actors
@@ -212,7 +213,7 @@ services:
       - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
   search_service_[[INSTANCE_ID]]:
     build:
-      context: ./services/search/simple-search
+      context: ./services/search/[[SEARCH_TYPE]]
       dockerfile: Dockerfile
     volumes:
       - .:/repo
