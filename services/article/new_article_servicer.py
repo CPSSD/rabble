@@ -37,14 +37,18 @@ class NewArticleServicer:
         return resp.result_type == search_pb2.IndexResponse.ResultType.Value("OK")
 
     def send_insert_request(self, req):
-        author = self._users_util.get_user_from_db(handle=req.author,
-                                                   host=None)
-        if author is None:
-            self._logger.error('Could not find user in db: ' + str(req.author))
-            return database_pb2.PostsResponse.error, None
+        global_id = req.author_id
+        if not req.foreign:
+            author = self._users_util.get_user_from_db(handle=req.author,
+                                                       host=None)
+            if author is None:
+                self._logger.error('Could not find user in db: ' + str(req.author))
+                return database_pb2.PostsResponse.error, None
+            global_id = author.global_id
+
         html_body = self.get_html_body(req.body)
         pe = database_pb2.PostsEntry(
-            author_id=author.global_id,
+            author_id=global_id,
             title=req.title,
             body=html_body,
             md_body=req.body,
