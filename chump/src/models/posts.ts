@@ -14,7 +14,7 @@ interface IBlogPost {
   is_followed: boolean;
 }
 
-interface IFeedResponse {
+export interface IFeedResponse {
   post_body_css: string;
   post_title_css: string;
   results: IBlogPost[];
@@ -31,8 +31,8 @@ export interface IParsedPost extends IBlogPost {
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
 
-function ParseCSSJson(j: string) {
-  if (j === "") {
+function ParseCSSJson(j?: string) {
+  if (j === undefined || j === "") {
     return undefined;
   }
   let p = {};
@@ -42,30 +42,30 @@ function ParseCSSJson(j: string) {
     // Invalid JSON.
     return undefined;
   }
-  // TODO(CianLR): Check if p is an instace of React.CSSProperties  
+  // TODO(CianLR): Check if p is actually an instace of React.CSSProperties.
   return p as React.CSSProperties;
 }
 
-export function ParsePosts(b: IFeedResponse) {
-  let res : IParsedPost[] = b.results as IParsedPost[];
+export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: string) {
+  const bodyCss = ParseCSSJson(bodyCssJson);
+  const titleCss = ParseCSSJson(titleCssJson);
   // convert published string to js datetime obj
-  let body_css = ParseCSSJson(b.post_body_css);
-  let title_css = ParseCSSJson(b.post_title_css);
-  res.map((e: IParsedPost) => {
+  b = b as IParsedPost[];
+  b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
-    e.body_css = body_css
-    e.title_css = title_css
+    e.body_css = bodyCss;
+    e.title_css = titleCss;
     if (e.bio === undefined || e.bio === "") {
       e.bio = "Nowadays everybody wanna talk like they got something to say. \
       But nothing comes out when they move their lips; just a bunch of gibberish.";
     }
     return e;
   });
-  return res;
+  return b as IParsedPost[];
 }
 
 export function SortPosts(b: IFeedResponse) {
-  let p : IParsedPost[] = ParsePosts(b);
+  const p: IParsedPost[] = ParsePosts(b.results, b.post_body_css, b.post_title_css);
   p.sort((n: IParsedPost, m: IParsedPost) => {
     return m.parsed_date.getTime() - n.parsed_date.getTime();
   });
@@ -85,7 +85,7 @@ export function PostsAPIPromise(url: string) {
         // Feed will respond with an empty response if no blogs are avaiable.
         let posts = res!.body;
         if (posts === null) {
-          posts = [];
+          posts = {results: []};
         }
         const parsedPosts = SortPosts(posts);
         resolve(parsedPosts);

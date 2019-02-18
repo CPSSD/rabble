@@ -10,7 +10,7 @@ export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,
   privateAccount: boolean,
-  postTitleCss: string, postBodyCss: string
+  postTitleCss: string, postBodyCss: string,
 ) {
   const url = "/c2s/update/user";
   const postBody = {

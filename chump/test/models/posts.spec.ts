@@ -4,12 +4,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as superagent from "superagent";
 
-import { GetPublicPosts, GetSinglePost, IParsedPost } from "../../src/models/posts";
+import { GetPublicPosts, GetSinglePost, IFeedResponse, IParsedPost } from "../../src/models/posts";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
 
-function createFakeResponse(body: IParsedPost[] | Error | null) {
+function createFakeResponse(body: IFeedResponse | Error | null) {
   const end = (cb: any) => {
       cb(null, {ok: true, body });
   };
@@ -18,10 +18,28 @@ function createFakeResponse(body: IParsedPost[] | Error | null) {
   return sandbox.stub(superagent, "get").returns(root);
 }
 
-const validBody: IParsedPost[] = [{
+const validBody: IFeedResponse = {
+ post_body_css: "",
+ post_title_css: "",
+ results: [{
+   author: "aaron",
+   bio: "bio",
+   body: "rm -rf steely/",
+   global_id: 2,
+   image: "",
+   is_followed: false,
+   is_liked: false,
+   likes_count: 1,
+   published: "",
+   title: "how to write a plugin",
+ }],
+};
+
+const evalidBody: IParsedPost[] = [{
   author: "aaron",
   bio: "bio",
   body: "rm -rf steely/",
+  body_css: undefined,
   global_id: 2,
   image: "",
   is_followed: false,
@@ -30,6 +48,7 @@ const validBody: IParsedPost[] = [{
   parsed_date: now,
   published: "",
   title: "how to write a plugin",
+  title_css: undefined,
 }];
 
 describe("GetPublicPosts", () => {
@@ -43,7 +62,7 @@ describe("GetPublicPosts", () => {
     GetPublicPosts().then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed")).to.be.ok;
-      expect(posts).to.eql(validBody);
+      expect(posts).to.eql(validBody.results);
       done();
     });
   });
@@ -53,7 +72,7 @@ describe("GetPublicPosts", () => {
     GetPublicPosts("username").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/feed/username")).to.be.ok;
-      expect(posts).to.eql(validBody);
+      expect(posts).to.eql(validBody.results);
       done();
     });
   });
@@ -85,7 +104,7 @@ describe("GetPublicPosts", () => {
     GetSinglePost("username", "id").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
       expect(getRequest.calledWith("/c2s/@username/id")).to.be.ok;
-      expect(posts).to.eql(validBody);
+      expect(posts).to.eql(validBody.results);
       done();
     });
   });

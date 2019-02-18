@@ -355,10 +355,11 @@ func TestFeed(t *testing.T) {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
 
-	var r []pb.Post
-	if err := json.Unmarshal(res.Body.Bytes(), &r); err != nil {
+	var resp pb.FeedResponse
+	if err := json.Unmarshal(res.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("json.Unmarshal(%#v) unexpected error: %v", res.Body.String(), err)
 	}
+	r := resp.Results
 
 	if len(r) != 1 {
 		t.Fatalf("Expected one result, got %v", len(r))

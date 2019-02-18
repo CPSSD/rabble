@@ -70,7 +70,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       this.state.newPassword,
       this.state.privateAccount,
       this.state.postTitleCss,
-      this.state.postBodyCss
+      this.state.postBodyCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
         alert("Error editing: " + response.error);

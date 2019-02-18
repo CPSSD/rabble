@@ -49,8 +49,8 @@ export class Post extends React.Component<IPostProps, IPostState> {
       LikeButton = false;
     }
     // Set custom CSS for user if enabled.
-    let bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
-    let titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
+    const bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
+    const titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
