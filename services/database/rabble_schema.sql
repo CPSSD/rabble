@@ -44,5 +44,11 @@ CREATE TABLE IF NOT EXISTS likes (
   PRIMARY KEY (user_id, article_id)
 );
 
+CREATE TABLE IF NOT EXISTS views (
+  path             text    NOT NULL,
+  user_id          integer NOT NULL,
+  datetime         integer NOT NULL
+);
+
 /* Add other tables here */
 

@@ -7,27 +7,22 @@ class ViewDatabaseServicer:
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
-        self._logger.debug("View database servicer")
 
     def AddView(self, req, context):
         self._logger.debug(
-            "Adding view by %d to path %s",
-            req.user, req.path
+            "Adding view of path '%s' by user %d",
+            req.path, req.user
         )
         response = db_pb.AddViewResponse()
-        # TODO: insert datetime too
         try:
-            pass
-            '''
             self._db.execute(
-                'INSERT INTO views (user_id, path) '
-                'VALUES (?, ?)',
+                'INSERT INTO views (user_id, path, datetime) '
+                'VALUES (?, ?, ?)',
                 req.user,
                 req.path,
-                commit=True
-            )'''
+                req.datetime.seconds
+            )
         except sqlite3.Error as e:
-            #self._db.commit()
             self._logger.error("AddView error: %s", str(e))
         return response
 
