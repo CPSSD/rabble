@@ -105,7 +105,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
     return this.state.foundPosts.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g pure-u-1" key={i}>
-          <Post username={this.props.username} blogPost={e} preview={false}/>
+          <Post username={this.props.username} blogPost={e} preview={false} customCss={false}/>
         </div>
       );
     });

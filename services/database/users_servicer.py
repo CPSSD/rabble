@@ -17,7 +17,8 @@ class UsersDatabaseServicer:
         self._select_base = (
             "SELECT u.global_id, u.handle, u.host, u.display_name, "
             "u.password, u.bio, u.rss, u.private, "
-            "f.follower IS NOT NULL FROM users u "
+            "f.follower IS NOT NULL, "
+            "u.post_title_css, u.post_body_css FROM users u "
             "LEFT OUTER JOIN follows f ON "
             "f.followed=u.global_id AND f.follower=? "
         )
@@ -43,7 +44,7 @@ class UsersDatabaseServicer:
         return util.DONT_USE_FIELD
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 9:
+        if len(tup) != 11:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -62,6 +63,8 @@ class UsersDatabaseServicer:
             entry.rss = tup[6]
             entry.private.value = tup[7]
             entry.is_followed = tup[8]
+            entry.post_title_css = tup[9]
+            entry.post_body_css = tup[10]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +

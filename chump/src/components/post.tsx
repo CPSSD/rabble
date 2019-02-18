@@ -10,6 +10,7 @@ interface IPostProps {
   blogPost: IParsedPost;
   username: string;
   preview: boolean;
+  customCss: boolean;
 }
 
 interface IPostState {
@@ -47,6 +48,9 @@ export class Post extends React.Component<IPostProps, IPostState> {
         this.props.preview === true) {
       LikeButton = false;
     }
+    // Set custom CSS for user if enabled.
+    const bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
+    const titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -55,10 +59,15 @@ export class Post extends React.Component<IPostProps, IPostState> {
           <Link
             to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
             className="article-title"
+            style={titleStyle}
           >
             {this.props.blogPost.title}
           </Link>
-          <p className="article-body" dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}/>
+          <p
+            className="article-body"
+            style={bodyStyle}
+            dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
+          />
         </div>
         <div className="pure-u-1-24"/>
         <div className="pure-u-3-24">

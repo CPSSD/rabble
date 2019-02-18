@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
   /* account_type refers to the account_type enum in the database.proto file.
    * In normal cases, this will be 0, a normal user. */
   private           boolean NOT NULL,
+  post_title_css    text    NOT NULL DEFAULt '',
+  post_body_css     text    NOT NULL DEFAULT '',
   UNIQUE (handle, host)
 );
 

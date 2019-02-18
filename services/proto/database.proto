@@ -81,8 +81,11 @@ message UsersEntry {
   // True if the user in the request is following the author of this post (and
   // this follow is accepted and not pending).
   bool is_followed = 9;
+  // Custom CSS the user has given. Empty string if not set.
+  string post_title_css = 10;
+  string post_body_css = 11;
   // Hack to replace the value in 'host' with NULL
-  bool host_is_null = 10;
+  bool host_is_null = 12;
 }
 
 message UsersRequest {
