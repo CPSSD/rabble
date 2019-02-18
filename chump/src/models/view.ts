@@ -6,9 +6,7 @@ interface IViewBody {
 
 export function SendView(path: string) {
   const endpoint: string = "/c2s/track_view";
-  const postBody: IViewBody = {
-    path: path,
-  };
+  const postBody: IViewBody = {path};
   return new Promise((resolve, reject) => {
     request
       .post(endpoint)
