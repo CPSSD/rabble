@@ -19,6 +19,8 @@ import {AccountEdit} from "./components/account_edit";
 import {Pending} from "./components/pending";
 import {SearchResults} from "./components/search_results";
 
+import { SendView } from "./models/view";
+
 require("./styles/site.css"); // tslint:disable-line
 
 // IAppState is top level state.
@@ -62,7 +64,13 @@ export class App extends React.Component<{}, IAppState> {
 
   trackView() {
     const path = window.location.hash;
+    if (path === "") {
+        // Do not log the empty path shown on first load, log instead the
+        // hash path that it is immediately redirected to.
+        return;
+    }
     console.log(path);
+    SendView(path);
   }
 
   componentDidMount() {
@@ -72,6 +80,11 @@ export class App extends React.Component<{}, IAppState> {
   }
 
   render() {
+    if (config.track_views) {
+        // Must manually log the view the first time, 
+        // as only hash *changes* trigger a log.
+        this.trackView();
+    }
     return (
       <HashRouter>
         <div>
