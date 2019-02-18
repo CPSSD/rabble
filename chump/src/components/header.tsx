@@ -32,13 +32,13 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
   public render() {
     const Login = (
       <li className="pure-menu-item">
-        <Link to="/login" className="pure-menu-link">Login</Link>
+        <Link to="/login" className="pure-menu-link">{config.login_text}</Link>
       </li>
     );
 
     const RegisterOrLogout = (
       <li className="pure-menu-item">
-        <Link to="/register" className="pure-menu-link">Register</Link>
+        <Link to="/register" className="pure-menu-link">{config.register_text}</Link>
       </li>
     );
 
@@ -67,7 +67,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
               type="text"
               name="query"
               className="search-rounded pure-input-3-4"
-              placeholder="Search posts"
+              placeholder={config.search_action}
               value={this.state.query}
               onChange={this.handleSearchInputChange}
               required={true}
@@ -104,12 +104,12 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
           </li>
           <li className="pure-menu-item">
             <Link to="/follow" className="pure-menu-link" onClick={this.resetDropdown}>
-              Follow
+              {config.follow_text}
             </Link>
           </li>
           <li className="pure-menu-item">
             <Link to="/logout" className="pure-menu-link" onClick={this.resetDropdown}>
-              Logout
+              {config.logout_text}
             </Link>
           </li>
         </ul>
@@ -117,12 +117,16 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
     );
     const Feed = (
         <li className="pure-menu-item">
-          <Link to="/feed" className="pure-menu-link" onClick={this.resetDropdown}>Feed</Link>
+          <Link to="/feed" className="pure-menu-link" onClick={this.resetDropdown}>
+            {config.feed_text}
+          </Link>
         </li>
     );
     const Write = (
       <li className="pure-menu-item">
-        <Link to="/write" className="pure-menu-link" onClick={this.resetDropdown}>Write</Link>
+        <Link to="/write" className="pure-menu-link" onClick={this.resetDropdown}>
+          {config.write_text}
+        </Link>
       </li>
     );
     return (

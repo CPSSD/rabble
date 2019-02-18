@@ -12,6 +12,16 @@ you'll need to start the whole stack in order to access the server side.
 
 Run `./run_build.sh && ./start.sh` and navigate to `localhost:1916`.
 
+## Notes about develpment
+
+### User facing strings
+
+Please put all user facing strings in the `rabble_config.json` file, that way they
+can be easily changed by instance hosts for localisation or general customisation.
+
+Examples of how to use the config file can be found in many places. `components/header.tsx`
+for example.
+
 ## npm scripts
 
 - `npm run start`: Start a live development server that updates on file changes.

@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as config from "../../rabble_config.json";
 import { AcceptFollow, GetPendingFollows, IPendingFollow, IPendingFollows } from "../models/follow";
 
 interface IPendingProps {
@@ -36,7 +37,7 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
         <div>
           <div className="pure-u-5-24"/>
           <div className="pure-u-14-24">
-            <h2>Follow Requests</h2>
+            <h2>{config.follow_requests}</h2>
           </div>
         </div>
         {this.renderFollowList()}

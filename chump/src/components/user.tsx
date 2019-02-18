@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
+import * as config from "../../rabble_config.json";
 import { IParsedUser } from "../models/search";
 import { FollowButton} from "./follow_button";
 

@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import {GetRegisterPromise, IRegisterResult} from "../models/register";
 
 interface IRegisterProps extends RouteProps {
@@ -78,7 +79,7 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
                 value={this.state.displayName}
                 onChange={this.handleDisplayName}
                 className="pure-input-1-2"
-                placeholder="Display Name - defaults to username"
+                placeholder={config.display_name + " - " + config.defaults_to_username}
               />
             </div>
             <div className="pure-control-group">
@@ -88,7 +89,7 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
                 value={this.state.username}
                 onChange={this.handleUsername}
                 className="pure-input-1-2"
-                placeholder="Username*"
+                placeholder={config.username + "*"}
                 required={true}
               />
             </div>
@@ -99,7 +100,7 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
                 value={this.state.password}
                 onChange={this.handlePassword}
                 className="pure-input-1-2"
-                placeholder="Password*"
+                placeholder={config.password + "*"}
                 required={true}
               />
             </div>
@@ -110,14 +111,14 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
                 value={this.state.bio}
                 onChange={this.handleBio}
                 className="pure-input-1 blog-input"
-                placeholder="Something about you"
+                placeholder={config.bio_placeholder}
               />
             </div>
             <button
               type="submit"
               className="pure-button pure-input-1-3 pure-button-primary primary-button"
             >
-              Register
+              {config.register_text}
             </button>
           </form>
           <p>* = required</p>

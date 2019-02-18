@@ -2,6 +2,7 @@ import * as React from "react";
 import { UserCheck, UserMinus, UserPlus } from "react-feather";
 import { Link } from "react-router-dom";
 import { Response } from "superagent";
+import * as config from "../../rabble_config.json";
 import { CreateFollow, Unfollow } from "../models/follow";
 
 interface IFormState {
@@ -27,8 +28,8 @@ const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
              type="submit"
              className="pure-button pure-button-primary primary-button follow-button unfollow"
         >
-            <div className="following-button-content"><UserCheck size="1em" /> Following</div>
-            <div className="unfollow-button-content"><UserMinus size="1em" /> Unfollow</div>
+            <div className="following-button-content"><UserCheck size="1em" /> {config.following}</div>
+            <div className="unfollow-button-content"><UserMinus size="1em" /> {config.unfollow}</div>
         </button>
     );
   }
@@ -37,7 +38,7 @@ const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
         type="submit"
         className="pure-button pure-button-primary primary-button follow-button follow"
     >
-        <div className="follow-button-content"><UserPlus size="1em" /> Follow</div>
+        <div className="follow-button-content"><UserPlus size="1em" /> {config.follow_text}</div>
     </button>
   );
 };
