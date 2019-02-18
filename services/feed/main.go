@@ -59,7 +59,7 @@ func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow
 func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	const feedErr = "feed.GetUserFeed(%v) failed: %v"
 
-	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", 0, s.db)
+	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", true, 0, s.db)
 	if err != nil {
 		err := fmt.Errorf(feedErr, r.Username, err)
 		log.Print(err)
@@ -149,7 +149,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return &pb.FeedResponse{}, nil
 	}
 
-	author, err := utils.GetAuthorFromDb(ctx, "", "", resp.Results[0].AuthorId, s.db)
+	author, err := utils.GetAuthorFromDb(ctx, "", "", false, resp.Results[0].AuthorId, s.db)
 	if err != nil {
 		// TODO(devoxel): Use FeedResponse.Error here and properly handle the error
 		return nil, err
@@ -170,7 +170,9 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
 
-	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", 0, s.db)
+	// TODO(CianLR): In the case of users with the same handle but different hosts this
+	// will return a random one.
+	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", false, 0, s.db)
 	if err != nil {
 		log.Print(err)
 		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil

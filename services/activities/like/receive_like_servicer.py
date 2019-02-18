@@ -73,7 +73,7 @@ class ReceiveLikeServicer:
             )
             return False
         # Host is empty if user is local.
-        return user.host == ""
+        return user.host == "" or user.host_is_null
 
     def _forward_like(self, author_id, req):
         # Forward like to following servers.
