@@ -47,7 +47,7 @@ class ReceiveFollowServicer:
             return None, None
 
         local_user = self._users_util.get_user_from_db(handle=to_handle,
-                                                       host=None)
+                                                       host_is_null=True)
         if local_user is None:
             error = 'Could not find local user {}'.format(to_handle)
             self._logger.error(error)

@@ -11,7 +11,7 @@ class ActorsServicer(actors_pb2_grpc.ActorsServicer):
         self._host_name = host_name
 
     def _create_actor(self, username):
-        user = self._users_util.get_user_from_db(handle=username, host=None)
+        user = self._users_util.get_user_from_db(handle=username, host_is_null=True)
         if user is None:
             self._logger.warning('Could not find user in database.')
             return None

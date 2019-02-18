@@ -11,7 +11,7 @@ class ReceiveApprovalServicer:
         # TODO(devoxel): figure out if we should validate req.follower.host
         _, handle = self._users_util.parse_actor(req.follow.follower)
         follower = self._users_util.get_user_from_db(handle=handle,
-                                                     host=None)
+                                                     host_is_null=True)
         if follower is None:
             err = "Could not find local follower {} in db".format(handle)
             self._logger.error(err)

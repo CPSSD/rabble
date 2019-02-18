@@ -169,10 +169,8 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if r.Username == "" {
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
 	}
-
-	// TODO(CianLR): In the case of users with the same handle but different hosts this
-	// will return a random one.
-	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", false, 0, s.db)
+	// Does not return foreign users.
+	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", true, 0, s.db)
 	if err != nil {
 		log.Print(err)
 		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil

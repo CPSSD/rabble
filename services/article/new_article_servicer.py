@@ -40,7 +40,7 @@ class NewArticleServicer:
         global_id = req.author_id
         if not req.foreign:
             author = self._users_util.get_user_from_db(handle=req.author,
-                                                       host=None)
+                                                       host_is_null=True)
             if author is None:
                 self._logger.error('Could not find user in db: ' + str(req.author))
                 return database_pb2.PostsResponse.error, None

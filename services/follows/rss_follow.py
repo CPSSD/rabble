@@ -60,7 +60,8 @@ class RssFollowServicer:
 
         # check if rss user already exists (handle: domain) (local user so no host)
         rss_handle = self._convert_rss_url_to_handle(req.feed_url)
-        rss_entry = self._users_util.get_user_from_db(handle=rss_handle)
+        rss_entry = self._users_util.get_user_from_db(handle=rss_handle,
+                                                      host_is_null=True)
         if rss_entry is None:
             # send to rss service to be created
             rss_user_id, rss_error = self._create_rss_user(req.feed_url)
@@ -72,7 +73,8 @@ class RssFollowServicer:
             rss_user_id = rss_entry.global_id
 
         # Get local user id
-        follower_entry = self._users_util.get_user_from_db(handle=req.follower)
+        follower_entry = self._users_util.get_user_from_db(handle=req.follower,
+                                                           host_is_null=True)
         if follower_entry is None:
             error = "Could not find local user {}".format(req.follower)
             self._logger.error(error)
