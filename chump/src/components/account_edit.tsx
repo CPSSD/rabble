@@ -9,6 +9,8 @@ interface IAccountEditState {
   currentPassword: string;
   displayName: string;
   newPassword: string;
+  postBodyCss: string;
+  postTitleCss: string;
   privateAccount: boolean;
   redirect: boolean;
 }
@@ -26,6 +28,8 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       currentPassword: "",
       displayName: "",
       newPassword: "",
+      postBodyCss: "",
+      postTitleCss: "",
       privateAccount: false,
       redirect: false,
     };
@@ -34,6 +38,8 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     this.handleNewPassword = this.handleNewPassword.bind(this);
     this.handleBio = this.handleBio.bind(this);
     this.handleDisplayName = this.handleDisplayName.bind(this);
+    this.handlePostTitleCss = this.handlePostTitleCss.bind(this);
+    this.handlePostBodyCss = this.handlePostBodyCss.bind(this);
     this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
@@ -67,6 +73,8 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       this.state.currentPassword,
       this.state.newPassword,
       this.state.privateAccount,
+      this.state.postTitleCss,
+      this.state.postBodyCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
         alert("Error editing: " + response.error);
@@ -129,6 +137,26 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                   className="pure-input-2-3 bio-form"
                   value={this.state.bio}
                   onChange={this.handleBio}
+                />
+            </div>
+            <div className="pure-control-group">
+                <label htmlFor="name">{"Post Title CSS"}</label>
+                <textarea
+                  id="post_title_css"
+                  placeholder='{"color": "red"}'
+                  className="pure-input-2-3 bio-form"
+                  value={this.state.postTitleCss}
+                  onChange={this.handlePostTitleCss}
+                />
+            </div>
+            <div className="pure-control-group">
+                <label htmlFor="name">{"Post Body CSS"}</label>
+                <textarea
+                  id="post_body_css"
+                  placeholder='{"color": "red"}'
+                  className="pure-input-2-3 bio-form"
+                  value={this.state.postBodyCss}
+                  onChange={this.handlePostBodyCss}
                 />
             </div>
 
@@ -218,6 +246,20 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     const target = event.target;
     this.setState({
       displayName: target.value,
+    });
+  }
+
+  private handlePostTitleCss(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const target = event.target;
+    this.setState({
+      postTitleCss: target.value,
+    });
+  }
+
+  private handlePostBodyCss(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const target = event.target;
+    this.setState({
+      postBodyCss: target.value,
     });
   }
 

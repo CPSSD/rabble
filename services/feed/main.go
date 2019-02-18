@@ -160,8 +160,9 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return &pb.FeedResponse{}, nil
 	}
 	fp := &pb.FeedResponse{}
+	fp.PostTitleCss = author.PostTitleCss
+	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
-
 	return fp, nil
 }
 
@@ -197,6 +198,8 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
 	fp := &pb.FeedResponse{}
+	fp.PostTitleCss = author.PostTitleCss
+	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
 	return fp, nil
 }
