@@ -826,3 +826,36 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		}
 	}
 }
+
+func (s *serverWrapper) handleTrackView() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("handleTrackView()")
+		decoder := json.NewDecoder(r.Body)
+		var v pb.View
+		err := decoder.Decode(&v)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+            // No user logged in.
+            handle = "";
+		}
+
+        v.User = handle
+
+		ts := ptypes.TimestampNow()
+		v.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_, err = s.database.AddView(ctx, &v)
+		if err != nil {
+			log.Printf("Could not send view: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
