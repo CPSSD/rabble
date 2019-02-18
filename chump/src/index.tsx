@@ -69,7 +69,6 @@ export class App extends React.Component<{}, IAppState> {
         // hash path that it is immediately redirected to.
         return;
     }
-    console.log(path);
     SendView(path);
   }
 

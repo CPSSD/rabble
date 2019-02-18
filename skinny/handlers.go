@@ -839,36 +839,36 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		}
 
 		handle, err := s.getSessionHandle(r)
-        var uid int64 = 0
+		var uid int64 = 0
 		if err != nil {
-            // No user logged in.
-            handle = "";
+			// No user logged in.
+			handle = ""
 		} else {
-            // Get the ID of this logged in user.
-            ur := &pb.UsersRequest{
-                RequestType: pb.UsersRequest_FIND,
-                Match: &pb.UsersEntry{
-                    Handle: handle,
-                    Host:   "",
-                },
-            }
+			// Get the ID of this logged in user.
+			ur := &pb.UsersRequest{
+				RequestType: pb.UsersRequest_FIND,
+				Match: &pb.UsersEntry{
+					Handle: handle,
+					Host:   "",
+				},
+			}
 
-            ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-            defer cancel()
-            resp, err := s.database.Users(ctx, ur)
-            if err != nil {
-                log.Printf("Could not get user, error: %v", err)
-                w.WriteHeader(http.StatusInternalServerError)
-                return
-            } else if len(resp.Results) != 1 {
-                log.Printf("Could not get user, got %v results", len(resp.Results))
-                w.WriteHeader(http.StatusInternalServerError)
-                return
-		    }
-            uid = resp.Results[0].GlobalId
-        }
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			resp, err := s.database.Users(ctx, ur)
+			if err != nil {
+				log.Printf("Could not get user, error: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			} else if len(resp.Results) != 1 {
+				log.Printf("Could not get user, got %v results", len(resp.Results))
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			uid = resp.Results[0].GlobalId
+		}
 
-        v.User = uid
+		v.User = uid
 
 		ts := ptypes.TimestampNow()
 		v.Datetime = ts

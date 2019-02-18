@@ -4,6 +4,7 @@ from services.proto import database_pb2 as db_pb
 
 
 class ViewDatabaseServicer:
+
     def __init__(self, db, logger):
         self._db = db
         self._logger = logger
@@ -25,5 +26,3 @@ class ViewDatabaseServicer:
         except sqlite3.Error as e:
             self._logger.error("AddView error: %s", str(e))
         return response
-
-
