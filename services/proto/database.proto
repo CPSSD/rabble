@@ -254,6 +254,19 @@ message DatabaseSearchRequest {
   google.protobuf.Int64Value user_global_id = 3;
 }
 
+message View {
+    // A handle of a local user. If a foreign (or just not logged in) user
+    // views a page, then this will be empty.
+    string user = 1;
+    // The path of the page viewed, minus the protocol and host.
+    // eg. "#/about".
+    string path = 2;
+    google.protobuf.Timestamp datetime = 3;
+}
+
+message AddViewResponse {
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -277,4 +290,6 @@ service Database {
   // Create Database Indices
   rpc CreatePostsIndex(DatabaseSearchRequest) returns (PostsResponse);
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
+
+  rpc AddView(View) returns (AddViewResponse);
 }
