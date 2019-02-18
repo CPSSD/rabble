@@ -10,6 +10,7 @@ export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,
   privateAccount: boolean,
+  postTitleCss: string, postBodyCss: string
 ) {
   const url = "/c2s/update/user";
   const postBody = {
@@ -17,6 +18,8 @@ export function EditUserPromise(
     current_password: currentPassword,
     display_name: displayName,
     new_password: newPassword,
+    post_body_css: postBodyCss,
+    post_title_css: postTitleCss,
     private: privateAccount,
   };
   return new Promise<IEditUserResult>((resolve, reject) => {

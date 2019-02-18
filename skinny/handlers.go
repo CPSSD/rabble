@@ -107,7 +107,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(resp.Results)
+		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -151,7 +151,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(resp.Results)
+		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -232,7 +232,7 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(resp.Results)
+		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("Could not marshal article: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)

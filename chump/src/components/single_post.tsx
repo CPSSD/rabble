@@ -57,7 +57,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
 
     return (
       <div className="pure-g" key={1}>
-        <Post username={this.props.username} blogPost={this.state.posts[0]} preview={false}/>
+        <Post username={this.props.username} blogPost={this.state.posts[0]} preview={false} customCss={true}/>
       </div>
     );
   }
