@@ -2,6 +2,8 @@ import * as React from "react";
 import {render} from "react-dom";
 import {Link, Route, HashRouter, Switch} from "react-router-dom";
 
+import * as config from "../rabble_config.json";
+
 import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {Header} from "./components/header";
@@ -38,6 +40,7 @@ export class App extends React.Component<{}, IAppState> {
     this.getUsername = this.getUsername.bind(this);
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
+    this.trackView = this.trackView.bind(this);
   }
 
   getUsername() : string {
@@ -55,6 +58,17 @@ export class App extends React.Component<{}, IAppState> {
   logout() {
     this.setState({username: ""});
     localStorage.removeItem(LOCAL_STORAGE_USERNAME);
+  }
+
+  trackView() {
+    const path = window.location.hash;
+    console.log(path);
+  }
+
+  componentDidMount() {
+    if (config.track_views) {
+      window.addEventListener("hashchange", this.trackView);
+    }
   }
 
   render() {
