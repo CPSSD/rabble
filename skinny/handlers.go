@@ -14,6 +14,7 @@ import (
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
+	util "github.com/cpssd/rabble/services/utils"
 	"github.com/golang/protobuf/ptypes"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	wrapperpb "github.com/golang/protobuf/ptypes/wrappers"
@@ -778,6 +779,48 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 		err = enc.Encode(body)
 		if err != nil {
 			log.Printf("Could not marshal recommended follows: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handle, err := s.getSessionHandle(r)
+		if err != nil {
+			log.Printf("Called user details without logging in: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		ur := &pb.UsersRequest{
+			RequestType: pb.UsersRequest_FIND,
+			Match: &pb.UsersEntry{
+				Handle: handle,
+				Host:   "",
+			},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.database.Users(ctx, ur)
+		if err != nil {
+			log.Printf("could not get user, error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if len(resp.Results) != 1 {
+			log.Printf("could not get user, got %v results", len(resp.Results))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(util.StripUser(resp.Results[0]))
+		if err != nil {
+			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

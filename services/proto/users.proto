@@ -2,6 +2,8 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
+import "google/protobuf/wrappers.proto";
+
 message CreateUserRequest {
   string handle = 1;
   string password = 2;
@@ -49,7 +51,7 @@ message UpdateUserRequest {
   string new_password = 3;
   string display_name = 4;
   string bio = 5;
-  bool private = 6;
+  google.protobuf.BoolValue private = 6;
 }
 
 message UpdateUserResponse {

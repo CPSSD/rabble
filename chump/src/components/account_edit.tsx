@@ -2,15 +2,15 @@ import * as React from "react";
 
 import { Redirect } from "react-router-dom";
 import * as config from "../../rabble_config.json";
-import {EditUserPromise, IEditUserResult} from "../models/edit_user";
+import {EditUserPromise, GetUserInfo, IEditUserResult, IUserDetails} from "../models/edit_user";
 
 interface IAccountEditState {
   bio: string;
-  displayName: string;
   currentPassword: string;
+  displayName: string;
   newPassword: string;
   privateAccount: boolean;
-  cancel: boolean;
+  redirect: boolean;
 }
 
 interface IAccountEditProps {
@@ -23,11 +23,11 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
     this.state = {
       bio: "",
-      cancel: false,
       currentPassword: "",
       displayName: "",
       newPassword: "",
       privateAccount: false,
+      redirect: false,
     };
 
     this.handlePassword = this.handlePassword.bind(this);
@@ -37,10 +37,14 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.handleUserInfo = this.handleUserInfo.bind(this);
+    this.handleGetError = this.handleGetError.bind(this);
+
+    GetUserInfo().then(this.handleUserInfo).catch(this.handleGetError);
   }
 
   public render() {
-    if (this.state.cancel) {
+    if (this.state.redirect) {
       return (<Redirect to={{ pathname: "/@" + this.props.username  }} />);
     }
 
@@ -66,13 +70,27 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     ).then((response: IEditUserResult) => {
       if (!response.success) {
         alert("Error editing: " + response.error);
+      } else {
+        this.setState({ redirect: true });
       }
     })
     .catch(this.handleUpdateError);
   }
 
+  public handleUserInfo(details: IUserDetails) {
+    let isPrivate = false;
+    if ("value" in details.private) {
+      isPrivate = details.private.value!;
+    }
+
+    this.setState({
+      bio: details.bio,
+      displayName: details.display_name,
+      privateAccount: isPrivate,
+    });
+  }
+
   private form() {
-    // TODO: It would be nice to fill in the current user details here
     return (
       <div>
         <form
@@ -164,7 +182,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
   private handleCancel(event: React.FormEvent<HTMLButtonElement>) {
     event.preventDefault();
-    this.setState({ cancel: true });
+    this.setState({ redirect: true });
   }
 
   private handleNewPassword(event: React.ChangeEvent<HTMLInputElement>) {
@@ -203,7 +221,11 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     });
   }
 
-  private handleUpdateError() {
-    alert("Error attempting to update.");
+  private handleUpdateError(e: any) {
+    alert("Error attempting to update: " + e.toString());
+  }
+
+  private handleGetError(e: any) {
+    alert("Error getting user details: " + e.toString());
   }
 }

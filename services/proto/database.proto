@@ -77,7 +77,7 @@ message UsersEntry {
   // Rss url if a rss user or None if normal user
   string rss = 7;
   // If private_account is set the account's posts should not be seen publicly
-  bool private = 8;
+  google.protobuf.BoolValue private = 8;
   // True if the user in the request is following the author of this post (and
   // this follow is accepted and not pending).
   bool is_followed = 9;
