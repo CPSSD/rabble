@@ -49,12 +49,10 @@ class PostsDatabaseServicer:
             user_id = request.user_global_id.value
         self._logger.info('Reading {} posts for instance feed'.format(n))
         try:
-            # TODO(iandioch): Fix user host insertion. Below query should have
-            # 'WHERE users.host IS NULL' and not 'WHERE users.host = ""'.
             res = self._db.execute(self._select_base +
                                    'INNER JOIN users u '
                                    'ON p.author_id = u.global_id '
-                                   'WHERE u.host = "" AND u.private = 0 '
+                                   'WHERE u.host IS NULL AND u.private = 0 '
                                    'ORDER BY p.global_id DESC '
                                    'LIMIT ?', user_id, user_id, n)
             for tup in res:

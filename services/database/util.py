@@ -8,6 +8,8 @@ def not_equivalent_filter(entry, defaults=[], deferred={}):
 def build_filter_list(fields, comp, deferred):
     return [f.name + comp for f, _ in fields if f.name not in deferred]
 
+class DONT_USE_FIELD:
+    pass
 
 def entry_to_filter(entry, defaults, comparison, deferred={}):
     """
@@ -48,16 +50,13 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
             handle_deferred.append(f.name)
 
     for name in handle_deferred:
-        val = deferred[name](entry)
-        if val is None:
+        filt, val = deferred[name](entry, comparison)
+        if val is DONT_USE_FIELD:
             continue
-        # We need to make sure we're not adding twice
-        # in the case of having a default deferred value
-        if f.name not in filter_list:
-            filter_list.append(f.name + comparison)
-            # we ensure that the nmae is ensure we dont
-            # add another value
-            names.add(f.name)
+        # Ensure we don't add it twice.
+        if filt not in filter_list:
+            filter_list.append(filt)
+            names.add(name)
         values.append(val)
 
     for name, value in defaults:
