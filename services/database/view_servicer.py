@@ -11,11 +11,10 @@ class ViewDatabaseServicer:
 
     def AddView(self, req, context):
         self._logger.debug(
-            "Adding view by %s to path %s",
+            "Adding view by %d to path %s",
             req.user, req.path
         )
         response = db_pb.AddViewResponse()
-        # TODO: use user_ids instead of hosts
         # TODO: insert datetime too
         try:
             pass

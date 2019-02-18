@@ -829,7 +829,6 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 
 func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        log.Printf("handleTrackView()")
 		decoder := json.NewDecoder(r.Body)
 		var v pb.View
 		err := decoder.Decode(&v)
@@ -840,12 +839,36 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		}
 
 		handle, err := s.getSessionHandle(r)
+        var uid int64 = 0
 		if err != nil {
             // No user logged in.
             handle = "";
-		}
+		} else {
+            // Get the ID of this logged in user.
+            ur := &pb.UsersRequest{
+                RequestType: pb.UsersRequest_FIND,
+                Match: &pb.UsersEntry{
+                    Handle: handle,
+                    Host:   "",
+                },
+            }
 
-        v.User = handle
+            ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+            defer cancel()
+            resp, err := s.database.Users(ctx, ur)
+            if err != nil {
+                log.Printf("Could not get user, error: %v", err)
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            } else if len(resp.Results) != 1 {
+                log.Printf("Could not get user, got %v results", len(resp.Results))
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+		    }
+            uid = resp.Results[0].GlobalId
+        }
+
+        v.User = uid
 
 		ts := ptypes.TimestampNow()
 		v.Datetime = ts

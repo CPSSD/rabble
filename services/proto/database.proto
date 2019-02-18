@@ -255,9 +255,9 @@ message DatabaseSearchRequest {
 }
 
 message View {
-    // A handle of a local user. If a foreign (or just not logged in) user
-    // views a page, then this will be empty.
-    string user = 1;
+    // The ID of a local user. If a foreign (or just not logged in) user
+    // views a page, then this will be 0.
+    int64 user = 1;
     // The path of the page viewed, minus the protocol and host.
     // eg. "#/about".
     string path = 2;
