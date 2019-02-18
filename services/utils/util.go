@@ -93,24 +93,29 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 	return pe
 }
 
+func StripUser(p *pb.UsersEntry) *pb.User {
+	return &pb.User{
+		Handle:      p.Handle,
+		Host:        p.Host,
+		GlobalId:    p.GlobalId,
+		Bio:         p.Bio,
+		IsFollowed:  p.IsFollowed,
+		Image:       defaultImage,
+		DisplayName: p.DisplayName,
+		Private:     p.Private,
+	}
+}
+
 // ConvertDBToUsers converts database.UserResponses to search.Users[]
 func ConvertDBToUsers(ctx context.Context, p *pb.UsersResponse, db UsersGetter) []*pb.User {
 	ue := []*pb.User{}
 	for i, r := range p.Results {
+
 		if i >= MaxItemsReturned {
 			// Have hit limit for number of items returned for this request.
 			break
 		}
-		np := &pb.User{
-			Bio:         r.Bio,
-			DisplayName: r.DisplayName,
-			GlobalId:    r.GlobalId,
-			Handle:      r.Handle,
-			Host:        r.Host,
-			Image:       defaultImage,
-			IsFollowed:  r.IsFollowed,
-		}
-		ue = append(ue, np)
+		ue = append(ue, StripUser(r))
 	}
 	return ue
 }

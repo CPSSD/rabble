@@ -6,17 +6,17 @@ import "services/proto/database.proto";
 import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
+// This user is a stripped down version of UsersEntry, see database.proto
 message User {
   string handle = 1;
   string host = 2;
   int64 global_id = 3;
-  // Plaintext biography of the user
   string bio = 4;
-  // True if the user in the request is following the author of this post (and
-  // this follow is accepted and not pending).
+  // True if the user in the request is following the author of this post (and this follow is accepted and not pending).
   bool is_followed = 5;
   string image = 6;
   string display_name = 7;
+  google.protobuf.BoolValue private = 8;
 }
 
 message SearchQuery {

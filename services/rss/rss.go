@@ -184,7 +184,7 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 		return rssr, nil
 	}
 
-	if ue.Private {
+	if ue.Private != nil && ue.Private.Value {
 		log.Printf("%s is a private user.\n", r.Handle)
 		rssr.ResultType = pb.RssResponse_ERROR
 		rssr.Message = "Can not create RSS feed for private user."

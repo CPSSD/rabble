@@ -49,6 +49,55 @@ class UtilTest(unittest.TestCase):
         self.assertIn("Despacito", vals)
         self.assertIn("cool", vals)
 
+    def test_equivalent_filter_deferred(self):
+        entry = database_pb2.PostsEntry(
+                title="Despacito",
+                body="alexa",
+        )
+
+        d = {'body': lambda entry: True}
+
+        clause, vals = util.equivalent_filter(entry, deferred=d)
+        self.assertIn("title = ?", clause)
+        self.assertIn("AND", clause)
+        self.assertIn("body = ?", clause)
+        self.assertIn("Despacito", vals)
+        self.assertIn(True, vals)
+        self.assertNotIn("alexa", vals)
+
+    def test_equivalent_filter_deferred_default_unset(self):
+        entry = database_pb2.PostsEntry(
+                title="Despacito",
+        )
+
+        d = {'body': lambda entry: True}
+        de = [('body', False)]
+
+        clause, vals = util.equivalent_filter(entry, defaults=de, deferred=d)
+        self.assertIn("title = ?", clause)
+        self.assertIn("AND", clause)
+        self.assertIn("body = ?", clause)
+        self.assertIn("Despacito", vals)
+        self.assertIn(False, vals)
+
+    def test_equivalent_filter_deferred_default_set(self):
+        entry = database_pb2.PostsEntry(
+                title="Despacito",
+                body="nice"
+        )
+
+        d = {'body': lambda entry: True}
+        de = [('body', False)]
+
+        clause, vals = util.equivalent_filter(entry, defaults=de, deferred=d)
+        self.assertIn("title = ?", clause)
+        self.assertIn("AND", clause)
+        self.assertIn("body = ?", clause)
+        self.assertIn("Despacito", vals)
+        self.assertIn(True, vals)
+        self.assertNotIn(False, vals)
+        self.assertNotIn("nice", vals)
+
     def test_update_filter(self):
         entry = database_pb2.PostsEntry(
                 title="Megolavania",
@@ -60,3 +109,36 @@ class UtilTest(unittest.TestCase):
         self.assertIn('body = ?', clause)
         self.assertIn("Megolavania", vals)
         self.assertIn("sans is angry", vals)
+
+    def test_update_filter_deferred_none_return(self):
+        entry = database_pb2.PostsEntry(
+                title="Megolavania",
+                body="sans is angry",
+        )
+        d = {'body': lambda entry: None}
+        clause, vals = util.entry_to_update(entry, deferred=d)
+        self.assertIn('title = ?', clause)
+        self.assertNotIn('body = ?', clause)
+        self.assertNotIn("sans is angry", vals)
+
+    def test_update_filter_deferred_value_set(self):
+        entry = database_pb2.PostsEntry(
+                title="Megolavania",
+                body="sans is angry",
+        )
+        d = {'body': lambda entry: True}
+        clause, vals = util.entry_to_update(entry, deferred=d)
+        self.assertIn('title = ?', clause)
+        self.assertIn(', ', clause)
+        self.assertIn('body = ?', clause)
+        self.assertIn("Megolavania", vals)
+        self.assertIn(True, vals)
+
+    def test_update_filter_deferred_unset(self):
+        entry = database_pb2.PostsEntry(
+                title="Megolavania",
+        )
+        d = {'body': lambda entry: True}
+        clause, vals = util.entry_to_update(entry, deferred=d)
+        self.assertIn('title = ?', clause)
+        self.assertIn("Megolavania", vals)

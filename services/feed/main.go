@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	utils "github.com/cpssd/rabble/services/utils"
 	pb "github.com/cpssd/rabble/services/proto"
+	utils "github.com/cpssd/rabble/services/utils"
 	"google.golang.org/grpc"
 )
 
@@ -107,7 +107,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 	}
 
 	pr := &pb.InstanceFeedRequest{
-		NumPosts: MaxItemsReturned,
+		NumPosts:     MaxItemsReturned,
 		UserGlobalId: r.UserGlobalId,
 	}
 
@@ -127,7 +127,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.FeedResponse, error) {
 	log.Printf("In per article, ID: %d\n", r.ArticleId)
 	pr := &pb.PostsRequest{
-		RequestType: pb.PostsRequest_FIND,
+		RequestType:  pb.PostsRequest_FIND,
 		UserGlobalId: r.UserGlobalId,
 		Match: &pb.PostsEntry{
 			GlobalId: r.ArticleId,
@@ -155,7 +155,7 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return nil, err
 	}
 
-	if author.Private {
+	if author.Private != nil && author.Private.Value {
 		// TODO(devoxel): Lookup followers here
 		return &pb.FeedResponse{}, nil
 	}
@@ -178,14 +178,14 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	}
 	authorId := author.GlobalId
 
-	if author.Private {
+	if author.Private != nil && author.Private.Value {
 		// TODO(devoxel): Lookup accessor here and see if they're allowed
 		// to view the posts.
 		return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
 	}
 
 	pr := &pb.PostsRequest{
-		RequestType: pb.PostsRequest_FIND,
+		RequestType:  pb.PostsRequest_FIND,
 		UserGlobalId: r.UserGlobalId,
 		Match: &pb.PostsEntry{
 			AuthorId: authorId,
