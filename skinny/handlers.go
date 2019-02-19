@@ -797,8 +797,8 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		ur := &pb.UsersRequest{
 			RequestType: pb.UsersRequest_FIND,
 			Match: &pb.UsersEntry{
-				Handle: handle,
-				Host:   "",
+				Handle:     handle,
+				HostIsNull: true,
 			},
 		}
 
