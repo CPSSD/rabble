@@ -108,7 +108,7 @@ class UsersDatabaseServicer:
             res = self._db.execute(self._select_base +
                 'WHERE global_id IN ' +
                 '(SELECT rowid FROM users_idx WHERE users_idx ' +
-                'MATCH ? LIMIT ?)', user_id, request.query, n)
+                'MATCH ? LIMIT ?)', user_id, request.query + "*", n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
