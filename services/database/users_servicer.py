@@ -36,12 +36,12 @@ class UsersDatabaseServicer:
     def _private_to_filter(self, entry, comp):
         if not entry.HasField("private"):
             return "", util.DONT_USE_FIELD
-        return "private " + comp, entry.private.value
+        return "private" + comp, entry.private.value
 
     def _host_to_filter(self, entry, comp):
         if entry.host_is_null:
             return "host IS ?", None
-        return util.DONT_USE_FIELD
+        return "", util.DONT_USE_FIELD
 
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 11:

@@ -54,9 +54,8 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
         if val is DONT_USE_FIELD:
             continue
         # Ensure we don't add it twice.
-        if filt not in filter_list:
-            filter_list.append(filt)
-            names.add(name)
+        filter_list.append(filt)
+        names.add(name)
         values.append(val)
 
     for name, value in defaults:
@@ -102,10 +101,10 @@ def entry_to_update(entry, deferred={}):
             handle_deferred.append(f.name)
 
     for name in handle_deferred:
-        val = deferred[name](entry)
-        if val is None:
+        filt, val = deferred[name](entry, " = ?")
+        if val is DONT_USE_FIELD:
             continue
-        update_list.append(f.name + " = ?")
+        update_list.append(filt)
         values.append(val)
 
     return ', '.join(update_list), values

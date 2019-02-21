@@ -13,8 +13,8 @@ class FakeDatabase:
         # users_dict keeps what users have been added in memory
         # (username, host) = global_id
         self.users_dict = {
-            ('exists', None): 1,
-            ('also_exists', None): 2,
+            ('exists', None, True): 1,
+            ('also_exists', None, True): 2,
         }
         self.current_id = 2
         self.reset()
@@ -33,18 +33,18 @@ class FakeDatabase:
             return None
         return database_pb2.UsersEntry(global_id=self.users_dict[user])
 
-    def get_user(self, handle=None, host=None):
-        self.get_user_called_with = (handle, host)
+    def get_user(self, handle=None, host=None, host_is_null=False):
+        self.get_user_called_with = (handle, host, host_is_null)
         if handle == None:
             return None
-        return self.lookup_user((handle, host))
+        return self.lookup_user((handle, host, host_is_null))
 
-    def get_or_create_user(self, handle=None, host=None):
+    def get_or_create_user(self, handle=None, host=None, host_is_null=False):
         # we should never be creating local users here, so we check that here.
-        self.get_or_create_user_called_with = (handle, host)
+        self.get_or_create_user_called_with = (handle, host, host_is_null)
         if handle == None or host == None:
             return None
-        user = (handle, host)
+        user = (handle, host, host_is_null)
         self.current_id += 1
         self.users_dict[user] = self.current_id
         return self.lookup_user(user)

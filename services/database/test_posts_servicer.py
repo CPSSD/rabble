@@ -80,6 +80,7 @@ class PostsDatabaseHelper(unittest.TestCase):
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
+            host_is_null=host is None,
         )
 
         req = database_pb2.UsersRequest(
