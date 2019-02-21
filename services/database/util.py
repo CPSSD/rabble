@@ -19,15 +19,17 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
       - entry: A proto message entry.
       - defaults: a list of name, value tuples that indicate default values
         to include in the filter.
-        For example, if you wanted host="" to be included in the query:
-          defaults=[(host="")]
+        For example, if you wanted test="" to be included in the query:
+          defaults=[("test", "")]
       - comparison: a clause comparing the name of the entry fields to it's value
       - deferred: a map of proto entry names to defer a value conversion to.
         The keys of this map are the names of any entry where the value is to
         be deferred to their explicit handling function.
-        The value is a function that takes as an argument as entry, and can
-        return either None (meaning do not add the field to the filter) or
-        a primitive value suitable for database use.
+        The value is a function that takes the PostEntry proto and the
+        comparison string (e.g. " = ?") as arguments and returns the full
+        comparison to use (e.g. "test = ?") and the value to be substituted.
+        If the field shouldn't be added to the filter return the DONT_USE_FIELD
+        sentinel in place of the value.
 
     Returns:
       A filter clause and a list of values.
@@ -79,9 +81,11 @@ def entry_to_update(entry, deferred={}):
       - deferred: a map of proto entry names to defer a value conversion to.
         The keys of this map are the names of any entry where the value is to
         be deferred to their explicit handling function.
-        The value is a function that takes as an argument as entry, and can
-        return either None (meaning do not add the field to the filter) or
-        a primitive value suitable for database use.
+        The value is a function that takes the PostEntry proto and the
+        comparison string (e.g. " = ?") as arguments and returns the full
+        comparison to use (e.g. "test = ?") and the value to be substituted.
+        If the field shouldn't be added to the filter return the DONT_USE_FIELD
+        sentinel in place of the value.
 
     Returns:
       The SET part of an update SQL query and a list of values.
