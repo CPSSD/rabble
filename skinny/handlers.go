@@ -629,16 +629,16 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		defer cancel()
 		resp, err := s.follows.AcceptFollow(ctx, &af)
 		if err != nil {
-			log.Printf("Could not accept follow: %v", err)
+			log.Printf("Could not modify follow: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not accept follow.\n")
+			fmt.Fprintf(w, "Could not modify follow.\n")
 			return
 		}
 
 		if resp.ResultType != pb.FollowResponse_OK {
-			log.Printf("Could not accept follow: %v", resp.Error)
+			log.Printf("Could not modify follow: %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not accept follow.\n")
+			fmt.Fprintf(w, "Could not modify follow.\n")
 			return
 		}
 
