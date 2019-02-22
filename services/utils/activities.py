@@ -7,11 +7,11 @@ class ActivitiesUtil:
         self._logger = logger
 
     def build_actor(self, handle, host):
-        s = f'{host}/@{handle}'
+        s = f'{host}/ap/@{handle}'
         if not s.startswith('http'):
             s = 'http://' + s
         return s
-    
+
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
@@ -34,4 +34,3 @@ class ActivitiesUtil:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
         return resp, None
-

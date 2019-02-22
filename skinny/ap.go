@@ -149,7 +149,7 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.actors.GetFollowing(ctx, req)
-		if err != nil || resp.Collection == nil {
+		if err != nil || resp.Collection == "" {
 			log.Printf("Could not create following collection object. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create following collection object.\n")

@@ -209,6 +209,7 @@ services:
       - "database_service_[[INSTANCE_ID]]"
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
   search_service_[[INSTANCE_ID]]:
