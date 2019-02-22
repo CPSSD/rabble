@@ -138,6 +138,30 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		req := &pb.ActorRequest{
+			Username: u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.GetFollowing(ctx, req)
+		if err != nil || resp.Collection == nil {
+			log.Printf("Could not create following collection object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create following collection object.\n")
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, resp.Collection)
+		log.Printf("Created following collection successfully.")
+	}
+}
+
 type createActivityObjectStruct struct {
 	Content      string   `json:"content"`
 	Name         string   `json:"name"`
