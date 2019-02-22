@@ -15,6 +15,7 @@ message ActorObject {
   string name = 4;
   string preferredUsername = 5;
   string following = 6;
+  string followers = 7;
 }
 
 message ActorResponse {
@@ -28,4 +29,5 @@ message CollectionResponse {
 service Actors {
   rpc Get(ActorRequest) returns (ActorResponse);
   rpc GetFollowing(ActorRequest) returns (CollectionResponse);
+  rpc GetFollowers(ActorRequest) returns (CollectionResponse);
 }

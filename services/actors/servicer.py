@@ -20,3 +20,4 @@ class Servicer(actors_pb2_grpc.ActorsServicer):
         collection_servicer = CollectionServicer(
             logger, users_util, activities_util, db_stub, host_name, follows_stub)
         self.GetFollowing = collection_servicer.GetFollowing
+        self.GetFollowers = collection_servicer.GetFollowers

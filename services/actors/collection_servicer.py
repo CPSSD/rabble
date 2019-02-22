@@ -28,6 +28,17 @@ class CollectionServicer:
             "url": follower_uri
         }
 
+    def _create_collection(self, summary, item_list):
+        collection = {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "summary": summary,
+            "type": "Collection",
+            "totalItems": len(item_list),
+            "items": item_list
+        }
+
+        return json.dumps(collection)
+
     def _create_following(self, username):
         user = self._users_util.get_user_from_db(handle=username, host=None)
         if user is None:
@@ -46,18 +57,34 @@ class CollectionServicer:
             return None
 
         user_list = [self._convert_follow_user_to_person(x) for x in gfr.results]
+        return self._create_collection(summary, user_list)
 
-        collection = {
-            "@context": "https://www.w3.org/ns/activitystreams",
-            "summary": summary,
-            "type": "Collection",
-            "totalItems": len(gfr.results),
-            "items": user_list
-        }
+    def _create_followers(self, username):
+        user = self._users_util.get_user_from_db(handle=username, host=None)
+        if user is None:
+            self._logger.warning('Could not find user in database.')
+            return None
 
-        return json.dumps(collection)
+        summary = "Collection of users following " + user.handle
+        followsRequest = follows_pb2.GetFollowsRequest(username=user.handle)
+        gfr = self._follows_stub.GetFollowers(followsRequest)
+
+        if gfr.result_type == follows_pb2.GetFollowsResponse.ERROR:
+            self._logger.error(
+                "GetFollowers for followers collection returned error: %s",
+                gfr.error
+            )
+            return None
+
+        user_list = [self._convert_follow_user_to_person(x) for x in gfr.results]
+        return self._create_collection(summary, user_list)
 
     def GetFollowing(self, request, context):
         self._logger.debug('Following collection requested for {}'.format(request.username))
         collection = self._create_following(request.username)
+        return actors_pb2.CollectionResponse(collection=collection)
+
+    def GetFollowers(self, request, context):
+        self._logger.debug('Followers collection requested for {}'.format(request.username))
+        collection = self._create_followers(request.username)
         return actors_pb2.CollectionResponse(collection=collection)

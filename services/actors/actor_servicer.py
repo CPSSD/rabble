@@ -18,7 +18,9 @@ class ActorsServicer:
         handle = user.handle
         inbox_url = self._activities_util.build_inbox_url(handle,
                                                           self._host_name)
-        following_url = inbox_url + "/following"
+        actor_url = self._activities_util.build_actor(handle, self._host_name)
+        following_url = actor_url + "/following"
+        followers_url = actor_url + "/followers"
         return actors_pb2.ActorObject(
             type='Person',
             preferredUsername=handle,
@@ -27,6 +29,7 @@ class ActorsServicer:
             # TODO(iandioch): Create outbox URL when we have outboxes.
             outbox=None,
             following=following_url,
+            followers=followers_url,
         )
 
     def Get(self, request, context):

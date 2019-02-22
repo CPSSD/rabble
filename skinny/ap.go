@@ -96,6 +96,8 @@ type ActorObjectStruct struct {
 	Outbox            string `json:"outbox"`
 	Name              string `json:"name"`
 	PreferredUsername string `json:"preferredUsername"`
+	Followers         string `json:followers`
+	Following         string `json:following`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -130,6 +132,8 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			Outbox:            resp.Actor.Outbox,
 			Name:              resp.Actor.Name,
 			PreferredUsername: resp.Actor.PreferredUsername,
+			Followers:         resp.Actor.Followers,
+			Following:         resp.Actor.Following,
 		}
 
 		enc := json.NewEncoder(w)
@@ -148,9 +152,7 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		u := v["username"]
-		req := &pb.ActorRequest{
-			Username: u,
-		}
+		req := &pb.ActorRequest{Username: u}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
@@ -161,7 +163,7 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 			fmt.Fprintf(w, "Could not create following collection object.\n")
 			return
 		}
-		if err != nil || resp.Collection == "" {
+		if resp.Collection == "" {
 			log.Printf("Actors service GetFollowing returned empty string\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create following collection object.\n")
@@ -171,6 +173,34 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, resp.Collection)
 		log.Printf("Created following collection successfully.")
+	}
+}
+
+func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		req := &pb.ActorRequest{Username: u}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.GetFollowers(ctx, req)
+		if err != nil {
+			log.Printf("Could not create followers collection object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create followers collection object.\n")
+			return
+		}
+		if resp.Collection == "" {
+			log.Printf("Actors service GetFollowers returned empty string\n")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create followers collection object.\n")
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, resp.Collection)
+		log.Printf("Created followers collection successfully.")
 	}
 }
 
