@@ -35,6 +35,9 @@ class UsersUtil:
         actor_uri = actor_uri.lstrip('/@')
         p = actor_uri.split('/@')
         if len(p) == 2:
+            # rabble instance
+            if p[0].endswith('/ap'):
+                p[0] = p[0][:-3]
             # Actor uri like 'rabbleinstance.com/@admin'
             return tuple(p)
         # Username is incorrect/malicious/etc.
