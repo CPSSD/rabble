@@ -648,6 +648,7 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 
 type likeStruct struct {
 	ArticleId int64 `json:"article_id"`
+	IsLiked   bool  `json:"is_liked"`
 }
 
 type likeResponse struct {
