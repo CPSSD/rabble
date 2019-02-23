@@ -52,8 +52,7 @@ class AcceptFollowServicer:
 
     def _modify_follow(self, resp, follower_id, followed_id, is_accepted):
         entry = database_pb2.Follow(follower=follower_id,
-                                    followed=followed_id,
-                                    state=database_pb2.Follow.ACTIVE)
+                                    followed=followed_id)
         if is_accepted:
             entry.state = database_pb2.Follow.ACTIVE
         else:
