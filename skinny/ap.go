@@ -109,8 +109,14 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.actors.Get(ctx, req)
-		if err != nil || resp.Actor == nil {
+		if err != nil {
 			log.Printf("Could not receive return actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
+		if resp.Actor == nil {
+			log.Printf("actors service Get returned nill actor\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create actor object.\n")
 			return
@@ -149,8 +155,14 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.actors.GetFollowing(ctx, req)
-		if err != nil || resp.Collection == "" {
+		if err != nil {
 			log.Printf("Could not create following collection object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create following collection object.\n")
+			return
+		}
+		if err != nil || resp.Collection == "" {
+			log.Printf("Actors service GetFollowing returned empty string\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create following collection object.\n")
 			return

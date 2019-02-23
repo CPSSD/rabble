@@ -57,5 +57,5 @@ func (s *serverWrapper) setupRoutes() {
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 	r.HandleFunc("/ap/@{username}", s.handleActor())
-	r.HandleFunc("/ap/@{username}/following.json", s.handleFollowingCollection())
+	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 }

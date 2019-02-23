@@ -18,7 +18,7 @@ class ActorsServicer:
         handle = user.handle
         inbox_url = self._activities_util.build_inbox_url(handle,
                                                           self._host_name)
-        following_url = inbox_url + "/following.json"
+        following_url = inbox_url + "/following"
         return actors_pb2.ActorObject(
             type='Person',
             preferredUsername=handle,
