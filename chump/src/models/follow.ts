@@ -120,7 +120,7 @@ export function AcceptFollow(handle: string, follower: IPendingFollow, isAccepte
   const postBody = {
     follower,
     handle,
-    "is_accepted": isAccepted,
+    is_accepted: isAccepted,
   };
   return new Promise<IPendingFollows>((resolve, reject) => {
     request
