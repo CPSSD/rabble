@@ -1,10 +1,14 @@
+from services.proto import delete_pb2 as dpb
 
-class SendDeleteServicer:
+class SendLikeDeleteServicer:
     def __init__(self, logger, db, activ_util):
         self._logger = logger
         self._db = db
         self._activ_util = activ_util
 
-    def SendDeleteActivity(self, ctx, req):
-        pass
+    def SendLikeDeleteActivity(self, req, ctx):
+        self._logger.info(
+            "Got request to delete like for article {} by user {}".format(
+                req.article_id, req.liker_handle))
+        return dpb.DeleteResponse()
 

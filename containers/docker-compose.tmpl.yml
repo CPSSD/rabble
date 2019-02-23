@@ -28,6 +28,7 @@ services:
       - RSS_SERVICE_HOST=rss_service_[[INSTANCE_ID]]
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
       - LIKE_SERVICE_HOST=like_service_[[INSTANCE_ID]]
+      - DELETE_SERVICE_HOST=delete_service_[[INSTANCE_ID]]
       - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service_[[INSTANCE_ID]]
       - ACTORS_SERVICE_HOST=actors_service_[[INSTANCE_ID]]

@@ -2,7 +2,9 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-message DeleteDetails {
+message LikeDeleteDetails {
+  int64 article_id = 1;
+  string liker_handle = 2;
 }
 
 message DeleteResponse {
@@ -21,8 +23,9 @@ message ReceivedDeleteDetails {
 }
 
 
-// Service for sending and receiving server-to-server like activities.
+// Service for sending and receiving server-to-server delete activities.
 service S2SDelete {
-  rpc SendDeleteActivity(DeleteDetails) returns (DeleteResponse);
   rpc ReceiveDeleteActivity(ReceivedDeleteDetails) returns (DeleteResponse);
+  rpc SendLikeDeleteActivity(LikeDeleteDetails) returns (DeleteResponse);
+  // Further specialisations, i.e. SendArticleDelete, to be placed here.
 }
