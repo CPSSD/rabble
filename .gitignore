@@ -60,3 +60,4 @@ __pycache__/
 *.pb.go
 # research force save artefacts
 research/.ipynb_checkpoints/*
+research/datasets/ml-latest-small*
