@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+message LikeDeleteDetails {
+  int64 article_id = 1;
+  string liker_handle = 2;
+}
+
+message DeleteResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  // Should only be set if result_type is not OK
+  string error = 2;
+}
+
+message ReceivedDeleteDetails {
+}
+
+
+// Service for sending and receiving server-to-server delete activities.
+service S2SDelete {
+  rpc ReceiveDeleteActivity(ReceivedDeleteDetails) returns (DeleteResponse);
+  rpc SendLikeDeleteActivity(LikeDeleteDetails) returns (DeleteResponse);
+  // Further specialisations, i.e. SendArticleDelete, to be placed here.
+}
