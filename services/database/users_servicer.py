@@ -127,22 +127,19 @@ class UsersDatabaseServicer:
             res = self._db.execute(
                 'CREATE VIRTUAL TABLE IF NOT EXISTS users_idx USING ' +
                 'fts5(handle, content=users, content_rowid=global_id)')
-            self._logger.info('Updating users index')
             res = self._db.execute(
                 "insert into users_idx(users_idx) values('rebuild')")
-            self._logger.info('Adding Triggers, Insert')
+            self._logger.info('Adding Triggers')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS users_ai AFTER INSERT ON users BEGIN\n' +
                 '  INSERT INTO users_idx(rowid, handle) ' +
                 'VALUES (new.global_id, new.handle); \n' +
                 'END;')
-            self._logger.info('Adding Triggers, Delete')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN\n' +
                 '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
                 "VALUES ('delete', new.global_id, new.handle); \n" +
                 'END;')
-            self._logger.info('Adding Triggers, Update')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN\n' +
                 '  INSERT INTO users_idx(users_idx, rowid, handle) ' +

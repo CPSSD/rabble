@@ -40,7 +40,7 @@ def main():
                                                                                server)
 
         server.add_insecure_port('0.0.0.0:1973')
-        logger.info('Starting server')
+        logger.info("Starting recommend_follows service on port 1973")
         server.start()
         try:
             while True:

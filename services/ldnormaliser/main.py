@@ -23,7 +23,6 @@ def main():
     logger = get_logger("ldnorm_service", args.v)
     logger.info("Creating ldnorm server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    logger.info("Creating ldnorm servicer")
     ldnorm_pb2_grpc.add_LDNormServicer_to_server(
         LDNormServicer(logger), server)
     server.add_insecure_port('0.0.0.0:1804')

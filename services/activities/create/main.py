@@ -27,10 +27,8 @@ def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
 
-    logger.info("Creating db connection")
     db_channel = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
-    logger.info("Creating article connection")
     article_channel = get_future_channel(logger, "ARTICLE_SERVICE_HOST", 1601)
     article_stub = article_pb2_grpc.ArticleStub(article_channel)
     logger.info("Creating create server")

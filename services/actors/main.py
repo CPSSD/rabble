@@ -54,7 +54,7 @@ def main():
         actors_pb2_grpc.add_ActorsServicer_to_server(servicer, server)
 
         server.add_insecure_port('0.0.0.0:1973')
-        logger.info('Starting server')
+        logger.info("Starting actors service on port 1973")
         server.start()
         try:
             while True:

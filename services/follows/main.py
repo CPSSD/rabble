@@ -56,7 +56,7 @@ def main():
                                                        server)
 
         server.add_insecure_port('0.0.0.0:1641')
-        logger.info('Starting server')
+        logger.info("Starting follows service on port 1641")
         server.start()
         try:
             while True:

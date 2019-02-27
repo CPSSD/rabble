@@ -30,7 +30,6 @@ def main():
     logger = get_logger("users_service", args.v)
     logger.info("Creating users server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    logger.info("Creating users servicer")
     users_pb2_grpc.add_UsersServicer_to_server(
         UsersServicer(logger, get_db_stub(logger)),
         server)

@@ -45,7 +45,7 @@ func newServer() *Server {
 	return x
 }
 func (s *Server) CreateIndices() {
-	log.Println("Creating Indices\n")
+	log.Println("Creating Indices")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	_, postErr := s.db.CreatePostsIndex(ctx, &pb.DatabaseSearchRequest{})

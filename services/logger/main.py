@@ -38,11 +38,10 @@ def main():
     local_logger = get_local_logger(args.v)
     local_logger.info("Creating server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    local_logger.info("Creating logger servicer")
     logger_pb2_grpc.add_LoggerServicer_to_server(
         LoggerServicer(logger), server)
     server.add_insecure_port('0.0.0.0:1867')
-    local_logger.info("Starting server")
+    local_logger.info("Starting Logger service on port 1867")
     server.start()
     try:
         while True:

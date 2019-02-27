@@ -28,15 +28,12 @@ def main():
     args = get_args()
     logger = get_logger("article_service", args.v)
 
-    logger.info("Creating db connection")
     db_channel = get_service_channel(logger, "DB_SERVICE_HOST", 1798)
     db_stub = database_pb2_grpc.DatabaseStub(db_channel)
 
-    logger.info("Creating create connection")
     create_channel = get_service_channel(logger, "CREATE_SERVICE_HOST", 1922)
     create_stub = create_pb2_grpc.CreateStub(create_channel)
 
-    logger.info("Creating search connection")
     search_channel = get_service_channel(logger, "SEARCH_SERVICE_HOST", 1886)
     search_stub = search_pb2_grpc.SearchStub(search_channel)
 

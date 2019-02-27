@@ -99,22 +99,19 @@ class PostsDatabaseServicer:
             res = self._db.execute(
                 'CREATE VIRTUAL TABLE IF NOT EXISTS posts_idx USING ' +
                 'fts5(title, body, content=posts, content_rowid=global_id)')
-            self._logger.info('Updating post index')
             res = self._db.execute(
                 "insert into posts_idx(posts_idx) values('rebuild')")
-            self._logger.info('Adding Triggers, Insert')
+            self._logger.info('Adding Triggers')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN\n' +
                 '  INSERT INTO posts_idx(rowid, title, body) ' +
                 'VALUES (new.global_id, new.title, new.body); \n' +
                 'END;')
-            self._logger.info('Adding Triggers, Delete')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN\n' +
                 '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
                 "VALUES ('delete', new.global_id, new.title, new.body); \n" +
                 'END;')
-            self._logger.info('Adding Triggers, Update')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN\n' +
                 '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
