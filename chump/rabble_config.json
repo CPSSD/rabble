@@ -31,6 +31,7 @@
   "unfollow": "Unfollow",
   "user_feed_title": "Your feed",
   "defaults_to_username": "Defaults to username",
+  "track_views": true,
   "accept": "Accept",
   "deny": "Deny"
 }
