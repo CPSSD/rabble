@@ -19,15 +19,6 @@ class SendLikeServicer:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
 
-    def _create_article_object(self, author, article):
-        if article.ap_id:
-            return article.ap_id
-        # Local article, build ID manually
-        s = f'{author.host}/@{author.handle}/{article.global_id}'
-        if not s.startswith('http'):
-            s = 'http://' + s
-        return s
-
     def _get_author(self, article):
         user = self._user_util.get_user_from_db(
             global_id=article.author_id)
