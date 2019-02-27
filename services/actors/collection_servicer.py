@@ -15,18 +15,12 @@ class CollectionServicer:
 
     def _convert_follow_user_to_person(self, follow_user):
         # convert follows.proto/FollowUser to an activitypub Person object
-
         # TODO(sailslick) add actor_url to user db. Foreign users will have different endpoints
         host = follow_user.host
         if follow_user.host is None or follow_user.host == "":
             host = self._host_name
-        follower_uri = self._activities_util.build_actor(
-            follow_user.handle, host)
-        return {
-            "type": "Person",
-            "name": follow_user.handle,
-            "url": follower_uri
-        }
+
+        return self._activities_util.build_actor(follow_user.handle, host)
 
     def _create_collection(self, summary, item_list):
         collection = {
