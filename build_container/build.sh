@@ -43,6 +43,7 @@ cp -R services/activities/create build_out/activities/
 cp -R services/activities/delete build_out/activities/
 cp -R services/activities/follow build_out/activities/
 cp -R services/activities/like build_out/activities/
+cp -R services/activities/announce build_out/activities/
 
 echo "Building python protos"
 python3 -m grpc_tools.protoc \
@@ -59,9 +60,6 @@ cp -R services/follows build_out/
 
 echo "Building article service"
 cp -R services/article build_out/
-
-echo "Building s2s_follow service"
-cp -R services/activities/follow build_out/activities/
 
 echo "Building approver service"
 cp -R services/activities/approver build_out/activities/

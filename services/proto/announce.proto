@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message AnnounceDetails {
+  int64 article_id = 1;
+  int64 announcer_id = 2;
+  google.protobuf.Timestamp announce_time = 3;
+}
+
+message AnnounceResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  // Should only be set if result_type is not OK
+  string error = 2;
+}
+
+message ReceivedAnnounceDetails {
+  // This is an ActivityPub style ID. E.g. http://rabble.ie/@a/123
+  string announced_object = 1;
+
+  // This is an ActivityPub style ID. E.g. http://rabble.rocks/@b
+  string announcer_id = 2;
+
+  // This is a parsed timestamp from the request or the time it was received
+  google.protobuf.Timestamp announce_time = 3;
+}
+
+
+service Announce {
+  rpc SendAnnounceActivity(AnnounceDetails) returns (AnnounceResponse);
+  rpc ReceiveAnnounceActivity(ReceivedAnnounceDetails) returns (AnnounceResponse);
+}

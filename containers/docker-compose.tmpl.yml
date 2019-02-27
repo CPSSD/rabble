@@ -239,3 +239,18 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - INDEX_PATH=/tmp/rabble/index
+  announce_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/announce
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
