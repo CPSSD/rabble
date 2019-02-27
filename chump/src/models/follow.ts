@@ -115,11 +115,12 @@ export function GetPendingFollows() {
   });
 }
 
-export function AcceptFollow(handle: string, follower: IPendingFollow) {
+export function AcceptFollow(handle: string, follower: IPendingFollow, isAccepted: boolean) {
   const url = "/c2s/follows/accept";
   const postBody = {
     follower,
     handle,
+    is_accepted: isAccepted,
   };
   return new Promise<IPendingFollows>((resolve, reject) => {
     request

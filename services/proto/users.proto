@@ -52,6 +52,8 @@ message UpdateUserRequest {
   string display_name = 4;
   string bio = 5;
   google.protobuf.BoolValue private = 6;
+  string post_title_css = 7;
+  string post_body_css = 8;
 }
 
 message UpdateUserResponse {

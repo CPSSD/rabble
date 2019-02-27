@@ -50,10 +50,13 @@ class AcceptFollowServicer:
             resp.result_type = database_pb2.FollowResponse.ERROR
             return err
 
-    def _modify_follow(self, resp, follower_id, followed_id):
+    def _modify_follow(self, resp, follower_id, followed_id, is_accepted):
         entry = database_pb2.Follow(follower=follower_id,
-                                    followed=followed_id,
-                                    state=database_pb2.Follow.ACTIVE)
+                                    followed=followed_id)
+        if is_accepted:
+            entry.state = database_pb2.Follow.ACTIVE
+        else:
+            entry.state = database_pb2.Follow.REJECTED
 
         match = database_pb2.Follow(follower=follower_id,
                                     followed=followed_id,
@@ -91,7 +94,9 @@ class AcceptFollowServicer:
 
         if request.follower.host:
             # Acceptor handles everything from here
-            self._util.attempt_to_accept(followed, follower, self._host_name)
+            self._util.attempt_to_accept(followed, follower, self._host_name,
+                                         request.is_accepted)
 
-        self._modify_follow(resp, follower.global_id, followed.global_id)
+        self._modify_follow(resp, follower.global_id, followed.global_id,
+                            request.is_accepted)
         return resp

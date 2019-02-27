@@ -82,7 +82,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-            <Post username={this.props.username} blogPost={this.state.post} preview={true}/>
+            <Post username={this.props.username} blogPost={this.state.post} preview={true} customCss={true}/>
             </HashRouter>
           </div>
         </RModal>

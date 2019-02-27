@@ -40,6 +40,7 @@ export RABBLE_FOLLOW_RECOMMENDER_METHOD="${RABBLE_FOLLOW_RECOMMENDER_METHOD:-non
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
 cp -R services/activities/create build_out/activities/
+cp -R services/activities/delete build_out/activities/
 cp -R services/activities/follow build_out/activities/
 cp -R services/activities/like build_out/activities/
 

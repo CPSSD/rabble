@@ -85,6 +85,8 @@ message AcceptFollowRequest {
   string handle = 1;
   // display_name from FollowUser is unused in this command.
   FollowUser follower = 2;
+  // True if the follow is accepted, false if it was denied.
+  bool is_accepted = 3;
 }
 
 service Follows {

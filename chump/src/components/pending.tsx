@@ -53,7 +53,8 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
       }
       // We create a function on render
       // This slightly impacts performance, but it's negligible.
-      const accept = () => this.acceptFollow(e, i);
+      const accept = () => this.acceptFollow(e, i, true);
+      const deny = () => this.acceptFollow(e, i, false);
       return (
         <div className="pure-g follow-list" key={i}>
           <div className="pure-u-5-24"/>
@@ -67,7 +68,14 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
               className="pure-button pure-button-primary primary-button"
               onClick={accept}
             >
-              Accept
+              {config.accept}
+            </button>
+            <button
+              type="submit"
+              className="pure-button"
+              onClick={deny}
+            >
+              {config.deny}
             </button>
           </div>
 
@@ -76,8 +84,8 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
     });
   }
 
-  private acceptFollow(follow: IPendingFollow, toDel: number) {
-    AcceptFollow(this.props.username, follow)
+  private acceptFollow(follow: IPendingFollow, toDel: number, isAccepted: boolean) {
+    AcceptFollow(this.props.username, follow, isAccepted)
       .then(() => {
         const followers = this.state.pending.followers!.filter(
           (_, i: number) => i !== toDel,

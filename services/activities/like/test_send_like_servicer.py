@@ -67,7 +67,7 @@ class SendLikeServicerTest(unittest.TestCase):
         # Check that the request sent makes sense.
         self.assertEqual(self.data["type"], "Like")
         self.assertEqual(self.data["actor"]["type"], "Person")
-        self.assertIn("localhost/@farmlover73", self.data["actor"]["id"])
+        self.assertIn("localhost/ap/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
         self.assertEqual("http://rabble.mojang.com/@minecraft4ever/666",
                          self.data["object"])
@@ -88,7 +88,7 @@ class SendLikeServicerTest(unittest.TestCase):
         # Check that the request sent makes sense.
         self.assertEqual(self.data["type"], "Like")
         self.assertEqual(self.data["actor"]["type"], "Person")
-        self.assertIn("localhost/@farmlover73", self.data["actor"]["id"])
+        self.assertIn("localhost/ap/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
         self.assertEqual("http://localhost/@minecraft4ever/123",
                          self.data["object"])
@@ -105,7 +105,7 @@ class SendLikeServicerTest(unittest.TestCase):
         self.activ_util.send_activity = lambda *_: ("", "Error 404")
         resp = self.servicer.SendLikeActivity(req, None)
         self.assertEqual(resp.result_type, like_pb2.LikeResponse.ERROR)
-    
+
     def test_SendLikeActivityNoArticle(self):
         req = like_pb2.LikeDetails(
             article_id=123,
@@ -117,4 +117,3 @@ class SendLikeServicerTest(unittest.TestCase):
         )
         resp = self.servicer.SendLikeActivity(req, None)
         self.assertEqual(resp.result_type, like_pb2.LikeResponse.ERROR)
-
