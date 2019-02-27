@@ -1,0 +1,14 @@
+[Unit]
+Description=Core Rabble Instance
+Requires=docker.service
+After=network-online.target firewalld.service
+
+[Service]
+User=rabble
+Group=rabble
+Type=simple
+WorkingDirectory=/home/rabble/rabble
+ExecStart=/home/rabble/rabble/start.sh
+
+[Install]
+WantedBy=multi-user.target

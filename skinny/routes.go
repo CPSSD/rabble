@@ -45,6 +45,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/details/user", s.handleUserDetails())
 	r.HandleFunc("/c2s/follows/pending", s.handlePendingFollows())
 	r.HandleFunc("/c2s/follows/accept", s.handleAcceptFollow())
+	r.HandleFunc("/c2s/track_view", s.handleTrackView())
 
 	approvalHandler := s.handleApprovalActivity()
 	// ActorInbox routes are routed based on the activity type
@@ -57,4 +58,5 @@ func (s *serverWrapper) setupRoutes() {
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 	r.HandleFunc("/ap/@{username}", s.handleActor())
+	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 }

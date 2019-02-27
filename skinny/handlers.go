@@ -629,16 +629,16 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		defer cancel()
 		resp, err := s.follows.AcceptFollow(ctx, &af)
 		if err != nil {
-			log.Printf("Could not accept follow: %v", err)
+			log.Printf("Could not modify follow: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not accept follow.\n")
+			fmt.Fprintf(w, "Could not modify follow.\n")
 			return
 		}
 
 		if resp.ResultType != pb.FollowResponse_OK {
-			log.Printf("Could not accept follow: %v", resp.Error)
+			log.Printf("Could not modify follow: %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not accept follow.\n")
+			fmt.Fprintf(w, "Could not modify follow.\n")
 			return
 		}
 
@@ -648,6 +648,7 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 
 type likeStruct struct {
 	ArticleId int64 `json:"article_id"`
+	IsLiked   bool  `json:"is_liked"`
 }
 
 type likeResponse struct {
@@ -683,27 +684,54 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			return
 		}
 
-		like := &pb.LikeDetails{
-			ArticleId:   t.ArticleId,
-			LikerHandle: handle,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		resp, err := s.s2sLike.SendLikeActivity(ctx, like)
-		if err != nil {
-			log.Printf("Could not send like: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			r.Success = false
-			r.ErrorStr = "Issue with sending like"
-			enc.Encode(r)
-			return
-		} else if resp.ResultType != pb.LikeResponse_OK {
-			log.Printf("Could not send like: %v", resp.Error)
-			w.WriteHeader(http.StatusInternalServerError)
-			r.Success = false
-			r.ErrorStr = "Issue with sending like"
-			enc.Encode(r)
-			return
+		if t.IsLiked {
+			// Send a like
+			like := &pb.LikeDetails{
+				ArticleId:   t.ArticleId,
+				LikerHandle: handle,
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			resp, err := s.s2sLike.SendLikeActivity(ctx, like)
+			if err != nil {
+				log.Printf("Could not send like: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				r.Success = false
+				r.ErrorStr = "Issue with sending like"
+				enc.Encode(r)
+				return
+			} else if resp.ResultType != pb.LikeResponse_OK {
+				log.Printf("Could not send like: %v", resp.Error)
+				w.WriteHeader(http.StatusInternalServerError)
+				r.Success = false
+				r.ErrorStr = "Issue with sending like"
+				enc.Encode(r)
+				return
+			}
+		} else {
+			// Send an unlike (delete)
+			del := &pb.LikeDeleteDetails{
+				ArticleId: t.ArticleId,
+				LikerHandle: handle,
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			resp, err := s.s2sDelete.SendLikeDeleteActivity(ctx, del)
+			if err != nil {
+				log.Printf("Could not send delete: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				r.Success = false
+				r.ErrorStr = "Issue with unliking"
+				enc.Encode(r)
+				return
+			} else if resp.ResultType != pb.DeleteResponse_OK {
+				log.Printf("Could not send delete: %v", resp.Error)
+				w.WriteHeader(http.StatusInternalServerError)
+				r.Success = false
+				r.ErrorStr = "Issue with unliking"
+				enc.Encode(r)
+				return
+			}
 		}
 		r.Success = true
 		enc.Encode(r)
@@ -823,6 +851,35 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			log.Printf("could not marshal blogs: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+	}
+}
+
+func (s *serverWrapper) handleTrackView() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var v pb.View
+		err := decoder.Decode(&v)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// uid = 0 if no user is logged in.
+		uid, err := s.getSessionGlobalId(r)
+
+		v.User = uid
+
+		ts := ptypes.TimestampNow()
+		v.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_, err = s.database.AddView(ctx, &v)
+		if err != nil {
+			log.Printf("Could not send view: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
 }

@@ -14,12 +14,18 @@ message ActorObject {
   string outbox = 3;
   string name = 4;
   string preferredUsername = 5;
+  string following = 6;
 }
 
 message ActorResponse {
   ActorObject actor = 1;
 }
 
+message CollectionResponse {
+  string collection = 1;
+}
+
 service Actors {
   rpc Get(ActorRequest) returns (ActorResponse);
+  rpc GetFollowing(ActorRequest) returns (CollectionResponse);
 }

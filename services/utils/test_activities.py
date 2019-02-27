@@ -10,7 +10,7 @@ class ActivitiesUtilTest(unittest.TestCase):
 
     def test_build_actor(self):
         self.assertEqual(self.activ_util.build_actor('a', 'b.com'),
-                         'http://b.com/@a')
+                         'http://b.com/ap/@a')
 
     def test_build_inbox_url(self):
         self.assertEqual(self.activ_util.build_inbox_url('a', 'b.com'),
@@ -34,4 +34,3 @@ class ActivitiesUtilTest(unittest.TestCase):
         _, e = self.activ_util.send_activity(activity,
                                              'followed.com/ap/@b/inbox')
         self.assertIsNone(e)
-

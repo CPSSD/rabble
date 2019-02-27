@@ -1,16 +1,12 @@
 import * as request from "superagent";
 
-interface ILikePostBody {
-  article_id: number;
-  is_liked: boolean;
+interface IViewBody {
+  path: string;
 }
 
-export function SendLike(articleId: number, isLiked: boolean) {
-  const endpoint: string = "/c2s/like";
-  const postBody: ILikePostBody = {
-    article_id: articleId,
-    is_liked: isLiked,
-  };
+export function SendView(path: string) {
+  const endpoint: string = "/c2s/track_view";
+  const postBody: IViewBody = {path};
   return new Promise((resolve, reject) => {
     request
       .post(endpoint)

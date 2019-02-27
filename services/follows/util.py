@@ -61,7 +61,7 @@ class Util:
             return False
         return True
 
-    def attempt_to_accept(self, local_user, foreign_user, host_name):
+    def attempt_to_accept(self, local_user, foreign_user, host_name, is_accepted):
         s2s_follow = s2s_follow_pb2.FollowDetails(
             follower = s2s_follow_pb2.FollowActivityUser(
                 handle = foreign_user.handle,
@@ -73,7 +73,7 @@ class Util:
             ),
         )
         req = approver_pb2.Approval(
-                accept = True,
+                accept=is_accepted,
                 follow=s2s_follow,
         )
         # TODO(devoxel): Add response logic

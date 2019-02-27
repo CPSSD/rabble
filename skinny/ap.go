@@ -109,8 +109,14 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.actors.Get(ctx, req)
-		if err != nil || resp.Actor == nil {
+		if err != nil {
 			log.Printf("Could not receive return actor object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create actor object.\n")
+			return
+		}
+		if resp.Actor == nil {
+			log.Printf("actors service Get returned nill actor\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create actor object.\n")
 			return
@@ -135,6 +141,36 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			return
 		}
 		log.Printf("Created actor successfully.")
+	}
+}
+
+func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		req := &pb.ActorRequest{
+			Username: u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.GetFollowing(ctx, req)
+		if err != nil {
+			log.Printf("Could not create following collection object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create following collection object.\n")
+			return
+		}
+		if err != nil || resp.Collection == "" {
+			log.Printf("Actors service GetFollowing returned empty string\n")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create following collection object.\n")
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, resp.Collection)
+		log.Printf("Created following collection successfully.")
 	}
 }
 

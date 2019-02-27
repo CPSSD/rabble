@@ -2,6 +2,7 @@ from follow_servicer import FollowDatabaseServicer
 from posts_servicer import PostsDatabaseServicer
 from users_servicer import UsersDatabaseServicer
 from like_servicer import LikeDatabaseServicer
+from view_servicer import ViewDatabaseServicer
 
 from services.proto import database_pb2_grpc
 
@@ -27,3 +28,5 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         like_servicer = LikeDatabaseServicer(db, logger)
         self.AddLike = like_servicer.AddLike
         self.LikedCollection = like_servicer.LikedCollection
+        view_servicer = ViewDatabaseServicer(db, logger)
+        self.AddView = view_servicer.AddView
