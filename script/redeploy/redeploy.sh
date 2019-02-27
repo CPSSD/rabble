@@ -2,6 +2,7 @@ set -e
 
 # Set _BRANCH to the branch you'd like keep updated to master.
 _BRANCH="deploy/rabblenetwork"
+_SERVICE="rabble"
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 if [ -z "$REPO_ROOT" ]
@@ -20,4 +21,4 @@ git checkout $_BRANCH
 git rebase master
 
 $REPO_ROOT/run_build.sh
-sudo systemctl restart rabble
+sudo systemctl restart $_SERVICE
