@@ -25,6 +25,13 @@ class ActivitiesUtil:
             s = 'http://' + s
         return s
 
+    def build_delete(self, obj):
+        return {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "type": "Delete",
+            "object": obj
+        }
+
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
