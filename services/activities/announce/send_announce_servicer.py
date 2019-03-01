@@ -6,6 +6,7 @@ from urllib import request
 from services.proto import database_pb2
 from services.proto import announce_pb2
 
+
 class SendAnnounceServicer:
     def __init__(self, logger, db, user_util, activ_util, hostname=None):
         self._logger = logger

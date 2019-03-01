@@ -3,6 +3,7 @@ import os
 from services.proto import database_pb2 as db_pb
 from services.proto import announce_pb2
 
+
 class ReceiveAnnounceServicer:
     def __init__(self, logger, db, user_util, activ_util, hostname=None):
         self._logger = logger
@@ -14,7 +15,6 @@ class ReceiveAnnounceServicer:
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
-
 
     def ReceiveAnnounceActivity(self, req, context):
         self._logger.debug("Got announce for %s from %s at %s",

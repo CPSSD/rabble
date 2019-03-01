@@ -11,7 +11,6 @@ class AnnounceServicer(announce_pb2_grpc.AnnounceServicer):
             logger, db, user_util, activ_util)
         self.SendAnnounceActivity = send_announce_servicer.SendAnnounceActivity
 
-
         receive_announce_servicer = ReceiveAnnounceServicer(
             logger, db, user_util, activ_util)
         self.ReceiveAnnounceActivity = receive_announce_servicer.ReceiveAnnounceActivity
