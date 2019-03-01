@@ -62,7 +62,7 @@ class SendLikeServicer:
             return response
         activity = build_like_activity(
             self._activ_util.build_actor(req.liker_handle, self._hostname),
-            self._activ_util.build_article(author, article))
+            self._activ_util.build_article_url(author, article))
         inbox = self._activ_util.build_inbox_url(author.handle, author.host)
         resp, err = self._activ_util.send_activity(activity, inbox)
         if err is not None:

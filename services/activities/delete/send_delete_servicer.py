@@ -40,7 +40,7 @@ class SendLikeDeleteServicer:
         return self._activ_util.build_delete(
             like_util.build_like_activity(
                 self._activ_util.build_actor(user_handle, self._hostname),
-                self._activ_util.build_article(author, article)
+                self._activ_util.build_article_url(author, article)
             )
         )
 

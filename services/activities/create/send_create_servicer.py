@@ -5,7 +5,6 @@ import os
 from services.proto import create_pb2
 from services.proto import database_pb2
 
-
 class SendCreateServicer:
 
     def __init__(self, db_stub, logger, users_util, activ_util):
@@ -19,12 +18,6 @@ class SendCreateServicer:
         self._users_util = users_util
         self._activ_util = activ_util
         self._client = urllib3.PoolManager()
-
-    def _generate_article_id(self, author, article_id):
-        s = f'{self._host_name}/@{author}/{article_id}'
-        if not s.startswith('http'):
-            return 'http://' + s
-        return s
 
     def _remove_local_users(self, followers):
         foreign_followers = []
@@ -81,7 +74,7 @@ class SendCreateServicer:
         return None
 
     # follower_tuple is (host, handle)
-    def _post_create_req(self, follower_tuple, req):
+    def _post_create_req(self, follower_tuple, req, ap_id):
         # Target & actor format is host/@handle e.g. banana.com/@banana
         target = follower_tuple[0] + "/@" + follower_tuple[1]
         actor = self._activ_util.build_actor(req.author, self._host_name)
@@ -98,7 +91,7 @@ class SendCreateServicer:
                 "attributedTo": actor,
                 "to": [target],
                 "content": req.body,
-                "id": self._generate_article_id(req.author, req.global_id),
+                "id": ap_id,
             }
         }
         headers = { "Content-Type": "application/ld+json" }
@@ -126,7 +119,9 @@ class SendCreateServicer:
         self._logger.debug("Recieved a new create action.")
 
         # Insert ActivityPub ID into database.
-        ap_id = self._generate_article_id(req.author, req.global_id)
+        ap_id = self._activ_util.build_article_url(
+            database_pb2.UsersEntry(handle=req.author, host=self._host_name),
+            database_pb2.PostsEntry(global_id=req.global_id))
         err = self._add_ap_id(req.global_id, ap_id)
         if err is not None:
             self._logger.error("Continuing through error: %s", err)
@@ -139,7 +134,7 @@ class SendCreateServicer:
         # go through follow send create activity
         # TODO (sailslick) make async/ parallel in the future
         for follower in foreign_follows:
-            self._post_create_req(follower, req)
+            self._post_create_req(follower, req, ap_id)
 
         resp = create_pb2.CreateResponse()
         resp.result_type = create_pb2.CreateResponse.OK
