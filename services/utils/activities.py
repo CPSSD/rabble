@@ -12,6 +12,26 @@ class ActivitiesUtil:
             s = 'http://' + s
         return s
 
+    def build_article_url(self, author, article):
+        """
+        author must be a UserEntry proto.
+        article must be a PostEntry proto.
+        """
+        if article.ap_id:
+            return article.ap_id
+        # Local article, build ID manually
+        s = f'{author.host}/ap/@{author.handle}/{article.global_id}'
+        if not s.startswith('http'):
+            s = 'http://' + s
+        return s
+
+    def build_delete(self, obj):
+        return {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "type": "Delete",
+            "object": obj
+        }
+
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'

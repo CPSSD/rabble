@@ -80,7 +80,7 @@ class ReceiveFollowServicer:
 
         if not local_user.private.value:
             self._logger.info('Accepting follow request')
-            self._util.attempt_to_accept(local_user, foreign_user, self._host_name)
+            self._util.attempt_to_accept(local_user, foreign_user, self._host_name, True)
 
         state = database_pb2.Follow.ACTIVE
         if local_user.private.value:

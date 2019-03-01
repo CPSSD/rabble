@@ -11,6 +11,7 @@ from services.proto import delete_pb2_grpc
 from utils.activities import ActivitiesUtil
 from utils.connect import get_service_channel
 from utils.logger import get_logger
+from utils.users import UsersUtil
 from servicer import S2SDeleteServicer
 
 
@@ -32,9 +33,10 @@ def main():
     logger = get_logger("delete_service", args.v)
     db_stub = get_db_stub(logger)
     activ_util = ActivitiesUtil(logger)
+    users_util = UsersUtil(logger, db_stub)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     delete_pb2_grpc.add_S2SDeleteServicer_to_server(
-        S2SDeleteServicer(logger, db_stub, activ_util),
+        S2SDeleteServicer(logger, db_stub, activ_util, users_util),
         server
     )
     server.add_insecure_port("0.0.0.0:1608")
