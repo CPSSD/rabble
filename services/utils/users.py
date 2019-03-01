@@ -55,12 +55,12 @@ class UsersUtil:
         # TODO(iandioch): Respond to errors.
         return insert_resp
 
-    def get_or_create_user_from_db( self,
-                                    handle=None,
-                                    host=None,
-                                    global_id=None,
-                                    host_is_null=False,
-                                    attempt_number=0):
+    def get_or_create_user_from_db(self,
+                                   handle=None,
+                                   host=None,
+                                   global_id=None,
+                                   host_is_null=False,
+                                   attempt_number=0):
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
@@ -81,9 +81,9 @@ class UsersUtil:
             host_is_null=host_is_null
         )
         self._create_user_in_db(user_entry)
-        return self.get_or_create_user_from_db( handle,
-                                                host,
-                                                attempt_number=attempt_number + 1)
+        return self.get_or_create_user_from_db(handle,
+                                               host,
+                                               attempt_number=attempt_number + 1)
 
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) requested from database',
@@ -113,3 +113,35 @@ class UsersUtil:
                                ', returning first one.',
                                handle, host, global_id)
             return find_resp.results[0]
+
+    def get_follower_list(self, user_id):
+        follow_entry = database_pb2.Follow(
+            followed=user_id
+        )
+        follow_req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.FIND,
+            match=follow_entry
+        )
+        follow_resp = self._db.Follow(follow_req)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error(
+                "Find for followers of id: %s returned error: %s",
+                user_id,
+                follow_resp.error
+            )
+            return []
+
+        return follow_resp.results
+
+    def remove_local_users(self, followers):
+        foreign_followers = []
+        for follow in followers:
+            follower_entry = self.get_user_from_db(
+                global_id=follow.follower
+            )
+            if follower_entry is None:
+                self._logger.error("Could not find follower in db. Id: %s", follow.follower)
+                continue
+            if follower_entry.host:
+                foreign_followers.append(follower_entry)
+        return foreign_followers

@@ -23,4 +23,17 @@ class ReceiveAnnounceServicer:
                            req.announce_time)
         response = announce_pb2.AnnounceResponse(
             result_type=announce_pb2.AnnounceResponse.OK)
+
+        # If article & author is local
+        # update follow count
+        # send update to all followers
+
+        # If announcer is local
+        # Add to share db
+
+        # If article is foreign
+        # add to share db
+        # TODO (sailslick) get foreign article
+        # TODO (sailslick) get foreign article author
+
         return response
