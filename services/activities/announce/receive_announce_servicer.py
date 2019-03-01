@@ -13,7 +13,7 @@ class ReceiveAnnounceServicer:
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
         if not self._hostname:
-            self._logger.error("'HOST_NAME' env var is not set")
+            self._logger.error("'HOST_NAME' env var is not set and no hostname is passed in")
             sys.exit(1)
 
     def ReceiveAnnounceActivity(self, req, context):
