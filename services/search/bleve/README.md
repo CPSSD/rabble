@@ -11,14 +11,14 @@ yourself.
 
 We have a preconfigured search that:
 
+- Removes English stop words
 - Fuzzy matches (using levenshtein distance)
 - Stems the index, using porter stemming.
 
-Partial matching is limited to the fuzziness metric. This is due to the
-costly nature of substring matching. Shingling would help prevent this but
-requires ngram indexing, which greatly increases the index size.
+Partial matching is limited to the fuzziness metric, this is due to the
+costly nature of substring matching.
 
-Porter stemming work under the assumption that the indexed material is English.
-A more complex multi-language approach could be possible, though the best
-approach would be to sure up the localization as a whole and then explicitly add
-certain mappings for certain languages.
+Stemming & stop word removal work under the assumption that the indexed
+material is English. A complex language detection approach could be possible,
+though the best approach would be to sure up the localization as a whole and
+then explicitly add certain mappings for certain languages.
