@@ -12,7 +12,7 @@ import (
 	util "github.com/cpssd/rabble/services/utils"
 
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/mapping"
+	"github.com/blevesearch/bleve/search/query"
 	"google.golang.org/grpc"
 )
 
@@ -30,28 +30,6 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	}
 	client := pb.NewDatabaseClient(conn)
 	return conn, client
-}
-
-func createIndexMapping() mapping.IndexMapping {
-	indexMapping := bleve.NewIndexMapping()
-	doc := mapping.NewDocumentStaticMapping()
-
-	text := mapping.NewTextFieldMapping()
-	// TODO(devoxel): figure out field mapping for creation timestamp
-	doc.AddFieldMappingsAt("body", text)
-	doc.AddFieldMappingsAt("title", text)
-	doc.AddFieldMappingsAt("author", text)
-
-	// This sets the document mapping such that any document added uses
-	// the document mapping defined above. Since it's static, this only
-	// searches explicitly declared fields.
-	indexMapping.AddDocumentMapping("_default", doc)
-
-	// TODO(devoxel): Ideally, we should annotate a PostsEntry type with
-	// the Type() functions, allowing more complex search conversions
-	// This allows custom character filters by type, or custom language
-	// analysis by type.
-	return indexMapping
 }
 
 func createIndex() (bleve.Index, error) {
@@ -138,10 +116,17 @@ func (s *Server) initIndex() {
 	log.Printf("Built index of length %d", len(res.Results))
 }
 
+func (s *Server) NewQuery(queryString string) query.Query {
+	q := bleve.NewMatchQuery(queryString)
+	q.Analyzer = AnalyzerName
+	q.Fuzziness = 1
+	return q
+}
+
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
 	const MAX_RESULTS = 50
 
-	q := bleve.NewMatchQuery(r.Query.QueryText)
+	q := s.NewQuery(r.Query.QueryText)
 	search := bleve.NewSearchRequest(q)
 	search.Size = MAX_RESULTS
 	searchRes, err := s.index.Search(search)
@@ -182,7 +167,7 @@ func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexRespon
 	}
 
 	if err := s.addToIndex(p[0]); err != nil {
-		log.Printf("Error adding to index: ", err.Error())
+		log.Printf("Error adding to index: %v", err.Error())
 		return &pb.IndexResponse{
 			ResultType: pb.IndexResponse_ERROR,
 			Error:      err.Error(),
