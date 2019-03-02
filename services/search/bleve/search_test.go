@@ -18,9 +18,9 @@ const (
 
 func buildFakePost(t *testing.T, seed int64) *pb.PostsEntry {
 	words := []string{
-		"grandest", "greatest", "great", "cpssd", "flown",
+		"grandest", "revival", "great", "cpssd", "flown",
 		"tayne", "flower", "mangled", "mange", "typ0",
-		"grandayy", "dolandark", "scrubs", "geralt", "rivia",
+		"grandayy", "dolandark", "scrubs", "inferring", "inference",
 		"caleb", "jester", "nott", "fjord", "yasha", "beau", "cad",
 	}
 
@@ -227,4 +227,58 @@ func TestIndex(t *testing.T) {
 	checkSearch(LEN_TEST_POST + 1)
 	addToIndex()
 	checkSearch(LEN_TEST_POST + 2)
+}
+
+func TestPartialMatch(t *testing.T) {
+	s := newMockedServer(t)
+	s.initIndex()
+
+	r := &pb.SearchRequest{
+		Query: &pb.SearchQuery{QueryText: "HTM"},
+	}
+	res, err := s.Search(context.Background(), r)
+	if err != nil {
+		t.Fatalf("Failed to search: %v", err)
+	}
+
+	if len(res.Results) != LEN_TEST_POST {
+		t.Fatalf("Expcted to find %d posts, got %v",
+			LEN_TEST_POST, len(res.Results))
+	}
+}
+
+func TestLowercase(t *testing.T) {
+	s := newMockedServer(t)
+	s.initIndex()
+
+	r := &pb.SearchRequest{
+		Query: &pb.SearchQuery{QueryText: "html"},
+	}
+	res, err := s.Search(context.Background(), r)
+	if err != nil {
+		t.Fatalf("Failed to search: %v", err)
+	}
+
+	if len(res.Results) != LEN_TEST_POST {
+		t.Fatalf("Expcted to find %d posts, got %v",
+			LEN_TEST_POST, len(res.Results))
+	}
+}
+
+func TestStemming(t *testing.T) {
+	s := newMockedServer(t)
+	s.initIndex()
+
+	r := &pb.SearchRequest{
+		Query: &pb.SearchQuery{QueryText: "inference"},
+	}
+	res, err := s.Search(context.Background(), r)
+	if err != nil {
+		t.Fatalf("Failed to search: %v", err)
+	}
+	t.Log(res)
+
+	if len(res.Results) != 2 {
+		t.Fatalf("Expcted to find 2 posts, got %v", len(res.Results))
+	}
 }
