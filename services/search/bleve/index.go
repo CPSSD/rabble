@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzer/custom"
+	"github.com/blevesearch/bleve/analysis/lang/en"
 	"github.com/blevesearch/bleve/analysis/token/lowercase"
 	"github.com/blevesearch/bleve/analysis/token/porter"
 	"github.com/blevesearch/bleve/analysis/tokenizer/unicode"
@@ -22,6 +22,7 @@ func RabbleAnalyzer() map[string]interface{} {
 		"char_filters": []string{},
 		"tokenizer":    unicode.Name,
 		"token_filters": []string{
+			en.StopName,
 			lowercase.Name,
 			porter.Name,
 		},
@@ -44,7 +45,6 @@ func createIndexMapping() mapping.IndexMapping {
 	doc.AddFieldMappingsAt("body", text)
 	doc.AddFieldMappingsAt("title", text)
 	doc.AddFieldMappingsAt("author", text)
-	fmt.Println(indexMapping.FieldAnalyzer("body"))
 
 	// This sets the document mapping such that any document added uses
 	// the document mapping defined above. Since it's static, this only

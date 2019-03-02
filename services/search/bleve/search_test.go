@@ -38,7 +38,7 @@ func buildFakePost(t *testing.T, seed int64) *pb.PostsEntry {
 		GlobalId:         seed,
 		AuthorId:         seed % 4,
 		Title:            fmt.Sprintf("TITLE %d", seed),
-		Body:             fmt.Sprintf("HTML <h4>%d</h4>\n<p> %s </p>", seed, words[seed]),
+		Body:             fmt.Sprintf("HTML <h4>%d</h4>\n<p> the %s </p>", seed, words[seed]),
 		MdBody:           fmt.Sprintf("MARKDOWN # %d \n\n %s", seed, words[seed]),
 		LikesCount:       seed + MAX_TEST_POST + 10,
 		CreationDatetime: now,
@@ -276,9 +276,25 @@ func TestStemming(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to search: %v", err)
 	}
-	t.Log(res)
 
 	if len(res.Results) != 2 {
 		t.Fatalf("Expcted to find 2 posts, got %v", len(res.Results))
+	}
+}
+
+func TestStop(t *testing.T) {
+	s := newMockedServer(t)
+	s.initIndex()
+
+	r := &pb.SearchRequest{
+		Query: &pb.SearchQuery{QueryText: "the"},
+	}
+	res, err := s.Search(context.Background(), r)
+	if err != nil {
+		t.Fatalf("Failed to search: %v", err)
+	}
+
+	if len(res.Results) != 0 {
+		t.Fatalf("Expcted to find 0 posts, got %v", len(res.Results))
 	}
 }
