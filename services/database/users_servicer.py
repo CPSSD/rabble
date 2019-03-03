@@ -4,7 +4,6 @@ import util
 
 from services.proto import database_pb2
 
-
 DEFAULT_NUM_USERS = 50
 
 
@@ -30,13 +29,19 @@ class UsersDatabaseServicer:
             database_pb2.UsersRequest.UPDATE: self._users_handle_update,
         }
         self._filter_defer = {
-            'private': self._private_to_filter
+            'private': self._private_to_filter,
+            'host_is_null': self._host_to_filter,
         }
 
-    def _private_to_filter(self, entry):
+    def _private_to_filter(self, entry, comp):
         if not entry.HasField("private"):
-            return None
-        return entry.private.value
+            return "", util.DONT_USE_FIELD
+        return "private" + comp, entry.private.value
+
+    def _host_to_filter(self, entry, comp):
+        if entry.host_is_null:
+            return "host IS ?", None
+        return "", util.DONT_USE_FIELD
 
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 11:
@@ -48,7 +53,10 @@ class UsersDatabaseServicer:
             # Tuple items are in order of columns of Users table in db.
             entry.global_id = tup[0]
             entry.handle = tup[1]
-            entry.host = tup[2]
+            if tup[2] is not None:
+                entry.host = tup[2]
+            else:
+                entry.host_is_null = True
             entry.display_name = tup[3]
             entry.password = tup[4]
             entry.bio = tup[5]
@@ -163,14 +171,13 @@ class UsersDatabaseServicer:
 
     def _users_handle_insert(self, req, resp):
         self._logger.info('Inserting new user into Users database.')
-        # TODO(iandioch): Ensure we're not overwriting a previous user.
         try:
             self._db.execute(
                 'INSERT INTO users '
                 '(handle, host, display_name, password, bio, rss, private) '
                 'VALUES (?, ?, ?, ?, ?, ?, ?)',
                 req.entry.handle,
-                req.entry.host,
+                req.entry.host if not req.entry.host_is_null else None,
                 req.entry.display_name,
                 req.entry.password,
                 req.entry.bio,

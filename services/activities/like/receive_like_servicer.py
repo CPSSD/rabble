@@ -27,11 +27,9 @@ class ReceiveLikeServicer:
     def _get_liking_user(self, liker_id):
         host, handle = self._user_util.parse_actor(liker_id)
         # Sets the host to None if the user is local.
-        # TODO(CianLR): This may possibly match a user with the same
-        # handle but on a different instance.
         host = self._get_host_name_param(host)
         user = self._user_util.get_or_create_user_from_db(
-            handle=handle, host=host)
+            handle=handle, host=host, host_is_null=(host is None))
         return user.global_id if user else None
 
     def _get_liked_article(self, liked_obj_id):
@@ -73,7 +71,7 @@ class ReceiveLikeServicer:
             )
             return False
         # Host is empty if user is local.
-        return user.host == ""
+        return user.host == "" or user.host_is_null
 
     def _forward_like(self, author_id, req):
         # Forward like to following servers.

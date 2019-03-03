@@ -20,6 +20,7 @@ class CreateHandler:
                 display_name=request.display_name,
                 password=self._hash_password(request.password),
                 bio=request.bio,
+                host_is_null=True,
             ),
         )
         db_resp = self._db_stub.Users(insert_request)

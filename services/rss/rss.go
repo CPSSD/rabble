@@ -246,9 +246,10 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	urInsert := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_INSERT,
 		Entry: &pb.UsersEntry{
-			Handle: handle,
-			Rss:    r.RssUrl,
-			Bio:    bio,
+			Handle:     handle,
+			Rss:        r.RssUrl,
+			Bio:        bio,
+			HostIsNull: true,
 		},
 	}
 	insertResp, insertErr := s.db.Users(ctx, urInsert)
@@ -271,8 +272,9 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 	urFind := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
 		Match: &pb.UsersEntry{
-			Handle: handle,
-			Rss:    r.RssUrl,
+			Handle:     handle,
+			Rss:        r.RssUrl,
+			HostIsNull: true,
 		},
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)

@@ -91,7 +91,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             resp.error = "Can only give recommendations for local users."
             return resp
 
-        user = self._users_util.get_user_from_db(handle=handle, host=None)
+        user = self._users_util.get_user_from_db(handle=handle, host_is_null=True)
         if user is None:
             resp.result_type = \
                 recommend_follows_pb2.FollowRecommendationResponse.ERROR

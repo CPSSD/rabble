@@ -32,14 +32,15 @@ type UsersGetter interface {
 	Users(ctx context.Context, in *pb.UsersRequest, opts ...grpc.CallOption) (*pb.UsersResponse, error)
 }
 
-func GetAuthorFromDb(ctx context.Context, handle string, host string, globalId int64, db UsersGetter) (*pb.UsersEntry, error) {
+func GetAuthorFromDb(ctx context.Context, handle string, host string, hostIsNull bool, globalId int64, db UsersGetter) (*pb.UsersEntry, error) {
 	const errFmt = "Could not find user %v@%v. error: %v"
 	r := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
 		Match: &pb.UsersEntry{
-			Handle:   handle,
-			Host:     host,
-			GlobalId: globalId,
+			Handle:     handle,
+			Host:       host,
+			HostIsNull: hostIsNull,
+			GlobalId:   globalId,
 		},
 	}
 
@@ -54,6 +55,9 @@ func GetAuthorFromDb(ctx context.Context, handle string, host string, globalId i
 
 	if len(resp.Results) == 0 {
 		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
+	} else if len(resp.Results) > 1 {
+		log.Printf("Expected 1 user for GetAuthorFromDb request, got %d",
+				   len(resp.Results))
 	}
 
 	return resp.Results[0], nil
@@ -70,7 +74,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 		}
 
 		// TODO(iandioch): Find a way to avoid or cache these requests.
-		author, err := GetAuthorFromDb(ctx, "", "", r.AuthorId, db)
+		author, err := GetAuthorFromDb(ctx, "", "", false, r.AuthorId, db)
 		if err != nil {
 			log.Println(err)
 			continue

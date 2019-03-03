@@ -59,13 +59,14 @@ class UsersUtil:
                                     handle=None,
                                     host=None,
                                     global_id=None,
+                                    host_is_null=False,
                                     attempt_number=0):
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
 
         host = self._normalise_hostname(host) if host else host
-        user = self.get_user_from_db(handle, host, global_id)
+        user = self.get_user_from_db(handle, host, global_id, host_is_null)
 
         if user is not None:
             return user
@@ -76,20 +77,22 @@ class UsersUtil:
 
         user_entry = database_pb2.UsersEntry(
             handle=handle,
-            host=host
+            host=host,
+            host_is_null=host_is_null
         )
         self._create_user_in_db(user_entry)
         return self.get_or_create_user_from_db( handle,
                                                 host,
                                                 attempt_number=attempt_number + 1)
 
-    def get_user_from_db(self, handle=None, host=None, global_id=None):
+    def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) requested from database',
                            handle, host, global_id)
         host = self._normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
+            host_is_null=host_is_null,
             global_id=global_id
         )
         find_req = database_pb2.UsersRequest(

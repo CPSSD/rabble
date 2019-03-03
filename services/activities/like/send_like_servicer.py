@@ -24,7 +24,7 @@ class SendLikeServicer:
             global_id=article.author_id)
         if user is None:
             return None
-        if not user.host:
+        if user.host_is_null or not user.host:
             # The author must be local.
             user.host = self._hostname
         return user

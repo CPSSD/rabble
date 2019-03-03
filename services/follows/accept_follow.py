@@ -16,7 +16,8 @@ class AcceptFollowServicer:
             sys.exit(1)
 
     def _get_users(self, resp, request):
-        followed = self._users_util.get_user_from_db(handle=request.handle)
+        followed = self._users_util.get_user_from_db(handle=request.handle,
+                                                     host_is_null=True)
         if not followed:
             self._logger.error('Could not find followed user.')
             resp.result_type = follows_pb2.FollowResponse.ERROR

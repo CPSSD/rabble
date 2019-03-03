@@ -55,7 +55,7 @@ class UtilTest(unittest.TestCase):
                 body="alexa",
         )
 
-        d = {'body': lambda entry: True}
+        d = {'body': lambda entry, comp: ("body" + comp, True)}
 
         clause, vals = util.equivalent_filter(entry, deferred=d)
         self.assertIn("title = ?", clause)
@@ -70,7 +70,7 @@ class UtilTest(unittest.TestCase):
                 title="Despacito",
         )
 
-        d = {'body': lambda entry: True}
+        d = {'body': lambda entry, comp: ("body" + comp, True)}
         de = [('body', False)]
 
         clause, vals = util.equivalent_filter(entry, defaults=de, deferred=d)
@@ -86,7 +86,7 @@ class UtilTest(unittest.TestCase):
                 body="nice"
         )
 
-        d = {'body': lambda entry: True}
+        d = {'body': lambda entry, comp: ("body" + comp, True)}
         de = [('body', False)]
 
         clause, vals = util.equivalent_filter(entry, defaults=de, deferred=d)
@@ -115,7 +115,7 @@ class UtilTest(unittest.TestCase):
                 title="Megolavania",
                 body="sans is angry",
         )
-        d = {'body': lambda entry: None}
+        d = {'body': lambda entry, comp: ("", util.DONT_USE_FIELD)}
         clause, vals = util.entry_to_update(entry, deferred=d)
         self.assertIn('title = ?', clause)
         self.assertNotIn('body = ?', clause)
@@ -126,7 +126,7 @@ class UtilTest(unittest.TestCase):
                 title="Megolavania",
                 body="sans is angry",
         )
-        d = {'body': lambda entry: True}
+        d = {'body': lambda entry, comp: ("body" + comp, True)}
         clause, vals = util.entry_to_update(entry, deferred=d)
         self.assertIn('title = ?', clause)
         self.assertIn(', ', clause)
@@ -138,7 +138,7 @@ class UtilTest(unittest.TestCase):
         entry = database_pb2.PostsEntry(
                 title="Megolavania",
         )
-        d = {'body': lambda entry: True}
+        d = {'body': lambda entry, comp: ("body" + comp, True)}
         clause, vals = util.entry_to_update(entry, deferred=d)
         self.assertIn('title = ?', clause)
         self.assertIn("Megolavania", vals)

@@ -84,6 +84,8 @@ message UsersEntry {
   // Custom CSS the user has given. Empty string if not set.
   string post_title_css = 10;
   string post_body_css = 11;
+  // Hack to replace the value in 'host' with NULL
+  bool host_is_null = 12;
 }
 
 message UsersRequest {

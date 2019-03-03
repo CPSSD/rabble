@@ -8,6 +8,8 @@ def not_equivalent_filter(entry, defaults=[], deferred={}):
 def build_filter_list(fields, comp, deferred):
     return [f.name + comp for f, _ in fields if f.name not in deferred]
 
+class DONT_USE_FIELD:
+    pass
 
 def entry_to_filter(entry, defaults, comparison, deferred={}):
     """
@@ -17,15 +19,17 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
       - entry: A proto message entry.
       - defaults: a list of name, value tuples that indicate default values
         to include in the filter.
-        For example, if you wanted host="" to be included in the query:
-          defaults=[(host="")]
+        For example, if you wanted test="" to be included in the query:
+          defaults=[("test", "")]
       - comparison: a clause comparing the name of the entry fields to it's value
       - deferred: a map of proto entry names to defer a value conversion to.
         The keys of this map are the names of any entry where the value is to
         be deferred to their explicit handling function.
-        The value is a function that takes as an argument as entry, and can
-        return either None (meaning do not add the field to the filter) or
-        a primitive value suitable for database use.
+        The value is a function that takes the PostEntry proto and the
+        comparison string (e.g. " = ?") as arguments and returns the full
+        comparison to use (e.g. "test = ?") and the value to be substituted.
+        If the field shouldn't be added to the filter return the DONT_USE_FIELD
+        sentinel in place of the value.
 
     Returns:
       A filter clause and a list of values.
@@ -48,16 +52,11 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
             handle_deferred.append(f.name)
 
     for name in handle_deferred:
-        val = deferred[name](entry)
-        if val is None:
+        filt, val = deferred[name](entry, comparison)
+        if val is DONT_USE_FIELD:
             continue
-        # We need to make sure we're not adding twice
-        # in the case of having a default deferred value
-        if f.name not in filter_list:
-            filter_list.append(f.name + comparison)
-            # we ensure that the nmae is ensure we dont
-            # add another value
-            names.add(f.name)
+        filter_list.append(filt)
+        names.add(name)
         values.append(val)
 
     for name, value in defaults:
@@ -81,9 +80,11 @@ def entry_to_update(entry, deferred={}):
       - deferred: a map of proto entry names to defer a value conversion to.
         The keys of this map are the names of any entry where the value is to
         be deferred to their explicit handling function.
-        The value is a function that takes as an argument as entry, and can
-        return either None (meaning do not add the field to the filter) or
-        a primitive value suitable for database use.
+        The value is a function that takes the PostEntry proto and the
+        comparison string (e.g. " = ?") as arguments and returns the full
+        comparison to use (e.g. "test = ?") and the value to be substituted.
+        If the field shouldn't be added to the filter return the DONT_USE_FIELD
+        sentinel in place of the value.
 
     Returns:
       The SET part of an update SQL query and a list of values.
@@ -103,10 +104,10 @@ def entry_to_update(entry, deferred={}):
             handle_deferred.append(f.name)
 
     for name in handle_deferred:
-        val = deferred[name](entry)
-        if val is None:
+        filt, val = deferred[name](entry, " = ?")
+        if val is DONT_USE_FIELD:
             continue
-        update_list.append(f.name + " = ?")
+        update_list.append(filt)
         values.append(val)
 
     return ', '.join(update_list), values

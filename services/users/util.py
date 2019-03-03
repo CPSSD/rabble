@@ -37,6 +37,7 @@ def get_user_and_check_pw(logger, db_stub, handle, pw):
         request_type=database_pb2.UsersRequest.FIND,
         match=database_pb2.UsersEntry(
             handle=handle,
+            host_is_null=True,
         ),
     )
     db_resp = db_stub.Users(find_request)
