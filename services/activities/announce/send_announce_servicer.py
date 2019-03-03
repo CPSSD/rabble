@@ -19,11 +19,19 @@ class SendAnnounceServicer:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
 
-    def _build_article_object(self, article_url):
+    def _build_article_object(self, article, article_url, author_actor):
+        # TODO(sailslick) remove everything other than url when discover service
+        # can find search for articles from a url
+        timestamp = article.creation_datetime.ToJsonString()
         return {
             "@context": "https://www.w3.org/ns/activitystreams",
             "type": "Article",
             "url": article_url,
+            "name": article.title,
+            "published": timestamp,
+            "attributedTo": author_actor,
+            "content": article.md_body,
+            "id": article_url,
         }
 
     def _build_announce_activity(self, actor, article_obj, published):
@@ -65,24 +73,26 @@ class SendAnnounceServicer:
             response.error = "Announcer does not exist"
             return response
 
-        # Get post originator
+        # Get post author & reblogged article
         article, err = self._get_shared_article(req.article_id)
         if err != None:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Shared Article does not exist"
             return response
 
-        originator = self._users_util.get_user_from_db(global_id=article.author_id)
-        if announcer is None:
+        author = self._users_util.get_user_from_db(global_id=article.author_id)
+        if author is None:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Author of shared post does not exist"
             return response
+        author_actor = self._activ_util.build_actor(announcer.handle, self._host_name)
 
         # Create Announce activity
-        article_url = ""  # self._activ_util.build_article_id(originator, article)
-        creation_datetime = req.annnounce_time.ToJsonString()
+        article_url = self._activ_util.build_article_url(author, article)
+        article_obj = self._build_article_object(article, article_url, author_actor)
         actor = self._activ_util.build_actor(announcer.handle, self._host_name)
-        article_obj = self._build_article_object(article_url)
+        creation_datetime = req.annnounce_time.ToJsonString()
+
         announce_activity = self._build_announce_activity(
             actor, article_obj, creation_datetime)
 
@@ -90,10 +100,10 @@ class SendAnnounceServicer:
         follow_list = self._users_util.get_follower_list(req.announcer_id)
         foreign_follows = self._users_util.remove_local_users(follow_list)
 
-        # Add article originator if not in list
+        # Add article author if not in list
         # This is so they can increment their share count
-        if originator not in foreign_follows:
-            foreign_follows.append(originator)
+        if author not in foreign_follows:
+            foreign_follows.append(author)
 
         # go through all follows and send announce activity
         # TODO (sailslick) make async/ parallel in the future
