@@ -29,7 +29,7 @@ class ReceiveLikeServicer:
         # Sets the host to None if the user is local.
         host = self._get_host_name_param(host)
         user = self._user_util.get_or_create_user_from_db(
-            handle=handle, host=host, host_is_null=host is None)
+            handle=handle, host=host, host_is_null=(host is None))
         return user.global_id if user else None
 
     def _get_liked_article(self, liked_obj_id):

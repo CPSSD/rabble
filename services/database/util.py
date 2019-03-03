@@ -55,7 +55,6 @@ def entry_to_filter(entry, defaults, comparison, deferred={}):
         filt, val = deferred[name](entry, comparison)
         if val is DONT_USE_FIELD:
             continue
-        # Ensure we don't add it twice.
         filter_list.append(filt)
         names.add(name)
         values.append(val)

@@ -32,7 +32,7 @@ class GetFollowsReceiver:
 
         # Get user obj associated with given user handle & host from database
         user_entry = self._users_util.get_or_create_user_from_db(
-            handle, host, host_is_null=host is None)
+            handle, host, host_is_null=(host is None))
         if user_entry is None:
             error = 'Could not find or create user {}@{}'.format(from_handle,
                                                                  from_instance)
