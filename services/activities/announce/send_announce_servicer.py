@@ -85,7 +85,11 @@ class SendAnnounceServicer:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Author of shared post does not exist"
             return response
-        author_actor = self._activ_util.build_actor(announcer.handle, self._host_name)
+        host = author.host
+        # check if author is local
+        if not author.host:
+            host = self._host_name
+        author_actor = self._activ_util.build_actor(author.handle, host)
 
         # Create Announce activity
         article_url = self._activ_util.build_article_url(author, article)
