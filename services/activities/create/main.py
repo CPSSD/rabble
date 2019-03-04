@@ -23,6 +23,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
@@ -34,11 +35,11 @@ def main():
     logger.info("Creating create server")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)
-    activ_util = ActivitiesUtil(logger)
+    activ_util = ActivitiesUtil(logger, db_stub)
     create_pb2_grpc.add_CreateServicer_to_server(
         CreateServicer(db_stub, article_stub, logger, users_util, activ_util),
         server
-        )
+    )
     server.add_insecure_port('0.0.0.0:1922')
     logger.info("Starting create server on port 1922")
     server.start()
@@ -48,6 +49,7 @@ def main():
     except KeyboardInterrupt:
         db_channel.close()
         pass
+
 
 if __name__ == '__main__':
     main()

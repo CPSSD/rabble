@@ -6,7 +6,7 @@ from utils.activities import ActivitiesUtil
 
 class ActivitiesUtilTest(unittest.TestCase):
     def setUp(self):
-        self.activ_util = ActivitiesUtil(Mock())
+        self.activ_util = ActivitiesUtil(Mock(), Mock())
 
     def test_build_actor(self):
         self.assertEqual(self.activ_util.build_actor('a', 'b.com'),

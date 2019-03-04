@@ -4,6 +4,7 @@ from services.proto import database_pb2 as db_pb
 from services.proto import like_pb2
 from like_util import build_like_activity
 
+
 class ReceiveLikeServicer:
     def __init__(self, logger, db, user_util, activ_util, hostname=None):
         self._logger = logger
@@ -31,26 +32,6 @@ class ReceiveLikeServicer:
         user = self._user_util.get_or_create_user_from_db(
             handle=handle, host=host, host_is_null=(host is None))
         return user.global_id if user else None
-
-    def _get_liked_article(self, liked_obj_id):
-        posts_req = db_pb.PostsRequest(
-            request_type=db_pb.PostsRequest.FIND,
-            match=db_pb.PostsEntry(
-                ap_id=liked_obj_id,
-            ),
-        )
-        resp = self._db.Posts(posts_req)
-        if resp.result_type != db_pb.PostsResponse.OK:
-            return None, resp.error
-        elif len(resp.results) > 1:
-            return None, "Recieved too many results from DB"
-        elif len(resp.results) == 0:
-            # NOTE: This can happen natually.
-            # cian@a.com follows ross@b.org.
-            # b.org sends a Like for an article by ross that already existed.
-            # a.com didn't get the original Create so it can't find it.
-            return None, "No matching DB entry for this article"
-        return resp.results[0], None
 
     def _add_like_to_db(self, user_id, article_id):
         req = db_pb.LikeEntry(
@@ -113,7 +94,7 @@ class ReceiveLikeServicer:
                            req.liked_object,
                            req.liker_id)
         # Get article.
-        article, err = self._get_liked_article(req.liked_object)
+        article, err = self._activ_util.get_article_by_ap_id(req.liked_object)
         if err is not None:
             self._logger.error("Error getting article: %s", err)
             return like_pb2.LikeResponse(
@@ -143,4 +124,3 @@ class ReceiveLikeServicer:
         return like_pb2.LikeResponse(
             result_type=like_pb2.LikeResponse.OK
         )
-

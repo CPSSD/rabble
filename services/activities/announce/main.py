@@ -34,7 +34,7 @@ def main():
     logger = get_logger("announce_service", args.v)
     db_stub = get_db_stub(logger)
     user_util = UsersUtil(logger, db_stub)
-    activ_util = ActivitiesUtil(logger)
+    activ_util = ActivitiesUtil(logger, db_stub)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     announce_pb2_grpc.add_AnnounceServicer_to_server(
         AnnounceServicer(logger, db_stub, user_util, activ_util),

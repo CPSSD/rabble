@@ -34,7 +34,7 @@ def main():
     logger = get_logger("likes_service", args.v)
     db_stub = get_db_stub(logger)
     user_util = UsersUtil(logger, db_stub)
-    activ_util = ActivitiesUtil(logger)
+    activ_util = ActivitiesUtil(logger, db_stub)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     like_pb2_grpc.add_S2SLikeServicer_to_server(
         S2SLikeServicer(logger, db_stub, user_util, activ_util),
@@ -48,6 +48,7 @@ def main():
             time.sleep(60 * 60 * 24)  # One day
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == '__main__':
     main()

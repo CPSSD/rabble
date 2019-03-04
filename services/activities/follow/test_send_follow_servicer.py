@@ -9,7 +9,7 @@ from utils.activities import ActivitiesUtil
 class SendFollowServicerTest(unittest.TestCase):
 
     def setUp(self):
-        self.activ_util = ActivitiesUtil(Mock())
+        self.activ_util = ActivitiesUtil(Mock(), Mock())
         self.servicer = SendFollowServicer(Mock(), self.activ_util)
 
     def test_build_activity(self):

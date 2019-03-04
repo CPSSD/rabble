@@ -15,12 +15,14 @@ from servicer import ApproverServicer
 from services.proto import database_pb2_grpc
 from services.proto import approver_pb2_grpc
 
+
 def get_args():
     parser = argparse.ArgumentParser('Run the rabble approval microservice')
     parser.add_argument(
         '-v', default='WARNING', action='store_const', const='DEBUG',
         help='Log more verbosely.')
     return parser.parse_args()
+
 
 def get_db_channel_address(logger):
     db_service_host = os.environ.get("DB_SERVICE_HOST")
@@ -29,15 +31,16 @@ def get_db_channel_address(logger):
         sys.exit(1)
     return db_service_host + ":1798"
 
+
 def main():
     args = get_args()
     logger = get_logger("create_service", args.v)
-    activ_util = ActivitiesUtil(logger)
     logger.info("Creating db connection")
 
     with get_service_channel(logger, "DB_SERVICE_HOST", 1798) as db_chan:
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         users_util = UsersUtil(logger, db_stub)
+        activ_util = ActivitiesUtil(logger, db_stub)
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         approver_pb2_grpc.add_ApproverServicer_to_server(
@@ -50,6 +53,7 @@ def main():
         server.start()
         while True:
             time.sleep(60 * 60 * 24)  # One day
+
 
 if __name__ == '__main__':
     main()
