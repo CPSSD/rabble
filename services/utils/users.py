@@ -33,12 +33,13 @@ class UsersUtil:
     # a user of a local/foreign instance
     def parse_actor(self, actor_uri):
         actor_uri = actor_uri.lstrip('/@')
+        # Actor uri like 'rabbleinstance.com/@admin'
         p = actor_uri.split('/@')
         if len(p) == 2:
             # rabble instance
             if p[0].endswith('/ap'):
                 p[0] = p[0][:-3]
-            # Actor uri like 'rabbleinstance.com/@admin'
+            # (host, handle)
             return tuple(p)
         # Username is incorrect/malicious/etc.
         self._logger.warning('Couldn\'t parse actor %s', actor_uri)
