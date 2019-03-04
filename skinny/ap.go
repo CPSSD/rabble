@@ -451,3 +451,68 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "{}\n")
 	}
 }
+
+// TODO(sailslick): Properly fill in announce structs
+type announceActorStruct struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
+}
+
+type announceActivityStruct struct {
+	Actor     announceActorStruct `json:"actor"`
+	Context   string              `json:"@context"`
+	Object    string              `json:"object"`
+	Type      string              `json:"type"`
+	Published string              `json:"published"`
+}
+
+func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a announce activity.\n", recipient)
+
+		decoder := json.NewDecoder(r.Body)
+		var t announceActivityStruct
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		ts, err := parseTimestamp(w, t.Published)
+		if err != nil {
+			log.Println("Unable to read announce timestamp: %v", err)
+			return
+		}
+
+		f := &pb.ReceivedAnnounceDetails{
+			AnnouncedObject: t.Object,
+			AnnouncerId:     t.Actor.Id,
+			AnnounceTime:    ts,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.announce.ReceiveAnnounceActivity(ctx, f)
+		if err != nil {
+			log.Printf("Could not receive announce activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving announce activity.\n")
+			return
+		} else if resp.ResultType == pb.AnnounceResponse_ERROR {
+			log.Printf("Could not receive announce activity. Error: %v",
+				resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving announce activity.\n")
+			return
+		}
+
+		log.Println("Announce activity received successfully.")
+		fmt.Fprintf(w, "{}\n")
+	}
+}
