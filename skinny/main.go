@@ -55,6 +55,8 @@ type serverWrapper struct {
 	s2sFollow                 pb.S2SFollowClient
 	s2sLikeConn               *grpc.ClientConn
 	s2sLike                   pb.S2SLikeClient
+	announceConn              *grpc.ClientConn
+	announce                  pb.AnnounceClient
 	approverConn              *grpc.ClientConn
 	approver                  pb.ApproverClient
 	rssConn                   *grpc.ClientConn
@@ -88,6 +90,7 @@ func (s *serverWrapper) shutdown() {
 	s.rssConn.Close()
 	s.actorsConn.Close()
 	s.searchConn.Close()
+	s.announceConn.Close()
 }
 
 func grpcConn(env string, port string) *grpc.ClientConn {
@@ -178,6 +181,11 @@ func createSearchClient() (*grpc.ClientConn, pb.SearchClient) {
 	return conn, pb.NewSearchClient(conn)
 }
 
+func createAnnounceClient() (*grpc.ClientConn, pb.AnnounceClient) {
+	conn := grpcConn("ANNOUNCE_SERVICE_HOST", "1919")
+	return conn, pb.NewAnnounceClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -213,6 +221,7 @@ func buildServerWrapper() *serverWrapper {
 		createFollowRecommendationsClient()
 	actorsConn, actorsClient := createActorsClient()
 	searchConn, searchClient := createSearchClient()
+	announceConn, announceClient := createAnnounceClient()
 	s := &serverWrapper{
 		router:                    r,
 		server:                    srv,
@@ -236,6 +245,8 @@ func buildServerWrapper() *serverWrapper {
 		s2sFollow:                 s2sFollowClient,
 		s2sLikeConn:               s2sLikeConn,
 		s2sLike:                   s2sLikeClient,
+		announceConn:              announceConn,
+		announce:                  announceClient,
 		approver:                  approverClient,
 		approverConn:              approverConn,
 		ldNorm:                    ldNormClient,
