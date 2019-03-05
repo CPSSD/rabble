@@ -169,6 +169,20 @@ class UsersDatabaseServicer:
         self._users_type_handlers[request.request_type](request, response)
         return response
 
+    def AllUsers(self, request, context):
+        response = database_pb2.UsersResponse()
+        try:
+            db_res = self._db.execute('SELECT * from users')
+        except sqlite3.Error as e:
+            response.result_type = database_pb2.UsersResponse.ERROR
+            response.error = str(e)
+            return response
+        response.result_type = database_pb2.UsersResponse.OK
+        for tup in db_res:
+            if not self._db_tuple_to_entry(tup, response.results.add()):
+                del response.results[-1]
+        return response
+
     def _users_handle_insert(self, req, resp):
         self._logger.info('Inserting new user into Users database.')
         try:

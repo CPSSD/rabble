@@ -30,3 +30,4 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.LikedCollection = like_servicer.LikedCollection
         view_servicer = ViewDatabaseServicer(db, logger)
         self.AddView = view_servicer.AddView
+        self.AllUsers = users_servicer.AllUsers
