@@ -172,7 +172,7 @@ class UsersDatabaseServicer:
     def AllUsers(self, request, context):
         response = database_pb2.UsersResponse()
         try:
-            db_res = self._db.execute('SELECT * from users')
+            db_res = self._db.execute(self._select_base, 0)
         except sqlite3.Error as e:
             response.result_type = database_pb2.UsersResponse.ERROR
             response.error = str(e)
