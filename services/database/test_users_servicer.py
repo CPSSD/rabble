@@ -57,6 +57,7 @@ class UsersDatabaseHelper(unittest.TestCase):
         self.assertNotEqual(res.result_type, database_pb2.UsersResponse.ERROR)
         return res
 
+
 class UsersDatabase(UsersDatabaseHelper):
 
     def test_all_users_when_no_users(self):

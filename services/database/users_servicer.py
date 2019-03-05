@@ -81,7 +81,8 @@ class UsersDatabaseServicer:
                                         request.handle)
             if len(user_res) != 1 or len(user_res[0]) != 1:
                 resp.result_type = database_pb2.PendingFollowResponse.ERROR
-                resp.error = 'couldnt get user response, users: ' + str(user_res)
+                resp.error = 'couldnt get user response, users: ' + \
+                    str(user_res)
                 return resp
             user_id = user_res[0][0]
             res = self._db.execute('SELECT handle, host FROM users '
@@ -98,9 +99,10 @@ class UsersDatabaseServicer:
         for tup in res:
             if len(tup) != 2:
                 resp.result_type = database_pb2.PendingFollowResponse.ERROR
-                resp.error = 'bad database resposne, got mis-sized tuple ' + str(tup)
+                resp.error = 'bad database resposne, got mis-sized tuple ' + \
+                    str(tup)
                 return
-            resp.followers.add(handle = tup[0], host = tup[1])
+            resp.followers.add(handle=tup[0], host=tup[1])
         return resp
 
     def SearchUsers(self, request, context):
@@ -114,9 +116,9 @@ class UsersDatabaseServicer:
         self._logger.info('Reading up to {} users for search users'.format(n))
         try:
             res = self._db.execute(self._select_base +
-                'WHERE global_id IN ' +
-                '(SELECT rowid FROM users_idx WHERE users_idx ' +
-                'MATCH ? LIMIT ?)', user_id, request.query + "*", n)
+                                   'WHERE global_id IN ' +
+                                   '(SELECT rowid FROM users_idx WHERE users_idx ' +
+                                   'MATCH ? LIMIT ?)', user_id, request.query + "*", n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
@@ -217,9 +219,9 @@ class UsersDatabaseServicer:
 
     def _users_handle_update(self, req, resp):
         update_clause, u_values = util.entry_to_update(
-                req.entry, deferred = self._filter_defer)
+            req.entry, deferred=self._filter_defer)
         filter_clause, f_values = util.equivalent_filter(
-                req.match, deferred = self._filter_defer)
+            req.match, deferred=self._filter_defer)
         values = u_values + f_values
 
         if not filter_clause or not update_clause:
@@ -230,7 +232,7 @@ class UsersDatabaseServicer:
             resp.error = "Bad input: could not generate SQL."
             return
 
-        sql = "UPDATE users SET " +  update_clause  + " WHERE " +  filter_clause
+        sql = "UPDATE users SET " + update_clause + " WHERE " + filter_clause
         valstr = ', '.join(str(v) for v in values)
         self._logger.debug('Running query "%s" with values (%s)', sql, valstr)
 
@@ -257,12 +259,12 @@ class UsersDatabaseServicer:
 
     def _users_handle_find_not(self, req, resp):
         filter_clause, values = util.not_equivalent_filter(
-                req.match, deferred = self._filter_defer)
+            req.match, deferred=self._filter_defer)
         self._user_find_op(resp, filter_clause, [], self._get_uid(req))
 
     def _users_handle_find(self, req, resp):
         filter_clause, values = util.equivalent_filter(
-                req.match, deferred = self._filter_defer)
+            req.match, deferred=self._filter_defer)
         self._user_find_op(resp, filter_clause, values, self._get_uid(req))
 
     def _user_find_op(self, resp, filter_clause, values, user_id):
@@ -271,7 +273,7 @@ class UsersDatabaseServicer:
                 res = self._db.execute(self._select_base)
             else:
                 res = self._db.execute(self._select_base +
-                    'WHERE ' + filter_clause, user_id, *values)
+                                       'WHERE ' + filter_clause, user_id, *values)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)
