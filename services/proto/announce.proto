@@ -31,6 +31,13 @@ message ReceivedAnnounceDetails {
 
   // This is a parsed timestamp from the request or the time it was received
   google.protobuf.Timestamp announce_time = 3;
+
+  // TODO(sailslick) remove the following fields when article discover is done
+  // i.e. when the article can be fetched from the activity pub id
+  google.protobuf.Timestamp published = 4;
+  string title = 5;
+  string body = 6;
+  string author_ap_id = 7;
 }
 
 
