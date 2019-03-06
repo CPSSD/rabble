@@ -272,6 +272,9 @@ message View {
 message AddViewResponse {
 }
 
+message AllUsersRequest {
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -297,4 +300,7 @@ service Database {
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 
   rpc AddView(View) returns (AddViewResponse);
+
+  // Get all users this instance knows about.
+  rpc AllUsers(AllUsersRequest) returns (UsersResponse);
 }
