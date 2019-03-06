@@ -199,8 +199,6 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, resp.Collection)
-		log.Printf("Created followers collection successfully.")
 	}
 }
 
@@ -453,17 +451,19 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 // TODO(sailslick): Properly fill in announce structs
-type announceActorStruct struct {
+type announceActor struct {
 	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type announceActivityStruct struct {
-	Actor     announceActorStruct `json:"actor"`
-	Context   string              `json:"@context"`
-	Object    string              `json:"object"`
-	Type      string              `json:"type"`
-	Published string              `json:"published"`
+	// TODO(#409): Change the object to simply be a createActivityObject
+	// that's gathered by it's id in the original body.
+	Actor     announceActor              `json:"actor"`
+	Context   string                     `json:"@context"`
+	Type      string                     `json:"type"`
+	Published string                     `json:"published"`
+	Object    createActivityObjectStruct `json:"object"`
 }
 
 func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
@@ -483,16 +483,26 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			return
 		}
 
-		ts, err := parseTimestamp(w, t.Published)
+		ats, err := parseTimestamp(w, t.Published)
 		if err != nil {
 			log.Println("Unable to read announce timestamp: %v", err)
 			return
 		}
 
+		ptc, err := parseTimestamp(w, t.Object.Published)
+		if err != nil {
+			log.Println("Unable to read object timestamp: %v", err)
+			return
+		}
+
 		f := &pb.ReceivedAnnounceDetails{
-			AnnouncedObject: t.Object,
+			AnnouncedObject: t.Object.Id,
 			AnnouncerId:     t.Actor.Id,
-			AnnounceTime:    ts,
+			AnnounceTime:    ats,
+			Body:            t.Object.Content,
+			AuthorApId:      t.Object.AttributedTo,
+			Published:       ptc,
+			Title:           t.Object.Name,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
