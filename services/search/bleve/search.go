@@ -119,6 +119,8 @@ func (s *Server) initIndex() {
 func (s *Server) NewQuery(queryString string) query.Query {
 	q := bleve.NewMatchQuery(queryString)
 	q.Analyzer = AnalyzerName
+	// Fuzziness is a levinstein distance metric that returns results
+	// based on how close they are.
 	q.Fuzziness = 1
 	return q
 }
