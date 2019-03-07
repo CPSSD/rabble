@@ -2,18 +2,20 @@ import os
 
 from services.proto import database_pb2 as db_pb
 from services.proto import announce_pb2
+from services.proto import article_pb2
 from announce_util import AnnounceUtil
 
 
 class ReceiveAnnounceServicer:
-    def __init__(self, logger, db, users_util, activ_util, hostname=None):
+    def __init__(self, logger, db, users_util, activ_util, article_stub, hostname=None):
         self._logger = logger
         self._db = db
         self._users_util = users_util
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
-        self._announce_util = AnnounceUtil(logger, _db, activ_util)
+        self._announce_util = AnnounceUtil(logger, db, activ_util)
+        self._article_stub = article_stub
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set and no hostname is passed in")
             sys.exit(1)
@@ -40,17 +42,64 @@ class ReceiveAnnounceServicer:
             error="Could not parse {} author id".format(actor_name),
         )
 
-    def add_to_shares_db():
-        pass
+    def send_to_followers(author, announce_time, announcer_id, announced_object, response):
+        activity = self._announce_util.build_announce_activity(
+            announcer_id, announced_object, announce_time)
 
-    def update_share_count():
-        pass
+        # Create a list of foreign followers
+        follow_list = self._users_util.get_follower_list(author.global_id)
+        foreign_follows = self._users_util.remove_local_users(follow_list)
 
-    def send_to_followers():
-        pass
+        # Send activity to all followers
+        response = self._announce_util.send_announce_activity(
+            foreign_follows, activity, response)
+        return response
 
-    def create_post():
-        pass
+    def create_post(author, req):
+        self._logger.debug("Calling article service with new foreign article")
+        # set flag in article service that is foreign (so no need to create service)
+        na = article_pb2.NewArticle(
+            author=author.handle,
+            author_id=author.global_id,
+            title=req.title,
+            body=req.body,
+            creation_datetime=req.published,
+            foreign=True,
+            ap_id=req.announced_object,
+        )
+        article_resp = self._article_stub.CreateNewArticle(na)
+        if article_resp.result_type == article_pb2.NewArticleResponse.ERROR:
+            self._logger.error(
+                "New foreign article creation returned error: %s",
+                article_resp.error
+            )
+            return None
+        article, err = self._activ_util.get_article_by_ap_id(req.announced_object)
+        if err is not None:
+            self._logger.error(
+                "Could not find new article, ap_id: %, after creation: %s",
+                req.announced_object,
+                article_resp.error
+            )
+            return None
+        return article
+
+    def add_share_update_count(announcer, article, announce_time):
+        req = db_pb.ShareEntry(
+            user_id=announcer.global_id,
+            article_id=article.global_id,
+            announce_time=announce_time
+        )
+        resp = self._db.AddShare(req)
+        if resp.result_type != db_pb.AddShareResponse.OK:
+            self._logger.error(
+                "Received error while adding share %s",
+                resp.error)
+            return announce_pb2.AnnounceResponse(
+                result_type=announce_pb2.AnnounceResponse.ERROR,
+                error="Could not add share to db {}".format(resp.error),
+            )
+        return None
 
     def ReceiveAnnounceActivity(self, req, context):
         self._logger.debug("Got announce for %s from %s at %s",
@@ -67,9 +116,6 @@ class ReceiveAnnounceServicer:
         announcer_tuple = self._users_util.parse_actor(req.announcer_id)
         if announcer_tuple[0] is None:
             return parse_actor_error("announcer", req.announcer_id)
-        target_tuple = self._users_util.parse_actor(req.announcer_id)
-        if announcer_tuple[0] is None:
-            return parse_actor_error("target", req.target_id)
 
         author = self.get_user_by_ap_id(author_tuple)
         # TODO(sailslick) check if author is actual author/post exists irl
@@ -91,44 +137,65 @@ class ReceiveAnnounceServicer:
             author = self._users_util.get_or_create_user_from_db(
                 handle=author_tuple[1], host=author_tuple[0])
             # Create post
-            article = self.create_post()
-            ok = self.add_to_shares_db()
-            if not ok:
-                self.update_share_count()
+            article = self.create_post(author, req)
+            if article is None:
+                return announce_pb2.AnnounceResponse(
+                    result_type=announce_pb2.AnnounceResponse.ERROR,
+                    error="Could not create local version of article id: {}".format(
+                        req.announced_object),
+                )
         else:
+            # Check if announcer exists
+            announcer = self.get_user_by_ap_id(announcer_tuple)
+            if announcer is None:
+                # If announcer doesn't exist, target is follower of author
+                # Add announcer
+                announcer = self._users_util.get_or_create_user_from_db(
+                    handle=announcer_tuple[1], host=announcer_tuple[0])
+
+            # Check if article exists
             article, err = self._activ_util.get_article_by_ap_id(req.announced_object)
-            if err is not None:
+            if err is not None and (author.host_is_null or not author.host):
+                # Author is local but the post doesn't exist.
+                # This is a bad request.
+                self._logger.error(
+                    "Received announce with local author for post that doesn't exist")
+                return announce_pb2.AnnounceResponse(
+                    result_type=announce_pb2.AnnounceResponse.ERROR,
+                    error="Announce with local author for post that doesn't exist",
+                )
+            elif err is not None:
+                self._logger.debug(
+                    "Could not find new article, ap_id: %, even though author exists",
+                    req.announced_object
+                )
                 # TODO(sailslick) check when author is foreign, maybe we didn't get article?
                 # But this requires checking the ap_id of article and matching to author
                 # Also check if author actually wrote this
                 # https://github.com/CPSSD/rabble/issues/409
                 # Create post
-                article = self.create_post()
-                ok = self.add_to_shares_db()
-                if not ok:
-                    self.update_share_count()
-            if author.host_is_null or not author.host:
+                article = self.create_post(author, req)
+                if article is None:
+                    return announce_pb2.AnnounceResponse(
+                        result_type=announce_pb2.AnnounceResponse.ERROR,
+                        error="Could not create local version of article id: {}".format(
+                            req.announced_object),
+                    )
+            elif author.host_is_null or not author.host:
                 # author and article local, check if author is target.
                 # if not target, send success as author will receive share
                 if req.target_id != req.author_id:
                     return response
                 # if target, add to shares db, update share count, send to followers
-                ok = self.add_to_shares_db()
-                if not ok:
-                    self.update_share_count()
-                self.send_to_followers()
-                return response
+                err_resp = self.add_share_update_count(announcer, article, req.announce_time)
+                if err_resp is not None:
+                    return err_resp
+                return self.send_to_followers(author, req.announce_time,
+                                              req.announcer,
+                                              req.announced_object, response)
 
-            # author in db but not local
-            announcer = self.get_user_by_ap_id(announcer_tuple)
-            if announcer is None:
-                # If announcer doesn't exist, is follower of author, just increment
-                self.update_share_count()
-                return response
-
-            # If announcer exists, sent to announcer follower or to announcer
-            ok = self.add_to_shares_db()
-            if not ok:
-                self.update_share_count()
-
+        # At this point, author, announcer and article all exist.
+        err_resp = self.add_share_update_count(announcer, article, req.announce_time)
+        if err_resp is not None:
+            return err_resp
         return response

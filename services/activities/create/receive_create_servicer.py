@@ -61,7 +61,6 @@ class ReceiveCreateServicer:
     def _add_to_posts_db(self, author_handle, author_id, req):
         self._logger.debug("Calling article service with new foreign article")
         # set flag in article service that is foreign (so no need to create service)
-        # TODO(sailslick) Unstring foreign_id when pr #159 is merged
         na = article_pb2.NewArticle(
             author=author_handle,
             author_id=author_id,

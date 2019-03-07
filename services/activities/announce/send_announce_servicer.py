@@ -16,7 +16,7 @@ class SendAnnounceServicer:
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get("HOST_NAME")
-        self._announce_util = AnnounceUtil(logger, _db, activ_util)
+        self._announce_util = AnnounceUtil(logger, db, activ_util)
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
