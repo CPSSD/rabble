@@ -17,18 +17,10 @@ class ReceiveLikeServicer:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
 
-    def _get_host_name_param(self, host):
-        # Remove protocol
-        foreign_host = host.split('://')[-1]
-        local_host = self._hostname.split('://')[-1]
-        if foreign_host == local_host:
-            return None
-        return host
-
     def _get_liking_user(self, liker_id):
         host, handle = self._user_util.parse_actor(liker_id)
         # Sets the host to None if the user is local.
-        host = self._get_host_name_param(host)
+        host = self._activ_util.get_host_name_param(host, self._hostname)
         user = self._user_util.get_or_create_user_from_db(
             handle=handle, host=host, host_is_null=(host is None))
         return user.global_id if user else None

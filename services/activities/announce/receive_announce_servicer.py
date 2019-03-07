@@ -14,14 +14,15 @@ class ReceiveAnnounceServicer:
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
-        self._announce_util = AnnounceUtil(logger, db, activ_util)
+        self._announce_util = AnnounceUtil(logger, db, activ_util, self._hostname)
         self._article_stub = article_stub
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set and no hostname is passed in")
             sys.exit(1)
 
     def get_user_by_ap_id(self, actor_tuple):
-        if actor_tuple[0] == self._hostname:
+        host = self._activ_util.get_host_name_param(actor_tuple[0], self._hostname)
+        if host is None:
             user = self._users_util.get_user_from_db(
                 handle=actor_tuple[1], host_is_null=True)
         else:
@@ -85,6 +86,7 @@ class ReceiveAnnounceServicer:
         return article
 
     def add_share_update_count(announcer, article, announce_time):
+        '''
         req = db_pb.ShareEntry(
             user_id=announcer.global_id,
             article_id=article.global_id,
@@ -100,12 +102,14 @@ class ReceiveAnnounceServicer:
                 error="Could not add share to db {}".format(resp.error),
             )
         return None
+        '''
+        return None
 
     def ReceiveAnnounceActivity(self, req, context):
         self._logger.debug("Got announce for %s from %s at %s",
                            req.announced_object,
                            req.announcer_id,
-                           req.announce_time)
+                           req.announce_time.seconds)
         response = announce_pb2.AnnounceResponse(
             result_type=announce_pb2.AnnounceResponse.OK)
 
@@ -184,7 +188,7 @@ class ReceiveAnnounceServicer:
             elif author.host_is_null or not author.host:
                 # author and article local, check if author is target.
                 # if not target, send success as author will receive share
-                if req.target_id != req.author_id:
+                if req.target_id != req.author_ap_id:
                     return response
                 # if target, add to shares db, update share count, send to followers
                 err_resp = self.add_share_update_count(announcer, article, req.announce_time)

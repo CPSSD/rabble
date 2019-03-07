@@ -1,4 +1,5 @@
 import json
+import time
 from urllib import request
 from services.proto import database_pb2
 
@@ -13,6 +14,14 @@ class ActivitiesUtil:
         if not s.startswith('http'):
             s = 'http://' + s
         return s
+
+    def get_host_name_param(self, host, hostname):
+        # Remove protocol
+        foreign_host = host.split('://')[-1]
+        local_host = hostname.split('://')[-1]
+        if foreign_host == local_host:
+            return None
+        return host
 
     def build_article_url(self, author, article):
         """
@@ -76,3 +85,7 @@ class ActivitiesUtil:
             # a.com didn't get the original Create so it can't find it.
             return None, "No matching DB entry for this article"
         return resp.results[0], None
+
+    def timestamp_to_rfc(self, timestamp):
+        # 2006-01-02T15:04:05.000Z
+        return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(timestamp.seconds))

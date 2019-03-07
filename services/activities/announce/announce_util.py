@@ -1,10 +1,12 @@
+from services.proto import announce_pb2
 
 
 class AnnounceUtil:
-    def __init__(self, logger, db, activ_util):
+    def __init__(self, logger, db, activ_util, hostname):
         self._logger = logger
         self._db = db
         self._activ_util = activ_util
+        self._hostname = hostname
 
     def build_announce_activity(self, actor, article_obj, published):
         return {
@@ -15,13 +17,18 @@ class AnnounceUtil:
             "published": published,
         }
 
-    def send_announce_activity(target_list, activity, response):
+    def send_announce_activity(self, target_list, activity, response):
         # go through all targets and send announce activity
         # TODO (sailslick) make async/ parallel in the future
         for target in target_list:
-            target_actor = self._activ_util.build_actor(target.handle, target.host)
+            host = target.host
+            self._logger.debug("host [%s]", host)
+            if not host or host == "":
+                self._logger.debug("host [%s]", self._hostname)
+                host = self._hostname
+            target_actor = self._activ_util.build_actor(target.handle, host)
             activity["target"] = target_actor
-            inbox = self._activ_util.build_inbox_url(target.handle, target.host)
+            inbox = self._activ_util.build_inbox_url(target.handle, host)
             resp, err = self._activ_util.send_activity(activity, inbox)
             if err is not None:
                 response.result_type = announce_pb2.AnnounceResponse.ERROR
