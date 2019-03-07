@@ -5,6 +5,7 @@ from urllib import request
 
 from services.proto import database_pb2
 from services.proto import announce_pb2
+from announce_util import AnnounceUtil
 
 
 class SendAnnounceServicer:
@@ -15,6 +16,7 @@ class SendAnnounceServicer:
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get("HOST_NAME")
+        self._announce_util = AnnounceUtil(logger, _db, activ_util)
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
@@ -97,7 +99,7 @@ class SendAnnounceServicer:
         actor = self._activ_util.build_actor(announcer.handle, self._host_name)
         creation_datetime = req.annnounce_time.ToJsonString()
 
-        announce_activity = self._build_announce_activity(
+        announce_activity = self._announce_util.build_announce_activity(
             actor, article_obj, creation_datetime)
 
         # Create a list of foreign followers
@@ -105,19 +107,16 @@ class SendAnnounceServicer:
         foreign_follows = self._users_util.remove_local_users(follow_list)
 
         # Add article author if not in list
-        # This is so they can increment their share count
+        # This is so they can increment their share count & supply to followers
         if author not in foreign_follows:
             foreign_follows.append(author)
 
-        # go through all follows and send announce activity
-        # TODO (sailslick) make async/ parallel in the future
-        for follower in foreign_follows:
-            target = self._activ_util.build_actor(follower.handle, follower.host)
-            announce_activity["target"] = target
-            inbox = self._activ_util.build_inbox_url(follower.handle, follower.host)
-            resp, err = self._activ_util.send_activity(announce_activity, inbox)
-            if err is not None:
-                response.result_type = announce_pb2.AnnounceResponse.ERROR
-                response.error = err
+        # Add announcer so local instance can add to share db
+        if announcer not in foreign_follows:
+            foreign_follows.append(announcer)
+
+        # Send activity to all followers
+        response = self._announce_util.send_announce_activity(
+            foreign_follows, announce_activity, response)
 
         return response
