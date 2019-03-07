@@ -87,8 +87,8 @@ class UsersUtil:
                                                attempt_number=attempt_number + 1)
 
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
-        self._logger.debug('User %s@%s (id %s) requested from database',
-                           handle, host, global_id)
+        self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
+                           handle, host, global_id, host_is_null)
         host = self._normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,

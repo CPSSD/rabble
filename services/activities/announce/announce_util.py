@@ -22,9 +22,7 @@ class AnnounceUtil:
         # TODO (sailslick) make async/ parallel in the future
         for target in target_list:
             host = target.host
-            self._logger.debug("host [%s]", host)
             if not host or host == "":
-                self._logger.debug("host [%s]", self._hostname)
                 host = self._hostname
             target_actor = self._activ_util.build_actor(target.handle, host)
             activity["target"] = target_actor

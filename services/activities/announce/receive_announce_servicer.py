@@ -33,7 +33,7 @@ class ReceiveAnnounceServicer:
             return None
         return user
 
-    def parse_actor_error(actor_name, actor_id):
+    def parse_actor_error(self, actor_name, actor_id):
         self._logger.error(
             "Received error while parsing %s author id: %s",
             actor_name,
@@ -43,7 +43,7 @@ class ReceiveAnnounceServicer:
             error="Could not parse {} author id".format(actor_name),
         )
 
-    def send_to_followers(author, announce_time, announcer_id, announced_object, response):
+    def send_to_followers(self, author, announce_time, announcer_id, announced_object, response):
         activity = self._announce_util.build_announce_activity(
             announcer_id, announced_object, announce_time)
 
@@ -56,7 +56,7 @@ class ReceiveAnnounceServicer:
             foreign_follows, activity, response)
         return response
 
-    def create_post(author, req):
+    def create_post(self, author, req):
         self._logger.debug("Calling article service with new foreign article")
         # set flag in article service that is foreign (so no need to create service)
         na = article_pb2.NewArticle(
@@ -78,14 +78,14 @@ class ReceiveAnnounceServicer:
         article, err = self._activ_util.get_article_by_ap_id(req.announced_object)
         if err is not None:
             self._logger.error(
-                "Could not find new article, ap_id: %, after creation: %s",
+                "Could not find new article ap_id: % after creation: %s",
                 req.announced_object,
-                article_resp.error
+                err
             )
             return None
         return article
 
-    def add_share_update_count(announcer, article, announce_time):
+    def add_share_update_count(self, announcer, article, announce_time):
         '''
         req = db_pb.ShareEntry(
             user_id=announcer.global_id,
@@ -106,7 +106,7 @@ class ReceiveAnnounceServicer:
         return None
 
     def ReceiveAnnounceActivity(self, req, context):
-        self._logger.debug("Got announce for %s from %s at %s",
+        self._logger.debug("Received announce for %s from %s at %s",
                            req.announced_object,
                            req.announcer_id,
                            req.announce_time.seconds)
@@ -169,10 +169,9 @@ class ReceiveAnnounceServicer:
                     error="Announce with local author for post that doesn't exist",
                 )
             elif err is not None:
-                self._logger.debug(
-                    "Could not find new article, ap_id: %, even though author exists",
-                    req.announced_object
-                )
+                message = "Could not find new article ap_id: {} even though author exists".format(
+                    req.announced_object)
+                self._logger.debug(message)
                 # TODO(sailslick) check when author is foreign, maybe we didn't get article?
                 # But this requires checking the ap_id of article and matching to author
                 # Also check if author actually wrote this
