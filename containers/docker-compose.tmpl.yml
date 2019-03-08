@@ -33,6 +33,7 @@ services:
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service_[[INSTANCE_ID]]
       - ACTORS_SERVICE_HOST=actors_service_[[INSTANCE_ID]]
       - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
+      - ANNOUNCE_SERVICE_HOST=announce_service_[[INSTANCE_ID]]
   feed_service_[[INSTANCE_ID]]:
     build:
       context: ./services/feed

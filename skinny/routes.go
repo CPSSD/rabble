@@ -46,16 +46,18 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/follows/pending", s.handlePendingFollows())
 	r.HandleFunc("/c2s/follows/accept", s.handleAcceptFollow())
 	r.HandleFunc("/c2s/track_view", s.handleTrackView())
+	r.HandleFunc("/c2s/announce", s.handleAnnounce())
 
 	approvalHandler := s.handleApprovalActivity()
 	// ActorInbox routes are routed based on the activity type
 	s.actorInboxRouter = map[string]http.HandlerFunc{
-		"create": s.handleCreateActivity(),
-		"delete": s.handleDeleteActivity(),
-		"follow": s.handleFollowActivity(),
-		"like":   s.handleLikeActivity(),
-		"accept": approvalHandler,
-		"reject": approvalHandler,
+		"create":   s.handleCreateActivity(),
+		"delete":   s.handleDeleteActivity(),
+		"follow":   s.handleFollowActivity(),
+		"like":     s.handleLikeActivity(),
+		"accept":   approvalHandler,
+		"reject":   approvalHandler,
+		"announce": s.handleAnnounceActivity(),
 	}
 	s.deleteActivityRouter = map[string]http.HandlerFunc{
 		"like": s.handleLikeDeleteActivity(),
