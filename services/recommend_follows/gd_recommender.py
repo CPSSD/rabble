@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from services.proto import database_pb2
 
+
 class GraphDistanceRecommender:
     '''Recommend based on the "graph distance" similarity metric. This metric
     recommends users to follow if they are a short distance away on the
@@ -19,7 +20,7 @@ class GraphDistanceRecommender:
         self._db = database_stub
 
         if (self.MAX_DIST_ENV_VAR in os.environ and
-            len(os.environ[self.MAX_DIST_ENV_VAR])):
+                len(os.environ[self.MAX_DIST_ENV_VAR])):
             try:
                 self.MAX_DIST = int(os.environ[self.MAX_DIST_ENV_VAR])
             except e:
@@ -77,7 +78,7 @@ class GraphDistanceRecommender:
             who follows someone else who follows you, the distance is 3; etc.
             This metric is likely to compute many users to be at the same
             distance.
-            
+
             Here, we evaluate the graph distance between two users by using the
             method given in 'Scalable Proximity Estimation and Link Prediction
             in Online Social Networks' by Han Hee Song, Tae Won Cho, Vacha
@@ -86,9 +87,9 @@ class GraphDistanceRecommender:
             to compute the distance'''
 
             # The source set; initialised to just contain the active  user.
-            s = set([u_id]) 
+            s = set([u_id])
             # The destination set; initialised to just contain the target user.
-            d = set([v_id]) 
+            d = set([v_id])
             dist = 0
 
             # Keep iterating while the set intersection of S and D is empty;
@@ -156,11 +157,10 @@ class GraphDistanceRecommender:
                 r.append((v_id, similarity))
 
             # Sort by similarity (the most confident recommendation first).
-            r.sort(key=lambda x:-x[1])
+            r.sort(key=lambda x: -x[1])
             if len(r):
                 recommendations[u_id] = r
         return recommendations
-
 
     def _compute_recommendations(self):
         self._logger.debug(
@@ -175,7 +175,6 @@ class GraphDistanceRecommender:
         except Exception as e:
             self._logger.error('Could not compute recommendations:')
             self._logger.error(str(e))
-
 
     def get_recommendations(self, user_id):
         if user_id in self._recommendations:
