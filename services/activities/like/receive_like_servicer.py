@@ -58,7 +58,7 @@ class ReceiveLikeServicer:
             article_id=article_id,
         )
         resp = self._db.AddLike(req)
-        if resp.result_type != db_pb.AddLikeResponse.OK:
+        if resp.result_type != db_pb.DBLikeResponse.OK:
             return resp.error
         return None
 

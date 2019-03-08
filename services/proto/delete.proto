@@ -19,13 +19,18 @@ message DeleteResponse {
   string error = 2;
 }
 
-message ReceivedDeleteDetails {
+message ReceivedLikeDeleteDetails {
+  // The ActivityPub ID of the object being liked.
+  string liked_object_ap_id = 1;
+
+  // The ActivityPub ID of the user liking the object.
+  string liking_user_ap_id = 2;
 }
 
 
 // Service for sending and receiving server-to-server delete activities.
 service S2SDelete {
-  rpc ReceiveDeleteActivity(ReceivedDeleteDetails) returns (DeleteResponse);
+  rpc ReceiveLikeDeleteActivity(ReceivedLikeDeleteDetails) returns (DeleteResponse);
   rpc SendLikeDeleteActivity(LikeDeleteDetails) returns (DeleteResponse);
   // Further specialisations, i.e. SendArticleDelete, to be placed here.
 }

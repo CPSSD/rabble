@@ -29,6 +29,10 @@ type serverWrapper struct {
 	// based on the Type json parameter
 	actorInboxRouter map[string]http.HandlerFunc
 
+	// This map is responsible for correctly routing Delete activities
+	// to the function handling the deleteionn of that particular object.
+	deleteActivityRouter map[string]http.HandlerFunc
+
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
 	shutdownWait time.Duration
