@@ -65,9 +65,19 @@ class GraphDistanceRecommender:
 
                 # Expand the smaller of the two sets.
                 if len(d) < len(s):
+                    old_size = len(d)
                     expand(d, inverse=True)
+                    new_size = len(d)
+                    if old_size == new_size:
+                        # Set didn't change, quit
+                        break
                 else:
+                    old_size = len(d)
                     expand(s)
+                    new_size = len(d)
+                    if old_size == new_size:
+                        # Set didn't change, quit
+                        break
 
             return dist
 
