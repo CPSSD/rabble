@@ -5,9 +5,10 @@ from collections import defaultdict
 from services.proto import database_pb2
 
 class GraphDistanceRecommender:
-    '''Recommend based on the "graph distance" similarity metric.
-    TODO(iandioch): Explain how this metric works.
-    .'''
+    '''Recommend based on the "graph distance" similarity metric. This metric
+    recommends users to follow if they are a short distance away on the
+    (directed) follow graph. Realistically, this means it will recommend a user
+    follow another user if someone they already follow follows that user.'''
 
     def __init__(self, logger, users_util, database_stub):
         self._logger = logger
@@ -24,6 +25,12 @@ class GraphDistanceRecommender:
         return [(u.global_id, u.host_is_null) for u in users_resp.results]
 
     def _get_neighbours(self, uid, inverse=False):
+        '''Get the neighbours of the user with the given uid.
+
+        If `inverse` is False, then this returns the IDs of users who the given
+        user follows.
+        If `inverse` is True, then this returns the IDs of users who follow the
+        given user.'''
         follow = database_pb2.Follow(follower=uid)
         if inverse:
             follow = database_pb2.Follow(followed=uid)
@@ -45,38 +52,63 @@ class GraphDistanceRecommender:
         be equal to S[v][u].'''
 
         def expand(s, inverse=False):
+            '''Expand the given set `s`. If `inverse` is set to true, it will
+            expand this set using inverse follows instead of direct follows.'''
             for u_id in set(s):
                 s.update(self._get_neighbours(u_id, inverse=inverse))
 
         def graph_dist(u_id, v_id):
-            '''TODO: Explain graph distance metric'''
-            # TODO(iandioch): Impl expanding ring.
+            '''The graph distance metric suggests if you are close on the
+            follow graph, then I should follow you. This means if I follow 
+            someone who follows you, the distance from me to you is 2, and I
+            am likely to be interested in following you. If I follow someone
+            who follows someone else who follows you, the distance is 3; etc.
+            This metric is likely to compute many users to be at the same
+            distance.
+            
+            Here, we evaluate the graph distance between two users by using the
+            method given in 'Scalable Proximity Estimation and Link Prediction
+            in Online Social Networks' by Han Hee Song, Tae Won Cho, Vacha
+            Dave, Yin Zhang, Lili Qiu, which avoids keeping the whole follow
+            graph in memory at once, and instead uses an expanding ring search
+            to compute the distance'''
             MAX_DIST = 6
-            s = set([u_id]) # source set
-            d = set([v_id]) # destination set
+
+            # The source set; initialised to just contain the active  user.
+            s = set([u_id]) 
+            # The destination set; initialised to just contain the target user.
+            d = set([v_id]) 
             dist = 0
 
-            # Keep iterating while the set intersection of s and d is empty:
+            # Keep iterating while the set intersection of S and D is empty;
+            # ie. as soon as we find some element in the intersection set, we
+            # can stop iterating, as we have found a route from S to D.
             while len(s & d) == 0:
                 if dist > MAX_DIST:
                     # We have gone deep enough; give up.
                     break
                 dist += 1
 
-                # Expand the smaller of the two sets.
+                # We must either expand S to include all users who users of S
+                # follow, or expand D to include all users who follow
+                # someone in D (ie. inverse follows).
+                # For efficiency, we always choose the smaller set between S
+                # and D to expand.
                 if len(d) < len(s):
                     old_size = len(d)
+                    # Expand D by adding in the inverse follows.
                     expand(d, inverse=True)
                     new_size = len(d)
                     if old_size == new_size:
-                        # Set didn't change, quit
+                        # Set didn't change, so we can exit early.
                         break
                 else:
-                    old_size = len(d)
+                    old_size = len(s)
+                    # Expand S by adding the directly followed users.
                     expand(s)
-                    new_size = len(d)
+                    new_size = len(s)
                     if old_size == new_size:
-                        # Set didn't change, quit
+                        # Set didn't change, so we can exit early.
                         break
 
             return dist
@@ -88,6 +120,8 @@ class GraphDistanceRecommender:
                 # Do not calc distances for foreign users.
                 continue
             for v_id, v_is_local in users:
+                # Negate the graph distance, as we want a low-numbered graph
+                # distance to mean a high-numbered similarity level.
                 similarity[u_id][v_id] = -graph_dist(u_id, v_id)
         return similarity
 
