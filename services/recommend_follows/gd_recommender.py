@@ -10,10 +10,22 @@ class GraphDistanceRecommender:
     (directed) follow graph. Realistically, this means it will recommend a user
     follow another user if someone they already follow follows that user.'''
 
+    MAX_DIST = 4
+    MAX_DIST_ENV_VAR = 'GRAPH_DIST_FOLLOW_RECOMMENDER_MAX_DIST'
+
     def __init__(self, logger, users_util, database_stub):
         self._logger = logger
         self._users_util = users_util
         self._db = database_stub
+
+        if (self.MAX_DIST_ENV_VAR in os.environ and
+            len(os.environ[self.MAX_DIST_ENV_VAR])):
+            try:
+                self.MAX_DIST = int(os.environ[self.MAX_DIST_ENV_VAR])
+            except e:
+                self._logger.warning('Could not load max dist from env var:',
+                                     str(e))
+        self._logger.debug("Graph max dist = {}.".format(self.MAX_DIST))
 
         self._compute_recommendations()
 
@@ -72,7 +84,6 @@ class GraphDistanceRecommender:
             Dave, Yin Zhang, Lili Qiu, which avoids keeping the whole follow
             graph in memory at once, and instead uses an expanding ring search
             to compute the distance'''
-            MAX_DIST = 6
 
             # The source set; initialised to just contain the active  user.
             s = set([u_id]) 
@@ -84,7 +95,7 @@ class GraphDistanceRecommender:
             # ie. as soon as we find some element in the intersection set, we
             # can stop iterating, as we have found a route from S to D.
             while len(s & d) == 0:
-                if dist > MAX_DIST:
+                if dist > self.MAX_DIST:
                     # We have gone deep enough; give up.
                     break
                 dist += 1
