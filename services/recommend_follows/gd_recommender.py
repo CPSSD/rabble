@@ -19,9 +19,23 @@ class GraphDistanceRecommender:
     def _load_data(self):
         users_resp = self._db.AllUsers(database_pb2.AllUsersRequest())
         if users_resp.result_type == database_pb2.UsersResponse.ERROR:
-            self._logger.error('Could not get follows from database: %s',
+            self._logger.error('Could not get users from database: %s',
                                users_resp.error)
         return [(u.global_id, u.host_is_null) for u in users_resp.results]
+
+    def _get_neighbours(self, uid, inverse=False):
+        follow = database_pb2.Follow(follower=uid)
+        if inverse:
+            follow = database_pb2.Follow(followed=uid)
+        req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.FIND,
+            entry=follow
+        )
+        resp = self._db.Follow(req)
+        if resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Could not get follows from database: %s',
+                               resp.error)
+        return [(f.follower if inverse else f.followed) for f in resp.results]
 
     def _compute_similarity_matrix(self, users):
         '''Compute the similarity matrix for all the users in the users set.
@@ -30,10 +44,32 @@ class GraphDistanceRecommender:
         recommending u should follow v. In this directed graph, S[u][v] may not
         be equal to S[v][u].'''
 
+        def expand(s, inverse=False):
+            for u_id in set(s):
+                s.update(self._get_neighbours(u_id, inverse=inverse))
+
         def graph_dist(u_id, v_id):
             '''TODO: Explain graph distance metric'''
             # TODO(iandioch): Impl expanding ring.
-            return 2
+            MAX_DIST = 6
+            s = set([u_id]) # source set
+            d = set([v_id]) # destination set
+            dist = 0
+
+            # Keep iterating while the set intersection of s and d is empty:
+            while len(s & d) == 0:
+                if dist > MAX_DIST:
+                    # We have gone deep enough; give up.
+                    break
+                dist += 1
+
+                # Expand the smaller of the two sets.
+                if len(d) < len(s):
+                    expand(d, inverse=True)
+                else:
+                    expand(s)
+
+            return dist
 
         # Create a 2D matrix to hold the similarity of all user pairs.
         similarity = defaultdict(lambda: defaultdict(int))
