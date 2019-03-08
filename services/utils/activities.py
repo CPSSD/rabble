@@ -1,10 +1,13 @@
 import json
 from urllib import request
 
-
 class ActivitiesUtil:
     def __init__(self, logger):
         self._logger = logger
+
+    @staticmethod
+    def rabble_context():
+        return ["https://www.w3.org/ns/activitystreams"]
 
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
@@ -27,7 +30,7 @@ class ActivitiesUtil:
 
     def build_delete(self, obj):
         return {
-            "@context": "https://www.w3.org/ns/activitystreams",
+            "@context": self.rabble_context(),
             "type": "Delete",
             "object": obj
         }
