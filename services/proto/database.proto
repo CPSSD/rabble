@@ -21,6 +21,7 @@ message PostsEntry {
   // True if the user in the request is following the author of this post (and
   // this follow is accepted and not pending).
   bool is_followed = 10;
+  bool is_shared = 11;
 }
 
 message PostsRequest {
@@ -233,6 +234,49 @@ message InstanceFeedRequest {
   google.protobuf.Int64Value user_global_id = 2;
 }
 
+message SharedPostsRequest {
+  int32 num_posts = 1;
+  // The global ID of the user making this request, not set if none.
+  google.protobuf.Int64Value user_global_id = 2;
+}
+
+// Built off PostsEntry with some extras for shared (11,12,13)
+message SharesEntry {
+  int64 global_id = 1;
+  int64 author_id = 2;
+  string title = 3;
+  string body = 4;
+  google.protobuf.Timestamp creation_datetime = 5;
+  string md_body = 6;
+  string ap_id = 7;  // This is the URL ID, i.e. http://a.b/@cian/123
+  int64 likes_count = 8;
+  // True if the user in the request has liked this post
+  // Note: defaults to false.
+  bool is_liked = 9;
+  // True if the user in the request is following the author of this post (and
+  // this follow is accepted and not pending).
+  bool is_followed = 10;
+  bool is_shared = 11;
+  int64 sharer_id = 12;
+  google.protobuf.Timestamp announce_datetime = 13;
+}
+
+message SharesResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+    // Further types can be specified here.
+  }
+
+  ResultType result_type = 1;
+
+  string error = 2;
+
+  // If the result_type is OK, and the query returns some entries, then those
+  // entries are provided here.
+  repeated SharesEntry results = 3;
+}
+
 message PendingFollowRequest {
   string handle = 1;
 }
@@ -275,6 +319,21 @@ message AddViewResponse {
 message AllUsersRequest {
 }
 
+message ShareEntry {
+  int64 user_id = 1;
+  int64 article_id = 2;
+  google.protobuf.Timestamp announce_datetime = 3;
+}
+
+message AddShareResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -290,6 +349,8 @@ service Database {
   rpc LikesCollection(LikesCollectionRequest) returns (LikedCollectionResponse);
   // Get the N most recent posts from local users.
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
+  // Get the N most recent shared posts for a user.
+  rpc SharedPosts(SharedPostsRequest) returns (SharesResponse);
   // Get PENDING Follows with handles rather than ids
   rpc PendingFollows(PendingFollowRequest) returns (PendingFollowResponse);
   // Get Article search results
@@ -301,6 +362,8 @@ service Database {
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 
   rpc AddView(View) returns (AddViewResponse);
+  // Add a share item to database
+  rpc AddShare(ShareEntry) returns (AddShareResponse);
 
   // Get all users this instance knows about.
   rpc AllUsers(AllUsersRequest) returns (UsersResponse);
