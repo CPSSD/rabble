@@ -86,12 +86,10 @@ class ReceiveAnnounceServicer:
         return article
 
     def add_share_update_count(self, announcer, article, announce_time):
-        # TODO(sailslick) Remove comments while add share db side
-        '''
         req = db_pb.ShareEntry(
             user_id=announcer.global_id,
             article_id=article.global_id,
-            announce_time=announce_time
+            announce_datetime=announce_datetime
         )
         resp = self._db.AddShare(req)
         if resp.result_type != db_pb.AddShareResponse.OK:
@@ -102,8 +100,6 @@ class ReceiveAnnounceServicer:
                 result_type=announce_pb2.AnnounceResponse.ERROR,
                 error="Could not add share to db {}".format(resp.error),
             )
-        return None
-        '''
         return None
 
     def ReceiveAnnounceActivity(self, req, context):

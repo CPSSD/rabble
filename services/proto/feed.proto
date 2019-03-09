@@ -31,6 +31,24 @@ message Post {
   string image = 8;
   bool is_liked = 9;
   bool is_followed = 10;
+  bool is_shared = 11;
+}
+
+message Share {
+  int64 global_id = 1;
+  string author = 2;
+  string title = 3;
+  string body = 4;
+  string published = 5;
+  int64 likes_count = 6;
+  string bio = 7;
+  string image = 8;
+  bool is_liked = 9;
+  bool is_followed = 10;
+  bool is_shared = 11;
+  string sharer = 12;
+  string sharer_bio = 13;
+  string share_datetime = 14;
 }
 
 message FeedResponse {
@@ -46,6 +64,7 @@ message FeedResponse {
   // Custom CSS a user may have defined. Empty string if not.
   string post_title_css = 3;
   string post_body_css = 4;
+  repeated Share share_results = 5;
 }
 
 service Feed {

@@ -22,11 +22,15 @@ type server struct {
 	db pb.DatabaseClient
 }
 
-func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse, shares []*pb.SharesResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range posts {
 		r := utils.ConvertDBToFeed(ctx, p, s.db)
 		fp.Results = append(fp.Results, r...)
+	}
+	for _, s := range share {
+		r := utils.ConvertShareToFeed(ctx, s, s.db)
+		fp.ShareResults = append(fp.ShareResults, r...)
 	}
 	return fp
 }
@@ -74,6 +78,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 	}
 
 	posts := []*pb.PostsResponse{}
+	shares := []*pb.SharesResponse{}
 	for _, f := range follows {
 		pr := &pb.PostsRequest{
 			RequestType:  pb.PostsRequest_FIND,
@@ -92,9 +97,26 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 		}
 
 		posts = append(posts, resp)
+
+		spr := &pb.SharedPostsRequest{
+			NumPosts:     MaxItemsReturned,
+			UserGlobalId: r.UserGlobalId,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		sharesResp, err := s.db.Shares(ctx, spr)
+		if err != nil {
+			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+
+		shares = append(shares, sharesResp)
 	}
 
-	return s.convertManyToFeed(ctx, posts), nil
+	return s.convertManyToFeed(ctx, posts, shares), nil
 }
 
 // Get is responsible for handling feeds
@@ -227,10 +249,24 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
+
+	spr := &pb.SharedPostsRequest{
+		NumPosts:     MaxItemsReturned,
+		UserGlobalId: r.UserGlobalId,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	shareResp, err := s.db.Shares(ctx, spr)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: db.Shares(%v) error: %v", *spr, err)
+	}
 	fp := &pb.FeedResponse{}
 	fp.PostTitleCss = author.PostTitleCss
 	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
+	fp.ShareResults = utils.ConvertShareToFeed(ctx, shareResp, s.db)
 	return fp, nil
 }
 
