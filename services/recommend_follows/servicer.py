@@ -3,6 +3,7 @@ import os
 from surprise_recommender import SurpriseRecommender
 from noop_recommender import NoopRecommender
 from cn_recommender import CNRecommender
+from gd_recommender import GraphDistanceRecommender
 
 from services.proto import follows_pb2_grpc
 from services.proto import database_pb2
@@ -15,6 +16,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         'surprise': SurpriseRecommender,
         'none': NoopRecommender,
         'cn': CNRecommender,
+        'graphdist': GraphDistanceRecommender,
     }
     DEFAULT_RECOMMENDER = 'none'
     ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
@@ -27,6 +29,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         # self.active_recommenders contains one or more recommender system
         # objects (out of the constructors in self.RECOMMENDERS).
         self.active_recommenders = self._get_active_recommenders()
+
 
     def _get_active_recommenders(self):
         '''Get the list of recommender system objects based on an env
@@ -59,6 +62,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
                                      'recommender, using default of ' +
                                      '"{}".'.format(self.DEFAULT_RECOMMENDER))
                 keys = [self.DEFAULT_RECOMMENDER]
+        self._logger.info("Using follow recommenders [" + ', '.join(k for k in keys) + "].")
 
         # At this point, keys[] should contain either the default system, or
         # a list of user-chosen ones.
