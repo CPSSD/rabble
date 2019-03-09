@@ -19,7 +19,6 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.InstanceFeed = posts_servicer.InstanceFeed
         self.SearchArticles = posts_servicer.SearchArticles
         self.CreatePostsIndex = posts_servicer.CreatePostsIndex
-        self.SharedPosts = posts_servicer.SharedPosts
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
         self.SearchUsers = users_servicer.SearchUsers
@@ -36,3 +35,4 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.AllUsers = users_servicer.AllUsers
         share_servicer = ShareDatabaseServicer(db, logger)
         self.AddShare = share_servicer.AddShare
+        self.SharedPosts = share_servicer.SharedPosts

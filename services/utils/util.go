@@ -99,7 +99,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 }
 
 // ConvertShareToFeed converts SharesResponses to feed.proto Share
-func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGetter) []*pb.Post {
+func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGetter) []*pb.Share {
 	pe := []*pb.Share{}
 	for i, r := range p.Results {
 		if i >= MaxItemsReturned {
@@ -122,19 +122,19 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 		np := &pb.Share{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:         author.Handle,
-			Title:          r.Title,
-			Bio:            author.Bio,
-			Body:           r.Body,
-			Image:          defaultImage,
-			LikesCount:     r.LikesCount,
-			IsLiked:        r.IsLiked,
-			Published:      ConvertPbTimestamp(r.CreationDatetime),
-			IsFollowed:     r.IsFollowed,
-			IsShared:       r.IsShared,
-			SharerBio:      sharer.Bio,
-			Sharer:         sharer.Handle,
-			SharerDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
+			Author:        author.Handle,
+			Title:         r.Title,
+			Bio:           author.Bio,
+			Body:          r.Body,
+			Image:         defaultImage,
+			LikesCount:    r.LikesCount,
+			IsLiked:       r.IsLiked,
+			Published:     ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:    r.IsFollowed,
+			IsShared:      r.IsShared,
+			SharerBio:     sharer.Bio,
+			Sharer:        sharer.Handle,
+			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 		}
 		pe = append(pe, np)
 	}
