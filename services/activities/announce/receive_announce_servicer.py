@@ -86,6 +86,7 @@ class ReceiveAnnounceServicer:
         return article
 
     def add_share_update_count(self, announcer, article, announce_time):
+        # TODO(sailslick) Remove comments while add share db side
         '''
         req = db_pb.ShareEntry(
             user_id=announcer.global_id,
