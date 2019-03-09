@@ -87,10 +87,10 @@ class ShareDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO shares (user_id, article_id, announce_datetime) '
-                'VALUES (?, ?)',
+                'VALUES (?, ?, ?)',
                 req.user_id,
                 req.article_id,
-                req.announce_datetime,
+                req.announce_datetime.seconds,
                 commit=False
             )
             self._db.execute(

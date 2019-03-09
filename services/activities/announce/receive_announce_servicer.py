@@ -85,7 +85,8 @@ class ReceiveAnnounceServicer:
             return None
         return article
 
-    def add_share_update_count(self, announcer, article, announce_time):
+    def add_share_update_count(self, announcer, article, announce_datetime):
+        self._logger.debug("Adding share")
         req = db_pb.ShareEntry(
             user_id=announcer.global_id,
             article_id=article.global_id,
@@ -103,7 +104,8 @@ class ReceiveAnnounceServicer:
         return None
 
     def ReceiveAnnounceActivity(self, req, context):
-        self._logger.debug("Received announce for %s from %s at %s",
+        self._logger.debug("Received announce for %s of %s from %s at %s",
+                           req.target_id,
                            req.announced_object,
                            req.announcer_id,
                            req.announce_time.seconds)
@@ -122,6 +124,7 @@ class ReceiveAnnounceServicer:
         # TODO(sailslick) check if author is actual author/post exists irl
         # https://github.com/CPSSD/rabble/issues/409
         if author is None:
+            self._logger.debug("Author does not exist on this server, creating")
             # Author is foreign and doesn't exist.
             # Check if announcer exists
             announcer = self.get_user_by_ap_id(announcer_tuple)
@@ -140,6 +143,7 @@ class ReceiveAnnounceServicer:
             # Create post
             article = self.create_post(author, req)
             if article is None:
+                self._logger.debug("Issue creating new article from unknown author")
                 return announce_pb2.AnnounceResponse(
                     result_type=announce_pb2.AnnounceResponse.ERROR,
                     error="Could not create local version of article id: {}".format(
@@ -182,16 +186,18 @@ class ReceiveAnnounceServicer:
                             req.announced_object),
                     )
             elif author.host_is_null or not author.host:
+                self._logger.debug("Author and article local")
                 # author and article local, check if author is target.
                 # if not target, send success as author will receive share
                 if req.target_id != req.author_ap_id:
+                    self._logger.debug("Target is local but not author, returning success")
                     return response
                 # if target, add to shares db, update share count, send to followers
                 err_resp = self.add_share_update_count(announcer, article, req.announce_time)
                 if err_resp is not None:
                     return err_resp
                 return self.send_to_followers(author, req.announce_time,
-                                              req.announcer,
+                                              req.announcer_id,
                                               req.announced_object, response)
 
         # At this point, author, announcer and article all exist.

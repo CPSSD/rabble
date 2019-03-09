@@ -568,6 +568,7 @@ type announceActivityStruct struct {
 	Type      string                     `json:"type"`
 	Published string                     `json:"published"`
 	Object    createActivityObjectStruct `json:"object"`
+	TargetID  string                     `json:"target"`
 }
 
 func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
@@ -607,6 +608,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			AuthorApId:      t.Object.AttributedTo,
 			Published:       ptc,
 			Title:           t.Object.Name,
+			TargetId:        t.TargetID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
