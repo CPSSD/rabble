@@ -7,7 +7,7 @@ class ActivitiesUtil:
 
     @staticmethod
     def rabble_context():
-        return ["https://www.w3.org/ns/activitystreams"]
+        return "https://www.w3.org/ns/activitystreams"
 
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
