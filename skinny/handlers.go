@@ -922,9 +922,13 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not send announce: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		} else if resp.ResultType != pb.AnnounceResponse_OK {
 			log.Printf("Could not send announce: %#v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
