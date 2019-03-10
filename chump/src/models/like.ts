@@ -17,7 +17,6 @@ export function SendLike(articleId: number, isLiked: boolean) {
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(postBody)
-      .retry(2)
       .end((error, res) => {
         if (error) {
           reject(error);

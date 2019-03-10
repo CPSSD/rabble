@@ -95,29 +95,34 @@ class ActivitiesUtil:
          - Any followers or hosts not found are skipped with a warning.
         """
         self._logger.info("Sending activity to followers")
-        resp = self._db.Follow(db_pb.DbFollowRequest(
-            request_type=db_pb.DbFollowRequest.FIND,
-            match=db_pb.Follow(followed=user_id),
+        resp = self._db.Follow(database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.FIND,
+            match=database_pb2.Follow(followed=user_id),
         ))
-        if resp.result_type != db_pb.DbFollowResponse.OK:
-            return db_pb.error
+        if resp.result_type != database_pb2.DbFollowResponse.OK:
+            return resp.error
         self._logger.info("Have %d users to notify", len(resp.results))
         # Gather up the users, filter local and non-unique hosts.
         hosts_to_users = {}
         for follow in resp.results:
-            user = self._user_util.get_user_from_db(
-                global_id=follow.follower)
-            if user is None:
+            user_resp = self._db.Users(database_pb2.UsersRequest(
+                request_type=database_pb2.UsersRequest.FIND,
+                match=database_pb2.UsersEntry(global_id=follow.follower)))
+            if user_resp.result_type != database_pb2.UsersResponse.OK:
                 self._logger.warning(
-                    "Could not find user %d, skipping", user_id)
+                    "Error finding user %d, skipping", follow.follower)
                 continue
-            elif not user.host or user.host_is_null:
+            if len(user_resp.results) != 1:
+                self._logger.warning(
+                    "Couldn't find user %d, skipping", follow.follower)
+                continue
+            user = user_resp.results[0]
+            if not user.host or user.host_is_null:
                 continue  # Local user, skip.
             hosts_to_users[user.host] = user
         # Send the activities off.
         for host, user in hosts_to_users.items():
-            inbox = self._activ_util.build_inbox_url(user.handle, host)
-            self._logger.info("Sending like to: %s", inbox)
+            inbox = self.build_inbox_url(user.handle, host)
             resp, err = self.send_activity(activity, inbox)
             if err:
                 self._logger.warning(
