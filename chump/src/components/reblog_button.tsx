@@ -1,12 +1,15 @@
 import * as React from "react";
 import { Repeat } from "react-feather";
 
+import { IParsedPost } from "../models/posts";
+import { SendReblog } from "../models/reblog";
 import * as config from "../../rabble_config.json";
 
 interface IReblogProps {
   username: string;
   initReblogged: boolean;
   display: boolean;
+  blogPost: IParsedPost;
 }
 
 interface IReblogState {
@@ -49,8 +52,18 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
 
   private handleReblog() {
     // TODO(devoxel): call skinny server here
-    this.setState({
-      isReblogged: true,
-    });
+    SendReblog(this.props.blogPost.global_id)
+      .then((res: any) => {
+        this.setState({
+          isReblogged: true,
+        });
+      })
+      .catch((err: any) => {
+        let message = err.message;
+        if (err.response) {
+          message = err.response.text;
+        }
+        alert(message);
+      });
   }
 }

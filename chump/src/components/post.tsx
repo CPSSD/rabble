@@ -119,7 +119,8 @@ export class Post extends React.Component<IPostProps, IPostState> {
                 <Reblog
                   username={this.props.username}
                   initReblogged={false}
-                  display={!this.nonInteractivePost()}
+                  display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+                  blogPost={this.props.blogPost}
                 />
               </div>
 
@@ -135,6 +136,10 @@ export class Post extends React.Component<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private viewerIsAuthor() {
+    return this.props.username === this.props.blogPost.author
   }
 
   private nonInteractivePost() {
