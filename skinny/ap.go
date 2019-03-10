@@ -210,6 +210,7 @@ type createActivityObjectStruct struct {
 	Recipient    []string `json:"to"`
 	Type         string   `json:"type"`
 	Id           string   `json:"id"`
+	URL          string   `json:"url"`
 }
 
 type createActivityStruct struct {
@@ -247,7 +248,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published)
+		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published, false)
 		if parseErr != nil {
 			log.Println(parseErr)
 			return
@@ -562,7 +563,7 @@ type announceActor struct {
 type announceActivityStruct struct {
 	// TODO(#409): Change the object to simply be a createActivityObject
 	// that's gathered by it's id in the original body.
-	Actor     announceActor              `json:"actor"`
+	Actor     string                     `json:"actor"`
 	Context   string                     `json:"@context"`
 	Type      string                     `json:"type"`
 	Published string                     `json:"published"`
@@ -586,13 +587,13 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			return
 		}
 
-		ats, err := parseTimestamp(w, t.Published)
+		ats, err := parseTimestamp(w, t.Published, false)
 		if err != nil {
 			log.Println("Unable to read announce timestamp: %v", err)
 			return
 		}
 
-		ptc, err := parseTimestamp(w, t.Object.Published)
+		ptc, err := parseTimestamp(w, t.Object.Published, true)
 		if err != nil {
 			log.Println("Unable to read object timestamp: %v", err)
 			return
@@ -600,7 +601,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 
 		f := &pb.ReceivedAnnounceDetails{
 			AnnouncedObject: t.Object.Id,
-			AnnouncerId:     t.Actor.Id,
+			AnnouncerId:     t.Actor,
 			AnnounceTime:    ats,
 			Body:            t.Object.Content,
 			AuthorApId:      t.Object.AttributedTo,

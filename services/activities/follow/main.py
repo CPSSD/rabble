@@ -23,11 +23,12 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
     users_util = UsersUtil(logger, None)
-    activ_util = ActivitiesUtil(logger)
+    activ_util = ActivitiesUtil(logger, None)
     with get_future_channel(logger, "FOLLOWS_SERVICE_HOST", 1641) as chan:
         follows_service = follows_pb2_grpc.FollowsStub(chan)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -40,6 +41,7 @@ def main():
         server.start()
         while True:
             time.sleep(60 * 60 * 24)  # One day
+
 
 if __name__ == '__main__':
     main()

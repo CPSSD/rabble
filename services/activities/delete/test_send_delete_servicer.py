@@ -7,6 +7,7 @@ from services.proto import delete_pb2 as dpb
 from utils.activities import ActivitiesUtil
 from utils.users import UsersUtil
 
+
 class MockDB:
     def __init__(self):
         self.posts_response = dbpb.PostsResponse(
@@ -46,8 +47,8 @@ class SendLikeDeleteServicerTest(unittest.TestCase):
             article_id=3,
             liker_handle="cian",
         )
-        self.activ_util = ActivitiesUtil(Mock())
         self.db = MockDB()
+        self.activ_util = ActivitiesUtil(Mock(), self.db)
         self.users_util = UsersUtil(Mock(), self.db)
         self.hostname = "skinny_123"
         self.servicer = SendLikeDeleteServicer(
@@ -100,4 +101,3 @@ class SendLikeDeleteServicerTest(unittest.TestCase):
         self.db.users_response.ClearField('results')
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
         self.assertEqual(resp.result_type, dpb.DeleteResponse.ERROR)
-

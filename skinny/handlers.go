@@ -22,9 +22,10 @@ import (
 )
 
 const (
-	staticAssets    = "/repo/build_out/chump_dist"
-	timeParseFormat = "2006-01-02T15:04:05.000Z"
-	timeoutDuration = time.Minute * 5
+	staticAssets         = "/repo/build_out/chump_dist"
+	timeParseFormat      = "2006-01-02T15:04:05.000Z"
+	protoTimeParseFormat = "2006-01-02T15:04:05.000000000Z"
+	timeoutDuration      = time.Minute * 5
 )
 
 type createArticleStruct struct {
@@ -34,10 +35,13 @@ type createArticleStruct struct {
 	CreationDatetime string `json:"creation_datetime"`
 }
 
-func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, error) {
+func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Timestamp, error) {
 	invalidCreationTimeMessage := "Invalid creation time\n"
-
-	parsedCreationDatetime, timeErr := time.Parse(timeParseFormat, published)
+	parseFormat := timeParseFormat
+	if len(published) == 30 {
+		parseFormat = protoTimeParseFormat
+	}
+	parsedCreationDatetime, timeErr := time.Parse(parseFormat, published)
 	if timeErr != nil {
 		log.Printf("Error: %s\n", timeErr)
 		w.WriteHeader(http.StatusBadRequest)
@@ -54,7 +58,7 @@ func parseTimestamp(w http.ResponseWriter, published string) (*tspb.Timestamp, e
 	}
 
 	timeSinceRequest := time.Since(parsedCreationDatetime)
-	if timeSinceRequest >= timeoutDuration || timeSinceRequest < 0 {
+	if !old && (timeSinceRequest >= timeoutDuration || timeSinceRequest < 0) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Old creation time\n")
 		return nil, fmt.Errorf("Old creation time")
@@ -475,7 +479,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, false)
 		if parseErr != nil {
 			log.Println(parseErr)
 			return
@@ -526,7 +530,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime)
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, false)
 		if parseErr != nil {
 			log.Println(parseErr)
 			return

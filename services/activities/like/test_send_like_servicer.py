@@ -43,8 +43,8 @@ class MockDB:
 
 class SendLikeServicerTest(unittest.TestCase):
     def setUp(self):
-        self.activ_util = ActivitiesUtil(Mock())
         self.db = MockDB()
+        self.activ_util = ActivitiesUtil(Mock(), self.db)
         self.users_util = UsersUtil(Mock(), self.db)
         self.servicer = SendLikeServicer(
             Mock(), self.db, self.users_util, self.activ_util, "localhost")

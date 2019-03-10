@@ -33,12 +33,13 @@ class UsersUtil:
     # a user of a local/foreign instance
     def parse_actor(self, actor_uri):
         actor_uri = actor_uri.lstrip('/@')
+        # Actor uri like 'rabbleinstance.com/@admin'
         p = actor_uri.split('/@')
         if len(p) == 2:
             # rabble instance
             if p[0].endswith('/ap'):
                 p[0] = p[0][:-3]
-            # Actor uri like 'rabbleinstance.com/@admin'
+            # (host, handle)
             return tuple(p)
         # Username is incorrect/malicious/etc.
         self._logger.warning('Couldn\'t parse actor %s', actor_uri)
@@ -86,8 +87,8 @@ class UsersUtil:
                                                attempt_number=attempt_number + 1)
 
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
-        self._logger.debug('User %s@%s (id %s) requested from database',
-                           handle, host, global_id)
+        self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
+                           handle, host, global_id, host_is_null)
         host = self._normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,

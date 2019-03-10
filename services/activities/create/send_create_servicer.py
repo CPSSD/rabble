@@ -35,10 +35,10 @@ class SendCreateServicer:
             return "Error inserting ap_id into DB: " + str(resp.error)
         return None
 
-    # follower_tuple is (host, handle)
-    def _post_create_req(self, follower_tuple, req, ap_id):
+    # follower is (host, handle)
+    def _post_create_req(self, follower, req, ap_id):
         # Target & actor format is host/@handle e.g. banana.com/@banana
-        self._activ_util.build_actor(follower.handle, follower.host)
+        target = self._activ_util.build_actor(follower.handle, follower.host)
         actor = self._activ_util.build_actor(req.author, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
