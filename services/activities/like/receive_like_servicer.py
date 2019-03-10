@@ -35,17 +35,6 @@ class ReceiveLikeServicer:
             return resp.error
         return None
 
-    def _user_is_local(self, user_id):
-        user = self._user_util.get_user_from_db(global_id=user_id)
-        if user is None:
-            self._logger.error(
-                "Could not get user from DB, "
-                "assuming they're foreign and continuing"
-            )
-            return False
-        # Host is empty if user is local.
-        return user.host == "" or user.host_is_null
-
     def _forward_like(self, author_id, req):
         # Forward like to following servers.
         self._logger.info("Sending like to followers")
@@ -109,10 +98,12 @@ class ReceiveLikeServicer:
                 result_type=like_pb2.LikeResponse.ERROR,
                 error="Could not add like to DB: " + err
             )
-        if self._user_is_local(article.author_id):
+        if self._user_util.user_is_local(article.author_id):
             # This is the author's local server, must distribute like to
             # all the servers who follow this user.
-            self._forward_like(article.author_id, req)
+            self._activ_util.forward_activity_to_followers(
+                article.author_id,
+                build_like_activity(req.liker_id, req.liked_object))
         return like_pb2.LikeResponse(
             result_type=like_pb2.LikeResponse.OK
         )

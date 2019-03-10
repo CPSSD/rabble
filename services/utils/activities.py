@@ -86,6 +86,46 @@ class ActivitiesUtil:
             return None, "No matching DB entry for this article"
         return resp.results[0], None
 
+    def forward_activity_to_followers(self, user_id, activity):
+        """
+        Sends an activity to all of the hosts with a follower of a given user.
+        Some things to note about the behaviour:
+         - Local users do not receive the activity
+         - An arbitrary user from each host is selected to receive the activity
+         - Any followers or hosts not found are skipped with a warning.
+        """
+        self._logger.info("Sending activity to followers")
+        resp = self._db.Follow(db_pb.DbFollowRequest(
+            request_type=db_pb.DbFollowRequest.FIND,
+            match=db_pb.Follow(followed=user_id),
+        ))
+        if resp.result_type != db_pb.DbFollowResponse.OK:
+            return db_pb.error
+        self._logger.info("Have %d users to notify", len(resp.results))
+        # Gather up the users, filter local and non-unique hosts.
+        hosts_to_users = {}
+        for follow in resp.results:
+            user = self._user_util.get_user_from_db(
+                global_id=follow.follower)
+            if user is None:
+                self._logger.warning(
+                    "Could not find user %d, skipping", user_id)
+                continue
+            elif not user.host or user.host_is_null:
+                continue  # Local user, skip.
+            hosts_to_users[user.host] = user
+        # Send the activities off.
+        for host, user in hosts_to_users.items():
+            inbox = self._activ_util.build_inbox_url(user.handle, host)
+            self._logger.info("Sending like to: %s", inbox)
+            resp, err = self.send_activity(activity, inbox)
+            if err:
+                self._logger.warning(
+                    "Error sending activity to '%s' at '%s': %s",
+                    user.handle, host, str(err)
+                )
+        return None
+
     def timestamp_to_rfc(self, timestamp):
         # 2006-01-02T15:04:05.000Z
         return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(timestamp.seconds))
