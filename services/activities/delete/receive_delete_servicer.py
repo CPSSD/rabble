@@ -17,16 +17,6 @@ class ReceiveLikeDeleteServicer:
             self._logger.error("Hostname for SendLikeDeleteServicer not set")
             sys.exit(1)
 
-    def match_hostname(self, host):
-        if host is None:
-            return None
-        # Chop off protocol, works if no protocol too.
-        foreign_host = host.split('://')[-1]
-        local_host = self._hostname.split('://')[-1]
-        if foreign_host == local_host:
-            return None
-        return foreign_host
-
     def gen_error(self, err):
         return dpb.DeleteResponse(
             result_type=dpb.DeleteResponse.ERROR,
@@ -35,7 +25,7 @@ class ReceiveLikeDeleteServicer:
 
     def get_user(self, user_ap):
         host, handle = self._users_util.parse_actor(user_ap)
-        host = self.match_hostname(host)
+        host = self._activ_util.get_host_name_param(host, self._hostname)
         if handle is None:
             self._logger.error("Could not parse user: " + user_ap)
             return None
@@ -47,27 +37,6 @@ class ReceiveLikeDeleteServicer:
                 handle, str(host)))
             return None
         return user
-
-    def get_article(self, article_ap):
-        posts_req = dbpb.PostsRequest(
-            request_type=dbpb.PostsRequest.FIND,
-            match=dbpb.PostsEntry(
-                ap_id=article_ap,
-            ),
-        )
-        resp = self._db.Posts(posts_req)
-        if resp.result_type != dbpb.PostsResponse.OK:
-            self._logger.error("Error from DB: " + resp.error)
-            return None
-        elif len(resp.results) > 1:
-            self._logger.error(
-                "Got too many results for article query ({})".format(
-                    str(len(resp.results))))
-            return None
-        elif len(resp.results) == 0:
-            self._logger.error("Got no results for article query")
-            return None
-        return resp.results[0]
 
     def remove_like_from_db(self, user_id, article_id):
         req = dbpb.LikeEntry(
@@ -86,8 +55,10 @@ class ReceiveLikeDeleteServicer:
         if user is None:
             return self.gen_error("Couldn't get user: " +
                                   req.liking_user_ap_id)
-        article = self.get_article(req.liked_object_ap_id)
-        if article is None:
+        article, err = self._activ_util.get_article_by_ap_id(
+            req.liked_object_ap_id)
+        if err is not None:
+            self._logger.error("Error getting article: %s", err)
             return self.gen_error("Could not get article: " +
                                   req.liked_object_ap_id)
         if not self.remove_like_from_db(user.global_id, article.global_id):

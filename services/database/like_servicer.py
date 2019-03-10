@@ -74,7 +74,7 @@ class LikeDatabaseServicer:
                 req.article_id
             )
         except sqlite3.Error as e:
-            self._db.commit()
+            self._db.discard_cursor()
             self._logger.error("AddLike error: %s", str(e))
             response.result_type = db_pb.DBLikeResponse.ERROR
             response.error = str(e)
@@ -98,7 +98,7 @@ class LikeDatabaseServicer:
                 commit=True
             )
         except sqlite3.Error as e:
-            self._db.commit()
+            self._db.discard_cursor()
             self._logger.error("RemoveLike error %s", str(e))
             response.result_type = db_ob.DBLikeResponse.ERROR
             response.error = str(e)
