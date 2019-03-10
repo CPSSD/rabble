@@ -26,10 +26,8 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
     if (!this.props.display) {
       return null;
     }
-
     return (
       <div
-          className="reblog-button"
           onClick={this.handleReblog}
       >
         {this.state.isReblogged ? this.isRebloggedInner() : this.reblogInner()}
@@ -39,18 +37,18 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
 
   private reblogInner() {
     return (
-      <Repeat/>
+      <Repeat color="white" className="reblog-icon"/>
     );
   }
 
   private isRebloggedInner() {
     return (
-      <Repeat className="reblog-button-filled"/>
+      <Repeat color="white" className="reblog-icon-reblogged"/>
     );
   }
 
   private handleReblog() {
-    console.log("handle reblog call");
+    // TODO(devoxel): call skinny server here
     this.setState({
       isReblogged: true,
     });

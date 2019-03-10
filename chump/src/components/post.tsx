@@ -53,7 +53,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
     return (
       <div className="pure-u-10-24">
         <p className="article-byline">
-          {config.published}
+          {config.published} &nbsp;
           {this.props.blogPost.parsed_date.toLocaleString()}
         </p>
         <Link
@@ -67,12 +67,6 @@ export class Post extends React.Component<IPostProps, IPostState> {
           className="article-body"
           style={bodyStyle}
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
-        />
-
-        <Reblog
-          username={this.props.username}
-          initReblogged={false}
-          display={!this.nonInteractivePost()}
         />
       </div>
     );
@@ -118,8 +112,18 @@ export class Post extends React.Component<IPostProps, IPostState> {
           </div>
 
           <div style={{clear: "both"}}>
-              <p className="author-bio">{this.props.blogPost.bio}</p>
-              <div style={{width: "100%"}}>
+            <p className="author-bio" style={{float: "left"}}>
+              {this.props.blogPost.bio}
+            </p>
+              <div style={{float: "right"}}>
+                <Reblog
+                  username={this.props.username}
+                  initReblogged={false}
+                  display={!this.nonInteractivePost()}
+                />
+              </div>
+
+              <div style={{clear: "both", width: "100%"}}>
                   <div style={{float: "left"}}>
                       <p> Likes: {this.state.likesCount} </p>
                   </div>
