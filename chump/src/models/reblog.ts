@@ -23,8 +23,8 @@ export function SendReblog(articleId: number) {
         }
 
         const resp = res!.body;
-        if (res.status != 200) {
-          reject(new Error("status = " + res.status.toString()))
+        if (res.status !== 200) {
+          reject(new Error("status = " + res.status.toString()));
         }
 
         resolve(res);

@@ -139,7 +139,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
   }
 
   private viewerIsAuthor() {
-    return this.props.username === this.props.blogPost.author
+    return this.props.username === this.props.blogPost.author;
   }
 
   private nonInteractivePost() {
