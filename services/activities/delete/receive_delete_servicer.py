@@ -1,6 +1,7 @@
 import os
 import sys
 
+from activities.like import like_util
 from services.proto import database_pb2 as dbpb
 from services.proto import delete_pb2 as dpb
 
@@ -65,6 +66,13 @@ class ReceiveLikeDeleteServicer:
             return self.gen_error("Error removing like from DB")
         # TODO(CianLR): If this is the author's local server then federate
         # the unlike
+        if self._users_util.user_is_local(article.author_id):
+            # Build the activity.
+            a = self._activ_util.build_delete(like_util.build_like_activity(
+                req.liking_user_ap_id,
+                req.liked_object_ap_id))
+            # Forward it to the followers
+            self._activ_util.forward_activity_to_followers(article.author_id, a)
         return dpb.DeleteResponse(
             result_type=dpb.DeleteResponse.OK,
         )

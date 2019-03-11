@@ -86,6 +86,17 @@ class UsersUtil:
                                                host,
                                                attempt_number=attempt_number + 1)
 
+    def user_is_local(self, global_id):
+        user = self.get_user_from_db(global_id=global_id)
+        if user is None:
+            self._logger.error(
+                "Could not get user from DB, "
+                "assuming they're foreign and continuing"
+            )
+            return False
+        # Host is empty if user is local.
+        return user.host == "" or user.host is None or user.host_is_null
+
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
                            handle, host, global_id, host_is_null)
