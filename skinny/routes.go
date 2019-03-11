@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+
+	webfinger "github.com/writeas/go-webfinger"
 )
 
 // setupRoutes specifies the routing of all endpoints on the server.
@@ -67,4 +69,6 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/@{username}", s.handleActor())
 	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 	r.HandleFunc("/ap/@{username}/followers", s.handleFollowersCollection())
+
+	r.HandleFunc(webfinger.WebFingerPath, s.newWebfingerHandler())
 }
