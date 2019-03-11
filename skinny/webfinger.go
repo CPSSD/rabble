@@ -66,7 +66,7 @@ func (wf *wfResolver) genLinks(user *pb.UsersEntry) []webfinger.Link {
 		protocol = "http"
 	}
 
-	//TODO: Add magic-public-key webfinger links.
+	//TODO(iandioch): Add magic-public-key webfinger links.
 	//TODO(sailslick): Add atom/rss feeds webfinger links.
 	html := webfinger.Link{
 		HRef: fmt.Sprintf("%s://%s/#/@%s", protocol, host, user.Handle),
