@@ -17,6 +17,7 @@ services:
       - [[NETWORK_NAME]]
       - default
     environment:
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
       - SKINNY_SERVER_PORT=[[SKINNY_PORT]]
       - USERS_SERVICE_HOST=users_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
