@@ -4,6 +4,10 @@ set -e
 # run_build.sh builds all of docker's build using the build_container.
 # if _TEST_RABBLE is set, then it also runs the test script.
 
+docker_tag_exists() {
+    curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
+}
+
 USER_ID=`id -u $USER`
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -18,9 +22,17 @@ echo "RM'ing $BUILD_OUT"
 rm -rf $BUILD_OUT
 mkdir $BUILD_OUT
 
+
 DOCKERFILE="$REPO_ROOT/build_container/Dockerfile"
 DOCKERFILE_HASH="$(md5sum $DOCKERFILE | head -c 15)"
-IMAGE_NAME="rabblenetwork/rabble_build:$DOCKERFILE_HASH"
+IMAGE="rabblenetwork/rabble_build"
+IMAGE_NAME="$IMAGE:$DOCKERFILE_HASH"
+
+if [ "$1" = "--only-image" ] && docker_tag_exists "$IMAGE" "$DOCKERFILE_HASH"; then
+  echo "Docker tag exists, no need to recreate image"
+  exit 0
+fi
+
 echo "Attempting to pull $IMAGE_NAME"
 if ! docker pull $IMAGE_NAME; then
   echo "Pulling image failed, building"
