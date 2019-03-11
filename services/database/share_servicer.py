@@ -25,7 +25,7 @@ class ShareDatabaseServicer:
         )
 
     def SharedPosts(self, request, context):
-        resp = database_pb2.PostsResponse()
+        resp = db_pb.PostsResponse()
         n = request.num_posts
         if not n:
             n = DEFAULT_NUM_POSTS
@@ -43,7 +43,7 @@ class ShareDatabaseServicer:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
         except sqlite3.Error as e:
-            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.result_type = db_pb.PostsResponse.ERROR
             resp.error = str(e)
             return resp
         return resp
