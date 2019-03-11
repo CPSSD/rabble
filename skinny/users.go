@@ -175,6 +175,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
+		w.Header().Set("Content-Type", "application/json")
 
 		var (
 			req  pb.UpdateUserRequest
@@ -194,7 +195,6 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		}
 
 		err = decoder.Decode(&req)
-		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
 			log.Printf("Invalid JSON, error: %v\n", err)
 			w.WriteHeader(http.StatusBadRequest)
