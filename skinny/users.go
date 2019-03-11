@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -232,61 +236,72 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 
 func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//decoder := json.NewDecoder(r.Body)
-
-		var (
-		//	req  pb.UpdateUserRequest
-			resp userResponse
-		)
-
+		var resp userResponse
 		enc := json.NewEncoder(w)
-
-		//handle, err := s.getSessionHandle(r)
-		//if err != nil {
-		//	log.Printf("Call to update user by not logged in user")
-		//	w.WriteHeader(http.StatusBadRequest)
-		//	resp.Error = invalidJSONError
-		//	resp.Success = false
-		//	enc.Encode(resp)
-		//	return
-		//}
-
-		//err = decoder.Decode(&req)
 		w.Header().Set("Content-Type", "application/json")
-		//if err != nil {
-		//	log.Printf("Invalid JSON, error: %v\n", err)
-		//	w.WriteHeader(http.StatusBadRequest)
-		//	resp.Error = invalidJSONError
-		//	resp.Success = false
-		//	enc.Encode(resp)
-		//	return
-		//}
 
-		//// This makes the handle optional to send, since it's already
-		//// provided by the session handler.
-		//req.Handle = handle
+		user_id, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Call to update user by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = invalidJSONError
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
 
-		//log.Printf("Trying to update user %#v.\n", req.Handle)
-		//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		//defer cancel()
-
-		//updateResp, err := s.users.Update(ctx, &req)
-		//resp.Success = true
-
-		//if err != nil {
-		//	log.Printf("Could not update user: %v", err)
-		//	resp.Error = "Error communicating with user update service"
-		//	resp.Success = false
-		//} else if updateResp.Result != pb.UpdateUserResponse_ACCEPTED {
-		//	// Unlike in user response, we will be clear that they
-		//	// provided an incorrect password.
-		//	log.Printf("Error updating user: %s", resp.Error)
-		//	resp.Error = updateResp.Error
-		//	resp.Success = false
-		//} else {
-		//	log.Print("Update session display_name if it changed")
-		//	resp.Success = true
-		//}
+		image, _, err := r.FormFile("profile_pic")
+		defer image.Close()
+		if err != nil {
+			log.Printf("Could not load profile pic from request: %v", err);
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Could not load profile pic from request"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		buf := bytes.NewBuffer(nil)
+		if _, err := io.Copy(buf, image); err != nil {
+			log.Printf("Error copying image to buffer: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Could not load profile pic from request"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		allowedTypes := []string{
+			"image/gif",
+			"image/jpeg",
+			"image/png",
+			"image/webp",
+		}
+		detectedType := http.DetectContentType(buf.Bytes())
+		found := false
+		for _, t := range allowedTypes {
+			if detectedType == t {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("Type dissallowed: %v", detectedType)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Upload is not of an allowed type"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		filename := fmt.Sprintf("user_%d", user_id)
+		filepath := path.Join(staticAssets, filename)
+		log.Printf("Writing image to %s", filepath)
+		if err := ioutil.WriteFile(filepath, buf.Bytes(), 0644); err != nil {
+			log.Printf("Error writing file to %s: %v", filepath, err)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Error writing image to disk"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
 		resp.Success = true
 		enc.Encode(resp)
 	}
