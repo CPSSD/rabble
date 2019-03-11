@@ -238,6 +238,8 @@ message SharedPostsRequest {
   int32 num_posts = 1;
   // The global ID of the user making this request, not set if none.
   google.protobuf.Int64Value user_global_id = 2;
+  // The global ID of the target user for this request, not set if none.
+  int64 sharer_id = 3;
 }
 
 // Built off PostsEntry with some extras for shared (11,12,13)
