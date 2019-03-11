@@ -438,9 +438,9 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 type deleteActivity struct {
-	Context   string   `json:"@context"`
-	Object    activity `json:"object"`
-	Type      string   `json:"type"`
+	Context string   `json:"@context"`
+	Object  activity `json:"object"`
+	Type    string   `json:"type"`
 }
 
 func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
@@ -455,7 +455,7 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 		body := buf.String()
 
 		d := json.NewDecoder(strings.NewReader(body))
-		var del deleteActivity;
+		var del deleteActivity
 
 		if err := d.Decode(&del); err != nil {
 			log.Printf("Could not decode Delete activity: %#v", err)
@@ -489,9 +489,9 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 }
 
 type likeDeleteActivity struct {
-	Context   string             `json:"@context"`
-	Object    likeActivityStruct `json:"object"`
-	Type      string             `json:"type"`
+	Context string             `json:"@context"`
+	Object  likeActivityStruct `json:"object"`
+	Type    string             `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
@@ -511,7 +511,6 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
 		}
-
 
 		f := &pb.ReceivedLikeDeleteDetails{
 			LikedObjectApId: t.Object.Object,
@@ -576,13 +575,13 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 
 		ats, err := parseTimestamp(w, t.Published, false)
 		if err != nil {
-			log.Println("Unable to read announce timestamp: %v", err)
+			log.Printf("Unable to read announce timestamp: %v", err)
 			return
 		}
 
 		ptc, err := parseTimestamp(w, t.Object.Published, true)
 		if err != nil {
-			log.Println("Unable to read object timestamp: %v", err)
+			log.Printf("Unable to read object timestamp: %v", err)
 			return
 		}
 
