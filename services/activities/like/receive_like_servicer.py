@@ -31,54 +31,8 @@ class ReceiveLikeServicer:
             article_id=article_id,
         )
         resp = self._db.AddLike(req)
-        if resp.result_type != db_pb.AddLikeResponse.OK:
+        if resp.result_type != db_pb.DBLikeResponse.OK:
             return resp.error
-        return None
-
-    def _user_is_local(self, user_id):
-        user = self._user_util.get_user_from_db(global_id=user_id)
-        if user is None:
-            self._logger.error(
-                "Could not get user from DB, "
-                "assuming they're foreign and continuing"
-            )
-            return False
-        # Host is empty if user is local.
-        return user.host == "" or user.host_is_null
-
-    def _forward_like(self, author_id, req):
-        # Forward like to following servers.
-        self._logger.info("Sending like to followers")
-        resp = self._db.Follow(db_pb.DbFollowRequest(
-            request_type=db_pb.DbFollowRequest.FIND,
-            match=db_pb.Follow(followed=author_id),
-        ))
-        if resp.result_type != db_pb.DbFollowResponse.OK:
-            return db_pb.error
-        self._logger.info("Have %d users to notify", len(resp.results))
-        # Gather up the users, filter local and non-unique hosts.
-        hosts_to_users = {}
-        for follow in resp.results:
-            user = self._user_util.get_user_from_db(
-                global_id=follow.follower)
-            if user is None:
-                self._logger.warning(
-                    "Could not find user %d, skipping", user_id)
-                continue
-            elif not user.host:
-                continue  # Local user, already handled.
-            hosts_to_users[user.host] = user
-        # Send the activities off.
-        activity = build_like_activity(req.liker_id, req.liked_object)
-        for host, user in hosts_to_users.items():
-            inbox = self._activ_util.build_inbox_url(user.handle, host)
-            self._logger.info("Sending like to: %s", inbox)
-            resp, err = self._activ_util.send_activity(activity, inbox)
-            if err:
-                self._logger.warning(
-                    "Error sending activity to '%s' at '%s': %s",
-                    user.handle, host, str(err)
-                )
         return None
 
     def ReceiveLikeActivity(self, req, context):
@@ -109,10 +63,12 @@ class ReceiveLikeServicer:
                 result_type=like_pb2.LikeResponse.ERROR,
                 error="Could not add like to DB: " + err
             )
-        if self._user_is_local(article.author_id):
+        if self._user_util.user_is_local(article.author_id):
             # This is the author's local server, must distribute like to
             # all the servers who follow this user.
-            self._forward_like(article.author_id, req)
+            self._activ_util.forward_activity_to_followers(
+                article.author_id,
+                build_like_activity(req.liker_id, req.liked_object))
         return like_pb2.LikeResponse(
             result_type=like_pb2.LikeResponse.OK
         )

@@ -86,6 +86,51 @@ class ActivitiesUtil:
             return None, "No matching DB entry for this article"
         return resp.results[0], None
 
+    def forward_activity_to_followers(self, user_id, activity):
+        """
+        Sends an activity to all of the hosts with a follower of a given user.
+        Some things to note about the behaviour:
+         - Local users do not receive the activity
+         - An arbitrary user from each host is selected to receive the activity
+         - Any followers or hosts not found are skipped with a warning.
+        """
+        self._logger.info("Sending activity to followers")
+        resp = self._db.Follow(database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.FIND,
+            match=database_pb2.Follow(followed=user_id),
+        ))
+        if resp.result_type != database_pb2.DbFollowResponse.OK:
+            return resp.error
+        self._logger.info("Have %d users to notify", len(resp.results))
+        # Gather up the users, filter local and non-unique hosts.
+        hosts_to_users = {}
+        for follow in resp.results:
+            user_resp = self._db.Users(database_pb2.UsersRequest(
+                request_type=database_pb2.UsersRequest.FIND,
+                match=database_pb2.UsersEntry(global_id=follow.follower)))
+            if user_resp.result_type != database_pb2.UsersResponse.OK:
+                self._logger.warning(
+                    "Error finding user %d, skipping", follow.follower)
+                continue
+            if len(user_resp.results) != 1:
+                self._logger.warning(
+                    "Couldn't find user %d, skipping", follow.follower)
+                continue
+            user = user_resp.results[0]
+            if not user.host or user.host_is_null:
+                continue  # Local user, skip.
+            hosts_to_users[user.host] = user
+        # Send the activities off.
+        for host, user in hosts_to_users.items():
+            inbox = self.build_inbox_url(user.handle, host)
+            resp, err = self.send_activity(activity, inbox)
+            if err:
+                self._logger.warning(
+                    "Error sending activity to '%s' at '%s': %s",
+                    user.handle, host, str(err)
+                )
+        return None
+
     def timestamp_to_rfc(self, timestamp):
         # 2006-01-02T15:04:05.000Z
         return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(timestamp.seconds))

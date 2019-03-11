@@ -57,7 +57,7 @@ func GetAuthorFromDb(ctx context.Context, handle string, host string, hostIsNull
 		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
 	} else if len(resp.Results) > 1 {
 		log.Printf("Expected 1 user for GetAuthorFromDb request, got %d",
-				   len(resp.Results))
+			len(resp.Results))
 	}
 
 	return resp.Results[0], nil
@@ -91,6 +91,50 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			IsLiked:    r.IsLiked,
 			Published:  ConvertPbTimestamp(r.CreationDatetime),
 			IsFollowed: r.IsFollowed,
+			IsShared:   r.IsShared,
+		}
+		pe = append(pe, np)
+	}
+	return pe
+}
+
+// ConvertShareToFeed converts SharesResponses to feed.proto Share
+func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGetter) []*pb.Share {
+	pe := []*pb.Share{}
+	for i, r := range p.Results {
+		if i >= MaxItemsReturned {
+			// Have hit limit for number of items returned for this request.
+			break
+		}
+
+		// TODO(iandioch): Find a way to avoid or cache these requests.
+		author, err := GetAuthorFromDb(ctx, "", "", false, r.AuthorId, db)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		// TODO(iandioch): Find a way to avoid or cache these requests.
+		sharer, err := GetAuthorFromDb(ctx, "", "", false, r.SharerId, db)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		np := &pb.Share{
+			GlobalId: r.GlobalId,
+			// TODO(iandioch): Consider what happens for foreign users.
+			Author:        author.Handle,
+			Title:         r.Title,
+			Bio:           author.Bio,
+			Body:          r.Body,
+			Image:         defaultImage,
+			LikesCount:    r.LikesCount,
+			IsLiked:       r.IsLiked,
+			Published:     ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:    r.IsFollowed,
+			IsShared:      r.IsShared,
+			SharerBio:     sharer.Bio,
+			Sharer:        sharer.Handle,
+			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 		}
 		pe = append(pe, np)
 	}

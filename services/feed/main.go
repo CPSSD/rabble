@@ -22,11 +22,15 @@ type server struct {
 	db pb.DatabaseClient
 }
 
-func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse) *pb.FeedResponse {
+func (s *server) convertManyToFeed(ctx context.Context, posts []*pb.PostsResponse, shares []*pb.SharesResponse) *pb.FeedResponse {
 	fp := &pb.FeedResponse{}
 	for _, p := range posts {
 		r := utils.ConvertDBToFeed(ctx, p, s.db)
 		fp.Results = append(fp.Results, r...)
+	}
+	for _, shr := range shares {
+		r := utils.ConvertShareToFeed(ctx, shr, s.db)
+		fp.ShareResults = append(fp.ShareResults, r...)
 	}
 	return fp
 }
@@ -74,6 +78,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 	}
 
 	posts := []*pb.PostsResponse{}
+	shares := []*pb.SharesResponse{}
 	for _, f := range follows {
 		pr := &pb.PostsRequest{
 			RequestType:  pb.PostsRequest_FIND,
@@ -92,9 +97,26 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 		}
 
 		posts = append(posts, resp)
+
+		spr := &pb.SharedPostsRequest{
+			NumPosts:     MaxItemsReturned,
+			UserGlobalId: r.UserGlobalId,
+		}
+
+		ctx, cancel = context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		sharesResp, err := s.db.SharedPosts(ctx, spr)
+		if err != nil {
+			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+
+		shares = append(shares, sharesResp)
 	}
 
-	return s.convertManyToFeed(ctx, posts), nil
+	return s.convertManyToFeed(ctx, posts, shares), nil
 }
 
 // Get is responsible for handling feeds
@@ -166,6 +188,28 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 	return fp, nil
 }
 
+func (s *server) checkFollowing(follower_id int64, followed_id int64) (bool, error) {
+	if follower_id == followed_id {
+		return true, nil  // Users are 'following' themselves.
+	}
+	fr := &pb.DbFollowRequest{
+		RequestType: pb.DbFollowRequest_FIND,
+		Match: &pb.Follow{
+			Follower: follower_id,
+			Followed: followed_id,
+			State: pb.Follow_ACTIVE,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	resp, err := s.db.Follow(ctx, fr)
+	if err != nil {
+		return false, fmt.Errorf("Checking follower of private account failed: %v", err)
+	}
+	// True if there's a match.
+	return len(resp.Results) == 1, nil
+}
+
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	if r.Username == "" {
 		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
@@ -179,9 +223,17 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	authorId := author.GlobalId
 
 	if author.Private != nil && author.Private.Value {
-		// TODO(devoxel): Lookup accessor here and see if they're allowed
-		// to view the posts.
-		return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
+		if r.UserGlobalId == nil {
+			// User not logged in.
+			return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
+		}
+		following, err := s.checkFollowing(r.UserGlobalId.Value, author.GlobalId)
+		if err != nil {
+			return nil, err
+		} else if !following {
+			// User not following this private account.
+			return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
+		}
 	}
 
 	pr := &pb.PostsRequest{
@@ -197,10 +249,24 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
 	}
+
+	spr := &pb.SharedPostsRequest{
+		NumPosts:     MaxItemsReturned,
+		UserGlobalId: r.UserGlobalId,
+	}
+
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	shareResp, err := s.db.SharedPosts(ctx, spr)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: db.SharedPosts(%v) error: %v", *spr, err)
+	}
 	fp := &pb.FeedResponse{}
 	fp.PostTitleCss = author.PostTitleCss
 	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
+	fp.ShareResults = utils.ConvertShareToFeed(ctx, shareResp, s.db)
 	return fp, nil
 }
 

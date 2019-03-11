@@ -57,7 +57,7 @@ class PostsDatabaseHelper(unittest.TestCase):
             article_id=article_id,
         )
         res = self.like.AddLike(req, self.ctx)
-        self.assertNotEqual(res.result_type, database_pb2.AddLikeResponse.ERROR)
+        self.assertNotEqual(res.result_type, database_pb2.DBLikeResponse.ERROR)
         return res
 
     def add_follow(self, follower_id, followed_id,
