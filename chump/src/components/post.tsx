@@ -73,7 +73,8 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <div className="pure-u-3-24">
           <div className="author-about">
             <img
-              src={this.props.blogPost.image}
+              src={`/assets/user_${this.props.blogPost.global_id}`}
+              onError={(e: any) => {e.target.onerror = null; e.target.src=this.props.blogPost.image}}
               className="author-thumbnail"
             />
             <div style={{width: "100%"}}>
