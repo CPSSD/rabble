@@ -57,7 +57,7 @@ func (wf *wfResolver) subject(user *pb.UsersEntry) string {
 func (wf *wfResolver) genLinks(user *pb.UsersEntry) []webfinger.Link {
 	// Add a special case for local debugging, where we won't have a "dot" in the
 	// hostname.
-	// This does assume that non debug rabble users are using HTTPs and a standard
+	// This does assume that non debug rabble users are using HTTPS and a standard
 	// port, but they're probably decent assumptions to make.
 	host := wf.hostname
 	protocol := "https"
