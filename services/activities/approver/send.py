@@ -12,7 +12,7 @@ class SendApprovalServicer:
         activity_type = 'Accept' if req.accept else 'Reject'
 
         return {
-            '@context': 'https://www.w3.org/ns/activitystreams',
+            '@context': self._activ_util.rabble_context(),
             'type': activity_type,
             'actor': followed,
             'object': {

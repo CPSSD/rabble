@@ -24,7 +24,7 @@ class CollectionServicer:
 
     def _create_collection(self, summary, item_list):
         collection = {
-            "@context": "https://www.w3.org/ns/activitystreams",
+            "@context":  self._activities_util.rabble_context(),
             "summary": summary,
             "type": "Collection",
             "totalItems": len(item_list),

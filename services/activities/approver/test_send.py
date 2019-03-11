@@ -32,7 +32,7 @@ class SendServicerTest(unittest.TestCase):
         req = example_req
         req.accept = True
         want = {
-            '@context': 'https://www.w3.org/ns/activitystreams',
+            '@context': self.activ_util.rabble_context(),
             'type': 'accept',
             'actor': 'http://example.com/@callmekevin',
             'object': {
@@ -48,7 +48,7 @@ class SendServicerTest(unittest.TestCase):
         req = example_req
         req.accept = False
         want = {
-            '@context': 'https://www.w3.org/ns/activitystreams',
+            '@context': self.activ_util.rabble_context(),
             'type': 'reject',
             'actor': 'http://example.com/@callmekevin',
             'object': {

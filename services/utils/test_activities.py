@@ -21,7 +21,7 @@ class ActivitiesUtilTest(unittest.TestCase):
         request.Request = Mock()
         request.urlopen = Mock()
         request.urlopen.side_effect = Exception('some weird error')
-        activity = {'@context': 'http://test.com', 'data': 'yes'}
+        activity = {'@context': ActivitiesUtil.rabble_context(), 'data': 'yes'}
         _, e = self.activ_util.send_activity(activity,
                                              'followed.com/ap/@b/inbox')
         self.assertEqual(e, 'some weird error')

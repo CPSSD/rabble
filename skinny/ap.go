@@ -41,20 +41,6 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		buf.ReadFrom(r.Body)
 		body := buf.String()
 
-		// Normalise the JSON-LD.
-		nr := &pb.NormaliseRequest{
-			Json: body,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-
-		resp, err := s.ldNorm.Normalise(ctx, nr)
-		if err != nil || resp.ResultType == pb.NormaliseResponse_ERROR {
-			log.Printf("Could not normalise JSON. Error: %v", err)
-		} else {
-			body = resp.Normalised // Success, replace the original body.
-		}
-
 		d := json.NewDecoder(strings.NewReader(body))
 		var a activity
 
