@@ -12,6 +12,10 @@ class FollowServicer(s2s_follow_pb2_grpc.S2SFollowServicer):
 
         send_follow_servicer = SendFollowServicer(logger, activ_util)
         self.SendFollowActivity = send_follow_servicer.SendFollowActivity
+        self.SendUnfollowActivity = send_follow_servicer.SendUnfollowActivity
         receive_follow_servicer = ReceiveFollowServicer(logger, users_util,
                                                         follows_service)
-        self.ReceiveFollowActivity = receive_follow_servicer.ReceiveFollowActivity
+        self.ReceiveFollowActivity = \
+            receive_follow_servicer.ReceiveFollowActivity
+        self.ReceiveUnfollowActivity = \
+            receive_follow_servicer.ReceiveUnfollowActivity
