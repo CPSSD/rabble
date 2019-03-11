@@ -28,6 +28,7 @@ const validParsedPost: IParsedPost[] = [{
   image: "",
   is_followed: false,
   is_liked: false,
+  is_shared: false,
   likes_count: 1,
   parsed_date: now,
   published: "",
