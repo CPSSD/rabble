@@ -77,7 +77,7 @@ class UsersDatabaseServicer:
 
         try:
             user_res = self._db.execute('SELECT global_id FROM users '
-                                        'WHERE handle = ? AND host = ""',
+                                        'WHERE handle = ? AND host is NULL',
                                         request.handle)
             if len(user_res) != 1 or len(user_res[0]) != 1:
                 resp.result_type = database_pb2.PendingFollowResponse.ERROR
