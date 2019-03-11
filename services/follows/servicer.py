@@ -2,6 +2,7 @@ from get_followers import GetFollowsReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 from send_unfollow import SendUnfollowServicer
+from receive_unfollow import ReceiveUnfollowServicer
 from rss_follow import RssFollowServicer
 from accept_follow import AcceptFollowServicer
 
