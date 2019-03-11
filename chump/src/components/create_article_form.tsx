@@ -36,6 +36,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
         image: defaultImage,
         is_followed: false,
         is_liked: false,
+        is_shared: false,
         likes_count: 0,
         parsed_date: new Date(),
         published: "",
