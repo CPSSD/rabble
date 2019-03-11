@@ -37,4 +37,7 @@ message FollowActivityResponse {
 service S2SFollow {
   rpc SendFollowActivity(FollowDetails) returns (FollowActivityResponse);
   rpc ReceiveFollowActivity(ReceivedFollowDetails) returns (FollowActivityResponse);
+
+  rpc SendUnfollowActivity(FollowDetails) returns (FollowActivityResponse);
+  rpc ReceiveUnfollowActivity(ReceivedFollowDetails) returns (FollowActivityResponse);
 }
