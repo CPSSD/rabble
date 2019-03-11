@@ -31,6 +31,7 @@ class ActorsServicer:
             outbox=None,
             following=following_url,
             followers=followers_url,
+            global_id=user.global_id,
         )
 
     def Get(self, request, context):

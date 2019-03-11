@@ -234,6 +234,12 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) getProfilePicPath(user_id int64) (string) {
+	filename := fmt.Sprintf("user_%d", user_id)
+	filepath := path.Join(staticAssets, filename)
+	return filepath
+}
+
 func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var resp userResponse
@@ -291,8 +297,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 			enc.Encode(resp)
 			return
 		}
-		filename := fmt.Sprintf("user_%d", user_id)
-		filepath := path.Join(staticAssets, filename)
+		filepath := s.getProfilePicPath(user_id)
 		log.Printf("Writing image to %s", filepath)
 		if err := ioutil.WriteFile(filepath, buf.Bytes(), 0644); err != nil {
 			log.Printf("Error writing file to %s: %v", filepath, err)
