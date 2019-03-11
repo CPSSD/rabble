@@ -20,7 +20,9 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
   constructor(props: IReblogProps) {
     super(props);
 
-    this.state = { isReblogged: this.props.initReblogged };
+    this.state = {
+      isReblogged: this.props.initReblogged,
+    };
 
     this.handleReblog = this.handleReblog.bind(this);
   }
@@ -51,7 +53,6 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
   }
 
   private handleReblog() {
-    // TODO(devoxel): call skinny server here
     SendReblog(this.props.blogPost.global_id)
       .then((res: any) => {
         this.setState({

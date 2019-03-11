@@ -68,6 +68,15 @@ export class Post extends React.Component<IPostProps, IPostState> {
           style={bodyStyle}
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
+
+        <div>
+          <Reblog
+            username={this.props.username}
+            initReblogged={false}
+            display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+            blogPost={this.props.blogPost}
+          />
+        </div>
       </div>
     );
   }
@@ -115,23 +124,14 @@ export class Post extends React.Component<IPostProps, IPostState> {
             <p className="author-bio" style={{float: "left"}}>
               {this.props.blogPost.bio}
             </p>
-              <div style={{float: "right"}}>
-                <Reblog
-                  username={this.props.username}
-                  initReblogged={false}
-                  display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-                  blogPost={this.props.blogPost}
-                />
-              </div>
-
-              <div style={{clear: "both", width: "100%"}}>
-                  <div style={{float: "left"}}>
-                      <p> Likes: {this.state.likesCount} </p>
-                  </div>
-                  <div style={{float: "right"}}>
-                      {LikeButton}
-                  </div>
-              </div>
+            <div style={{clear: "both", width: "100%"}}>
+                <div style={{float: "left"}}>
+                    <p> Likes: {this.state.likesCount} </p>
+                </div>
+                <div style={{float: "right"}}>
+                    {LikeButton}
+                </div>
+            </div>
           </div>
         </div>
       </div>
