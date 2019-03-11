@@ -451,6 +451,115 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 	}
 }
 
+type deleteActivity struct {
+	Context   string   `json:"@context"`
+	Object    activity `json:"object"`
+	Type      string   `json:"type"`
+}
+
+func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a delete activity.\n", recipient)
+
+		// Pass control to corresponding delete type
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		body := buf.String()
+
+		d := json.NewDecoder(strings.NewReader(body))
+		var del deleteActivity;
+
+		if err := d.Decode(&del); err != nil {
+			log.Printf("Could not decode Delete activity: %#v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not decode Delete activity")
+			return
+		}
+
+		if s.deleteActivityRouter == nil || len(s.deleteActivityRouter) == 0 {
+			log.Fatalf("Delete router not initalized, can not continue.")
+		}
+
+		// Similarily to the actorInboxRouter different functions are called
+		// depending on the type of the object to be deleted.
+		m, exists := s.deleteActivityRouter[strings.ToLower(del.Object.Type)]
+		if !exists {
+			log.Printf("Could not find delete handle for object of type %#v",
+				del.Object.Type)
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "Could not handle Delete activity for '%#v'",
+				del.Object.Type)
+			return
+		}
+
+		// We're reading from a stream, so we need to ensure it will
+		// get passed downwards without hitting EOF. We create another
+		// Reader and pass that onwards instead.
+		r.Body = ioutil.NopCloser(strings.NewReader(body))
+		m(w, r)
+	}
+}
+
+type likeDeleteActivity struct {
+	Context   string             `json:"@context"`
+	Object    likeActivityStruct `json:"object"`
+	Type      string             `json:"type"`
+}
+
+func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a like Delete activity.\n", recipient)
+
+		decoder := json.NewDecoder(r.Body)
+		var t likeDeleteActivity
+
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+
+		f := &pb.ReceivedLikeDeleteDetails{
+			LikedObjectApId: t.Object.Object,
+			LikingUserApId:  t.Object.Actor.Id,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sDelete.ReceiveLikeDeleteActivity(ctx, f)
+		if err != nil {
+			log.Printf("Could not receive like delete activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving like delete activity.\n")
+			return
+		} else if resp.ResultType == pb.DeleteResponse_ERROR {
+			log.Printf("Could not receive like delete activity. Error: %v",
+				resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving like delete activity.\n")
+			return
+		}
+
+		log.Println("Like delete activity received successfully.")
+		fmt.Fprintf(w, "{}\n")
+	}
+}
+
+// TODO(sailslick): Properly fill in announce structs
+type announceActor struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
+}
+
 type announceActivityStruct struct {
 	// TODO(#409): Change the object to simply be a createActivityObject
 	// that's gathered by it's id in the original body.

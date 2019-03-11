@@ -190,7 +190,7 @@ message LikeEntry {
   int64 article_id = 2;
 }
 
-message AddLikeResponse {
+message DBLikeResponse {
   enum ResultType {
     OK = 0;
     ERROR = 1;
@@ -282,7 +282,8 @@ service Database {
 
   // The likes table will require a lot of cross-table style requests,
   // this is why the RPC is in a different style.
-  rpc AddLike(LikeEntry) returns (AddLikeResponse);
+  rpc AddLike(LikeEntry) returns (DBLikeResponse);
+  rpc RemoveLike(LikeEntry) returns (DBLikeResponse);
   // All the article (ActivityPub) ids liked by a given user.
   rpc LikedCollection(LikedCollectionRequest) returns (LikedCollectionResponse);
   // The user global_ids who like a given article.

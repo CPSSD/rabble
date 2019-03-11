@@ -23,6 +23,11 @@ class DB:
         self.cursor.close()
         self.cursor = None
 
+    def discard_cursor(self):
+        if self.cursor is not None:
+            self.cursor.close()
+        self.cursor = None
+
     def execute(self, statement, *params, commit=True):
         if self.cursor is None:
             self.cursor = self._get_cursor()
