@@ -304,6 +304,46 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 	}
 }
 
+type followDeleteActivity struct {
+	Context   string             `json:"@context"`
+	Object    followActivityStruct `json:"object"`
+	Type      string             `json:"type"`
+}
+
+func (s *serverWrapper) handleFollowDeleteActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t followDeleteActivity
+
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+		f := &pb.ReceivedFollowDetails{
+			Follower: t.Object.Actor,
+			Followed: t.Object.Object,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sFollow.ReceiveUnfollowActivity(ctx, f)
+		if err != nil ||
+			resp.ResultType == pb.FollowActivityResponse_ERROR {
+			log.Printf("Could not receive undo follow activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving undo follow activity.\n")
+			return
+		}
+
+		log.Println("Activity received successfully.")
+	}
+}
+
 type likeActorStruct struct {
 	Id   string `json:"id"`
 	Type string `json:"type"`
