@@ -67,7 +67,7 @@ func (wf *wfResolver) genLinks(user *pb.UsersEntry) []webfinger.Link {
 	}
 
 	//TODO: Add magic-public-key webfinger links.
-	//TODO: Add atom/rss feeds webfinger links.
+	//TODO(sailslick): Add atom/rss feeds webfinger links.
 	html := webfinger.Link{
 		HRef: fmt.Sprintf("%s://%s/#/@%s", protocol, host, user.Handle),
 		Rel:  "http://webfinger.net/rel/profile-page",
