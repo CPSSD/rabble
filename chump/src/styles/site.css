@@ -109,7 +109,7 @@ html, button, input, select, textarea,
 .author-bio {
   word-break: break-all;
   color: #666;
-  font-size: 0.75em;
+  font-size: 0.88em;
 }
 
 .author-handle:hover {
@@ -240,4 +240,16 @@ button.follow-button svg {
 
 .full-search-form {
   width: 100%;
+}
+
+.reblog-icon {
+  color: #000000;
+  background-color: #0097a7;
+  padding: 4px 4px 4px 4px;
+}
+
+.reblog-icon-reblogged {
+  color: #000000;
+  background-color: #938d8b;
+  padding: 4px 4px 4px 4px;
 }

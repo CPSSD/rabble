@@ -8,7 +8,7 @@ class SendFollowServicer:
 
     def _build_activity(self, follower_actor, followed_actor):
         d = {
-            '@context': 'https://www.w3.org/ns/activitystreams',
+            "@context":  self._activ_util.rabble_context(),
             'type': 'Follow',
             'actor': follower_actor,
             'object': followed_actor,

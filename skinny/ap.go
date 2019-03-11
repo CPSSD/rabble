@@ -41,20 +41,6 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		buf.ReadFrom(r.Body)
 		body := buf.String()
 
-		// Normalise the JSON-LD.
-		nr := &pb.NormaliseRequest{
-			Json: body,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-
-		resp, err := s.ldNorm.Normalise(ctx, nr)
-		if err != nil || resp.ResultType == pb.NormaliseResponse_ERROR {
-			log.Printf("Could not normalise JSON. Error: %v", err)
-		} else {
-			body = resp.Normalised // Success, replace the original body.
-		}
-
 		d := json.NewDecoder(strings.NewReader(body))
 		var a activity
 
@@ -568,6 +554,7 @@ type announceActivityStruct struct {
 	Type      string                     `json:"type"`
 	Published string                     `json:"published"`
 	Object    createActivityObjectStruct `json:"object"`
+	TargetID  string                     `json:"target"`
 }
 
 func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
@@ -607,6 +594,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			AuthorApId:      t.Object.AttributedTo,
 			Published:       ptc,
 			Title:           t.Object.Name,
+			TargetId:        t.TargetID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)

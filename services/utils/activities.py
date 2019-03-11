@@ -3,11 +3,14 @@ import time
 from urllib import request
 from services.proto import database_pb2
 
-
 class ActivitiesUtil:
     def __init__(self, logger, db):
         self._logger = logger
         self._db = db
+
+    @staticmethod
+    def rabble_context():
+        return "https://www.w3.org/ns/activitystreams"
 
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
@@ -38,7 +41,7 @@ class ActivitiesUtil:
 
     def build_delete(self, obj):
         return {
-            "@context": "https://www.w3.org/ns/activitystreams",
+            "@context": self.rabble_context(),
             "type": "Delete",
             "object": obj
         }

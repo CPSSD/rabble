@@ -12,6 +12,7 @@ interface IBlogPost {
   published: string;
   title: string;
   is_followed: boolean;
+  is_shared: boolean;
 }
 
 export interface IFeedResponse {

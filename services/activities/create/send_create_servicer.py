@@ -42,7 +42,7 @@ class SendCreateServicer:
         actor = self._activ_util.build_actor(req.author, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         create_activity = {
-            "@context": "https://www.w3.org/ns/activitystreams",
+            "@context":  self._activ_util.rabble_context(),
             "type": "Create",
             "to": [target],
             "actor": actor,

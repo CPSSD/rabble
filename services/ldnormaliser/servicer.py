@@ -7,6 +7,8 @@ from services.proto import ldnorm_pb2 as lpb2
 class LDNormServicer(ldnorm_pb2_grpc.LDNormServicer):
     def __init__(self, logger):
         self._logger = logger
+        requests = jsonld.requests_document_loader(timeout=10)
+        jsonld.set_document_loader(requests)
 
     def _norm(self, ld):
         j = json.loads(ld)

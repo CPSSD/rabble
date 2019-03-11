@@ -15,7 +15,7 @@ class SendFollowServicerTest(unittest.TestCase):
     def test_build_activity(self):
         e = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
         self.assertEqual(e['@context'],
-                         'https://www.w3.org/ns/activitystreams')
+                         ActivitiesUtil.rabble_context())
         self.assertEqual(e['type'], 'Follow')
         self.assertEqual(e['actor'], 'FOLLOWER')
         self.assertEqual(e['object'], 'FOLLOWED')

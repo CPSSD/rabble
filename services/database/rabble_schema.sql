@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS posts (
   creation_datetime integer NOT NULL,
   md_body           text    NOT NULL,
   ap_id             text    NOT NULL,
-  likes_count       integer NOT NULL DEFAULT 0
+  likes_count       integer NOT NULL DEFAULT 0,
+  shares_count      integer NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -52,5 +53,16 @@ CREATE TABLE IF NOT EXISTS views (
   datetime         integer NOT NULL
 );
 
-/* Add other tables here */
+/*
+  user_id is the global_id of the announcing user in the users table
+  article_id is the global_id of the shared article in the posts table.
+  announce_datetime is the proto timestamp format of the date time the annouce was made
+*/
+CREATE TABLE IF NOT EXISTS shares (
+  user_id           integer NOT NULL,
+  article_id        integer NOT NULL,
+  announce_datetime integer NOT NULL,
+  PRIMARY KEY (user_id, article_id)
+);
 
+/* Add other tables here */
