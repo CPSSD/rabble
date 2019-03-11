@@ -32,9 +32,7 @@ export class Reblog extends React.Component<IReblogProps, IReblogState> {
       return null;
     }
     return (
-      <div
-          onClick={this.handleReblog}
-      >
+      <div onClick={this.handleReblog}>
         {this.state.isReblogged ? this.isRebloggedInner() : this.reblogInner()}
       </div>
     );

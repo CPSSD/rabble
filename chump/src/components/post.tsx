@@ -28,6 +28,9 @@ export class Post extends React.Component<IPostProps, IPostState> {
     if (this.props.blogPost.is_liked === undefined) {
       this.props.blogPost.is_liked = false;
     }
+    if (this.props.blogPost.is_shared === undefined) {
+      this.props.blogPost.is_shared = false;
+    }
     this.state = {
       isLiked: this.props.blogPost.is_liked,
       likesCount: this.props.blogPost.likes_count,
@@ -72,7 +75,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <div>
           <Reblog
             username={this.props.username}
-            initReblogged={false}
+            initReblogged={this.props.blogPost.is_shared}
             display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
             blogPost={this.props.blogPost}
           />
