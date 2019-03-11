@@ -82,3 +82,28 @@ export function EditUserPromise(
       });
   });
 }
+
+export function EditUserProfilePicPromise(profilePic: File) {
+  const url = "/c2s/update/user_pic";
+  return new Promise<IEditUserResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Accept", "application/json")
+      .attach("profile_pic", profilePic)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+          succ = {
+            error: "Error parsing response",
+            success: false,
+          };
+        }
+        resolve(succ);
+      });
+  });
+}

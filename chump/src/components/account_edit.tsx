@@ -2,7 +2,10 @@ import * as React from "react";
 
 import { Redirect } from "react-router-dom";
 import * as config from "../../rabble_config.json";
-import {EditUserPromise, GetUserInfo, IEditUserResult, IUserDetails} from "../models/edit_user";
+import {
+  EditUserProfilePicPromise, EditUserPromise,
+  GetUserInfo, IEditUserResult, IUserDetails,
+} from "../models/edit_user";
 
 interface IAccountEditState {
   bio: string;
@@ -12,6 +15,7 @@ interface IAccountEditState {
   postBodyCss: string;
   postTitleCss: string;
   privateAccount: boolean;
+  profilePic: File;
   redirect: boolean;
 }
 
@@ -31,11 +35,13 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       postBodyCss: "",
       postTitleCss: "",
       privateAccount: false,
+      profilePic: new File([], ""),
       redirect: false,
     };
 
     this.handlePassword = this.handlePassword.bind(this);
     this.handleNewPassword = this.handleNewPassword.bind(this);
+    this.handleProfilePic = this.handleProfilePic.bind(this);
     this.handleBio = this.handleBio.bind(this);
     this.handleDisplayName = this.handleDisplayName.bind(this);
     this.handlePostTitleCss = this.handlePostTitleCss.bind(this);
@@ -83,6 +89,18 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       }
     })
     .catch(this.handleUpdateError);
+    if (this.state.profilePic.name !== "") {
+      // Send a seperate request to handle the profile pic.
+      EditUserProfilePicPromise(
+        this.state.profilePic,
+      ).then((response: IEditUserResult) => {
+        if (!response.success) {
+          alert("Error editing: " + response.error);
+        } else {
+          this.setState({ redirect: true });
+        }
+      });
+    }
   }
 
   public handleUserInfo(details: IUserDetails) {
@@ -116,6 +134,15 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                   className="pure-input-2-3"
                   value={this.state.newPassword}
                   onChange={this.handleNewPassword}
+                />
+            </div>
+            <div className="pure-control-group">
+                <label htmlFor="name">Profile Picture</label>
+                <input
+                  id="profile_pic"
+                  accept="image/*"
+                  type="file"
+                  onChange={this.handleProfilePic}
                 />
             </div>
             <div className="pure-control-group">
@@ -211,6 +238,20 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
   private handleCancel(event: React.FormEvent<HTMLButtonElement>) {
     event.preventDefault();
     this.setState({ redirect: true });
+  }
+
+  private handleProfilePic(event: React.FormEvent<HTMLInputElement>) {
+    const target = event.target as HTMLInputElement;
+    const files: FileList | null = target.files;
+    if (typeof files !== "undefined" && files!.length === 1) {
+      const image: File = files![0];
+      if (!image.type.startsWith("image/")) {
+        return;  // No text files please.
+      }
+      this.setState({
+        profilePic: image,
+      });
+    }
   }
 
   private handleNewPassword(event: React.ChangeEvent<HTMLInputElement>) {

@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -226,6 +230,79 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 			resp.Success = true
 		}
 
+		enc.Encode(resp)
+	}
+}
+
+func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var resp userResponse
+		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json")
+
+		user_id, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Call to update user by not logged in user")
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = invalidJSONError
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+
+		image, _, err := r.FormFile("profile_pic")
+		defer image.Close()
+		if err != nil {
+			log.Printf("Could not load profile pic from request: %v", err);
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Could not load profile pic from request"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		buf := bytes.NewBuffer(nil)
+		if _, err := io.Copy(buf, image); err != nil {
+			log.Printf("Error copying image to buffer: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Could not load profile pic from request"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		allowedTypes := []string{
+			"image/gif",
+			"image/jpeg",
+			"image/png",
+			"image/webp",
+		}
+		detectedType := http.DetectContentType(buf.Bytes())
+		found := false
+		for _, t := range allowedTypes {
+			if detectedType == t {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("Type dissallowed: %v", detectedType)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Upload is not of an allowed type"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		filename := fmt.Sprintf("user_%d", user_id)
+		filepath := path.Join(staticAssets, filename)
+		log.Printf("Writing image to %s", filepath)
+		if err := ioutil.WriteFile(filepath, buf.Bytes(), 0644); err != nil {
+			log.Printf("Error writing file to %s: %v", filepath, err)
+			w.WriteHeader(http.StatusBadRequest)
+			resp.Error = "Error writing image to disk"
+			resp.Success = false
+			enc.Encode(resp)
+			return
+		}
+		resp.Success = true
 		enc.Encode(resp)
 	}
 }
