@@ -45,7 +45,7 @@ export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,
   privateAccount: boolean,
-  postTitleCss: string, postBodyCss: string
+  postTitleCss: string, postBodyCss: string,
 ) {
   const url = "/c2s/update/user";
   const postBody = {
@@ -89,7 +89,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
     superagent
       .post(url)
       .set("Accept", "application/json")
-      .attach('profile_pic', profilePic)
+      .attach("profile_pic", profilePic)
       .retry(2)
       .end((error, res) => {
         if (error) {

@@ -3,8 +3,8 @@ import * as React from "react";
 import { Redirect } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import {
-  EditUserPromise, EditUserProfilePicPromise,
-  GetUserInfo, IEditUserResult, IUserDetails
+  EditUserProfilePicPromise, EditUserPromise,
+  GetUserInfo, IEditUserResult, IUserDetails,
 } from "../models/edit_user";
 
 interface IAccountEditState {
@@ -92,7 +92,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     if (this.state.profilePic.name !== "") {
       // Send a seperate request to handle the profile pic.
       EditUserProfilePicPromise(
-        this.state.profilePic
+        this.state.profilePic,
       ).then((response: IEditUserResult) => {
         if (!response.success) {
           alert("Error editing: " + response.error);
@@ -242,9 +242,9 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
   private handleProfilePic(event: React.FormEvent<HTMLInputElement>) {
     const target = event.target as HTMLInputElement;
-    const files : FileList | null = target.files;
-    if (typeof files != "undefined" && files!.length === 1) {
-      const image : File = files![0];
+    const files: FileList | null = target.files;
+    if (typeof files !== "undefined" && files!.length === 1) {
+      const image: File = files![0];
       if (!image.type.startsWith("image/")) {
         return;  // No text files please.
       }

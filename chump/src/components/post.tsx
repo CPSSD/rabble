@@ -32,6 +32,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       likesCount: this.props.blogPost.likes_count,
     };
     this.handleLike = this.handleLike.bind(this);
+    this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
   public render() {
@@ -74,7 +75,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
           <div className="author-about">
             <img
               src={`/assets/user_${this.props.blogPost.global_id}`}
-              onError={(e: any) => {e.target.onerror = null; e.target.src=this.props.blogPost.image}}
+              onError={this.handleNoProfilePic}
               className="author-thumbnail"
             />
             <div style={{width: "100%"}}>
@@ -109,6 +110,11 @@ export class Post extends React.Component<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private handleNoProfilePic(event: any) {
+    event.target.onerror = null;
+    event.target.src = this.props.blogPost.image;
   }
 
   private handleLike(event: React.MouseEvent<HTMLButtonElement>) {
