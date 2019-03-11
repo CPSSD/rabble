@@ -24,13 +24,13 @@ class SendFollowServicer:
         return d
 
 
-    def _build_delete(self, deleter_actor, follow_activity):
+    def _build_undo(self, undoer_actor, unfollowed_actor, follow_activity):
         d = {
             '@context':  self._activ_util.rabble_context(),
             'type': 'Undo',
-            'actor': deleter_actor,
+            'actor': undoer_actor,
             'object': follow_activity,
-            'to': []
+            'to': [unfollowed_actor]
         }
 
     def SendFollowActivity(self, req, context):
@@ -59,17 +59,20 @@ class SendFollowServicer:
             req.follower.handle, req.follower.host)
         followed_actor = self._activ_util.build_actor(
             req.followed.handle, req.followed.host)
+
         # Build a follow activity, then wrap it in an Undo activity
         follow_activity = self._build_activity(follower_actor,
                                                followed_actor,
                                                sendable=False)
-        delete_activity = self._build_delete(follower_actor, follow_activity)
+        undo_activity = self._build_undo(follower_actor,
+                                         followed_actor,
+                                         follow_activity)
 
         inbox_url = self._activ_util.build_inbox_url(
             req.followed.handle, req.followed.host)
 
         self._logger.debug('Sending unfollow activity to foreign server')
-        _, err = self._activ_util.send_activity(activity, inbox_url)
+        _, err = self._activ_util.send_activity(undo_activity, inbox_url)
         # TODO(iandioch): See if response was what was expected.
         if err is None:
             resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
