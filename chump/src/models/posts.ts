@@ -3,6 +3,7 @@ import * as superagent from "superagent";
 
 interface IBlogPost {
   author: string;
+  author_id: number;
   bio: string;
   body: string;
   global_id: number;
