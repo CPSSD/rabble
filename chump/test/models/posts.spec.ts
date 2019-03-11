@@ -23,6 +23,7 @@ const validBody: IFeedResponse = {
  post_title_css: "",
  results: [{
    author: "aaron",
+   author_id: 0,
    bio: "bio",
    body: "rm -rf steely/",
    global_id: 2,
@@ -37,6 +38,7 @@ const validBody: IFeedResponse = {
 
 const evalidBody: IParsedPost[] = [{
   author: "aaron",
+  author_id: 0,
   bio: "bio",
   body: "rm -rf steely/",
   body_css: undefined,
