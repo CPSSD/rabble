@@ -30,6 +30,22 @@ class Util:
                                follow_resp.error)
         return follow_resp
 
+    def delete_follow_in_db(self, follower_id, followed_id):
+        self._logger.debug('Deleting <User ID %d following User ID %d> from db.',
+                           follower_id, followed_id)
+        follow_entry = database_pb2.Follow(
+            follower=follower_id,
+            followed=followed_id,
+        )
+        follow_req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.DELETE,
+            match=follow_entry
+        )
+        follow_resp = self._db.Follow(follow_req)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Could not delete follow from database: %s',
+                               follow_resp.error)
+
     def get_follows(self, follower_id=None, followed_id=None):
         self._logger.debug('Finding follows <User ID %s following User ID %s>',
                            ('*' if (follower_id is None) else str(follower_id)),
