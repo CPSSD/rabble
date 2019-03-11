@@ -142,14 +142,13 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
 		}
 		resp, err := s.feed.PerUser(ctx, fr)
-		if resp.Error != pb.FeedResponse_NO_ERROR {
-			w.WriteHeader(errorMap[resp.Error])
-			return
-		}
-
 		if err != nil {
 			log.Printf("Error in feed.PerUser(%v): %v", *fr, err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.Error != pb.FeedResponse_NO_ERROR {
+			w.WriteHeader(errorMap[resp.Error])
 			return
 		}
 
