@@ -15,7 +15,7 @@ class ActivitiesUtil:
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
         if not s.startswith('http'):
-            s = 'http://' + s
+            s = 'https://' + s
         return s
 
     def get_host_name_param(self, host, hostname):
@@ -60,8 +60,8 @@ class ActivitiesUtil:
                               data=body,
                               headers=headers,
                               method='POST')
-        self._logger.debug('Sending activity to foreign server: %s',
-                           target_inbox)
+        self._logger.debug('Sending activity to foreign server (%s):\n%s',
+                           target_inbox, body)
         try:
             resp = request.urlopen(req)
         except Exception as e:
