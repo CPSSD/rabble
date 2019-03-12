@@ -69,8 +69,23 @@ message UpdateUserResponse {
   string display_name = 3;
 }
 
+message GetCssRequest {
+  string handle = 1;
+}
+
+message GetCssResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result = 1;
+  string error = 2;
+  string css = 3;
+}
+
 service Users {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Create(CreateUserRequest) returns (CreateUserResponse);
   rpc Update(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc GetCss(GetCssRequest) returns (GetCssResponse);
 }
