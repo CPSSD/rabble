@@ -33,6 +33,7 @@ class SendFollowServicer:
             'object': follow_activity,
             'to': [unfollowed_actor]
         }
+        return d
 
     def SendFollowActivity(self, req, context):
         resp = s2s_follow_pb2.FollowActivityResponse()
@@ -44,6 +45,8 @@ class SendFollowServicer:
         inbox_url = self._activ_util.build_inbox_url(
             req.followed.handle, req.followed.host)
         self._logger.debug('Sending follow activity to foreign server')
+        self._logger.debug('sending dis follow')
+        self._logger.debug(str(activity))
         _, err = self._activ_util.send_activity(activity, inbox_url)
         # TODO(iandioch): See if response was what was expected.
         if err is None:
@@ -73,6 +76,8 @@ class SendFollowServicer:
             req.followed.handle, req.followed.host)
 
         self._logger.debug('Sending unfollow activity to foreign server')
+        self._logger.debug('Really sending!!!!')
+        self._logger.debug(str(undo_activity))
         _, err = self._activ_util.send_activity(undo_activity, inbox_url)
         # TODO(iandioch): See if response was what was expected.
         if err is None:
