@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -14,16 +13,7 @@ import (
 	webfinger "github.com/writeas/go-webfinger"
 )
 
-func getFullHostname() string {
-	hostname := os.Getenv("HOST_NAME")
-	if hostname == "" {
-		log.Fatal("HOST_NAME env var not set for skinny server.")
-	}
-	return hostname
-}
-
-func getStrippedHost() string {
-	hostname := getFullHostname()
+func getStrippedHost(hostname string) string {
 	// Strip the port away from the hostname.
 	split := strings.SplitN(hostname, ":", 2)
 	// This shouldn't ever happen, but let's be sure.
@@ -37,8 +27,8 @@ func getStrippedHost() string {
 func (s *serverWrapper) newWebfingerHandler() http.HandlerFunc {
 	wf := webfinger.Default(&wfResolver{
 		users:     s.database,
-		hostname:  getStrippedHost(),
-		debugHost: getFullHostname(),
+		hostname:  getStrippedHost(s.hostname),
+		debugHost: s.hostname,
 	})
 	wf.NoTLSHandler = nil
 	return http.HandlerFunc(wf.Webfinger)

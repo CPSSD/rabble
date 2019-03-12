@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -117,8 +116,8 @@ func newTestServerWrapper() *serverWrapper {
 		follows:      &FollowsFake{},
 		s2sLike:      &LikeFake{},
 		ldNorm:       &LDNormFake{},
+		hostname:     "SKINNYTESTS:191",
 	}
-	os.Setenv("HOST_NAME", "rabble_test:1916")
 	s.setupRoutes()
 	return s
 }
