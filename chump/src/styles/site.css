@@ -60,6 +60,15 @@ html, button, input, select, textarea,
   color: #666;
 }
 
+.reblog-line {
+  margin-top: 1em;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  font-size: 1.3em;
+  text-align: left;
+  color: #666;
+}
+
 .article-title {
   font-family: Lato;
   margin-top: 0;
