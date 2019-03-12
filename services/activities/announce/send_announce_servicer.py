@@ -78,6 +78,11 @@ class SendAnnounceServicer:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Author of shared post does not exist"
             return response
+        if author.global_id == announcer.global_id:
+            response.result_type = announce_pb2.AnnounceResponse.ERROR
+            response.error = "Author cannot share their own post"
+            return response
+
         host = author.host
         # check if author is local
         if not author.host:

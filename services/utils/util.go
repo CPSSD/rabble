@@ -89,6 +89,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:     author.Handle,
+			AuthorId:   r.AuthorId,
 			Title:      r.Title,
 			Bio:        author.Bio,
 			Body:       r.Body,

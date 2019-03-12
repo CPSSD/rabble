@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -72,18 +73,24 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	}
 }
 
+type ImageObject struct {
+	Type string `json:"type"`
+	Url  string `json:"url"`
+}
+
 type ActorObjectStruct struct {
 	// The @context in the output JSON-LD
 	Context string `json:"@context"`
 
 	// The same types as the protobuf ActorObject.
-	Type              string `json:"type"`
-	Inbox             string `json:"inbox"`
-	Outbox            string `json:"outbox"`
-	Name              string `json:"name"`
-	PreferredUsername string `json:"preferredUsername"`
-	Followers         string `json:followers`
-	Following         string `json:following`
+	Type              string       `json:"type"`
+	Inbox             string       `json:"inbox"`
+	Outbox            string       `json:"outbox"`
+	Name              string       `json:"name"`
+	PreferredUsername string       `json:"preferredUsername"`
+	Icon              *ImageObject `json:"icon,omitempty"`
+	Followers         string       `json:followers`
+	Following         string       `json:following`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -120,6 +127,17 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
+		}
+
+		filepath := s.getProfilePicPath(resp.Actor.GlobalId)
+		if _, err := os.Stat(filepath); err == nil {
+			// Profile pic exists
+			actor.Icon = &ImageObject{
+				Type: "Image",
+				Url: fmt.Sprintf(
+					"http://%s/assets/user_%d",
+					s.hostname, resp.Actor.GlobalId),
+			}
 		}
 
 		enc := json.NewEncoder(w)

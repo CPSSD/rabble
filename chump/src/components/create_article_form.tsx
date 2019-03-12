@@ -30,6 +30,7 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
       blogText: "",
       post: {
         author: "string",
+        author_id: 0,
         bio: defaultBio,
         body: "string",
         global_id: 3,

@@ -31,6 +31,7 @@ RUN go get -u \
 # Dependencies for auth service
 RUN apk add --no-cache libffi-dev
 RUN pip3 install bcrypt
+RUN pip3 install requests
 
 RUN apk add --no-cache --update protobuf-dev
 

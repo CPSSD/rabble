@@ -15,35 +15,35 @@ class ShareDatabaseServicer:
             "p.global_id, p.author_id, p.title, p.body, "
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
             "l.user_id IS NOT NULL, f.follower IS NOT NULL, "
-            "s.user_id IS NOT NULL "
+            "s.user_id = ?, s.announce_datetime, "
+            "s.user_id "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
-            "LEFT OUTER JOIN shares s ON "
-            "s.article_id=p.global_id AND s.user_id=? "
             "LEFT OUTER JOIN follows f ON "
             "f.followed=p.author_id AND f.follower=? "
         )
 
     def SharedPosts(self, request, context):
-        resp = db_pb.PostsResponse()
+        resp = db_pb.SharesResponse()
         n = request.num_posts
         if not n:
             n = DEFAULT_NUM_POSTS
         user_id = -1
+        sharer_id = request.sharer_id
         if request.HasField("user_global_id"):
             user_id = request.user_global_id.value
         self._logger.info('Reading {} shared posts for user feed'.format(n))
         try:
             res = self._db.execute(self._select_base +
-                                   'INNER JOIN shares s '
-                                   'ON p.global_id = s.article_id AND s.user_id = ? '
+                                   'INNER JOIN shares s ON '
+                                   'p.global_id = s.article_id AND s.user_id = ? '
                                    'ORDER BY p.global_id DESC '
-                                   'LIMIT ?', user_id, user_id, user_id, user_id, n)
+                                   'LIMIT ?', user_id, user_id, user_id, sharer_id, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
         except sqlite3.Error as e:
-            resp.result_type = db_pb.PostsResponse.ERROR
+            resp.result_type = db_pb.SharesResponse.ERROR
             resp.error = str(e)
             return resp
         return resp
@@ -51,7 +51,7 @@ class ShareDatabaseServicer:
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 13:
             self._logger.warning(
-                "Error converting tuple to PostsEntry: " +
+                "Error converting tuple to SharesEntry: " +
                 "Wrong number of elements " + str(tup))
             return False
         try:
@@ -68,10 +68,10 @@ class ShareDatabaseServicer:
             entry.is_followed = tup[9]
             entry.is_shared = tup[10]
             entry.announce_datetime.seconds = tup[11]
-            entry.sharer = tup[12]
+            entry.sharer_id = tup[12]
         except Exception as e:
             self._logger.warning(
-                "Error converting tuple to PostsEntry: " +
+                "Error converting tuple to SharesEntry: " +
                 str(e))
             return False
         return True
@@ -100,7 +100,7 @@ class ShareDatabaseServicer:
             )
         except sqlite3.Error as e:
             self._db.discard_cursor()
-            self._logger.error("AddLike error: %s", str(e))
-            response.result_type = db_pb.AddLikeResponse.ERROR
+            self._logger.error("AddShare error: %s", str(e))
+            response.result_type = db_pb.AddShareResponse.ERROR
             response.error = str(e)
         return response
