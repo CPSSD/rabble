@@ -38,26 +38,28 @@ export class RecommendedFollows extends React.Component<IRecommendedFollowsProps
     alert("Could not communicate with server.");
   }
 
-  public renderRecommendedFollows() {
+  public render() {
     if (this.state.recommendedFollows.length === 0) {
       return null;
     }
     const users = this.state.recommendedFollows.map((e: IParsedUser, i: number) => {
       return (
         <div className="pure-g pure-u-1" key={i}>
-          <User username={this.props.username} blogUser={e} display="block" />
+          <User username={this.props.username} blogUser={e} display="inherit" />
         </div>
       );
     });
 
-    return users;
-  }
-
-  public render() {
-    const recommendedFollows = this.renderRecommendedFollows();
     return (
       <div>
-          {recommendedFollows}
+        <div className="pure-g">
+          <div className="pure-g pure-u-5-24"/>
+          <div className="pure-g pure-u-10-24">
+            Suggested users to follow based on your previous interactions:
+          </div>
+        </div>
+        <br/>
+        {users}
       </div>
     );
   }
