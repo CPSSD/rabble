@@ -94,6 +94,11 @@ class SurpriseRecommender:
             rating.append(0)
             num_zeros_added += 1
 
+            # We don't want to accidentally re-add this as another zero later,
+            # so reuse the follow set to ensure if this (follower, followed)
+            # pair comes up again randomly, it is skipped.
+            follows[follower].add(followed)
+
         d = {'follower': user_id, 'followee': item_id, 'rating': rating}
         df = pd.DataFrame(data=d)
 
