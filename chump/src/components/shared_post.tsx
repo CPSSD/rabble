@@ -43,9 +43,6 @@ export class SharedPost extends React.Component<ISharedPostProps, {}> {
   }
 
   private reblogText() {
-    // Set custom CSS for user if enabled.
-    const bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
-    const titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
     return (
       <div className="pure-u-10-24">
         <p className="reblog-line">

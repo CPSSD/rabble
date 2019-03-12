@@ -7,6 +7,7 @@ export interface IEditUserResult {
 }
 
 export interface IUserDetails {
+  custom_css: string;
   handle: string;
   host: string;
   global_id: number;
@@ -45,16 +46,15 @@ export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,
   privateAccount: boolean,
-  postTitleCss: string, postBodyCss: string,
+  customCss: string,
 ) {
   const url = "/c2s/update/user";
   const postBody = {
     bio,
     current_password: currentPassword,
+    custom_css: customCss,
     display_name: displayName,
     new_password: newPassword,
-    post_body_css: postBodyCss,
-    post_title_css: postTitleCss,
     private: {
       value: privateAccount,
     },
