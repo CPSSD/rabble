@@ -12,10 +12,14 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
+    def normalise_url(self, url):
+        if not url.startswith('http'):
+            url = 'https://' + url
+        return url
+
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
-        if not s.startswith('http'):
-            s = 'https://' + s
+        s = self.normalise_url(s)
         return s
 
     def get_host_name_param(self, host, hostname):
@@ -35,8 +39,7 @@ class ActivitiesUtil:
             return article.ap_id
         # Local article, build ID manually
         s = f'{author.host}/ap/@{author.handle}/{article.global_id}'
-        if not s.startswith('http'):
-            s = 'http://' + s
+        s = self.normalise_url(s)
         return s
 
     def build_delete(self, obj):
@@ -49,8 +52,7 @@ class ActivitiesUtil:
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
-        if not s.startswith('http'):
-            s = 'http://' + s
+        s = self.normalise_url(s)
         return s
 
     def send_activity(self, activity, target_inbox):
