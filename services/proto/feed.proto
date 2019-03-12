@@ -32,6 +32,7 @@ message Post {
   bool is_liked = 9;
   bool is_followed = 10;
   bool is_shared = 11;
+  int64 author_id = 12;
 }
 
 message Share {

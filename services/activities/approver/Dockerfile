@@ -6,6 +6,7 @@ RUN apk add --no-cache --update python3 python3-dev gcc g++ linux-headers make m
 RUN pip3 install grpcio
 RUN pip3 install protobuf
 RUN pip3 install urllib3
+RUN pip3 install requests
 
 ENV PYTHONPATH="/repo/build_out"
 
