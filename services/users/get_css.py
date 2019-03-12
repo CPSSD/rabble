@@ -32,6 +32,6 @@ class GetCssHandler:
             )
         return users_pb2.GetCssResponse(
             result=users_pb2.GetCssResponse.OK,
-            css=resp.results[0].post_title_css,
+            css=resp.results[0].custom_css,
         )
 
