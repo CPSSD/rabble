@@ -116,6 +116,7 @@ func newTestServerWrapper() *serverWrapper {
 		follows:      &FollowsFake{},
 		s2sLike:      &LikeFake{},
 		ldNorm:       &LDNormFake{},
+		hostname:     "SKINNYTESTS:191",
 	}
 	s.setupRoutes()
 	return s
