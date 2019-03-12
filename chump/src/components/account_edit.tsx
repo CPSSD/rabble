@@ -106,6 +106,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     }
 
     this.setState({
+      customCss: details.custom_css,
       bio: details.bio,
       displayName: details.display_name,
       privateAccount: isPrivate,
@@ -170,6 +171,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                   className="pure-input-2-3 bio-form"
                   value={this.state.customCss}
                   onChange={this.handleCustomCss}
+                  rows={3}
                 />
             </div>
 

@@ -7,6 +7,7 @@ export interface IEditUserResult {
 }
 
 export interface IUserDetails {
+  custom_css: string;
   handle: string;
   host: string;
   global_id: number;

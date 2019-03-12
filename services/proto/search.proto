@@ -17,6 +17,7 @@ message User {
   string image = 6;
   string display_name = 7;
   google.protobuf.BoolValue private = 8;
+  string custom_css = 9;
 }
 
 message SearchQuery {

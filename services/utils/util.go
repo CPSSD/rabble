@@ -152,6 +152,7 @@ func StripUser(p *pb.UsersEntry) *pb.User {
 		Image:       defaultImage,
 		DisplayName: p.DisplayName,
 		Private:     p.Private,
+		CustomCss:   p.CustomCss,
 	}
 }
 
