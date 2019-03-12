@@ -19,22 +19,23 @@ function createFakeResponse(body: IFeedResponse | Error | null) {
 }
 
 const validBody: IFeedResponse = {
- post_body_css: "",
- post_title_css: "",
- results: [{
-   author: "aaron",
-   author_id: 0,
-   bio: "bio",
-   body: "rm -rf steely/",
-   global_id: 2,
-   image: "",
-   is_followed: false,
-   is_liked: false,
-   is_shared: false,
-   likes_count: 1,
-   published: "",
-   title: "how to write a plugin",
- }],
+  post_body_css: "",
+  post_title_css: "",
+  results: [{
+    author: "aaron",
+    author_id: 0,
+    bio: "bio",
+    body: "rm -rf steely/",
+    global_id: 2,
+    image: "",
+    is_followed: false,
+    is_liked: false,
+    is_shared: false,
+    likes_count: 1,
+    published: "",
+    title: "how to write a plugin",
+  }],
+  share_results: [],
 };
 
 const evalidBody: IParsedPost[] = [{

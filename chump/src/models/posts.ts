@@ -16,10 +16,17 @@ interface IBlogPost {
   is_shared: boolean;
 }
 
+interface ISharedPost extends IBlogPost {
+  share_datetime: string;
+  sharer: string;
+  sharer_bio: string;
+}
+
 export interface IFeedResponse {
   post_body_css: string;
   post_title_css: string;
   results: IBlogPost[];
+  share_results: ISharedPost[];
 }
 
 export interface IParsedPost extends IBlogPost {
@@ -28,8 +35,18 @@ export interface IParsedPost extends IBlogPost {
   parsed_date: Date;
 }
 
+export interface IParsedSharedPost extends IParsedPost, ISharedPost {
+  parsed_share_date: Date;
+}
+
+export type IAnyParsedPost = IParsedPost | IParsedSharedPost;
+
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
+
+export function IsSharedPost(p: IAnyParsedPost) {
+  return (p as IParsedSharedPost).parsed_share_date !== undefined;
+}
 
 export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: string) {
   // convert published string to js datetime obj
@@ -45,16 +62,37 @@ export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: 
   return b as IParsedPost[];
 }
 
+export function ParseSharedPosts(b: ISharedPost[], bodyCssJson?: string, titleCssJson?: string) {
+  b = b as IParsedSharedPost[];
+  b.map((e: IParsedSharedPost) => {
+    e.parsed_date = new Date(e.published);
+    e.parsed_share_date = new Date(e.share_datetime);
+    if (e.bio === undefined || e.bio === "") {
+      e.bio = "Nowadays everybody wanna talk like they got something to say. \
+      But nothing comes out when they move their lips; just a bunch of gibberish.";
+    }
+    return e;
+  });
+  return b as IParsedSharedPost[];
+}
+
 export function SortPosts(b: IFeedResponse) {
   const p: IParsedPost[] = ParsePosts(b.results, b.post_body_css, b.post_title_css);
-  p.sort((n: IParsedPost, m: IParsedPost) => {
-    return m.parsed_date.getTime() - n.parsed_date.getTime();
+  const s: IParsedSharedPost[] = ParseSharedPosts(b.share_results, b.post_body_css, b.post_title_css);
+
+  const l: IAnyParsedPost[] = p.concat(s);
+
+  l.sort((n, m) => {
+    const t = (m as IParsedSharedPost).parsed_share_date || m.parsed_date;
+    const f = (n as IParsedSharedPost).parsed_share_date || n.parsed_date;
+    return t.getTime() - f.getTime();
   });
-  return p;
+
+  return l;
 }
 
 export function PostsAPIPromise(url: string) {
-  return new Promise<IParsedPost[]>((resolve, reject) => {
+  return new Promise<IAnyParsedPost[]>((resolve, reject) => {
     superagent
       .get(url)
       .set("Accept", "application/json")
@@ -63,11 +101,22 @@ export function PostsAPIPromise(url: string) {
           reject(error);
           return;
         }
+
         // Feed will respond with an empty response if no blogs are avaiable.
         let posts = res!.body;
         if (posts === null) {
-          posts = {results: []};
+          posts = {
+            results: [],
+          };
         }
+
+        if (posts.results === null || posts.results === undefined) {
+          posts.results = [];
+        }
+        if (posts.share_results === null || posts.share_results === undefined) {
+          posts.share_results = [];
+        }
+
         const parsedPosts = SortPosts(posts);
         resolve(parsedPosts);
       });
