@@ -198,6 +198,46 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleUserCss() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		//defer cancel()
+
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request
+			return
+		}
+		w.Header().Set("Content-Type", "text/css")
+		fmt.Fprintf(w,
+			".article-title {" +
+			"  color: red" +
+			"}",
+		)
+		return
+		//ue := &pb.UsersEntry{Handle: v["username"]}
+		//resp, err := s.rss.PerUserRss(ctx, ue)
+		//if err != nil {
+		//	log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	return
+		//}
+		//if resp.ResultType == pb.RssResponse_ERROR {
+		//	log.Printf("Error in rss.PerUserRss(%v): %v", *ue, resp.Message)
+		//	w.WriteHeader(http.StatusBadRequest)
+		//	return
+		//}
+		//if resp.ResultType == pb.RssResponse_DENIED {
+		//	log.Printf("Access denied in rss.PerUserRss(%v): %v", *ue, resp.Message)
+		//	w.WriteHeader(http.StatusForbidden)
+		//	return
+		//}
+
+		//w.WriteHeader(http.StatusOK)
+		//fmt.Fprintf(w, resp.Feed)
+	}
+}
+
 func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)

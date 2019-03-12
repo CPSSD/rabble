@@ -52,10 +52,19 @@ export class Post extends React.Component<IPostProps, IPostState> {
 
   private renderPost() {
     // Set custom CSS for user if enabled.
-    const bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
-    const titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
+    var customStyle = undefined;
+    if (this.props.customCss) {
+      customStyle = (
+        <link
+          rel="stylesheet"
+          type="text/css"
+          href={`/c2s/@${this.props.blogPost.author}/css`}
+        />
+      )
+    }
     return (
       <div className="pure-u-10-24">
+        {customStyle}
         <p className="article-byline">
           {config.published} &nbsp;
           {this.props.blogPost.parsed_date.toLocaleString()}
@@ -63,13 +72,11 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <Link
           to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
           className="article-title"
-          style={titleStyle}
         >
           {this.props.blogPost.title}
         </Link>
         <p
           className="article-body"
-          style={bodyStyle}
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
 
