@@ -52,6 +52,12 @@ CREATE TABLE IF NOT EXISTS views (
   datetime         integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS logs (
+  message          text    NOT NULL,
+  user_id          integer NOT NULL,
+  datetime         integer NOT NULL
+);
+
 /*
   user_id is the global_id of the announcing user in the users table
   article_id is the global_id of the shared article in the posts table.
