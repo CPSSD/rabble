@@ -54,8 +54,6 @@ class UsersUtil:
         and from that download their profile picture to the static assets
         directory. This should all really be a webfinger thing but we don't
         have that option at the time of writing.
-
-        TODO(CianLR): Erase this function from git history.
         """
         try:
             actor_url = "{}/ap/@{}".format(host, handle)
