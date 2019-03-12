@@ -48,7 +48,7 @@ class UsersUtil:
 
     def download_profile_pic(self, host, handle, global_id):
         """
-        This is a contender for worst hack in Rabble.
+        TODO(CianLR): This is a contender for worst hack in Rabble. Fix it.
 
         If a user being added is from a foreign host then get their actor
         and from that download their profile picture to the static assets
