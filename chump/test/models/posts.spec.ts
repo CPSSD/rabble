@@ -42,7 +42,6 @@ const evalidBody: IParsedPost[] = [{
   author_id: 0,
   bio: "bio",
   body: "rm -rf steely/",
-  body_css: undefined,
   global_id: 2,
   image: "",
   is_followed: false,
@@ -52,7 +51,6 @@ const evalidBody: IParsedPost[] = [{
   parsed_date: now,
   published: "",
   title: "how to write a plugin",
-  title_css: undefined,
 }];
 
 describe("GetPublicPosts", () => {

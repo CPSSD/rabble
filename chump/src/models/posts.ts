@@ -26,37 +26,16 @@ export interface IParsedPost extends IBlogPost {
   // parsed_date is a javascript Date object built from published key in
   // IBlogPost
   parsed_date: Date;
-  body_css?: React.CSSProperties;
-  title_css?: React.CSSProperties;
 }
 
 const feedApiURL = "/c2s/feed";
 const perUserApiURL = "/c2s/@";
 
-function ParseCSSJson(j?: string) {
-  if (j === undefined || j === "") {
-    return undefined;
-  }
-  let p = {};
-  try {
-    p = JSON.parse(j);
-  } catch (err) {
-    // Invalid JSON.
-    return undefined;
-  }
-  // TODO(CianLR): Check if p is actually an instace of React.CSSProperties.
-  return p as React.CSSProperties;
-}
-
 export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: string) {
-  const bodyCss = ParseCSSJson(bodyCssJson);
-  const titleCss = ParseCSSJson(titleCssJson);
   // convert published string to js datetime obj
   b = b as IParsedPost[];
   b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
-    e.body_css = bodyCss;
-    e.title_css = titleCss;
     if (e.bio === undefined || e.bio === "") {
       e.bio = "Nowadays everybody wanna talk like they got something to say. \
       But nothing comes out when they move their lips; just a bunch of gibberish.";

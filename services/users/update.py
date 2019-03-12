@@ -43,8 +43,7 @@ class UpdateHandler:
                 password=pw,
                 bio=request.bio,
                 private=request.private,
-                post_title_css=request.post_title_css,
-                post_body_css=request.post_body_css,
+                custom_css=request.custom_css,
             ),
         )
 
