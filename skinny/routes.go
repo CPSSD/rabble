@@ -50,6 +50,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/follows/pending", s.handlePendingFollows())
 	r.HandleFunc("/c2s/follows/accept", s.handleAcceptFollow())
 	r.HandleFunc("/c2s/track_view", s.handleTrackView())
+    r.HandleFunc("/c2s/add_log", s.handleAddLog())
 	r.HandleFunc("/c2s/announce", s.handleAnnounce())
 
 	approvalHandler := s.handleApprovalActivity()
