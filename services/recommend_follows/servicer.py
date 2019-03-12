@@ -20,6 +20,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
     }
     DEFAULT_RECOMMENDER = 'none'
     ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
+    DEFAULT_IMAGE = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 
     def __init__(self, logger, users_util, db_stub):
         self._logger = logger
@@ -112,4 +113,6 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             user_obj.handle = a.handle
             user_obj.host = a.host
             user_obj.display_name = a.display_name
+            user_obj.bio = a.bio
+            user_obj.image = self.DEFAULT_IMAGE
         return resp

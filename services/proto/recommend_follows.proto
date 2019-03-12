@@ -6,6 +6,8 @@ message FollowRecommendationUser {
     string handle = 1;
     string host = 2;
     string display_name = 3;
+    string bio = 4;
+    string image = 5;
 }
 
 message FollowRecommendationRequest {
