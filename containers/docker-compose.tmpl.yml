@@ -67,7 +67,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   delete_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/delete
@@ -82,7 +82,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   ldnorm_service_[[INSTANCE_ID]]:
     build:
       context: ./services/ldnormaliser
@@ -157,7 +157,7 @@ services:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   approver_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/approver
@@ -204,7 +204,7 @@ services:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
       - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   recommend_follows_service_[[INSTANCE_ID]]:
     build:
       context: ./services/recommend_follows
@@ -229,7 +229,7 @@ services:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   search_service_[[INSTANCE_ID]]:
     build:
       context: ./services/search/[[SEARCH_TYPE]]
@@ -258,4 +258,4 @@ services:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
