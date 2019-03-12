@@ -52,7 +52,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
 
   private renderPost() {
     // Set custom CSS for user if enabled.
-    var customStyle = undefined;
+    let customStyle;
     if (this.props.customCss) {
       customStyle = (
         <link
@@ -60,7 +60,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
           type="text/css"
           href={`/c2s/@${this.props.blogPost.author}/css`}
         />
-      )
+      );
     }
     return (
       <div className="pure-u-10-24">

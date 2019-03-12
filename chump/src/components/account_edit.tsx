@@ -106,8 +106,8 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     }
 
     this.setState({
-      customCss: details.custom_css,
       bio: details.bio,
+      customCss: details.custom_css,
       displayName: details.display_name,
       privateAccount: isPrivate,
     });
@@ -167,7 +167,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                 <label htmlFor="name">{"Custom CSS"}</label>
                 <textarea
                   id="custom_css"
-                  placeholder='.article-title { color: red }'
+                  placeholder=".article-title { color: red }"
                   className="pure-input-2-3 bio-form"
                   value={this.state.customCss}
                   onChange={this.handleCustomCss}
