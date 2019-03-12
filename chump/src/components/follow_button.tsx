@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Response } from "superagent";
 import * as config from "../../rabble_config.json";
 import { CreateFollow, Unfollow } from "../models/follow";
+import { RootComponent } from "./root_component";
 
 interface IFormState {
   following: boolean; // true if active user already follows the other user.
@@ -43,7 +44,7 @@ const FollowOrUnfollowButton: React.SFC<IFollowOrUnfollowProps> = (props) => {
   );
 };
 
-export class FollowButton extends React.Component<IFormProps, IFormState> {
+export class FollowButton extends RootComponent<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
 
@@ -52,7 +53,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     };
 
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
-    this.alertUser = this.alertUser.bind(this);
+    //this.alertUser = this.alertUser.bind(this);
   }
 
   public render() {
@@ -70,7 +71,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
     );
   }
 
-  private alertUser(message: string) {
+  private helloalertUser(message: string) {
     alert(message);
   }
 
@@ -82,6 +83,7 @@ export class FollowButton extends React.Component<IFormProps, IFormState> {
       this.setState({
         following: true,
       });
+      this.alertUser("hello");
     })
     .catch((err: any) => {
       let status = err.message;
