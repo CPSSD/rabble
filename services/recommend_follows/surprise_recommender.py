@@ -1,3 +1,5 @@
+import random
+
 from collections import defaultdict
 from enum import Enum
 
@@ -35,12 +37,47 @@ class SurpriseRecommender:
         user_id = []
         item_id = []
         rating = []
+
+        follows = defaultdict(set)
+        inverse_follows = defaultdict(set)
         for follow in follow_resp.results:
             # Do not have to worry about follow state, because even a rejected
             # follow is still a strong signal of interest by the followee.
             user_id.append(follow.follower)
             item_id.append(follow.followed)
             rating.append(1)
+
+            follows[follow.follower].add(follow.followed)
+            inverse_follows[follow.followed].add(follow.follower)
+
+        self._logger.debug('Assigning zeros randomly.')
+
+        # Create a set of all users we can create recommendations for by
+        # getting the set union of both sides of all follows.
+        all_users = tuple(set(follows) | set(inverse_follows))
+
+        # Now randomly put zeros in non-existing links in the network.
+        num_zeros_added = 0
+
+        # Assign the same number of zeros as there are ones.
+        while num_zeros_added < len(follow_resp.results):
+            follower = random.choice(all_users)
+            followed = random.choice(all_users)
+
+            if follower == followed:
+                # Cannot follow yourself.
+                continue
+            if followed in follows[follower]:
+                # Follow already exists.
+                continue
+
+            user_id.append(follower)
+            item_id.append(followed)
+            rating.append(0)
+            num_zeros_added += 1
+
+        self._logger.debug('{} zeros randomly added.'.format(num_zeros_added))
+
 
         d = {'follower': user_id, 'followee': item_id, 'rating': rating}
         df = pd.DataFrame(data=d)
@@ -51,8 +88,11 @@ class SurpriseRecommender:
 
     def _fit_model(self, data):
         algo = SVD()
-        cross_validate(algo, data, measures=[
-                       'RMSE', 'MAE'], cv=5, verbose=True)
+        cross_validate(algo,
+                       data,
+                       measures=['RMSE', 'MAE'],
+                       cv=5,
+                       verbose=True)
         return algo
 
     # Returns a dict of form {user_id: [recommendation]}, where recommendation
