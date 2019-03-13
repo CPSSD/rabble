@@ -1,6 +1,5 @@
 import json
 import time
-from urllib import request
 from services.proto import database_pb2
 
 import requests
