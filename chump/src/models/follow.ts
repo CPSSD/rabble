@@ -16,12 +16,17 @@ interface ICreateRssFollowPostBody {
   follower: string;
 }
 
-export function CreateFollow(username: string, followedUsername: string, followedHost: string) {
-  const endpoint: string = "/c2s/follow";
-  let followedUser = followedUsername;
-  if (followedHost !== null && followedHost !== "" && typeof followedHost !== "undefined") {
-    followedUser = followedUsername + "@" + followedHost;
+function fullyQualifyUsername(handle: string, host: string) {
+  let fullUsername: string = handle;
+  if (host !== null && host !== "" && typeof host !== "undefined") {
+    fullUsername = handle + "@" + host;
   }
+  return fullUsername;
+}
+
+export function CreateFollow(username: string, followedHandle: string, followedHost: string) {
+  const endpoint: string = "/c2s/follow";
+  let followedUser = fullyQualifyUsername(followedHandle, followedHost);
   const postBody: ICreateFollowPostBody = {
     followed: followedUser,
     follower: username,
@@ -43,7 +48,8 @@ export function CreateFollow(username: string, followedUsername: string, followe
   });
 }
 
-export function Unfollow(username: string, followedUsername: string) {
+export function Unfollow(username: string, followedHandle: string, followedHost: string) {
+  let followedUsername = fullyQualifyUsername(followedHandle, followedHost)
   const endpoint: string = "/c2s/unfollow";
   const postBody: IUnfollowPostBody = {
     followed: followedUsername,
