@@ -16,15 +16,6 @@ class ActivitiesUtilTest(unittest.TestCase):
         self.assertEqual(self.activ_util.build_inbox_url('a', 'b.com'),
                          'https://b.com/ap/@a/inbox')
 
-    def test_send_activity_error(self):
-        import requests
-        requests.Session = Mock()
-        requests.Session.send.side_effect = Exception('some weird error')
-        activity = {'@context': ActivitiesUtil.rabble_context(), 'data': 'yes'}
-        _, e = self.activ_util.send_activity(activity,
-                                             'https://followed.com/ap/@b/inbox')
-        self.assertEqual(e, 'some weird error')
-
     def test_send_activity(self):
         import requests
         requests.Session = Mock()
