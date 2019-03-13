@@ -14,7 +14,7 @@ class Servicer(actors_pb2_grpc.ActorsServicer):
         self._follows_stub = follows_stub
 
         actor_servicer = ActorsServicer(
-            logger, users_util, activities_util, host_name)
+            db_stub, logger, users_util, activities_util, host_name)
         self.Get = actor_servicer.Get
 
         collection_servicer = CollectionServicer(
