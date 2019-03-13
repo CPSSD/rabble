@@ -10,7 +10,7 @@ export class RootComponent<T, U> extends React.Component<T, U> {
   protected alertUser(message: string) {
     alert(message);
     if (config.send_logs_to_server) {
-      SendLog(message);
+      SendLog(this.constructor.name + ": " + message);
     }
   }
 }
