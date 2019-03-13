@@ -26,7 +26,7 @@ function fullyQualifyUsername(handle: string, host: string) {
 
 export function CreateFollow(username: string, followedHandle: string, followedHost: string) {
   const endpoint: string = "/c2s/follow";
-  let followedUser = fullyQualifyUsername(followedHandle, followedHost);
+  const followedUser = fullyQualifyUsername(followedHandle, followedHost);
   const postBody: ICreateFollowPostBody = {
     followed: followedUser,
     follower: username,
@@ -49,7 +49,7 @@ export function CreateFollow(username: string, followedHandle: string, followedH
 }
 
 export function Unfollow(username: string, followedHandle: string, followedHost: string) {
-  let followedUsername = fullyQualifyUsername(followedHandle, followedHost)
+  const followedUsername = fullyQualifyUsername(followedHandle, followedHost);
   const endpoint: string = "/c2s/unfollow";
   const postBody: IUnfollowPostBody = {
     followed: followedUsername,

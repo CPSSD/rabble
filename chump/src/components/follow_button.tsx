@@ -94,8 +94,8 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
 
   private handleSubmitFormUnfollow(event: React.FormEvent<HTMLFormElement>) {
     const promise = Unfollow(this.props.follower,
-			     this.props.followed,
-			     this.props.followed_host);
+                             this.props.followed,
+                             this.props.followed_host);
     promise.then((res: Response) => {
       // TODO: Check no error.
       this.setState({
