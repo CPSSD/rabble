@@ -93,6 +93,12 @@ class ReceiveAnnounceServicer:
             article_id=article.global_id,
             announce_datetime=announce_datetime
         )
+        # check if share already exists
+        resp = self._db.FindShare(req)
+        if resp.result_type == db_pb.FindShareResponse.OK and resp.exists:
+            # Share exists. return success
+            return None
+
         resp = self._db.AddShare(req)
         if resp.result_type != db_pb.AddShareResponse.OK:
             self._logger.error(

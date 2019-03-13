@@ -596,7 +596,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
-		log.Printf("User %v received a announce activity.\n", recipient)
+		log.Printf("User %v received an announce activity.\n", recipient)
 
 		decoder := json.NewDecoder(r.Body)
 		var t announceActivityStruct

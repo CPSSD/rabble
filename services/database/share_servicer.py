@@ -24,7 +24,9 @@ class ShareDatabaseServicer:
         )
 
     def SharedPosts(self, request, context):
-        resp = db_pb.SharesResponse()
+        resp = db_pb.SharesResponse(
+            result_type=db_pb.SharesResponse.OK
+        )
         n = request.num_posts
         if not n:
             n = DEFAULT_NUM_POSTS
@@ -81,8 +83,8 @@ class ShareDatabaseServicer:
             "Adding share by %d to article %d",
             req.user_id, req.article_id
         )
-        response = db_pb.AddShareResponse(
-            result_type=db_pb.AddShareResponse.OK
+        response = db_pb.SharesResponse(
+            result_type=db_pb.SharesResponse.OK
         )
         try:
             self._db.execute(
@@ -104,3 +106,24 @@ class ShareDatabaseServicer:
             response.result_type = db_pb.AddShareResponse.ERROR
             response.error = str(e)
         return response
+
+    def FindShare(self, req, context):
+        self._logger.debug(
+            "Finding share by %d of article %d",
+            req.user_id, req.article_id
+        )
+        resp = db_pb.FindShareResponse(
+            result_type=db_pb.FindShareResponse.OK
+        )
+        try:
+            res = self._db.execute("SELECT * " +
+                                   "FROM shares s " +
+                                   'WHERE s.user_id = ? AND s.article_id = ? ',
+                                   req.user_id, req.article_id)
+            if len(res) > 0:
+                resp.exists = True
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.FindShareResponse.ERROR
+            resp.error = str(e)
+            return
+        return resp
