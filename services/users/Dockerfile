@@ -7,6 +7,7 @@ RUN pip3 install grpcio
 RUN pip3 install protobuf
 
 RUN apk add --no-cache libffi-dev
+RUN apk add --update openssl
 RUN pip3 install bcrypt
 
 ENV PYTHONPATH="/repo/build_out"
