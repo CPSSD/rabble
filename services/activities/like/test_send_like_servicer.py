@@ -18,7 +18,7 @@ class MockDB:
                     author_id=456,
                     title="Minecraft Farming 101",
                     body="Don't bother",
-                    ap_id="http://rabble.mojang.com/ap/@minecraft4ever/666",
+                    ap_id="https://rabble.mojang.com/ap/@minecraft4ever/666",
                 )
             ]
         )
@@ -69,7 +69,7 @@ class SendLikeServicerTest(unittest.TestCase):
         self.assertEqual(self.data["actor"]["type"], "Person")
         self.assertIn("localhost/ap/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
-        self.assertEqual("http://rabble.mojang.com/ap/@minecraft4ever/666",
+        self.assertEqual("https://rabble.mojang.com/ap/@minecraft4ever/666",
                          self.data["object"])
         # Check the request was sent to a valid URL.
         self.assertIn("rabble.mojang.com", self.url)
@@ -90,7 +90,7 @@ class SendLikeServicerTest(unittest.TestCase):
         self.assertEqual(self.data["actor"]["type"], "Person")
         self.assertIn("localhost/ap/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
-        self.assertEqual("http://localhost/ap/@minecraft4ever/123",
+        self.assertEqual("https://localhost/ap/@minecraft4ever/123",
                          self.data["object"])
         # TODO(CianLR): Check that the article ID is in the object.
         # Check the request was sent to a valid URL.
