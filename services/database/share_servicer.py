@@ -38,7 +38,7 @@ class ShareDatabaseServicer:
                                    'INNER JOIN shares s ON '
                                    'p.global_id = s.article_id AND s.user_id = ? '
                                    'ORDER BY p.global_id DESC '
-                                   'LIMIT ?', user_id, user_id, user_id, sharer_id, n)
+                                   'LIMIT ?', sharer_id, user_id, user_id, sharer_id, n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]

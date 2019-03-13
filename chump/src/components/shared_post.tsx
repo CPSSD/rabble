@@ -46,7 +46,7 @@ export class SharedPost extends React.Component<ISharedPostProps, {}> {
     return (
       <div className="pure-u-10-24">
         <p className="reblog-line">
-          reblogged by {this.props.blogPost.sharer} &nbsp;
+          Reblogged by {this.props.blogPost.sharer} &nbsp;
           {this.props.blogPost.parsed_share_date.toLocaleString()}
         </p>
       </div>
