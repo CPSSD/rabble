@@ -33,10 +33,10 @@ class SendFollowServicerTest(unittest.TestCase):
             self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.OK)
             self.assertEqual(resp.error, '')
-            expected = self.servicer._build_activity('http://follower.com/ap/@a',
-                                                     'http://followed.com/ap/@b')
+            expected = self.servicer._build_activity('https://follower.com/ap/@a',
+                                                     'https://followed.com/ap/@b')
             mock_send.assert_called_once_with(expected,
-                                              'http://followed.com/ap/@b/inbox')
+                                              'https://followed.com/ap/@b/inbox')
 
     def test_SendFollowActivity_return_error(self):
         with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
@@ -50,7 +50,7 @@ class SendFollowServicerTest(unittest.TestCase):
             self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.ERROR)
             self.assertEqual(resp.error, 'insert error here')
-            expected = self.servicer._build_activity('http://follower.com/ap/@a',
-                                                     'http://followed.com/ap/@b')
+            expected = self.servicer._build_activity('https://follower.com/ap/@a',
+                                                     'https://followed.com/ap/@b')
             mock_send.assert_called_once_with(expected,
-                                              'http://followed.com/ap/@b/inbox')
+                                              'https://followed.com/ap/@b/inbox')

@@ -12,9 +12,11 @@ class UsersUtil:
 
     def _normalise_hostname(self, hostname):
         if not hostname.startswith('http'):
-            self._logger.info('Normalising hostname from %s', hostname)
-            hostname = 'http://' + hostname
-            self._logger.info('to %s', hostname)
+            old_hostname = hostname
+            hostname = 'https://' + hostname
+            self._logger.info('Normalising hostname from "%s" to "%s".',
+                              old_hostname,
+                              hostname)
         return hostname
 
     def parse_username(self, username):

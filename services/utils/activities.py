@@ -1,7 +1,8 @@
 import json
 import time
-from urllib import request
 from services.proto import database_pb2
+
+import requests
 
 class ActivitiesUtil:
     def __init__(self, logger, db):
@@ -12,10 +13,14 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
+    def normalise_url(self, url):
+        if not url.startswith('http'):
+            url = 'https://' + url
+        return url
+
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
-        if not s.startswith('http'):
-            s = 'http://' + s
+        s = self.normalise_url(s)
         return s
 
     def get_host_name_param(self, host, hostname):
@@ -35,8 +40,7 @@ class ActivitiesUtil:
             return article.ap_id
         # Local article, build ID manually
         s = f'{author.host}/ap/@{author.handle}/{article.global_id}'
-        if not s.startswith('http'):
-            s = 'http://' + s
+        s = self.normalise_url(s)
         return s
 
     def build_delete(self, obj):
@@ -49,21 +53,18 @@ class ActivitiesUtil:
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
-        if not s.startswith('http'):
-            s = 'http://' + s
+        s = self.normalise_url(s)
         return s
 
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
-        req = request.Request(target_inbox,
-                              data=body,
-                              headers=headers,
-                              method='POST')
-        self._logger.debug('Sending activity to foreign server: %s',
-                           target_inbox)
+        req = requests.Request('POST', target_inbox, data=body, headers=headers)
+        req = req.prepare()
+        self._logger.debug('Sending activity to foreign server (%s):\n%s',
+                           target_inbox, body)
         try:
-            resp = request.urlopen(req)
+            resp = requests.Session().send(req)
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
