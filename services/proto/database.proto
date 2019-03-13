@@ -86,6 +86,8 @@ message UsersEntry {
   string custom_css = 10;
   // Hack to replace the value in 'host' with NULL
   bool host_is_null = 11;
+  string private_key = 12;
+  string public_key = 13;
 }
 
 message UsersRequest {
