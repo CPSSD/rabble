@@ -18,7 +18,7 @@ class MockDB:
                     author_id=123,
                     title="Test",
                     body="Test body",
-                    ap_id="http://rabble.cian.com/@cian/3",
+                    ap_id="https://rabble.cian.com/@cian/3",
                 ),
             ],
         )

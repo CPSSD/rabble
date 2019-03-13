@@ -1,13 +1,14 @@
 import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
-import { GetUsersPosts, IParsedPost } from "../models/posts";
+import { GetUsersPosts, IAnyParsedPost, IParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
 import { Post } from "./post";
+import { SharedPost } from "./shared_post";
 
 import * as superagent from "superagent";
 
 interface IUserState {
-  publicBlog: IParsedPost[];
+  publicBlog: IAnyParsedPost[];
   // username whose page we're looking at, filled when we complete our lookup
   // In state so we can tell when switching to a different user's page
   user: string;
@@ -38,7 +39,7 @@ export class User extends React.Component<IUserProps, IUserState> {
 
   public getPosts() {
     GetUsersPosts(this.props.match.params.user)
-      .then((posts: IParsedPost[]) => {
+      .then((posts: IAnyParsedPost[]) => {
         this.setState({
           publicBlog: posts,
           user: this.props.match.params.user,
@@ -91,10 +92,26 @@ export class User extends React.Component<IUserProps, IUserState> {
         </div>
       );
     }
-    return this.state.publicBlog.map((e: IParsedPost, i: number) => {
+    return this.state.publicBlog.map((e: IAnyParsedPost, i: number) => {
+      if (IsSharedPost(e)) {
+        return (
+          <SharedPost
+            username={this.props.username}
+            blogPost={e as IParsedSharedPost}
+            preview={false}
+            customCss={true}
+            key={i}
+          />
+        );
+      }
       return (
         <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e} preview={false} customCss={true}/>
+          <Post
+            username={this.props.username}
+            blogPost={e}
+            preview={false}
+            customCss={true}
+          />
         </div>
       );
     });

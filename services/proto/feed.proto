@@ -32,6 +32,8 @@ message Post {
   bool is_liked = 9;
   bool is_followed = 10;
   bool is_shared = 11;
+  int64 author_id = 12;
+  string author_host = 13;
 }
 
 message Share {
@@ -49,6 +51,7 @@ message Share {
   string sharer = 12;
   string sharer_bio = 13;
   string share_datetime = 14;
+  string author_host = 15;
 }
 
 message FeedResponse {
@@ -61,9 +64,6 @@ message FeedResponse {
   repeated Post results = 1;
   FeedError error = 2;
 
-  // Custom CSS a user may have defined. Empty string if not.
-  string post_title_css = 3;
-  string post_body_css = 4;
   repeated Share share_results = 5;
 }
 

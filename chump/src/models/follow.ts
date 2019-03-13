@@ -16,10 +16,14 @@ interface ICreateRssFollowPostBody {
   follower: string;
 }
 
-export function CreateFollow(username: string, followedUsername: string) {
+export function CreateFollow(username: string, followedUsername: string, followedHost: string) {
   const endpoint: string = "/c2s/follow";
+  let followedUser = followedUsername;
+  if (followedHost !== null && followedHost !== "" && typeof followedHost !== "undefined") {
+    followedUser = followedUsername + "@" + followedHost;
+  }
   const postBody: ICreateFollowPostBody = {
-    followed: followedUsername,
+    followed: followedUser,
     follower: username,
   };
   return new Promise((resolve, reject) => {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -16,6 +17,11 @@ const (
 	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 	MaxItemsReturned = 50
 	timeParseFormat  = "2006-01-02T15:04:05.000Z"
+)
+
+// Notable error types
+var (
+	UserNotFoundErr = errors.New("GetAuthorFromDb: user not found")
 )
 
 // ConvertPbTimestamp converts a timestamp into a format readable by the frontend
@@ -54,7 +60,7 @@ func GetAuthorFromDb(ctx context.Context, handle string, host string, hostIsNull
 	}
 
 	if len(resp.Results) == 0 {
-		return nil, fmt.Errorf(errFmt, handle, host, "user does not exist")
+		return nil, UserNotFoundErr
 	} else if len(resp.Results) > 1 {
 		log.Printf("Expected 1 user for GetAuthorFromDb request, got %d",
 			len(resp.Results))
@@ -83,6 +89,8 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:     author.Handle,
+			AuthorHost: author.Host,
+			AuthorId:   r.AuthorId,
 			Title:      r.Title,
 			Bio:        author.Bio,
 			Body:       r.Body,
@@ -123,6 +131,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:        author.Handle,
+			AuthorHost:    author.Host,
 			Title:         r.Title,
 			Bio:           author.Bio,
 			Body:          r.Body,
@@ -151,6 +160,7 @@ func StripUser(p *pb.UsersEntry) *pb.User {
 		Image:       defaultImage,
 		DisplayName: p.DisplayName,
 		Private:     p.Private,
+		CustomCss:   p.CustomCss,
 	}
 }
 

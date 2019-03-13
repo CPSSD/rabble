@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+
+	webfinger "github.com/writeas/go-webfinger"
 )
 
 // setupRoutes specifies the routing of all endpoints on the server.
@@ -31,6 +33,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
+	r.HandleFunc("/c2s/@{username}/css", s.handleUserCss())
 	r.HandleFunc("/c2s/@{username}/recommend_follows", s.handleRecommendFollows())
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
@@ -47,6 +50,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/follows/pending", s.handlePendingFollows())
 	r.HandleFunc("/c2s/follows/accept", s.handleAcceptFollow())
 	r.HandleFunc("/c2s/track_view", s.handleTrackView())
+	r.HandleFunc("/c2s/add_log", s.handleAddLog())
 	r.HandleFunc("/c2s/announce", s.handleAnnounce())
 
 	approvalHandler := s.handleApprovalActivity()
@@ -68,4 +72,6 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/@{username}", s.handleActor())
 	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 	r.HandleFunc("/ap/@{username}/followers", s.handleFollowersCollection())
+
+	r.HandleFunc(webfinger.WebFingerPath, s.newWebfingerHandler())
 }

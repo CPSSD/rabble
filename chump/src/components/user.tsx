@@ -15,6 +15,7 @@ export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
     super(props);
     this.state = {};
+    this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
   public render() {
@@ -24,7 +25,8 @@ export class User extends React.Component<IUserProps, {}> {
         <div className="pure-u-14-24">
           <div className="pure-u-5-24">
             <img
-              src={this.props.blogUser.image}
+              src={`/assets/user_${this.props.blogUser.global_id}`}
+              onError={this.handleNoProfilePic}
               className="author-thumbnail"
             />
           </div>
@@ -43,6 +45,7 @@ export class User extends React.Component<IUserProps, {}> {
                 <FollowButton
                     follower={this.props.username}
                     followed={this.props.blogUser.handle}
+                    followed_host={this.props.blogUser.host}
                     following={this.props.blogUser.is_followed}
                 />
             </div>
@@ -54,5 +57,10 @@ export class User extends React.Component<IUserProps, {}> {
         <div className="pure-u-5-24"/>
       </div>
     );
+  }
+
+  private handleNoProfilePic(event: any) {
+    event.target.onerror = null;
+    event.target.src = this.props.blogUser.image;
   }
 }

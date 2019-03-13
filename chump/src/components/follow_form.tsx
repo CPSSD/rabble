@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { CreateFollow, CreateRssFollow } from "../models/follow";
+import { RootComponent } from "./root_component";
 
 interface IFormState {
   toFollow: string;
@@ -12,7 +13,7 @@ export interface IFormProps {
   username: string;
 }
 
-export class FollowForm extends React.Component<IFormProps, IFormState> {
+export class FollowForm extends RootComponent<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
 
@@ -24,7 +25,6 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleDropdownChange = this.handleDropdownChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
-    this.alertUser = this.alertUser.bind(this);
   }
 
   public render() {
@@ -75,15 +75,11 @@ export class FollowForm extends React.Component<IFormProps, IFormState> {
     });
   }
 
-  private alertUser(message: string) {
-    alert(message);
-  }
-
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const promise = (this.state.type === "url")
       ? CreateRssFollow(this.props.username, this.state.toFollow)
-      : CreateFollow(this.props.username, this.state.toFollow);
+      : CreateFollow(this.props.username, this.state.toFollow, "");
 
     promise.then((res: any) => {
       let message = "Posted follow with response: ";

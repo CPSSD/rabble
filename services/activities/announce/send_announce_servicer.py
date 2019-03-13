@@ -21,21 +21,6 @@ class SendAnnounceServicer:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
 
-    def _build_article_object(self, article, article_url, author_actor):
-        # TODO(sailslick) remove everything other than url when discover service
-        # can find search for articles from a url
-        timestamp = self._activ_util.timestamp_to_rfc(article.creation_datetime)
-        return {
-            "@context": "https://www.w3.org/ns/activitystreams",
-            "type": "Article",
-            "url": article_url,
-            "name": article.title,
-            "published": timestamp,
-            "attributedTo": author_actor,
-            "content": article.md_body,
-            "id": article_url,
-        }
-
     def _get_shared_article(self, article_id):
         posts_req = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.FIND,
@@ -78,6 +63,11 @@ class SendAnnounceServicer:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Author of shared post does not exist"
             return response
+        if author.global_id == announcer.global_id:
+            response.result_type = announce_pb2.AnnounceResponse.ERROR
+            response.error = "Author cannot share their own post"
+            return response
+
         host = author.host
         # check if author is local
         if not author.host:
@@ -86,7 +76,8 @@ class SendAnnounceServicer:
 
         # Create Announce activity
         article_url = self._activ_util.build_article_url(author, article)
-        article_obj = self._build_article_object(article, article_url, author_actor)
+        article_obj = self._announce_util.build_article_object(
+            article, article_url, author_actor)
         actor = self._activ_util.build_actor(announcer.handle, self._hostname)
         creation_datetime = self._activ_util.timestamp_to_rfc(req.announce_time)
 

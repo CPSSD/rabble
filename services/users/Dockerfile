@@ -8,6 +8,7 @@ RUN pip3 install protobuf
 RUN pip3 install requests
 
 RUN apk add --no-cache libffi-dev
+RUN apk add --update openssl
 RUN pip3 install bcrypt
 
 ENV PYTHONPATH="/repo/build_out"

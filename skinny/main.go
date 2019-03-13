@@ -25,6 +25,9 @@ type serverWrapper struct {
 	server *http.Server
 	store  *sessions.CookieStore
 
+	// The hostname for this skinny instance.
+	hostname string
+
 	// actorInboxRouter is responsible for routing activitypub requests
 	// based on the Type json parameter
 	actorInboxRouter map[string]http.HandlerFunc
@@ -194,10 +197,15 @@ func createAnnounceClient() (*grpc.ClientConn, pb.AnnounceClient) {
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
 	r := mux.NewRouter()
-	env := "SKINNY_SERVER_PORT"
-	port := os.Getenv(env)
+	host_env := "HOST_NAME"
+	hostname := os.Getenv(host_env)
+	if hostname == "" {
+		log.Fatalf("%s env var not set for skinny server", host_env)
+	}
+	port_env := "SKINNY_SERVER_PORT"
+	port := os.Getenv(port_env)
 	if port == "" {
-		log.Fatalf("%s env var not set for skinny server", env)
+		log.Fatalf("%s env var not set for skinny server", port_env)
 	}
 	addr := "0.0.0.0:" + port
 	srv := &http.Server{
@@ -231,6 +239,7 @@ func buildServerWrapper() *serverWrapper {
 		server:                    srv,
 		store:                     cookie_store,
 		shutdownWait:              20 * time.Second,
+		hostname:                  hostname,
 		databaseConn:              databaseConn,
 		database:                  databaseClient,
 		articleConn:               articleConn,

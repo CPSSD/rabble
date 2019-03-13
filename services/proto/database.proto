@@ -83,10 +83,11 @@ message UsersEntry {
   // this follow is accepted and not pending).
   bool is_followed = 9;
   // Custom CSS the user has given. Empty string if not set.
-  string post_title_css = 10;
-  string post_body_css = 11;
+  string custom_css = 10;
   // Hack to replace the value in 'host' with NULL
-  bool host_is_null = 12;
+  bool host_is_null = 11;
+  string private_key = 12;
+  string public_key = 13;
 }
 
 message UsersRequest {
@@ -238,6 +239,8 @@ message SharedPostsRequest {
   int32 num_posts = 1;
   // The global ID of the user making this request, not set if none.
   google.protobuf.Int64Value user_global_id = 2;
+  // The global ID of the target user for this request, not set if none.
+  int64 sharer_id = 3;
 }
 
 // Built off PostsEntry with some extras for shared (11,12,13)
@@ -316,6 +319,17 @@ message View {
 message AddViewResponse {
 }
 
+message ClientLog {
+    // The ID of a local user. If a foreign (or just not logged in) user
+    // has a log, then this will be 0.
+    int64 user = 1;
+    string message = 2;
+    google.protobuf.Timestamp datetime = 3;
+}
+
+message AddLogResponse {
+}
+
 message AllUsersRequest {
 }
 
@@ -323,6 +337,22 @@ message ShareEntry {
   int64 user_id = 1;
   int64 article_id = 2;
   google.protobuf.Timestamp announce_datetime = 3;
+}
+
+message FindShareResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+    // Further types can be specified here.
+  }
+
+  ResultType result_type = 1;
+
+  string error = 2;
+
+  // If the result_type is OK, and the query returns some entries, then those
+  // entries are provided here.
+  bool exists = 3;
 }
 
 message AddShareResponse {
@@ -362,8 +392,11 @@ service Database {
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 
   rpc AddView(View) returns (AddViewResponse);
+  rpc AddLog(ClientLog) returns (AddLogResponse);
+
   // Add a share item to database
   rpc AddShare(ShareEntry) returns (AddShareResponse);
+  rpc FindShare(ShareEntry) returns (FindShareResponse);
 
   // Get all users this instance knows about.
   rpc AllUsers(AllUsersRequest) returns (UsersResponse);

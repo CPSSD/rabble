@@ -17,6 +17,7 @@ services:
       - [[NETWORK_NAME]]
       - default
     environment:
+      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
       - SKINNY_SERVER_PORT=[[SKINNY_PORT]]
       - USERS_SERVICE_HOST=users_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
@@ -38,6 +39,9 @@ services:
     build:
       context: ./services/feed
       dockerfile: Dockerfile
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     volumes:
       - .:/repo
     environment:
@@ -48,6 +52,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "logger_service_[[INSTANCE_ID]]"
     environment:
@@ -89,6 +96,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "logger_service_[[INSTANCE_ID]]"
     environment:
@@ -101,6 +111,9 @@ services:
         - DBPATH=[[DBPATH]]
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "logger_service_[[INSTANCE_ID]]"
     environment:
@@ -111,6 +124,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "database_service_[[INSTANCE_ID]]"
       - "follow_activity_service_[[INSTANCE_ID]]"
@@ -128,6 +144,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
   article_service_[[INSTANCE_ID]]:
     build:
       context: ./services/article
@@ -136,6 +155,9 @@ services:
       - "database_service_[[INSTANCE_ID]]"
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
@@ -192,6 +214,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
   rss_service_[[INSTANCE_ID]]:
     build:
       context: ./services/rss
@@ -200,6 +225,9 @@ services:
       - .:/repo
     depends_on:
       - "database_service_[[INSTANCE_ID]]"
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
@@ -211,6 +239,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "database_service_[[INSTANCE_ID]]"
     environment:
@@ -223,6 +254,9 @@ services:
       dockerfile: Dockerfile
     volumes:
      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "database_service_[[INSTANCE_ID]]"
     environment:
@@ -236,6 +270,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
     depends_on:
       - "database_service_[[INSTANCE_ID]]"
     environment:

@@ -1,3 +1,4 @@
+import requests
 from services.proto import database_pb2
 
 MAX_FIND_RETRIES = 3
@@ -47,6 +48,44 @@ class UsersUtil:
         self._logger.warning('Couldn\'t parse actor %s', actor_uri)
         return None, None
 
+    def download_profile_pic(self, host, handle, global_id):
+        """
+        TODO(CianLR): This is a contender for worst hack in Rabble. Fix it.
+
+        If a user being added is from a foreign host then get their actor
+        and from that download their profile picture to the static assets
+        directory. This should all really be a webfinger thing but we don't
+        have that option at the time of writing.
+        """
+        try:
+            actor_url = "{}/ap/@{}".format(host, handle)
+            self._logger.info("Getting actor URL '%s'", actor_url)
+            actor_resp = requests.get(actor_url)
+            if actor_resp.status_code != 200:
+                self._logger.warning(
+                    "Couldn't get foreign actor: error %d",
+                    actor_resp.status_code)
+                return
+            actor = actor_resp.json()
+            if "icon" not in actor:
+                return  # No profile pic
+            pic_url = actor["icon"]["url"]
+            self._logger.info("Getting profile pic URL '%s'", pic_url)
+            image_resp = requests.get(pic_url)
+            if image_resp.status_code != 200:
+                self._logger.warning(
+                    "Could not get profile pic: error %d",
+                    image_resp.status_code)
+            image_bytes = image_resp.content
+            profile_pic_path = "/repo/build_out/chump_dist/user_{}".format(
+                global_id)
+            self._logger.info("Writing profile pic to %s", profile_pic_path)
+            with open(profile_pic_path, "wb") as f:
+                f.write(image_bytes)
+        except Exception as e:
+            self._logger.error("Error when downloading profile pic: %s", str(e))
+            # Just pretend that didn't happen
+
     def _create_user_in_db(self, entry):
         self._logger.debug('Creating user %s@%s in database',
                            entry.handle, entry.host)
@@ -55,8 +94,11 @@ class UsersUtil:
             entry=entry
         )
         insert_resp = self._db.Users(insert_req)
-        # TODO(iandioch): Respond to errors.
-        return insert_resp
+        if insert_resp.result_type != database_pb2.UsersResponse.OK:
+            self._logger.error("Error inserting into users db %s",
+                               insert_resp.error)
+            return None
+        return insert_resp.global_id
 
     def get_or_create_user_from_db(self,
                                    handle=None,
@@ -74,8 +116,9 @@ class UsersUtil:
         if user is not None:
             return user
 
-        if global_id is not None:
+        if global_id is not None or handle is None:
             # Should not try to create a user and hope it has this ID.
+            # Also shouldn't create a user with no handle.
             return None
 
         user_entry = database_pb2.UsersEntry(
@@ -83,7 +126,9 @@ class UsersUtil:
             host=host,
             host_is_null=host_is_null
         )
-        self._create_user_in_db(user_entry)
+        new_global_id = self._create_user_in_db(user_entry)
+        if new_global_id is not None and host:
+            self.download_profile_pic(host, handle, new_global_id)
         return self.get_or_create_user_from_db(handle,
                                                host,
                                                attempt_number=attempt_number + 1)

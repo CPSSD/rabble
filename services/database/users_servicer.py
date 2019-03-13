@@ -18,7 +18,7 @@ class UsersDatabaseServicer:
             "SELECT u.global_id, u.handle, u.host, u.display_name, "
             "u.password, u.bio, u.rss, u.private, "
             "f.follower IS NOT NULL, "
-            "u.post_title_css, u.post_body_css FROM users u "
+            "u.custom_css, u.public_key, u.private_key FROM users u "
             "LEFT OUTER JOIN follows f ON "
             "f.followed=u.global_id AND f.follower=? "
         )
@@ -44,7 +44,7 @@ class UsersDatabaseServicer:
         return "", util.DONT_USE_FIELD
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 11:
+        if len(tup) != 12:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -63,8 +63,9 @@ class UsersDatabaseServicer:
             entry.rss = tup[6]
             entry.private.value = tup[7]
             entry.is_followed = tup[8]
-            entry.post_title_css = tup[9]
-            entry.post_body_css = tup[10]
+            entry.custom_css = tup[9]
+            entry.public_key = tup[10]
+            entry.private_key = tup[11]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to UsersEntry: " +
@@ -190,8 +191,8 @@ class UsersDatabaseServicer:
         try:
             self._db.execute(
                 'INSERT INTO users '
-                '(handle, host, display_name, password, bio, rss, private) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                '(handle, host, display_name, password, bio, rss, private, '
+                'public_key, private_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 req.entry.handle,
                 req.entry.host if not req.entry.host_is_null else None,
                 req.entry.display_name,
@@ -199,6 +200,8 @@ class UsersDatabaseServicer:
                 req.entry.bio,
                 req.entry.rss,
                 req.entry.private.value,
+                req.entry.public_key,
+                req.entry.private_key,
                 commit=False)
             res = self._db.execute(
                 'SELECT last_insert_rowid() FROM users LIMIT 1')

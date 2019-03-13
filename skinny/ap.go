@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -72,18 +73,31 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	}
 }
 
+type ImageObject struct {
+	Type string `json:"type"`
+	Url  string `json:"url"`
+}
+
+type KeyObject struct {
+	Id           string `json:"id"`
+	Owner        string `json:"owner"`
+	PublicKeyPem string `json:"publicKeyPem"`
+}
+
 type ActorObjectStruct struct {
 	// The @context in the output JSON-LD
-	Context string `json:"@context"`
+	Context []string `json:"@context"`
 
 	// The same types as the protobuf ActorObject.
-	Type              string `json:"type"`
-	Inbox             string `json:"inbox"`
-	Outbox            string `json:"outbox"`
-	Name              string `json:"name"`
-	PreferredUsername string `json:"preferredUsername"`
-	Followers         string `json:followers`
-	Following         string `json:following`
+	Type              string       `json:"type"`
+	Inbox             string       `json:"inbox"`
+	Outbox            string       `json:"outbox"`
+	Name              string       `json:"name"`
+	PreferredUsername string       `json:"preferredUsername"`
+	Icon              *ImageObject `json:"icon,omitempty"`
+	Followers         string       `json:followers`
+	Following         string       `json:following`
+	PublicKey         *KeyObject   `json:"publicKey"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -104,15 +118,20 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			return
 		}
 		if resp.Actor == nil {
-			log.Printf("actors service Get returned nill actor\n")
+			log.Printf("Actors service Get returned nil actor\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create actor object.\n")
 			return
 		}
 
+		context := []string{
+			"https://www.w3.org/ns/activitystreams",
+			"https://w3id.org/security/v1",
+		}
+
 		// Unfortunately, there's no easier way to add a field to a struct.
 		actor := &ActorObjectStruct{
-			Context:           "https://www.w3.org/ns/activitystreams",
+			Context:           context,
 			Type:              resp.Actor.Type,
 			Inbox:             resp.Actor.Inbox,
 			Outbox:            resp.Actor.Outbox,
@@ -120,6 +139,23 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
+		}
+
+		actor.PublicKey = &KeyObject{
+			Id:           resp.Actor.PublicKey.Id,
+			Owner:        resp.Actor.PublicKey.Owner,
+			PublicKeyPem: resp.Actor.PublicKey.PublicKeyPem,
+		}
+
+		filepath := s.getProfilePicPath(resp.Actor.GlobalId)
+		if _, err := os.Stat(filepath); err == nil {
+			// Profile pic exists
+			actor.Icon = &ImageObject{
+				Type: "Image",
+				Url: fmt.Sprintf(
+					"http://%s/assets/user_%d",
+					s.hostname, resp.Actor.GlobalId),
+			}
 		}
 
 		enc := json.NewEncoder(w)
@@ -478,9 +514,9 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 type deleteActivity struct {
-	Context   string   `json:"@context"`
-	Object    activity `json:"object"`
-	Type      string   `json:"type"`
+	Context string   `json:"@context"`
+	Object  activity `json:"object"`
+	Type    string   `json:"type"`
 }
 
 func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
@@ -495,7 +531,7 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 		body := buf.String()
 
 		d := json.NewDecoder(strings.NewReader(body))
-		var del deleteActivity;
+		var del deleteActivity
 
 		if err := d.Decode(&del); err != nil {
 			log.Printf("Could not decode Delete activity: %#v", err)
@@ -529,9 +565,9 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 }
 
 type likeDeleteActivity struct {
-	Context   string             `json:"@context"`
-	Object    likeActivityStruct `json:"object"`
-	Type      string             `json:"type"`
+	Context string             `json:"@context"`
+	Object  likeActivityStruct `json:"object"`
+	Type    string             `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
@@ -551,7 +587,6 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
 		}
-
 
 		f := &pb.ReceivedLikeDeleteDetails{
 			LikedObjectApId: t.Object.Object,
@@ -601,7 +636,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
-		log.Printf("User %v received a announce activity.\n", recipient)
+		log.Printf("User %v received an announce activity.\n", recipient)
 
 		decoder := json.NewDecoder(r.Body)
 		var t announceActivityStruct
@@ -616,13 +651,13 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 
 		ats, err := parseTimestamp(w, t.Published, false)
 		if err != nil {
-			log.Println("Unable to read announce timestamp: %v", err)
+			log.Printf("Unable to read announce timestamp: %v", err)
 			return
 		}
 
 		ptc, err := parseTimestamp(w, t.Object.Published, true)
 		if err != nil {
-			log.Println("Unable to read object timestamp: %v", err)
+			log.Printf("Unable to read object timestamp: %v", err)
 			return
 		}
 

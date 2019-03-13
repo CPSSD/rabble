@@ -2,6 +2,7 @@ import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import {GetRegisterPromise, IRegisterResult} from "../models/register";
+import {RootComponent} from "./root_component";
 
 interface IRegisterProps extends RouteProps {
   loginCallback(username: string): void;
@@ -15,7 +16,7 @@ interface IRegisterState {
   redirect: boolean;
 }
 
-export class Register extends React.Component<IRegisterProps, IRegisterState> {
+export class Register extends RootComponent<IRegisterProps, IRegisterState> {
   constructor(props: IRegisterProps) {
     super(props);
 
@@ -38,7 +39,7 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
     event.preventDefault();
     if (this.state.username === "" ||
         this.state.password === "") {
-      alert("username or password not filled in");
+      this.alertUser("username or password not filled in");
       return;
     }
     let displayName = this.state.displayName;
@@ -51,7 +52,7 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
                        this.state.bio)
       .then((response: IRegisterResult) => {
         if (!response.success) {
-          alert("Error registering: " + response.error);
+          this.alertUser("Error registering: " + response.error);
         } else {
           this.props.loginCallback(this.state.username);
           this.setState({
@@ -156,6 +157,6 @@ export class Register extends React.Component<IRegisterProps, IRegisterState> {
   }
 
   private handleRegisterError() {
-    alert("Error attempting to register.");
+    this.alertUser("Error attempting to register.");
   }
 }

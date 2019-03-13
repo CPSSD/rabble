@@ -198,6 +198,33 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleUserCss() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		if username, ok := v["username"]; !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		resp, err := s.users.GetCss(ctx, &pb.GetCssRequest{
+			Handle: v["username"],
+		})
+		if err != nil {
+			log.Printf("Error in users.GetCss: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if resp.Result != pb.GetCssResponse_OK {
+			log.Printf("Error getting css: %s", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/css")
+		fmt.Fprintf(w, resp.Css)
+		return
+	}
+}
+
 func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -882,6 +909,35 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		_, err = s.database.AddView(ctx, &v)
 		if err != nil {
 			log.Printf("Could not send view: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func (s *serverWrapper) handleAddLog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var v pb.ClientLog
+		err := decoder.Decode(&v)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// uid = 0 if no user is logged in.
+		uid, err := s.getSessionGlobalId(r)
+
+		v.User = uid
+
+		ts := ptypes.TimestampNow()
+		v.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_, err = s.database.AddLog(ctx, &v)
+		if err != nil {
+			log.Printf("Could not add log: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}

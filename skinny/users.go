@@ -140,7 +140,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			Password:    req.Password,
 			Bio:         req.Bio,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 		defer cancel()
 
 		resp, err := s.users.Create(ctx, u)
@@ -175,6 +175,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
+		w.Header().Set("Content-Type", "application/json")
 
 		var (
 			req  pb.UpdateUserRequest
@@ -194,7 +195,6 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		}
 
 		err = decoder.Decode(&req)
-		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
 			log.Printf("Invalid JSON, error: %v\n", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -234,6 +234,12 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) getProfilePicPath(user_id int64) string {
+	filename := fmt.Sprintf("user_%d", user_id)
+	filepath := path.Join(staticAssets, filename)
+	return filepath
+}
+
 func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var resp userResponse
@@ -253,7 +259,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 		image, _, err := r.FormFile("profile_pic")
 		defer image.Close()
 		if err != nil {
-			log.Printf("Could not load profile pic from request: %v", err);
+			log.Printf("Could not load profile pic from request: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			resp.Error = "Could not load profile pic from request"
 			resp.Success = false
@@ -291,8 +297,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 			enc.Encode(resp)
 			return
 		}
-		filename := fmt.Sprintf("user_%d", user_id)
-		filepath := path.Join(staticAssets, filename)
+		filepath := s.getProfilePicPath(user_id)
 		log.Printf("Writing image to %s", filepath)
 		if err := ioutil.WriteFile(filepath, buf.Bytes(), 0644); err != nil {
 			log.Printf("Error writing file to %s: %v", filepath, err)

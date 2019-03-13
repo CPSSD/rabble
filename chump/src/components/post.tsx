@@ -6,6 +6,7 @@ import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
+import { RootComponent } from "./root_component";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -19,7 +20,7 @@ interface IPostState {
   isLiked: boolean;
 }
 
-export class Post extends React.Component<IPostProps, IPostState> {
+export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
     if (this.props.blogPost.likes_count === undefined) {
@@ -52,10 +53,19 @@ export class Post extends React.Component<IPostProps, IPostState> {
 
   private renderPost() {
     // Set custom CSS for user if enabled.
-    const bodyStyle = this.props.customCss ? this.props.blogPost.body_css : undefined;
-    const titleStyle = this.props.customCss ? this.props.blogPost.title_css : undefined;
+    let customStyle;
+    if (this.props.customCss) {
+      customStyle = (
+        <link
+          rel="stylesheet"
+          type="text/css"
+          href={`/c2s/@${this.props.blogPost.author}/css`}
+        />
+      );
+    }
     return (
       <div className="pure-u-10-24">
+        {customStyle}
         <p className="article-byline">
           {config.published} &nbsp;
           {this.props.blogPost.parsed_date.toLocaleString()}
@@ -63,13 +73,11 @@ export class Post extends React.Component<IPostProps, IPostState> {
         <Link
           to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
           className="article-title"
-          style={titleStyle}
         >
           {this.props.blogPost.title}
         </Link>
         <p
           className="article-body"
-          style={bodyStyle}
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
 
@@ -103,7 +111,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       <div className="pure-u-3-24">
         <div className="author-about">
           <img
-            src={`/assets/user_${this.props.blogPost.global_id}`}
+            src={`/assets/user_${this.props.blogPost.author_id}`}
             onError={this.handleNoProfilePic}
             className="author-thumbnail"
           />
@@ -120,6 +128,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
                   <FollowButton
                       follower={this.props.username}
                       followed={this.props.blogPost.author}
+                      followed_host={this.props.blogPost.author_host}
                       following={this.props.blogPost.is_followed}
                   />
               </div>
@@ -163,7 +172,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       .then((res: any) => {
         const resp = res!.body;
         if (resp === null) {
-          alert("Error parsing like: " + res);
+          this.alertUser("Error parsing like: " + res);
           return;
         }
         // If isLiked is false then change it to true and increment like count
@@ -178,7 +187,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         if (err.response) {
           message = err.response.text;
         }
-        alert(message);
+        this.alertUser(message);
       });
   }
 }

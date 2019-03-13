@@ -1,3 +1,5 @@
+import random
+
 from collections import defaultdict
 from enum import Enum
 
@@ -35,12 +37,67 @@ class SurpriseRecommender:
         user_id = []
         item_id = []
         rating = []
+
+        follows = defaultdict(set)
+        inverse_follows = defaultdict(set)
         for follow in follow_resp.results:
             # Do not have to worry about follow state, because even a rejected
             # follow is still a strong signal of interest by the followee.
             user_id.append(follow.follower)
             item_id.append(follow.followed)
             rating.append(1)
+
+            follows[follow.follower].add(follow.followed)
+            inverse_follows[follow.followed].add(follow.follower)
+
+        # Now randomly put zeros in non-existing links in the network.
+        # This is necessary as the problem is an example of PU-learning, where
+        # we have no negative samples to "drag down" the recommendation
+        # confidence. That's to say, without zeros, the model will never have
+        # incentive not to recommend everyone, as it is never told that an 
+        # unsuitable recommendation is bad.
+        self._logger.debug('Assigning zeros randomly.')
+
+        # Create a set of all users we can create recommendations for by
+        # getting the set union of both sides of all follow connections.
+        all_users = tuple(set(follows) | set(inverse_follows))
+
+        # We only want to add as many zeros as there are ones.
+        num_zeros_added = 0
+        num_ones = len(follow_resp.results)
+
+        # Important to keep track of attempts to randomly add zeros, so that
+        # in a densely connected graph (eg. on a small instance where everyone
+        # follows everyone else) the loop doesn't continue forever.
+        # We set the max attempts (rather arbitrarily) to the square of the
+        # number of different users; this is the number of possible ways of
+        # choosing two random users from the set of all users.
+        num_attempts = 0
+        max_attempts = len(all_users)**2
+
+        # Continue adding zeros until there are the same number as there are
+        # ones, or until we give up.
+        while num_zeros_added < num_ones and num_attempts < max_attempts:
+            num_attempts += 1
+            follower = random.choice(all_users)
+            followed = random.choice(all_users)
+
+            if follower == followed:
+                # Cannot follow yourself.
+                continue
+            if followed in follows[follower]:
+                # Follow already exists.
+                continue
+
+            user_id.append(follower)
+            item_id.append(followed)
+            rating.append(0)
+            num_zeros_added += 1
+
+            # We don't want to accidentally re-add this as another zero later,
+            # so reuse the follow set to ensure if this (follower, followed)
+            # pair comes up again randomly, it is skipped.
+            follows[follower].add(followed)
 
         d = {'follower': user_id, 'followee': item_id, 'rating': rating}
         df = pd.DataFrame(data=d)
@@ -51,8 +108,11 @@ class SurpriseRecommender:
 
     def _fit_model(self, data):
         algo = SVD()
-        cross_validate(algo, data, measures=[
-                       'RMSE', 'MAE'], cv=5, verbose=True)
+        cross_validate(algo,
+                       data,
+                       measures=['RMSE', 'MAE'],
+                       cv=5,
+                       verbose=True)
         return algo
 
     # Returns a dict of form {user_id: [recommendation]}, where recommendation

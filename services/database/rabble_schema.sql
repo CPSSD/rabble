@@ -22,8 +22,9 @@ CREATE TABLE IF NOT EXISTS users (
   /* account_type refers to the account_type enum in the database.proto file.
    * In normal cases, this will be 0, a normal user. */
   private           boolean NOT NULL,
-  post_title_css    text    NOT NULL DEFAULt '',
-  post_body_css     text    NOT NULL DEFAULT '',
+  custom_css        text    NOT NULL DEFAULT '',
+  public_key        text    NOT NULL,
+  private_key       text    NOT NULL,
   UNIQUE (handle, host)
 );
 
@@ -49,6 +50,12 @@ CREATE TABLE IF NOT EXISTS likes (
 
 CREATE TABLE IF NOT EXISTS views (
   path             text    NOT NULL,
+  user_id          integer NOT NULL,
+  datetime         integer NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS logs (
+  message          text    NOT NULL,
   user_id          integer NOT NULL,
   datetime         integer NOT NULL
 );

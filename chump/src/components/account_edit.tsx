@@ -6,14 +6,14 @@ import {
   EditUserProfilePicPromise, EditUserPromise,
   GetUserInfo, IEditUserResult, IUserDetails,
 } from "../models/edit_user";
+import { RootComponent } from "./root_component";
 
 interface IAccountEditState {
   bio: string;
   currentPassword: string;
+  customCss: string;
   displayName: string;
   newPassword: string;
-  postBodyCss: string;
-  postTitleCss: string;
   privateAccount: boolean;
   profilePic: File;
   redirect: boolean;
@@ -23,17 +23,16 @@ interface IAccountEditProps {
   username: string;
 }
 
-export class AccountEdit extends React.Component<IAccountEditProps, IAccountEditState> {
+export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditState> {
   constructor(props: any) {
     super(props);
 
     this.state = {
       bio: "",
       currentPassword: "",
+      customCss: "",
       displayName: "",
       newPassword: "",
-      postBodyCss: "",
-      postTitleCss: "",
       privateAccount: false,
       profilePic: new File([], ""),
       redirect: false,
@@ -44,8 +43,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     this.handleProfilePic = this.handleProfilePic.bind(this);
     this.handleBio = this.handleBio.bind(this);
     this.handleDisplayName = this.handleDisplayName.bind(this);
-    this.handlePostTitleCss = this.handlePostTitleCss.bind(this);
-    this.handlePostBodyCss = this.handlePostBodyCss.bind(this);
+    this.handleCustomCss = this.handleCustomCss.bind(this);
     this.handlePrivate = this.handlePrivate.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
@@ -79,11 +77,10 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       this.state.currentPassword,
       this.state.newPassword,
       this.state.privateAccount,
-      this.state.postTitleCss,
-      this.state.postBodyCss,
+      this.state.customCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
-        alert("Error editing: " + response.error);
+        this.alertUser("Error editing: " + response.error);
       } else {
         this.setState({ redirect: true });
       }
@@ -95,7 +92,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
         this.state.profilePic,
       ).then((response: IEditUserResult) => {
         if (!response.success) {
-          alert("Error editing: " + response.error);
+          this.alertUser("Error editing: " + response.error);
         } else {
           this.setState({ redirect: true });
         }
@@ -111,6 +108,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
 
     this.setState({
       bio: details.bio,
+      customCss: details.custom_css,
       displayName: details.display_name,
       privateAccount: isPrivate,
     });
@@ -167,23 +165,14 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
                 />
             </div>
             <div className="pure-control-group">
-                <label htmlFor="name">{"Post Title CSS"}</label>
+                <label htmlFor="name">{"Custom CSS"}</label>
                 <textarea
-                  id="post_title_css"
-                  placeholder='{"color": "red"}'
+                  id="custom_css"
+                  placeholder=".article-title { color: red }"
                   className="pure-input-2-3 bio-form"
-                  value={this.state.postTitleCss}
-                  onChange={this.handlePostTitleCss}
-                />
-            </div>
-            <div className="pure-control-group">
-                <label htmlFor="name">{"Post Body CSS"}</label>
-                <textarea
-                  id="post_body_css"
-                  placeholder='{"color": "red"}'
-                  className="pure-input-2-3 bio-form"
-                  value={this.state.postBodyCss}
-                  onChange={this.handlePostBodyCss}
+                  value={this.state.customCss}
+                  onChange={this.handleCustomCss}
+                  rows={3}
                 />
             </div>
 
@@ -290,25 +279,18 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
     });
   }
 
-  private handlePostTitleCss(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  private handleCustomCss(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const target = event.target;
     this.setState({
-      postTitleCss: target.value,
-    });
-  }
-
-  private handlePostBodyCss(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const target = event.target;
-    this.setState({
-      postBodyCss: target.value,
+      customCss: target.value,
     });
   }
 
   private handleUpdateError(e: any) {
-    alert("Error attempting to update: " + e.toString());
+    this.alertUser("Error attempting to update: " + e.toString());
   }
 
   private handleGetError(e: any) {
-    alert("Error getting user details: " + e.toString());
+    this.alertUser("Error getting user details: " + e.toString());
   }
 }

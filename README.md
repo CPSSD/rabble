@@ -42,3 +42,17 @@ To add a new microservice follow these steps:
  - Add the new service to `docker-compose.yml`
  - Test!
 
+## Running Rabble in Production
+
+To run Rabble on a production server, first go and edit your configs.
+
+| Config Path                     | Description                 |
+| ------------------------------- | --------------------------- |
+| `containers/gen_first_config.sh`| Build Environment Variables |
+| `chump/rabble_config.js`        | Frontend constants          |
+
+The most important environment variables to change are:
+- **RABBLE_SKINNY_HOST** - `gen_first_config.sh` - this should be the domain of the your instance
+
+To set up continuous integration, read 
+[the redeploy instructions](https://github.com/CPSSD/rabble/blob/master/script/redeploy/README.md)

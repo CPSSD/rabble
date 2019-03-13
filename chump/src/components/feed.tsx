@@ -1,8 +1,10 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { GetPublicPosts, IParsedPost } from "../models/posts";
+import { GetPublicPosts, IAnyParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
 import { Post } from "./post";
+import { RootComponent } from "./root_component";
+import { SharedPost } from "./shared_post";
 
 import * as config from "../../rabble_config.json";
 
@@ -12,10 +14,10 @@ interface IFeedProps {
 }
 
 interface IFeedState {
-  publicBlog: IParsedPost[];
+  publicBlog: IAnyParsedPost[];
 }
 
-export class Feed extends React.Component<IFeedProps, IFeedState> {
+export class Feed extends RootComponent<IFeedProps, IFeedState> {
   constructor(props: IFeedProps) {
     super(props);
     this.state = { publicBlog: [] };
@@ -27,18 +29,31 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
 
   public getPosts() {
     GetPublicPosts(this.props.queryUsername)
-      .then((posts: IParsedPost[]) => {
+      .then((posts: IAnyParsedPost[]) => {
         this.setState({ publicBlog: posts });
       })
       .catch(this.handleGetPostsErr);
   }
 
   public handleGetPostsErr() {
-    alert("could not communicate with server :(");
+    this.alertUser("could not communicate with server :(");
   }
 
   public renderPosts() {
-    return this.state.publicBlog.map((e: IParsedPost, i: number) => {
+    return this.state.publicBlog.map((e: IAnyParsedPost, i: number) => {
+
+      if (IsSharedPost(e)) {
+        return (
+          <SharedPost
+            username={this.props.username}
+            blogPost={e as IParsedSharedPost}
+            preview={false}
+            customCss={true}
+            key={i}
+          />
+        );
+      }
+
       return (
         <div className="pure-g" key={i}>
           <Post username={this.props.username} blogPost={e} preview={false} customCss={false}/>

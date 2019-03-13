@@ -34,13 +34,13 @@ class SendServicerTest(unittest.TestCase):
         want = {
             '@context': self.activ_util.rabble_context(),
             'type': 'accept',
-            'actor': 'http://example.com/@callmekevin',
+            'actor': 'https://example.com/@callmekevin',
             'object': {
                 'type': 'Follow',
-                'actor': 'http://youtube.com/@rtgame',
-                'object': 'http://example.com/@callmekevin',
+                'actor': 'https://youtube.com/@rtgame',
+                'object': 'https://example.com/@callmekevin',
             },
-            'to': ['http://youtube.com/@rtgame'],
+            'to': ['https://youtube.com/@rtgame'],
         }
         self.assertEqual(self.servicer._build_activity(req), want)
 
@@ -50,12 +50,12 @@ class SendServicerTest(unittest.TestCase):
         want = {
             '@context': self.activ_util.rabble_context(),
             'type': 'reject',
-            'actor': 'http://example.com/@callmekevin',
+            'actor': 'https://example.com/@callmekevin',
             'object': {
                 'type': 'Follow',
-                'actor': 'http://youtube.com/@rtgame',
-                'object': 'http://example.com/@callmekevin',
+                'actor': 'https://youtube.com/@rtgame',
+                'object': 'https://example.com/@callmekevin',
             },
-            'to': ['http://youtube.com/@rtgame'],
+            'to': ['https://youtube.com/@rtgame'],
         }
         self.assertEqual(self.servicer._build_activity(req), want)

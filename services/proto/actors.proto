@@ -8,6 +8,12 @@ message ActorRequest {
   string username = 1;
 }
 
+message PublicKey {
+  string id = 1;
+  string owner = 2;
+  string public_key_pem = 3;
+}
+
 message ActorObject {
   string type = 1;
   string inbox = 2;
@@ -16,6 +22,8 @@ message ActorObject {
   string preferredUsername = 5;
   string following = 6;
   string followers = 7;
+  int64 global_id = 8;
+  PublicKey public_key = 9;
 }
 
 message ActorResponse {

@@ -50,7 +50,6 @@ func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow
 	if err != nil {
 		return nil, fmt.Errorf(errorFmt, *u, err)
 	}
-
 	if resp.ResultType != pb.DbFollowResponse_OK {
 		return nil, fmt.Errorf(errorFmt, *u, resp.Error)
 	}
@@ -95,11 +94,17 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 			log.Print(err)
 			return nil, err
 		}
+		if resp.ResultType != pb.PostsResponse_OK {
+			err := fmt.Errorf(feedErr, r.Username, resp.Error)
+			log.Print(err)
+			return nil, err
+		}
 
 		posts = append(posts, resp)
 
 		spr := &pb.SharedPostsRequest{
 			NumPosts:     MaxItemsReturned,
+			SharerId:     f.Followed,
 			UserGlobalId: r.UserGlobalId,
 		}
 
@@ -109,6 +114,11 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 		sharesResp, err := s.db.SharedPosts(ctx, spr)
 		if err != nil {
 			err := fmt.Errorf(feedErr, r.Username, err)
+			log.Print(err)
+			return nil, err
+		}
+		if sharesResp.ResultType != pb.SharesResponse_OK {
+			err := fmt.Errorf(feedErr, r.Username, sharesResp.Error)
 			log.Print(err)
 			return nil, err
 		}
@@ -137,8 +147,12 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 	defer cancel()
 
 	resp, err := s.db.InstanceFeed(ctx, pr)
+	instanceFeedErrFmt := "feed.Get failed: db.InstanceFeed(%v) error: %v"
 	if err != nil {
-		return nil, fmt.Errorf("feed.Get failed: db.InstanceFeed(%v) error: %v", *pr, err)
+		return nil, fmt.Errorf(instanceFeedErrFmt, *pr, err)
+	}
+	if resp.ResultType != pb.PostsResponse_OK {
+		return nil, fmt.Errorf(instanceFeedErrFmt, *pr, resp.Error)
 	}
 	fp := &pb.FeedResponse{}
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
@@ -157,9 +171,14 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 	}
 
 	resp, err := s.db.Posts(ctx, pr)
+	postsErrFmt := "feed.Get failed: db.Posts(%v) error: %v"
 	if err != nil {
-		log.Printf("Single article db get went wrong. Error: %v", err)
-		return nil, fmt.Errorf("feed.Get failed: db.Posts(%v) error: %v", *pr, err)
+		log.Printf(postsErrFmt, *pr, err)
+		return nil, fmt.Errorf(postsErrFmt, *pr, err)
+	}
+	if resp.ResultType != pb.PostsResponse_OK {
+		log.Printf(postsErrFmt, *pr, resp.Error)
+		return nil, fmt.Errorf(postsErrFmt, *pr, resp.Error)
 	}
 
 	if len(resp.Results) > 1 {
@@ -182,30 +201,33 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 		return &pb.FeedResponse{}, nil
 	}
 	fp := &pb.FeedResponse{}
-	fp.PostTitleCss = author.PostTitleCss
-	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
 	return fp, nil
 }
 
 func (s *server) checkFollowing(follower_id int64, followed_id int64) (bool, error) {
 	if follower_id == followed_id {
-		return true, nil  // Users are 'following' themselves.
+		return true, nil // Users are 'following' themselves.
 	}
 	fr := &pb.DbFollowRequest{
 		RequestType: pb.DbFollowRequest_FIND,
 		Match: &pb.Follow{
 			Follower: follower_id,
 			Followed: followed_id,
-			State: pb.Follow_ACTIVE,
+			State:    pb.Follow_ACTIVE,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	resp, err := s.db.Follow(ctx, fr)
+	followErrFmt := "Checking follower of private account failed: %v"
 	if err != nil {
-		return false, fmt.Errorf("Checking follower of private account failed: %v", err)
+		return false, fmt.Errorf(followErrFmt, err)
 	}
+	if resp.ResultType != pb.DbFollowResponse_OK {
+		return false, fmt.Errorf(followErrFmt, resp.Error)
+	}
+
 	// True if there's a match.
 	return len(resp.Results) == 1, nil
 }
@@ -246,12 +268,17 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	resp, err := s.db.Posts(ctx, pr)
+	postsErrFmt := "feed.PerUser failed: db.Posts(%v) error: %v"
 	if err != nil {
-		return nil, fmt.Errorf("feed.PerUser failed: db.Posts(%v) error: %v", *pr, err)
+		return nil, fmt.Errorf(postsErrFmt, *pr, err)
+	}
+	if resp.ResultType != pb.PostsResponse_OK {
+		return nil, fmt.Errorf(postsErrFmt, *pr, resp.Error)
 	}
 
 	spr := &pb.SharedPostsRequest{
 		NumPosts:     MaxItemsReturned,
+		SharerId:     authorId,
 		UserGlobalId: r.UserGlobalId,
 	}
 
@@ -259,12 +286,14 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	defer cancel()
 
 	shareResp, err := s.db.SharedPosts(ctx, spr)
+	shareErrFmt := "feed.PerUser failed: db.SharedPosts(%v) error: %v"
 	if err != nil {
-		return nil, fmt.Errorf("feed.PerUser failed: db.SharedPosts(%v) error: %v", *spr, err)
+		return nil, fmt.Errorf(shareErrFmt, *spr, err)
+	}
+	if shareResp.ResultType != pb.SharesResponse_OK {
+		return nil, fmt.Errorf(shareErrFmt, *spr, shareResp.Error)
 	}
 	fp := &pb.FeedResponse{}
-	fp.PostTitleCss = author.PostTitleCss
-	fp.PostBodyCss = author.PostBodyCss
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
 	fp.ShareResults = utils.ConvertShareToFeed(ctx, shareResp, s.db)
 	return fp, nil
