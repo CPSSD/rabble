@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS users (
    * In normal cases, this will be 0, a normal user. */
   private           boolean NOT NULL,
   custom_css        text    NOT NULL DEFAULT '',
+  public_key        text    NOT NULL,
+  private_key       text    NOT NULL,
   UNIQUE (handle, host)
 );
 
