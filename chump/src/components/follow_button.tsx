@@ -78,7 +78,6 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
       this.setState({
         following: true,
       });
-      this.alertUser("hello!!!!");
     })
     .catch((err: any) => {
       let status = err.message;
