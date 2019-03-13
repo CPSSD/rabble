@@ -17,6 +17,11 @@ export class User extends React.Component<IUserProps, {}> {
     this.state = {};
   }
 
+  private handleNoProfilePic(event: any) {
+    event.target.onerror = null;
+    event.target.src = this.props.blogUser.image; 
+  }
+
   public render() {
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
@@ -24,7 +29,8 @@ export class User extends React.Component<IUserProps, {}> {
         <div className="pure-u-14-24">
           <div className="pure-u-5-24">
             <img
-              src={this.props.blogUser.image}
+              src={`/assets/user_${this.props.blogUser.global_id}`}
+              onError={this.handleNoProfilePic}
               className="author-thumbnail"
             />
           </div>
