@@ -17,7 +17,7 @@ services:
       - [[NETWORK_NAME]]
       - default
     environment:
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
       - SKINNY_SERVER_PORT=[[SKINNY_PORT]]
       - USERS_SERVICE_HOST=users_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
@@ -137,7 +137,7 @@ services:
       - RSS_SERVICE_HOST=rss_service_[[INSTANCE_ID]]
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
       - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   logger_service_[[INSTANCE_ID]]:
     build:
       context: ./services/logger
@@ -194,7 +194,7 @@ services:
     environment:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
-      - HOST_NAME=[[SKINNY_HOST]]:[[SKINNY_PORT]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   follow_activity_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/follow
