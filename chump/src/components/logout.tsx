@@ -2,6 +2,7 @@ import * as Promise from "bluebird";
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import * as superagent from "superagent";
+import { RootComponent } from "./root_component";
 
 interface ILogoutResult {
   success: boolean;
@@ -35,7 +36,7 @@ interface ILogoutState {
   redirect: boolean;
 }
 
-export class Logout extends React.Component<ILogoutProps, ILogoutState> {
+export class Logout extends RootComponent<ILogoutProps, ILogoutState> {
   constructor(props: ILogoutProps) {
     super(props);
 
@@ -51,7 +52,7 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
     GetLogoutPromise()
       .then((response: ILogoutResult) => {
         if (!response.success) {
-          alert("Error logging out");
+          this.alertUser("Error logging out");
           return;
         }
         this.props.logoutCallback();
@@ -78,7 +79,7 @@ export class Logout extends React.Component<ILogoutProps, ILogoutState> {
   }
 
   private handleLogoutError(error: any) {
-    alert("Error attempting to logout.");
-    alert(error);
+    this.alertUser("Error attempting to logout.");
+    this.alertUser(error);
   }
 }

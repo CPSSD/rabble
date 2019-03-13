@@ -319,6 +319,17 @@ message View {
 message AddViewResponse {
 }
 
+message ClientLog {
+    // The ID of a local user. If a foreign (or just not logged in) user
+    // has a log, then this will be 0.
+    int64 user = 1;
+    string message = 2;
+    google.protobuf.Timestamp datetime = 3;
+}
+
+message AddLogResponse {
+}
+
 message AllUsersRequest {
 }
 
@@ -365,6 +376,8 @@ service Database {
   rpc CreateUsersIndex(DatabaseSearchRequest) returns (UsersResponse);
 
   rpc AddView(View) returns (AddViewResponse);
+  rpc AddLog(ClientLog) returns (AddLogResponse);
+
   // Add a share item to database
   rpc AddShare(ShareEntry) returns (AddShareResponse);
 

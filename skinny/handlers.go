@@ -914,6 +914,35 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleAddLog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var v pb.ClientLog
+		err := decoder.Decode(&v)
+		if err != nil {
+			log.Printf("Invalid JSON. Err = %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// uid = 0 if no user is logged in.
+		uid, err := s.getSessionGlobalId(r)
+
+		v.User = uid
+
+		ts := ptypes.TimestampNow()
+		v.Datetime = ts
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_, err = s.database.AddLog(ctx, &v)
+		if err != nil {
+			log.Printf("Could not add log: %#v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
 // handleAnnounce handles the parsing and sending an Announces.
 //
 // Note that only the Article ID is neccesary to send, both the

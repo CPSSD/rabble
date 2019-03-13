@@ -5,6 +5,7 @@ import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
+import { RootComponent } from "./root_component";
 
 interface IFormState {
   blogText: string;
@@ -22,7 +23,7 @@ But nothing comes out when they move their lips; just a bunch of gibberish.";
 const defaultImage = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
 const EMPTY_TITLE_ERROR = "A post cannot have an empty title";
 
-export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
+export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
 
@@ -52,7 +53,6 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
-    this.alertUser = this.alertUser.bind(this);
     this.renderModal = this.renderModal.bind(this);
   }
 
@@ -157,10 +157,6 @@ export class CreateArticleForm extends React.Component<IFormProps, IFormState> {
 
   private handleClosePreview() {
     this.setState({ showModal: false });
-  }
-
-  private alertUser(message: string) {
-    alert(message);
   }
 
   private handlePreview(event: React.MouseEvent<HTMLButtonElement>) {

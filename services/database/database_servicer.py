@@ -3,6 +3,7 @@ from posts_servicer import PostsDatabaseServicer
 from users_servicer import UsersDatabaseServicer
 from like_servicer import LikeDatabaseServicer
 from view_servicer import ViewDatabaseServicer
+from log_servicer import LogDatabaseServicer
 from share_servicer import ShareDatabaseServicer
 
 from services.proto import database_pb2_grpc
@@ -32,6 +33,8 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.LikedCollection = like_servicer.LikedCollection
         view_servicer = ViewDatabaseServicer(db, logger)
         self.AddView = view_servicer.AddView
+        log_servicer = LogDatabaseServicer(db, logger)
+        self.AddLog = log_servicer.AddLog
         self.AllUsers = users_servicer.AllUsers
         share_servicer = ShareDatabaseServicer(db, logger)
         self.AddShare = share_servicer.AddShare

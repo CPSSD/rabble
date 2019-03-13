@@ -32,6 +32,7 @@
   "user_feed_title": "Your feed",
   "defaults_to_username": "Defaults to username",
   "track_views": true,
+  "send_logs_to_server": true,
   "accept": "Accept",
   "deny": "Deny"
 }

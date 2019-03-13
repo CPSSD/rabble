@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as config from "../../rabble_config.json";
 import { AcceptFollow, GetPendingFollows, IPendingFollow, IPendingFollows } from "../models/follow";
+import { RootComponent } from "./root_component";
 
 interface IPendingProps {
   username: string;
@@ -10,7 +11,7 @@ interface IPendingState {
   pending: IPendingFollows;
 }
 
-export class Pending extends React.Component<IPendingProps, IPendingState> {
+export class Pending extends RootComponent<IPendingProps, IPendingState> {
   constructor(props: IPendingProps) {
     super(props);
 
@@ -24,11 +25,11 @@ export class Pending extends React.Component<IPendingProps, IPendingState> {
   }
 
   public handleGetRequestsErr() {
-    alert("Could not get follow requests.");
+    this.alertUser("Could not get follow requests.");
   }
 
   public handleAcceptErr() {
-    alert("Could not accept follow request.");
+    this.alertUser("Could not accept follow request.");
   }
 
   public render() {

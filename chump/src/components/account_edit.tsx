@@ -6,6 +6,7 @@ import {
   EditUserProfilePicPromise, EditUserPromise,
   GetUserInfo, IEditUserResult, IUserDetails,
 } from "../models/edit_user";
+import { RootComponent } from "./root_component";
 
 interface IAccountEditState {
   bio: string;
@@ -22,7 +23,7 @@ interface IAccountEditProps {
   username: string;
 }
 
-export class AccountEdit extends React.Component<IAccountEditProps, IAccountEditState> {
+export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditState> {
   constructor(props: any) {
     super(props);
 
@@ -79,7 +80,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
       this.state.customCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
-        alert("Error editing: " + response.error);
+        this.alertUser("Error editing: " + response.error);
       } else {
         this.setState({ redirect: true });
       }
@@ -91,7 +92,7 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
         this.state.profilePic,
       ).then((response: IEditUserResult) => {
         if (!response.success) {
-          alert("Error editing: " + response.error);
+          this.alertUser("Error editing: " + response.error);
         } else {
           this.setState({ redirect: true });
         }
@@ -286,10 +287,10 @@ export class AccountEdit extends React.Component<IAccountEditProps, IAccountEdit
   }
 
   private handleUpdateError(e: any) {
-    alert("Error attempting to update: " + e.toString());
+    this.alertUser("Error attempting to update: " + e.toString());
   }
 
   private handleGetError(e: any) {
-    alert("Error getting user details: " + e.toString());
+    this.alertUser("Error getting user details: " + e.toString());
   }
 }
