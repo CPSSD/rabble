@@ -45,6 +45,7 @@ class Util:
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Could not delete follow from database: %s',
                                follow_resp.error)
+        return follow_resp
 
     def get_follows(self, follower_id=None, followed_id=None):
         self._logger.debug('Finding follows <User ID %s following User ID %s>',
