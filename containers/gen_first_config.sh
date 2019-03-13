@@ -14,6 +14,7 @@ export RABBLE_INSTANCE_ID="1"
 export RABBLE_NETWORK_NAME="testnetwork"
 export RABBLE_NETWORK_CONFIG="driver: bridge"
 export RABBLE_DBPATH="/repo/rabble.db"
+export RABBLE_EXTERNAL_ADDRESS="rabble.network"
 
 python3 build_out/containers/build_compose.py \
   --template="build_out/containers/docker-compose.tmpl.yml" \
