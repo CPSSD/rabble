@@ -42,6 +42,8 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		buf.ReadFrom(r.Body)
 		body := buf.String()
 
+		log.Printf("Received activity to %#v's inbox: %#v\n", recipient, body)
+
 		d := json.NewDecoder(strings.NewReader(body))
 		var a activity
 

@@ -90,7 +90,8 @@ class SendUnfollowServicer:
             # If there was an error during unfollowing, return it.
             return resp
         if is_foreign:
-            # TODO: check from_instance exists
+            # Local user won't have a from_instance, set it.
+            from_instance = self._host_name
             s2s_follower = s2s_follow_pb2.FollowActivityUser(handle=from_handle,
                                                              host=from_instance)
             s2s_followed = s2s_follow_pb2.FollowActivityUser(handle=to_handle,
