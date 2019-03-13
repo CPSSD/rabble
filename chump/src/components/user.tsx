@@ -15,6 +15,7 @@ export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
     super(props);
     this.state = {};
+    this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
   private handleNoProfilePic(event: any) {
