@@ -53,6 +53,6 @@ export function RecommendedFollowsAPIPromise(endpoint: string) {
 }
 
 export function GetRecommendedFollows(username: string) {
-  const endpoint: string = '/c2s/@' + username + '/recommend_follows';
+  const endpoint: string = "/c2s/@" + username + "/recommend_follows";
   return RecommendedFollowsAPIPromise(endpoint);
 }
