@@ -44,8 +44,9 @@ class ReceiveAnnounceServicer:
         )
 
     def send_to_followers(self, author, announce_time, announcer_id, announced_object, response):
+        parsed_ts = self._activ_util.timestamp_to_rfc(announce_time)
         activity = self._announce_util.build_announce_activity(
-            announcer_id, announced_object, announce_time)
+            announcer_id, announced_object, parsed_ts)
 
         # Create a list of foreign followers
         follow_list = self._users_util.get_follower_list(author.global_id)
@@ -196,9 +197,11 @@ class ReceiveAnnounceServicer:
                 err_resp = self.add_share_update_count(announcer, article, req.announce_time)
                 if err_resp is not None:
                     return err_resp
+                article_obj = self._announce_util.build_article_object(
+                    article, req.announced_object, req.author_ap_id)
                 return self.send_to_followers(author, req.announce_time,
                                               req.announcer_id,
-                                              req.announced_object, response)
+                                              article_obj, response)
 
         # At this point, author, announcer and article all exist.
         err_resp = self.add_share_update_count(announcer, article, req.announce_time)
