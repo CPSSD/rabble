@@ -37,7 +37,8 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
     let handler = this.handleReblog;
     if (this.state.isReblogged) {
       inner = this.isRebloggedInner;
-      handler = () => {};
+      handler = () => { // function is intentially left blank };
+      };
     }
 
     return (
