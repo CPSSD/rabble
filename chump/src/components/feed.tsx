@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 import { GetPublicPosts, IAnyParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
 import { Post } from "./post";
-import { SharedPost } from "./shared_post";
 import { RootComponent } from "./root_component";
+import { SharedPost } from "./shared_post";
 
 import * as config from "../../rabble_config.json";
 
