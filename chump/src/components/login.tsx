@@ -2,6 +2,7 @@ import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import {GetLoginPromise, ILoginResult} from "../models/login";
+import {RootComponent} from "./root_component";
 
 interface ILoginProps extends RouteProps {
   loginCallback(username: string): void;
@@ -13,7 +14,7 @@ interface ILoginState {
   redirect: boolean;
 }
 
-export class Login extends React.Component<ILoginProps, ILoginState> {
+export class Login extends RootComponent<ILoginProps, ILoginState> {
   constructor(props: ILoginProps) {
     super(props);
 
@@ -36,7 +37,7 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
     GetLoginPromise(this.state.username, this.state.password)
       .then((response: ILoginResult) => {
         if (!response.success) {
-          alert("Incorrect login!");
+          this.alertUser("Incorrect login!");
         } else {
           this.props.loginCallback(this.state.username);
           this.setState({
@@ -105,6 +106,6 @@ export class Login extends React.Component<ILoginProps, ILoginState> {
   }
 
   private handleLoginError() {
-    alert("Error attempting to login.");
+    this.alertUser("Error attempting to login.");
   }
 }

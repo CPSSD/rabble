@@ -53,7 +53,6 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
     };
 
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
-    //this.alertUser = this.alertUser.bind(this);
   }
 
   public render() {
@@ -71,10 +70,6 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
     );
   }
 
-  private helloalertUser(message: string) {
-    alert(message);
-  }
-
   private handleSubmitFormFollow(event: React.FormEvent<HTMLFormElement>) {
     const promise = CreateFollow(this.props.follower,
                                  this.props.followed);
@@ -83,7 +78,7 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
       this.setState({
         following: true,
       });
-      this.alertUser("hello");
+      this.alertUser("hello!!!!");
     })
     .catch((err: any) => {
       let status = err.message;

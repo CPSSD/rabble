@@ -6,6 +6,7 @@ import { IParsedPost } from "../models/posts";
 import { IParsedUser, ISearchResponse, SearchRequest } from "../models/search";
 import { Post } from "./post";
 import { User } from "./user";
+import { RootComponent } from "./root_component";
 
 interface ISearchResultsProps extends RouteProps {
   match: {
@@ -46,7 +47,7 @@ const ExpandOrClose: React.SFC<IExpandOrClose> = (props) => {
   );
 };
 
-export class SearchResults extends React.Component<ISearchResultsProps, ISearchResultsState> {
+export class SearchResults extends RootComponent<ISearchResultsProps, ISearchResultsState> {
   constructor(props: ISearchResultsProps) {
     super(props);
     this.state = {
@@ -88,7 +89,7 @@ export class SearchResults extends React.Component<ISearchResultsProps, ISearchR
   }
 
   public handleGetPostsErr() {
-    alert("could not communicate with server :(");
+    this.alertUser("could not communicate with server :(");
   }
 
   public renderPosts() {

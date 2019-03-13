@@ -6,6 +6,7 @@ import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
+import { RootComponent } from "./root_component";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -19,7 +20,7 @@ interface IPostState {
   isLiked: boolean;
 }
 
-export class Post extends React.Component<IPostProps, IPostState> {
+export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
     if (this.props.blogPost.likes_count === undefined) {
@@ -170,7 +171,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
       .then((res: any) => {
         const resp = res!.body;
         if (resp === null) {
-          alert("Error parsing like: " + res);
+          this.alertUser("Error parsing like: " + res);
           return;
         }
         // If isLiked is false then change it to true and increment like count
@@ -185,7 +186,7 @@ export class Post extends React.Component<IPostProps, IPostState> {
         if (err.response) {
           message = err.response.text;
         }
-        alert(message);
+        this.alertUser(message);
       });
   }
 }

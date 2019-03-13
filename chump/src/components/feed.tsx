@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { GetPublicPosts, IAnyParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
 import { Post } from "./post";
 import { SharedPost } from "./shared_post";
+import { RootComponent } from "./root_component";
 
 import * as config from "../../rabble_config.json";
 
@@ -16,7 +17,7 @@ interface IFeedState {
   publicBlog: IAnyParsedPost[];
 }
 
-export class Feed extends React.Component<IFeedProps, IFeedState> {
+export class Feed extends RootComponent<IFeedProps, IFeedState> {
   constructor(props: IFeedProps) {
     super(props);
     this.state = { publicBlog: [] };
@@ -35,7 +36,7 @@ export class Feed extends React.Component<IFeedProps, IFeedState> {
   }
 
   public handleGetPostsErr() {
-    alert("could not communicate with server :(");
+    this.alertUser("could not communicate with server :(");
   }
 
   public renderPosts() {

@@ -3,6 +3,7 @@ import { RouteProps } from "react-router-dom";
 
 import { GetSinglePost, IParsedPost } from "../models/posts";
 import { Post } from "./post";
+import { RootComponent } from "./root_component";
 
 interface ISinglePostState {
   posts: IParsedPost[];
@@ -19,7 +20,7 @@ interface ISinglePostProps extends RouteProps {
   username: string;
 }
 
-export class SinglePost extends React.Component<ISinglePostProps, ISinglePostState> {
+export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState> {
   constructor(props: ISinglePostProps) {
     super(props);
     this.state = {
@@ -40,7 +41,7 @@ export class SinglePost extends React.Component<ISinglePostProps, ISinglePostSta
   }
 
   public handleGetPostErr() {
-    alert("Could not communicate with server :(");
+    this.alertUser("Could not communicate with server :(");
   }
 
   public renderPost() {
