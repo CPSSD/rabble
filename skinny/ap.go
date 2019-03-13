@@ -78,9 +78,15 @@ type ImageObject struct {
 	Url  string `json:"url"`
 }
 
+type KeyObject struct {
+    Id                string       `json:"id"`
+    Owner             string       `json:"owner"`
+    PublicKeyPem      string       `json:"publicKeyPem"`
+}
+
 type ActorObjectStruct struct {
 	// The @context in the output JSON-LD
-	Context string `json:"@context"`
+	Context           []string     `json:"@context"`
 
 	// The same types as the protobuf ActorObject.
 	Type              string       `json:"type"`
@@ -91,6 +97,7 @@ type ActorObjectStruct struct {
 	Icon              *ImageObject `json:"icon,omitempty"`
 	Followers         string       `json:followers`
 	Following         string       `json:following`
+    PublicKey         *KeyObject   `json:"publicKey"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -111,15 +118,20 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			return
 		}
 		if resp.Actor == nil {
-			log.Printf("actors service Get returned nill actor\n")
+			log.Printf("Actors service Get returned nil actor\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Could not create actor object.\n")
 			return
 		}
 
+        context := []string{
+            "https://www.w3.org/ns/activitystreams",
+            "https://w3id.org/security/v1",
+        }
+
 		// Unfortunately, there's no easier way to add a field to a struct.
 		actor := &ActorObjectStruct{
-			Context:           "https://www.w3.org/ns/activitystreams",
+			Context:           context,
 			Type:              resp.Actor.Type,
 			Inbox:             resp.Actor.Inbox,
 			Outbox:            resp.Actor.Outbox,
@@ -128,6 +140,12 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
 		}
+
+        actor.PublicKey = &KeyObject{
+            Id:             resp.Actor.PublicKey.Id,
+            Owner:          resp.Actor.PublicKey.Owner,
+            PublicKeyPem:   resp.Actor.PublicKey.PublicKeyPem,
+        }
 
 		filepath := s.getProfilePicPath(resp.Actor.GlobalId)
 		if _, err := os.Stat(filepath); err == nil {
