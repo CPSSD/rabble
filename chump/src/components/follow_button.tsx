@@ -13,6 +13,7 @@ interface IFormState {
 export interface IFormProps {
   follower: string;
   followed: string;
+  followed_host: string;
   following: boolean;
 }
 
@@ -72,7 +73,8 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
 
   private handleSubmitFormFollow(event: React.FormEvent<HTMLFormElement>) {
     const promise = CreateFollow(this.props.follower,
-                                 this.props.followed);
+                                 this.props.followed,
+                                 this.props.followed_host);
     promise.then((res: Response) => {
       // TODO: Check no error.
       this.setState({

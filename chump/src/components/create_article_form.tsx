@@ -31,6 +31,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       blogText: "",
       post: {
         author: "string",
+        author_host: "",
         author_id: 0,
         bio: defaultBio,
         body: "string",

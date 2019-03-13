@@ -128,6 +128,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
                   <FollowButton
                       follower={this.props.username}
                       followed={this.props.blogPost.author}
+                      followed_host={this.props.blogPost.author_host}
                       following={this.props.blogPost.is_followed}
                   />
               </div>

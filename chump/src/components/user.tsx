@@ -45,6 +45,7 @@ export class User extends React.Component<IUserProps, {}> {
                 <FollowButton
                     follower={this.props.username}
                     followed={this.props.blogUser.handle}
+                    followed_host={this.props.blogUser.host}
                     following={this.props.blogUser.is_followed}
                 />
             </div>

@@ -89,6 +89,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:     author.Handle,
+			AuthorHost: author.Host,
 			AuthorId:   r.AuthorId,
 			Title:      r.Title,
 			Bio:        author.Bio,
@@ -130,6 +131,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
 			Author:        author.Handle,
+			AuthorHost:    author.Host,
 			Title:         r.Title,
 			Bio:           author.Bio,
 			Body:          r.Body,

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedSharedPost } from "../models/posts";
-import { FollowButton} from "./follow_button";
 import { Post } from "./post";
 import { Reblog } from "./reblog_button";
 
