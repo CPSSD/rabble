@@ -3,6 +3,8 @@ import time
 from urllib import request
 from services.proto import database_pb2
 
+import requests
+
 class ActivitiesUtil:
     def __init__(self, logger, db):
         self._logger = logger
@@ -58,14 +60,12 @@ class ActivitiesUtil:
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
-        req = request.Request(target_inbox,
-                              data=body,
-                              headers=headers,
-                              method='POST')
+        req = requests.Request('POST', target_inbox, data=body, headers=headers)
+        req = req.prepare()
         self._logger.debug('Sending activity to foreign server (%s):\n%s',
                            target_inbox, body)
         try:
-            resp = request.urlopen(req)
+            resp = requests.Session().send(req)
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
