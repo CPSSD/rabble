@@ -44,14 +44,14 @@ To add a new microservice follow these steps:
 
 ## Running Rabble in Production
 
-To run Rabble on a production server, first go and edit your configs
+To run Rabble on a production server, first go and edit your configs.
 
 | Config Path                     | Description                 |
-| ------------------------------- | ----------------------------|
+| ------------------------------- | --------------------------- |
 | `containers/gen_first_config.sh`| Build Environment Variables |
 | `chump/rabble_config.js`        | Frontend constants          |
 
-The most important environment variables to change are:
+The most important environment variables to change in `gen_first_config.sh` are:
 - **RABBLE_SKINNY_HOST** - this should be the domain of the your instance
 
 To set up continuous integration, read 
