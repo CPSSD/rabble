@@ -142,6 +142,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			SharerBio:     sharer.Bio,
 			Sharer:        sharer.Handle,
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
+			AuthorId:      author.GlobalId,
 		}
 		pe = append(pe, np)
 	}

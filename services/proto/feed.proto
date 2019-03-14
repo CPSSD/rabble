@@ -50,6 +50,7 @@ message Share {
   string sharer = 12;
   string sharer_bio = 13;
   string share_datetime = 14;
+  int64 author_id = 15;
 }
 
 message FeedResponse {
