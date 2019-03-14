@@ -140,7 +140,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			Password:    req.Password,
 			Bio:         req.Bio,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 		defer cancel()
 
 		resp, err := s.users.Create(ctx, u)
@@ -234,7 +234,7 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 	}
 }
 
-func (s *serverWrapper) getProfilePicPath(user_id int64) (string) {
+func (s *serverWrapper) getProfilePicPath(user_id int64) string {
 	filename := fmt.Sprintf("user_%d", user_id)
 	filepath := path.Join(staticAssets, filename)
 	return filepath
@@ -259,7 +259,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 		image, _, err := r.FormFile("profile_pic")
 		defer image.Close()
 		if err != nil {
-			log.Printf("Could not load profile pic from request: %v", err);
+			log.Printf("Could not load profile pic from request: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			resp.Error = "Could not load profile pic from request"
 			resp.Success = false

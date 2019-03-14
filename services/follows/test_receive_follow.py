@@ -96,7 +96,7 @@ class ReceiveFollowTest(unittest.TestCase):
 
     def test_good_request(self):
         req = follows_pb2.ForeignToLocalFollow(
-            follower_host='http://whatever.com',
+            follower_host='https://whatever.com',
             follower_handle='jim_pickens',
             followed='exists',
         )
@@ -107,7 +107,7 @@ class ReceiveFollowTest(unittest.TestCase):
 
     def test_errors_when_local_user_does_not_exist(self):
         req = follows_pb2.ForeignToLocalFollow(
-            follower_host='http://whatever.com',
+            follower_host='https://whatever.com',
             follower_handle='jim_pickens',
             followed='bore_ragnarock',
         )

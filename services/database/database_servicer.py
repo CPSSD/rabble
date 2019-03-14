@@ -38,4 +38,5 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.AllUsers = users_servicer.AllUsers
         share_servicer = ShareDatabaseServicer(db, logger)
         self.AddShare = share_servicer.AddShare
+        self.FindShare = share_servicer.FindShare
         self.SharedPosts = share_servicer.SharedPosts

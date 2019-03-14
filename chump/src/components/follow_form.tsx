@@ -79,7 +79,7 @@ export class FollowForm extends RootComponent<IFormProps, IFormState> {
     event.preventDefault();
     const promise = (this.state.type === "url")
       ? CreateRssFollow(this.props.username, this.state.toFollow)
-      : CreateFollow(this.props.username, this.state.toFollow);
+      : CreateFollow(this.props.username, this.state.toFollow, "");
 
     promise.then((res: any) => {
       let message = "Posted follow with response: ";

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedSharedPost } from "../models/posts";
-import { FollowButton} from "./follow_button";
 import { Post } from "./post";
 import { Reblog } from "./reblog_button";
 
@@ -46,7 +45,7 @@ export class SharedPost extends React.Component<ISharedPostProps, {}> {
     return (
       <div className="pure-u-10-24">
         <p className="reblog-line">
-          reblogged by {this.props.blogPost.sharer} &nbsp;
+          Reblogged by {this.props.blogPost.sharer} &nbsp;
           {this.props.blogPost.parsed_share_date.toLocaleString()}
         </p>
       </div>

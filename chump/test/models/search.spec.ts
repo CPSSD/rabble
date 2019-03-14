@@ -21,6 +21,7 @@ function createFakeResponse(body: ISearchResponse | Error | null) {
 
 const validParsedPost: IParsedPost[] = [{
   author: "aaron",
+  author_host: "",
   author_id: 0,
   bio: "bio",
   body: "rm -rf steely/",

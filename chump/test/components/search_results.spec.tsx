@@ -19,6 +19,7 @@ let searchRequestPromise: any;
 
 const validParsedPost: IParsedPost[] = [{
   author: "aaron",
+  author_host: "",
   author_id: 0,
   bio: "bio",
   body: "rm -rf steely/",

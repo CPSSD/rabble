@@ -339,6 +339,22 @@ message ShareEntry {
   google.protobuf.Timestamp announce_datetime = 3;
 }
 
+message FindShareResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+    // Further types can be specified here.
+  }
+
+  ResultType result_type = 1;
+
+  string error = 2;
+
+  // If the result_type is OK, and the query returns some entries, then those
+  // entries are provided here.
+  bool exists = 3;
+}
+
 message AddShareResponse {
   enum ResultType {
     OK = 0;
@@ -380,6 +396,7 @@ service Database {
 
   // Add a share item to database
   rpc AddShare(ShareEntry) returns (AddShareResponse);
+  rpc FindShare(ShareEntry) returns (FindShareResponse);
 
   // Get all users this instance knows about.
   rpc AllUsers(AllUsersRequest) returns (UsersResponse);

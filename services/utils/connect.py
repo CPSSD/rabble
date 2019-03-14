@@ -4,7 +4,7 @@ import grpc
 import logging
 import sys
 
-DEFAULT_TIMEOUT = 5
+DEFAULT_TIMEOUT = 25
 
 def get_future_channel(logger, env_var, port):
     """
