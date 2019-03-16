@@ -38,7 +38,7 @@ class ReceiveFollowServicer:
         resp = s2s_follow_pb2.FollowActivityResponse()
 
         follow = self._s2s_req_to_follows_req(req)
-        self._logger.info('{}@{} requested to follow {}.'.format(
+        self._logger.info('{}@{} requested to unfollow {}.'.format(
             follow.follower_handle, follow.follower_host, follow.followed))
 
         follows_resp = self._follows_stub.ReceiveUnfollow(follow)
