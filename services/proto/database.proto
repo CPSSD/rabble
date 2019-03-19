@@ -22,6 +22,7 @@ message PostsEntry {
   // this follow is accepted and not pending).
   bool is_followed = 10;
   bool is_shared = 11;
+  int64 shares_count = 12;
 }
 
 message PostsRequest {
@@ -262,6 +263,7 @@ message SharesEntry {
   bool is_shared = 11;
   int64 sharer_id = 12;
   google.protobuf.Timestamp announce_datetime = 13;
+  int64 shares_count = 14;
 }
 
 message SharesResponse {

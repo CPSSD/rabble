@@ -88,18 +88,19 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 		np := &pb.Post{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:     author.Handle,
-			AuthorHost: author.Host,
-			AuthorId:   r.AuthorId,
-			Title:      r.Title,
-			Bio:        author.Bio,
-			Body:       r.Body,
-			Image:      defaultImage,
-			LikesCount: r.LikesCount,
-			IsLiked:    r.IsLiked,
-			Published:  ConvertPbTimestamp(r.CreationDatetime),
-			IsFollowed: r.IsFollowed,
-			IsShared:   r.IsShared,
+			Author:      author.Handle,
+			AuthorHost:  author.Host,
+			AuthorId:    r.AuthorId,
+			Title:       r.Title,
+			Bio:         author.Bio,
+			Body:        r.Body,
+			Image:       defaultImage,
+			LikesCount:  r.LikesCount,
+			IsLiked:     r.IsLiked,
+			Published:   ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:  r.IsFollowed,
+			IsShared:    r.IsShared,
+			SharesCount: r.SharesCount,
 		}
 		pe = append(pe, np)
 	}
@@ -145,6 +146,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			Sharer:        sharer.Handle,
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 			AuthorId:      author.GlobalId,
+			SharesCount:   r.SharesCount,
 		}
 		pe = append(pe, np)
 	}
