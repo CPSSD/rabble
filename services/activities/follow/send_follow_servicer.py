@@ -8,9 +8,11 @@ class SendFollowServicer:
 
     def _build_activity(self, follower_actor, followed_actor, sendable=True):
         '''Build a follow activity for actor `follower_actor` following
-        actor `followed_actor`. If `sendable` is set to True, this function
-        will add the extra fields to the JSON to turn it into a proper fully
-        qualified and ready-to-send Activity (ie. the context, `to` field, etc).
+        actor `followed_actor`.
+
+        If `sendable` is set to True, this function will add the extra fields to
+        the JSON to turn it into a proper fully qualified and ready-to-send
+        Activity (ie. the context, `to` field, etc).
         If `sendable` is not True, then it will generate an Activity that can
         be embedded in another one (ie. an Undo).'''
         d = {

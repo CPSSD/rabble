@@ -370,8 +370,7 @@ func (s *serverWrapper) handleFollowDeleteActivity() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := s.s2sFollow.ReceiveUnfollowActivity(ctx, f)
-		if err != nil ||
-			resp.ResultType == pb.FollowActivityResponse_ERROR {
+		if err != nil || resp.ResultType == pb.FollowActivityResponse_ERROR {
 			log.Printf("Could not receive undo follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving undo follow activity.\n")
