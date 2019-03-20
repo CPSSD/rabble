@@ -52,6 +52,7 @@ message Share {
   string sharer_bio = 13;
   string share_datetime = 14;
   string author_host = 15;
+  int64 author_id = 16;
 }
 
 message FeedResponse {
