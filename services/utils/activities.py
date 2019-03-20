@@ -4,6 +4,7 @@ from services.proto import database_pb2
 
 import requests
 
+
 class ActivitiesUtil:
     def __init__(self, logger, db):
         self._logger = logger
@@ -13,14 +14,17 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
-    def normalise_url(self, url):
+    def normalise_url(self, url, host=None):
         if not url.startswith('http'):
-            url = 'https://' + url
+            if host != None and "." not in host:
+                url = 'http://' + url
+            else:
+                url = 'https://' + url
         return url
 
     def build_actor(self, handle, host):
         s = f'{host}/ap/@{handle}'
-        s = self.normalise_url(s)
+        s = self.normalise_url(s, host)
         return s
 
     def get_host_name_param(self, host, hostname):
@@ -40,7 +44,7 @@ class ActivitiesUtil:
             return article.ap_id
         # Local article, build ID manually
         s = f'{author.host}/ap/@{author.handle}/{article.global_id}'
-        s = self.normalise_url(s)
+        s = self.normalise_url(s, author.host)
         return s
 
     def build_delete(self, obj):
@@ -53,7 +57,7 @@ class ActivitiesUtil:
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         s = f'{host}/ap/@{handle}/inbox'
-        s = self.normalise_url(s)
+        s = self.normalise_url(s, host)
         return s
 
     def send_activity(self, activity, target_inbox):
