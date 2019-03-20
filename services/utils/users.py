@@ -13,7 +13,10 @@ class UsersUtil:
     def _normalise_hostname(self, hostname):
         if not hostname.startswith('http'):
             old_hostname = hostname
-            hostname = 'https://' + hostname
+            if hostname != None and "." not in hostname:
+                hostname = 'http://' + hostname
+            else:
+                hostname = 'https://' + hostname
             self._logger.info('Normalising hostname from "%s" to "%s".',
                               old_hostname,
                               hostname)
