@@ -31,6 +31,7 @@ const validParsedPost: IParsedPost[] = [{
   is_liked: false,
   is_shared: false,
   likes_count: 1,
+  shares_count: 1,
   parsed_date: now,
   published: "",
   title: "how to write a plugin",

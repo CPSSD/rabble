@@ -29,6 +29,9 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     if (this.props.blogPost.is_liked === undefined) {
       this.props.blogPost.is_liked = false;
     }
+    if (this.props.blogPost.shares_count === undefined) {
+      this.props.blogPost.shares_count = 0;
+    }
     if (this.props.blogPost.is_shared === undefined) {
       this.props.blogPost.is_shared = false;
     }
@@ -81,14 +84,13 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
 
-        <div>
-          <Reblog
-            username={this.props.username}
-            initReblogged={this.props.blogPost.is_shared}
-            display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-            blogPost={this.props.blogPost}
-          />
-        </div>
+        <Reblog
+          username={this.props.username}
+          initReblogged={this.props.blogPost.is_shared}
+          sharesCount={this.props.blogPost.shares_count}
+          display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+          blogPost={this.props.blogPost}
+        />
       </div>
     );
   }

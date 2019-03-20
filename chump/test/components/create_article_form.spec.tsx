@@ -15,6 +15,7 @@ const examplePost = {
   body: "id be in so much trouble<br>i'd never live it down<br>lol",
   global_id: "3",
   likes_count: 1,
+  shares_count: 1,
   parsed_date: now,
   published: "",
   title: "the man, the myth, the legend",
