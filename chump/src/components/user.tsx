@@ -19,6 +19,19 @@ export class User extends React.Component<IUserProps, {}> {
   }
 
   public render() {
+    let userLink = (
+      <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
+        @{this.props.blogUser.handle}
+      </Link>
+    );
+    const host = this.props.blogUser.host;
+    if (host !== null && host !== "" && typeof host !== "undefined") {
+      userLink = (
+        <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
+          {this.props.blogUser.handle}@{host}
+        </Link>
+      );
+    }
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
@@ -33,12 +46,10 @@ export class User extends React.Component<IUserProps, {}> {
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
             <div className="pure-u-1-3 username-holder">
-                <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
-                  {this.props.blogUser.display_name}
-                </Link>
-                <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
-                  @{this.props.blogUser.handle}
-                </Link>
+              <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
+                {this.props.blogUser.display_name}
+              </Link>
+              {userLink}
             </div>
             <div className="pure-u-1-3"/>
             <div className="pure-u-1-3 follow-holder">

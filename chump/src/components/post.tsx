@@ -109,6 +109,20 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
+    let userLink = (
+      <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+        @{this.props.blogPost.author}
+      </Link>
+    );
+    const host = this.props.blogPost.author_host;
+    if (host !== null && host !== "" && typeof host !== "undefined") {
+      userLink = (
+        <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+          {this.props.blogPost.author}@{host}
+        </Link>
+      );
+    }
+
     return (
       <div className="pure-u-3-24">
         <div className="author-about">
@@ -118,22 +132,20 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             className="author-thumbnail"
           />
           <div style={{width: "100%"}}>
-              <div style={{float: "left"}} >
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
-                    {this.props.blogPost.author}
-                  </Link><br/>
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
-                    @{this.props.blogPost.author}
-                  </Link>
-              </div>
-              <div style={{float: "right"}} >
-                  <FollowButton
-                      follower={this.props.username}
-                      followed={this.props.blogPost.author}
-                      followed_host={this.props.blogPost.author_host}
-                      following={this.props.blogPost.is_followed}
-                  />
-              </div>
+            <div style={{float: "left"}} >
+              <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
+                {this.props.blogPost.author_display}
+              </Link><br/>
+              {userLink}
+            </div>
+            <div style={{float: "right"}} >
+                <FollowButton
+                    follower={this.props.username}
+                    followed={this.props.blogPost.author}
+                    followed_host={this.props.blogPost.author_host}
+                    following={this.props.blogPost.is_followed}
+                />
+            </div>
           </div>
 
           <div style={{clear: "both"}}>

@@ -35,6 +35,7 @@ message Post {
   int64 author_id = 12;
   string author_host = 13;
   int64 shares_count = 14;
+  string author_display = 15;
 }
 
 message Share {
@@ -55,6 +56,8 @@ message Share {
   string author_host = 15;
   int64 author_id = 16;
   int64 shares_count = 17;
+  string author_display = 18;
+  string sharer_host = 19;
 }
 
 message FeedResponse {

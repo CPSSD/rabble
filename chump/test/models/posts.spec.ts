@@ -23,6 +23,7 @@ const validBody: IFeedResponse = {
   post_title_css: "",
   results: [{
     author: "aaron",
+    author_display: "",
     author_host: "",
     author_id: 0,
     bio: "bio",
@@ -42,6 +43,7 @@ const validBody: IFeedResponse = {
 
 const evalidBody: IParsedPost[] = [{
   author: "aaron",
+  author_display: "",
   author_host: "",
   author_id: 0,
   bio: "bio",

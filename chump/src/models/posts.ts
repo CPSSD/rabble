@@ -3,6 +3,7 @@ import * as superagent from "superagent";
 
 interface IBlogPost {
   author: string;
+  author_display: string;
   author_host: string;
   author_id: number;
   bio: string;
@@ -22,6 +23,7 @@ interface ISharedPost extends IBlogPost {
   share_datetime: string;
   sharer: string;
   sharer_bio: string;
+  sharer_host: string;
 }
 
 export interface IFeedResponse {
