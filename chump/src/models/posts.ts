@@ -58,6 +58,9 @@ export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: 
   b = b as IParsedPost[];
   b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
+    if (e.author_display === undefined || e.author_display === "") {
+      e.author_display = e.author;
+    }
     if (e.bio === undefined || e.bio === "") {
       e.bio = "Nowadays everybody wanna talk like they got something to say. \
       But nothing comes out when they move their lips; just a bunch of gibberish.";
