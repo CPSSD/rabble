@@ -62,7 +62,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         <link
           rel="stylesheet"
           type="text/css"
-          href={`/c2s/@${this.props.blogPost.author}/css`}
+          href={`/c2s/@${this.props.blogPost.author_id}/css`}
         />
       );
     }

@@ -110,9 +110,9 @@ describe("GetPublicPosts", () => {
 
   it("should handle a single Post request", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetSinglePost("username", "id").then((posts: IParsedPost[]) => {
+    GetSinglePost("id").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
-      expect(getRequest.calledWith("/c2s/@username/id")).to.be.ok;
+      expect(getRequest.calledWith("/c2s/@5/id")).to.be.ok;
       expect(posts).to.eql(validBody.results);
       done();
     });

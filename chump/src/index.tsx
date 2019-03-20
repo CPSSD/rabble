@@ -110,16 +110,16 @@ export class App extends React.Component<{}, IAppState> {
             <Route
               exact={true}
               path="/"
-              render={(props) => <Feed {...props} queryUsername="" username={this.state.username} />}
+              render={(props) => <Feed {...props} queryUserId={0} username={this.state.username} />}
             />
             <Route path="/about" component={About}/>
             <Route
-              path="/@:user/:article_id"
+              path="/article/:article_id"
               render={(props) => <SinglePost {...props} username={this.state.username} />}
             />
             <Route
               path="/@:user"
-              render={(props) => <User {...props} username={this.state.username} />}
+              render={(props) => <User {...props} username={this.state.username} userId={this.state.userId} />}
             />
             <Route
               path="/login"
@@ -139,13 +139,14 @@ export class App extends React.Component<{}, IAppState> {
             />
             <PrivateRoute
               path="/feed"
-              queryUsername={this.state.username}
+              queryUserId={this.state.userId}
               username={this.state.username}
               component={Feed}
             />
             <PrivateRoute
               path="/follow"
               username={this.state.username}
+              userId={this.state.userId}
               component={Follow}
             />
             <PrivateRoute

@@ -11,7 +11,7 @@ interface IUserState {
   publicBlog: IAnyParsedPost[];
   // username whose page we're looking at, filled when we complete our lookup
   // In state so we can tell when switching to a different user's page
-  user: string;
+  user: number;
   // used to determine what error message to display.
   error: string;
 }
@@ -19,10 +19,11 @@ interface IUserState {
 interface IUserProps extends RouteProps {
   match: {
     params: {
-      user: string,
+      user: number,
     },
   };
   username: string;
+  userId: number;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {
@@ -31,7 +32,7 @@ export class User extends React.Component<IUserProps, IUserState> {
     this.state = {
       error: "",
       publicBlog: [],
-      user: "",
+      user: 0,
     };
 
     this.handleGetPostsErr = this.handleGetPostsErr.bind(this);
@@ -119,7 +120,7 @@ export class User extends React.Component<IUserProps, IUserState> {
 
   public userLinks() {
     // TODO(devoxel): Putting links here is a bit of a hack
-    if (! (this.props.username === this.props.match.params.user)) {
+    if (! (this.props.userId === this.props.match.params.user)) {
       return false;
     }
 

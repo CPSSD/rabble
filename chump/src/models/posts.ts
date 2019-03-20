@@ -46,6 +46,7 @@ export interface IParsedSharedPost extends IParsedPost, ISharedPost {
 export type IAnyParsedPost = IParsedPost | IParsedSharedPost;
 
 const feedApiURL = "/c2s/feed";
+const singleArticleApiURL = "/c2s/article/";
 const perUserApiURL = "/c2s/@";
 
 export function IsSharedPost(p: IAnyParsedPost) {
@@ -127,17 +128,17 @@ export function PostsAPIPromise(url: string) {
   });
 }
 
-export function GetUsersPosts(username: string) {
-  const url = `${perUserApiURL}${encodeURIComponent(username)}`;
+export function GetUsersPosts(userId: number) {
+  const url = `${perUserApiURL}${userId}`;
   return PostsAPIPromise(url);
 }
 
-export function GetSinglePost(username: string, id: string) {
-  const url = `${perUserApiURL}${encodeURIComponent(username)}/${id}`;
+export function GetSinglePost(id: string) {
+  const url = `${singleArticleApiURL}${id}`;
   return PostsAPIPromise(url);
 }
 
-export function GetPublicPosts(username= "") {
-  const url = username === "" ? feedApiURL : `${feedApiURL}/${encodeURIComponent(username)}`;
+export function GetPublicPosts(userId= 0) {
+  const url = userId === 0 ? feedApiURL : `${feedApiURL}/${userId}`;
   return PostsAPIPromise(url);
 }

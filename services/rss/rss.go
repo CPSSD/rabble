@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	findUserErrorFmt      = "ERROR: User(%v) find failed. message: %v\n"
+	findUserErrorFmt      = "ERROR: User id(%v) find failed. message: %v\n"
 	findUserPostsErrorFmt = "ERROR: User id(%v) posts find failed. message: %v\n"
 	rssTimeParseFormat    = "Mon, 02 Jan 2006 15:04:05 -0700"
 	rssDeclare            = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
@@ -121,25 +121,25 @@ func (s *serverWrapper) createRssItem(ue *pb.UsersEntry, pe *pb.PostsEntry) stri
 
 }
 
-func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEntry, error) {
+func (s *serverWrapper) GetUser(ctx context.Context, globalID int64) (*pb.UsersEntry, error) {
 	urFind := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
 		Match: &pb.UsersEntry{
-			Handle: handle,
+			GlobalId: globalID,
 		},
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)
 	if findErr != nil {
-		return nil, fmt.Errorf(findUserErrorFmt, handle, findErr)
+		return nil, fmt.Errorf(findUserErrorFmt, globalID, findErr)
 	}
 	if findResp.ResultType != pb.UsersResponse_OK {
-		return nil, fmt.Errorf(findUserErrorFmt, handle, findResp.Error)
+		return nil, fmt.Errorf(findUserErrorFmt, globalID, findResp.Error)
 	}
 	if len(findResp.Results) < 1 {
-		return nil, fmt.Errorf("No users in db in handle: %v\n", handle)
+		return nil, fmt.Errorf("No users in db with id: %v\n", globalID)
 	}
 	if len(findResp.Results) > 1 {
-		return nil, fmt.Errorf("Multiple users with handle: %v in db\n", handle)
+		return nil, fmt.Errorf("Multiple users with id: %v in db\n", globalID)
 	}
 	return findResp.Results[0], nil
 }
@@ -172,11 +172,11 @@ func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 }
 
 func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.RssResponse, error) {
-	log.Printf("Got a per user request for user: %s\n", r.Handle)
+	log.Printf("Got a per user request for user id: %s\n", r.GlobalId)
 	rssr := &pb.RssResponse{}
 
 	// Get user details
-	ue, userErr := s.GetUser(ctx, r.Handle)
+	ue, userErr := s.GetUser(ctx, r.GlobalId)
 	if userErr != nil {
 		log.Printf("PerUserRss user find got: %v\n", userErr.Error())
 		rssr.ResultType = pb.RssResponse_ERROR
@@ -185,7 +185,7 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 	}
 
 	if ue.Private != nil && ue.Private.Value {
-		log.Printf("%s is a private user.\n", r.Handle)
+		log.Printf("id: %s is a private user.\n", r.GlobalId)
 		rssr.ResultType = pb.RssResponse_ERROR
 		rssr.Message = "Can not create RSS feed for private user."
 		return rssr, nil

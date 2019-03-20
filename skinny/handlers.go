@@ -89,8 +89,24 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
+		strUserID, ok := v["userId"]
+		if !ok {
+			log.Printf("Could not parse userId from url in Feed\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID := int64(0)
+		if strUserID != "" {
+			var err error
+			userID, err = strconv.ParseInt(strUserID, 10, 64)
+			if err != nil {
+				log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+				w.WriteHeader(http.StatusBadRequest) // Bad Request.
+				return
+			}
+		}
 
-		fr := &pb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{UserId: userID}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
@@ -124,12 +140,20 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in FeedPerUser\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
 			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 
-		fr := &pb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{UserId: userID}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
@@ -163,11 +187,19 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from ur in RssPerUserl\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
-		ue := &pb.UsersEntry{Handle: v["username"]}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		ue := &pb.UsersEntry{GlobalId: userID}
 		resp, err := s.rss.PerUserRss(ctx, ue)
 		if err != nil {
 			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
@@ -194,14 +226,22 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 func (s *serverWrapper) handleUserCss() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest)
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in UserCss\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		resp, err := s.users.GetCss(ctx, &pb.GetCssRequest{
-			Handle: v["username"],
+			UserId: userID,
 		})
 		if err != nil {
 			log.Printf("Error in users.GetCss: %v", err)
@@ -225,23 +265,21 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		log.Println("Per Article page called")
 
 		v := mux.Vars(r)
-		username, uOk := v["username"]
-		strArticleId, aOk := v["article_id"]
-		if !uOk || !aOk || strArticleId == "" || username == "" {
-			log.Println("Per Article page passed bad url values")
+		strArticleID, aOk := v["article_id"]
+		if !aOk || strArticleID == "" {
+			log.Println("Per Article page passed bad articleId value")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		articleId, string2IntErr := strconv.ParseInt(strArticleId, 10, 64)
-
+		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
 		if string2IntErr != nil {
 			log.Println("Article ID could not be converted to int")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		fr := &pb.ArticleRequest{ArticleId: articleId}
+		fr := &pb.ArticleRequest{ArticleId: articleID}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
