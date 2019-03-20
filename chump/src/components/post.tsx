@@ -74,7 +74,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           {this.props.blogPost.parsed_date.toLocaleString()}
         </p>
         <Link
-          to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
+          to={`/article/${this.props.blogPost.global_id}`}
           className="article-title"
         >
           {this.props.blogPost.title}
@@ -110,14 +110,14 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     }
 
     let userLink = (
-      <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+      <Link to={`/@${this.props.blogPost.author_id}`} className="author-handle">
         @{this.props.blogPost.author}
       </Link>
     );
     const host = this.props.blogPost.author_host;
     if (host !== null && host !== "" && typeof host !== "undefined") {
       userLink = (
-        <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
+        <Link to={`/@${this.props.blogPost.author_id}`} className="author-handle">
           {this.props.blogPost.author}@{host}
         </Link>
       );
@@ -133,7 +133,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           />
           <div style={{width: "100%"}}>
             <div style={{float: "left"}} >
-              <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
+              <Link to={`/@${this.props.blogPost.author_id}`} className="author-displayname">
                 {this.props.blogPost.author_display}
               </Link><br/>
               {userLink}

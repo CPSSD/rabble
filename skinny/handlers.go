@@ -89,12 +89,7 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		strUserID, ok := v["userId"]
-		if !ok {
-			log.Printf("Could not parse userId from url in Feed\n")
-			w.WriteHeader(http.StatusBadRequest) // Bad Request.
-			return
-		}
+		strUserID := v["userId"]
 		userID := int64(0)
 		if strUserID != "" {
 			var err error

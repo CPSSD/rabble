@@ -30,7 +30,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
     GetSinglePost(this.props.match.params.article_id)
       .then((posts: IParsedPost[]) => {
         this.setState({
-          posts
+          posts,
         });
       })
       .catch(this.handleGetPostErr);

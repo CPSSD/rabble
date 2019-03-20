@@ -20,14 +20,14 @@ export class User extends React.Component<IUserProps, {}> {
 
   public render() {
     let userLink = (
-      <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
+      <Link to={`/@${this.props.blogUser.global_id}`} className="author-handle">
         @{this.props.blogUser.handle}
       </Link>
     );
     const host = this.props.blogUser.host;
     if (host !== null && host !== "" && typeof host !== "undefined") {
       userLink = (
-        <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
+        <Link to={`/@${this.props.blogUser.global_id}`} className="author-handle">
           {this.props.blogUser.handle}@{host}
         </Link>
       );
@@ -46,7 +46,7 @@ export class User extends React.Component<IUserProps, {}> {
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
             <div className="pure-u-1-3 username-holder">
-              <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
+              <Link to={`/@${this.props.blogUser.global_id}`} className="author-displayname">
                 {this.props.blogUser.display_name}
               </Link>
               {userLink}

@@ -10,6 +10,7 @@ import { IParsedPost } from "../../src/models/posts";
 import { mount, shallow } from "./enzyme";
 
 const feedProps = {
+  queryUserId: 0,
   queryUsername: "",
   username: "",
 };

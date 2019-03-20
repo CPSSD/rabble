@@ -129,7 +129,7 @@ export function PostsAPIPromise(url: string) {
 }
 
 export function GetUsersPosts(userId: number) {
-  const url = `${perUserApiURL}${userId}`;
+  const url = `${perUserApiURL}${userId.toString()}`;
   return PostsAPIPromise(url);
 }
 
@@ -139,6 +139,6 @@ export function GetSinglePost(id: string) {
 }
 
 export function GetPublicPosts(userId= 0) {
-  const url = userId === 0 ? feedApiURL : `${feedApiURL}/${userId}`;
+  const url = userId === 0 ? feedApiURL : `${feedApiURL}/${userId.toString()}`;
   return PostsAPIPromise(url);
 }

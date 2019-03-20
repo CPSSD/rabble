@@ -105,7 +105,7 @@ export class App extends React.Component<{}, IAppState> {
     return (
       <HashRouter>
         <div>
-          <Header username={this.state.username} />
+          <Header username={this.state.username} userId={this.state.userId} />
           <Switch>
             <Route
               exact={true}

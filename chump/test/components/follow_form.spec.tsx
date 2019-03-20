@@ -20,12 +20,12 @@ describe("FollowForm", () => {
   });
 
   it("can mount", (done) => {
-    testComponent = mount(<FollowForm username={"johannes"}/>);
+    testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
     done();
   });
 
   it("can handle toFollow input", (done) => {
-    testComponent = mount(<FollowForm username={"johannes"}/>);
+    testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
     testComponent.find("[name=\"toFollow\"]")
       .simulate("change", {
         target: {
@@ -38,7 +38,7 @@ describe("FollowForm", () => {
   });
 
   it("can handle type input", (done) => {
-    testComponent = mount(<FollowForm username={"johannes"}/>);
+    testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
     testComponent.find("[id=\"type\"]")
       .simulate("change", {
         target: {
@@ -52,7 +52,7 @@ describe("FollowForm", () => {
 
   it("can submit form", (done) => {
     const submitStub: any = sandbox.stub(FollowForm.prototype, "handleSubmitForm" as any);
-    testComponent = mount(<FollowForm username={"johannes"}/>);
+    testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
     testComponent.find("form").first().simulate("submit");
     expect(submitStub.called).to.equal(true);
     done();
@@ -68,7 +68,7 @@ describe("FollowForm", () => {
     it("and handle success", (done) => {
       const responseMessage: string = "{}";
       const expectedMessage: string = "Posted follow with response: {}";
-      testComponent = mount(<FollowForm username={"johannes"}/>);
+      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ text: responseMessage });
       });
@@ -84,7 +84,7 @@ describe("FollowForm", () => {
 
     it("and handle a 403: permission denied", (done) => {
       const alertMessage: string = "403";
-      testComponent = mount(<FollowForm username={"johannes"}/>);
+      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -100,7 +100,7 @@ describe("FollowForm", () => {
 
     it("and handle a 400: bad request", (done) => {
       const alertMessage: string = "400";
-      testComponent = mount(<FollowForm username={"johannes"}/>);
+      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -116,7 +116,7 @@ describe("FollowForm", () => {
 
     it("and handle other error", (done) => {
       const alertMessage: string = "500";
-      testComponent = mount(<FollowForm username={"johannes"}/>);
+      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -135,7 +135,7 @@ describe("FollowForm", () => {
     beforeEach(() => {
       followStub = sandbox.stub(follow, "CreateRssFollow");
       alertStub = sandbox.stub(FollowForm.prototype, "alertUser" as any);
-      testComponent = mount(<FollowForm username={"johannes"}/>);
+      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       testComponent.find("[id=\"type\"]")
         .simulate("change", {
           target: {
