@@ -26,10 +26,12 @@ require("./styles/site.css"); // tslint:disable-line
 // IAppState is top level state.
 // Don't put state that might change often here.
 interface IAppState {
-  username: string
+  username: string;
+  userId: number;
 }
 
 const LOCAL_STORAGE_USERNAME : string = "username";
+const LOCAL_STORAGE_USERID : string = "userid";
 
 export class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {
@@ -37,6 +39,7 @@ export class App extends React.Component<{}, IAppState> {
 
     this.state = {
       username: this.getUsername(),
+      userId: this.getUserId(),
     }
 
     this.getUsername = this.getUsername.bind(this);
@@ -52,14 +55,29 @@ export class App extends React.Component<{}, IAppState> {
     return localStorage.getItem(LOCAL_STORAGE_USERNAME)!;
   }
 
-  login(username: string) {
-    this.setState({username});
+  getUserId() : number {
+    if (!localStorage.hasOwnProperty(LOCAL_STORAGE_USERID)) {
+      return 0;
+    }
+    return parseInt(localStorage.getItem(LOCAL_STORAGE_USERID)!);
+  }
+
+  login(username: string, userId: number) {
+    this.setState({
+      username,
+      userId
+    });
     localStorage.setItem(LOCAL_STORAGE_USERNAME, username);
+    localStorage.setItem(LOCAL_STORAGE_USERID, userId.toString());
   }
 
   logout() {
-    this.setState({username: ""});
+    this.setState({
+      username: "",
+      userId: 0,
+    });
     localStorage.removeItem(LOCAL_STORAGE_USERNAME);
+    localStorage.removeItem(LOCAL_STORAGE_USERID);
   }
 
   trackView() {
@@ -80,7 +98,7 @@ export class App extends React.Component<{}, IAppState> {
 
   render() {
     if (config.track_views) {
-        // Must manually log the view the first time, 
+        // Must manually log the view the first time,
         // as only hash *changes* trigger a log.
         this.trackView();
     }
