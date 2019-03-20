@@ -12,7 +12,7 @@ message FollowRecommendationUser {
 
 message FollowRecommendationRequest {
     /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
-    string username = 1;
+    int64 user_id = 1;
 }
 
 message FollowRecommendationResponse {

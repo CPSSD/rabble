@@ -184,7 +184,7 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 		v := mux.Vars(r)
 		strUserID, ok := v["userId"]
 		if !ok || strUserID == "" {
-			log.Printf("Could not parse userId from ur in RssPerUserl\n")
+			log.Printf("Could not parse userId from url in RssPerUserl\n")
 			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
@@ -808,12 +808,20 @@ func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in handleRecommendFollows\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 
-		req := &pb.FollowRecommendationRequest{Username: v["username"]}
+		req := &pb.FollowRecommendationRequest{UserId: userID}
 		resp, err := s.followRecommendations.GetFollowRecommendations(ctx, req)
 		if err != nil {
 			log.Printf("Error in handleRecommendFollows(%v): %v", *req, err)
