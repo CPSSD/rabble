@@ -29,7 +29,6 @@ const (
 )
 
 type createArticleStruct struct {
-	Author           string `json:"author"`
 	Body             string `json:"body"`
 	Title            string `json:"title"`
 	CreationDatetime string `json:"creation_datetime"`
@@ -57,12 +56,6 @@ func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Ti
 		return nil, fmt.Errorf(invalidCreationTimeMessage)
 	}
 
-	timeSinceRequest := time.Since(parsedCreationDatetime)
-	if !old && (timeSinceRequest >= timeoutDuration || timeSinceRequest < 0) {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Old creation time\n")
-		return nil, fmt.Errorf("Old creation time")
-	}
 	return protoTimestamp, nil
 }
 
@@ -511,8 +504,8 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		handle, err := s.getSessionHandle(r)
-		if err != nil {
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "Login Required")
@@ -520,7 +513,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		}
 
 		na := &pb.NewArticle{
-			Author:           handle,
+			AuthorId:         globalID,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
@@ -537,7 +530,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
+		log.Printf("User Id: %#v attempted to create a post with title: %v\n", globalID, t.Title)
 		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
 		// TODO(sailslick) send the response
 	}
@@ -562,8 +555,16 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
+			log.Printf("Preview Article call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Login Required")
+			return
+		}
+
 		na := &pb.NewArticle{
-			Author:           t.Author,
+			AuthorId:         globalID,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
@@ -579,7 +580,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("User %#v attempted to create preview with title: %v\n", t.Author, t.Title)
+		log.Printf("User Id: %#v attempted to create preview with title: %v\n", globalID, t.Title)
 		w.Header().Set("Content-Type", "application/json")
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)

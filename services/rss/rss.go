@@ -67,9 +67,9 @@ func (s *serverWrapper) convertRssUrlToHandle(url string) string {
 	return strings.Replace(url, "/", "-", -1)
 }
 
-func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, title string, content string, cTime *tspb.Timestamp) {
+func (s *serverWrapper) sendCreateArticle(ctx context.Context, authorID int64, title string, content string, cTime *tspb.Timestamp) {
 	na := &pb.NewArticle{
-		Author:           author,
+		AuthorId:         authorID,
 		Title:            title,
 		Body:             content,
 		CreationDatetime: cTime,
@@ -84,7 +84,7 @@ func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, ti
 }
 
 // createArticlesFromFeed converts gofeed.Feed types to article type.
-func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, author string) {
+func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, authorID int64) {
 	for _, r := range gf.Items {
 		// convert time to creation_datetime
 		creationTime, creationErr := s.convertFeedItemDatetime(r)
@@ -95,7 +95,7 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 		if content == "" {
 			content = r.Description
 		}
-		s.sendCreateArticle(ctx, author, r.Title, content, creationTime)
+		s.sendCreateArticle(ctx, authorID, r.Title, content, creationTime)
 	}
 }
 
@@ -144,19 +144,19 @@ func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEn
 	return findResp.Results[0], nil
 }
 
-func (s *serverWrapper) GetUserPosts(ctx context.Context, authorId int64) ([]*pb.PostsEntry, error) {
+func (s *serverWrapper) GetUserPosts(ctx context.Context, authorID int64) ([]*pb.PostsEntry, error) {
 	findReq := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 		Match: &pb.PostsEntry{
-			AuthorId: authorId,
+			AuthorId: authorID,
 		},
 	}
 	findResp, findErr := s.db.Posts(ctx, findReq)
 	if findErr != nil {
-		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findErr)
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorID, findErr)
 	}
 	if findResp.ResultType != pb.PostsResponse_OK {
-		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findResp.Error)
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorID, findResp.Error)
 	}
 	return findResp.Results, nil
 }
@@ -295,7 +295,7 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 
 	log.Println(feed.Title)
 	// convert feed to post items and save
-	s.createArticlesFromFeed(ctx, feed, findResp.Results[0].Handle)
+	s.createArticlesFromFeed(ctx, feed, findResp.Results[0].GlobalId)
 
 	rssr.ResultType = pb.NewRssFeedResponse_ACCEPTED
 	rssr.GlobalId = findResp.Results[0].GlobalId

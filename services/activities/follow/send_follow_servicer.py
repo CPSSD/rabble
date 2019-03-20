@@ -1,5 +1,6 @@
 from services.proto import s2s_follow_pb2
 
+
 class SendFollowServicer:
 
     def __init__(self, logger, activ_util):

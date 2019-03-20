@@ -28,7 +28,7 @@ class NewArticleServicer:
         - post_entry (database.PostsEntry): A proto representing the post.
           This should have a valid global_id field.
         """
-        req = search_pb2.IndexRequest(post = post_entry)
+        req = search_pb2.IndexRequest(post=post_entry)
         resp = self._search_stub.Index(req)
 
         if resp.error:
@@ -38,13 +38,15 @@ class NewArticleServicer:
 
     def send_insert_request(self, req):
         global_id = req.author_id
+        host_is_null = False
         if not req.foreign:
-            author = self._users_util.get_user_from_db(handle=req.author,
-                                                       host_is_null=True)
-            if author is None:
-                self._logger.error('Could not find user in db: ' + str(req.author))
-                return database_pb2.PostsResponse.error, None
-            global_id = author.global_id
+            host_is_null = True
+        author = self._users_util.get_user_from_db(global_id=global_id,
+                                                   host_is_null=host_is_null)
+        if author is None:
+            self._logger.error('Could not find user id in db: ' + str(global_id))
+            return database_pb2.PostsResponse.error, None
+        global_id = author.global_id
 
         html_body = self.get_html_body(req.body)
         pe = database_pb2.PostsEntry(
@@ -71,7 +73,7 @@ class NewArticleServicer:
     def send_create_activity_request(self, req, global_id):
         html_body = self.get_html_body(req.body)
         ad = create_pb2.ArticleDetails(
-            author=req.author,
+            author_id=req.author_id,
             title=req.title,
             body=html_body,
             md_body=req.body,
