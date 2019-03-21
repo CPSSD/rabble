@@ -6,6 +6,7 @@ interface ICreateArticlePostBody {
   body: string;
   creation_datetime: string;
   title: string;
+  tags: string[];
 }
 
 export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostBody) {
@@ -26,13 +27,14 @@ export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostB
   });
 }
 
-export function CreateArticle(username: string, title: string, blogText: string) {
+export function CreateArticle(username: string, title: string, blogText: string, tags: string[]) {
   const endpoint: string = "/c2s/create_article";
   const createdTime: string = new Date().toISOString();
   const postBody: ICreateArticlePostBody = {
     author: username,
     body: blogText,
     creation_datetime: createdTime,
+    tags,
     title,
   };
   return CreateAPIPromise(endpoint, postBody);
@@ -45,6 +47,7 @@ export function CreatePreview(username: string, title: string, blogText: string)
     author: username,
     body: blogText,
     creation_datetime: createdTime,
+    tags: [],
     title,
   };
   return CreateAPIPromise(endpoint, postBody);
