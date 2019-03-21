@@ -68,7 +68,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     }
 
     let tags;
-    if (typeof this.props.blogPost.tags != "undefined" && this.props.blogPost.tags.length !== 0) {
+    if (typeof this.props.blogPost.tags !== "undefined" && this.props.blogPost.tags.length !== 0) {
       tags = (
         <div className="pure-g">
           <div className="pure-u-3-24" key={-1}>
