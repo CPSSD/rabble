@@ -44,6 +44,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
+        tags: [""],
         title: "string",
       },
       showModal: false,
@@ -202,7 +203,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText);
+    const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText, []);
     promise
       .then((res: any) => {
         let message = "Posted article";

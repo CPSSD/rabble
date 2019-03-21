@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -32,6 +33,16 @@ func ConvertPbTimestamp(t *tspb.Timestamp) string {
 		return time.Now().Format(timeParseFormat)
 	}
 	return goTime.Format(timeParseFormat)
+}
+
+// SplitTags converts a string of tags separated by | into a string array
+func SplitTags(tags string) []string {
+	splitTags := strings.Split(tags, "|")
+	for i, tag := range splitTags {
+		// -1 stand for replace all strings.
+		splitTags[i] = strings.Replace(tag, "%7C", "|", -1)
+	}
+	return splitTags
 }
 
 type UsersGetter interface {
@@ -85,6 +96,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Post{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
@@ -101,6 +113,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			IsFollowed:  r.IsFollowed,
 			IsShared:    r.IsShared,
 			SharesCount: r.SharesCount,
+			Tags:        tags,
 		}
 		pe = append(pe, np)
 	}
@@ -128,6 +141,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Share{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
@@ -147,6 +161,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 			AuthorId:      author.GlobalId,
 			SharesCount:   r.SharesCount,
+			Tags:          tags,
 		}
 		pe = append(pe, np)
 	}
