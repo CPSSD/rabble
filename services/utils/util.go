@@ -37,12 +37,15 @@ func ConvertPbTimestamp(t *tspb.Timestamp) string {
 
 // SplitTags converts a string of tags separated by | into a string array
 func SplitTags(tags string) []string {
+	var cleanTags []string
 	splitTags := strings.Split(tags, "|")
-	for i, tag := range splitTags {
+	for _, tag := range splitTags {
 		// -1 stand for replace all strings.
-		splitTags[i] = strings.Replace(tag, "%7C", "|", -1)
+		if tag != "" {
+			cleanTags = append(cleanTags, strings.Replace(tag, "%7C", "|", -1))
+		}
 	}
-	return splitTags
+	return cleanTags
 }
 
 type UsersGetter interface {

@@ -288,3 +288,14 @@ button.follow-button svg {
 .shares-count {
   margin-top: 0;
 }
+
+.react-tagsinput-tag {
+  background-color: #0097a7;
+  color: #FFF;
+  border: none;
+}
+
+.post-tag {
+  color: #0097a7;
+  border: 1px solid #0097a7;
+}

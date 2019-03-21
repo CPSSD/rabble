@@ -46,7 +46,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
-        tags: [""],
+        tags: [],
         title: "string",
       },
       showModal: false,
@@ -118,7 +118,12 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
               placeholder={config.title_text}
               required={true}
             />
-            <TagsInput value={this.state.tags} onChange={this.handleTagInputChange} />
+            <TagsInput
+              value={this.state.tags}
+              onChange={this.handleTagInputChange}
+              onlyUnique={true}
+              maxTags={7}
+            />
             <textarea
               name="blogText"
               value={this.state.blogText}

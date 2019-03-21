@@ -66,6 +66,18 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         />
       );
     }
+
+    let tags;
+    if (typeof this.props.blogPost.tags != "undefined" && this.props.blogPost.tags.length !== 0) {
+      tags = (
+        <div className="pure-g">
+          <div className="pure-u-3-24" key={-1}>
+            <p>Tags:</p>
+          </div>
+          {this.renderTags()}
+        </div>
+      );
+    }
     return (
       <div className="pure-u-10-24">
         {customStyle}
@@ -91,6 +103,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
           blogPost={this.props.blogPost}
         />
+        {tags}
       </div>
     );
   }
@@ -152,6 +165,16 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private renderTags() {
+    return this.props.blogPost.tags.map((e: string, i: number) => {
+      return (
+        <div className="pure-u-3-24" key={i}>
+          <p className="post-tag">{e}</p>
+        </div>
+      );
+    });
   }
 
   private handleNoProfilePic(event: any) {
