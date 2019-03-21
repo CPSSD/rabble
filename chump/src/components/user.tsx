@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { IParsedUser } from "../models/search";
 import { FollowButton} from "./follow_button";
+import { GenerateUserLinks } from "./util";
 
 interface IUserProps {
   username: string;
@@ -19,19 +20,8 @@ export class User extends React.Component<IUserProps, {}> {
   }
 
   public render() {
-    let userLink = (
-      <Link to={`/@${this.props.blogUser.global_id}`} className="author-handle">
-        @{this.props.blogUser.handle}
-      </Link>
-    );
-    const host = this.props.blogUser.host;
-    if (host !== null && host !== "" && typeof host !== "undefined") {
-      userLink = (
-        <Link to={`/@${this.props.blogUser.global_id}`} className="author-handle">
-          {this.props.blogUser.handle}@{host}
-        </Link>
-      );
-    }
+    const userLink = GenerateUserLinks(this.props.blogUser.global_id,
+      this.props.blogUser.handle, this.props.blogUser.host);
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>

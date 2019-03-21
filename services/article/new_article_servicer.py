@@ -38,11 +38,7 @@ class NewArticleServicer:
 
     def send_insert_request(self, req):
         global_id = req.author_id
-        host_is_null = False
-        if not req.foreign:
-            host_is_null = True
-        author = self._users_util.get_user_from_db(global_id=global_id,
-                                                   host_is_null=host_is_null)
+        author = self._users_util.get_user_from_db(global_id=global_id)
         if author is None:
             self._logger.error('Could not find user id in db: ' + str(global_id))
             return database_pb2.PostsResponse.error, None

@@ -7,6 +7,7 @@ import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
+import { GenerateUserLinks } from "./util";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -74,7 +75,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           {this.props.blogPost.parsed_date.toLocaleString()}
         </p>
         <Link
-          to={`/article/${this.props.blogPost.global_id}`}
+          to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
           className="article-title"
         >
           {this.props.blogPost.title}
@@ -109,19 +110,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
-    let userLink = (
-      <Link to={`/@${this.props.blogPost.author_id}`} className="author-handle">
-        @{this.props.blogPost.author}
-      </Link>
-    );
-    const host = this.props.blogPost.author_host;
-    if (host !== null && host !== "" && typeof host !== "undefined") {
-      userLink = (
-        <Link to={`/@${this.props.blogPost.author_id}`} className="author-handle">
-          {this.props.blogPost.author}@{host}
-        </Link>
-      );
-    }
+    const userLink = GenerateUserLinks(this.props.blogPost.author_id,
+      this.props.blogPost.author, this.props.blogPost.author_host);
 
     return (
       <div className="pure-u-3-24">

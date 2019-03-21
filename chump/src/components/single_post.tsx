@@ -13,6 +13,7 @@ interface ISinglePostProps extends RouteProps {
   match: {
     params: {
       article_id: string,
+      user: string,
     },
   };
   username: string;

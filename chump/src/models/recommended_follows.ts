@@ -4,7 +4,7 @@ import * as request from "superagent";
 export interface IParsedUser {
   bio: string;
   display_name: string;
-  global_id: string;
+  global_id: number;
   handle: string;
   host: string;
   image: string;

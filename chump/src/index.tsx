@@ -114,7 +114,7 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route path="/about" component={About}/>
             <Route
-              path="/article/:article_id"
+              path="/@:user/:article_id"
               render={(props) => <SinglePost {...props} username={this.state.username} />}
             />
             <Route

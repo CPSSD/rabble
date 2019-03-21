@@ -86,8 +86,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			continue
 		}
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
+			GlobalId:      r.GlobalId,
 			Author:        author.Handle,
 			AuthorDisplay: author.DisplayName,
 			AuthorHost:    author.Host,
@@ -130,8 +129,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			continue
 		}
 		np := &pb.Share{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
+			GlobalId:      r.GlobalId,
 			Author:        author.Handle,
 			AuthorDisplay: author.DisplayName,
 			AuthorHost:    author.Host,
