@@ -14,18 +14,21 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
-    def normalise_url(self, url, host=None):
-        if not url.startswith('http'):
-            if host != None and "." not in host:
-                url = 'http://' + url
+    def _normalise_hostname(self, hostname):
+        if not hostname.startswith('http'):
+            old_hostname = hostname
+            if hostname != None and "." not in hostname:
+                hostname = 'http://' + hostname
             else:
-                url = 'https://' + url
-        return url
+                hostname = 'https://' + hostname
+            self._logger.info('Normalising hostname from "%s" to "%s".',
+                              old_hostname,
+                              hostname)
+        return hostname
 
     def build_actor(self, handle, host):
-        s = f'{host}/ap/@{handle}'
-        s = self.normalise_url(s, host)
-        return s
+        normalised_host = self._normalise_hostname(host)
+        return f'{normalised_host}/ap/@{handle}'
 
     def get_host_name_param(self, host, hostname):
         # Remove protocol
@@ -43,9 +46,8 @@ class ActivitiesUtil:
         if article.ap_id:
             return article.ap_id
         # Local article, build ID manually
-        s = f'{author.host}/ap/@{author.handle}/{article.global_id}'
-        s = self.normalise_url(s, author.host)
-        return s
+        normalised_host = self._normalise_hostname(author.host)
+        return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
 
     def build_delete(self, obj):
         return {
@@ -56,9 +58,8 @@ class ActivitiesUtil:
 
     def build_inbox_url(self, handle, host):
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
-        s = f'{host}/ap/@{handle}/inbox'
-        s = self.normalise_url(s, host)
-        return s
+        normalised_host = self._normalise_hostname(host)
+        return f'{normalised_host}/ap/@{handle}/inbox'
 
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")

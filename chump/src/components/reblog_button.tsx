@@ -43,7 +43,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
     return (
       <div>
         <div className="pure-u-5-24">
-            <p className="share-count"> Shares: {this.state.sharesCount} </p>
+            <p className="shares-count"> Shares: {this.state.sharesCount} </p>
         </div>
         {button}
       </div>

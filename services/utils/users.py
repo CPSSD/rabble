@@ -1,5 +1,6 @@
 import requests
 from services.proto import database_pb2
+from utils.activities import ActivitiesUtil
 
 MAX_FIND_RETRIES = 3
 
@@ -9,18 +10,7 @@ class UsersUtil:
     def __init__(self, logger, db_stub):
         self._logger = logger
         self._db = db_stub
-
-    def _normalise_hostname(self, hostname):
-        if not hostname.startswith('http'):
-            old_hostname = hostname
-            if hostname != None and "." not in hostname:
-                hostname = 'http://' + hostname
-            else:
-                hostname = 'https://' + hostname
-            self._logger.info('Normalising hostname from "%s" to "%s".',
-                              old_hostname,
-                              hostname)
-        return hostname
+        self._activ_util = ActivitiesUtil(logger, db_stub)
 
     def parse_username(self, username):
         username = username.lstrip('@')
@@ -113,7 +103,7 @@ class UsersUtil:
             self._logger.error('Retried query too many times.')
             return None
 
-        host = self._normalise_hostname(host) if host else host
+        host = self._activ_util._normalise_hostname(host) if host else host
         user = self.get_user_from_db(handle, host, global_id, host_is_null)
 
         if user is not None:
@@ -150,7 +140,7 @@ class UsersUtil:
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
                            handle, host, global_id, host_is_null)
-        host = self._normalise_hostname(host) if host else host
+        host = self._activ_util._normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
