@@ -115,4 +115,5 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             user_obj.display_name = a.display_name
             user_obj.bio = a.bio
             user_obj.image = self.DEFAULT_IMAGE
+            user_obj.global_id = a.global_id
         return resp
