@@ -111,6 +111,7 @@ class PostsDatabaseHelper(unittest.TestCase):
         self.assertNotEqual(res.result_type, database_pb2.PostsResponse.ERROR)
         return res
 
+
 class PostsDatabase(PostsDatabaseHelper):
 
     def test_no_foreign_posts_in_instance_feed(self):
@@ -287,7 +288,7 @@ class PostsDatabase(PostsDatabaseHelper):
         self.add_user(handle='tayne2', host=None)  # local user, id 2
         self.add_post(author_id=1, title='1 kissie', body='for the boys')
         self.add_post(author_id=1, title='2 kissies', body='for the boys')
-        
+
         res = self.find_post(user=2)
         want0 = database_pb2.PostsEntry(
             global_id=1,
@@ -306,4 +307,3 @@ class PostsDatabase(PostsDatabaseHelper):
         self.assertEqual(len(res.results), 2)
         self.assertIn(want0, res.results)
         self.assertIn(want1, res.results)
-

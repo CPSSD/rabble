@@ -23,6 +23,8 @@ message PostsEntry {
   bool is_followed = 10;
   bool is_shared = 11;
   int64 shares_count = 12;
+  // Tag list separated by |
+  string tags = 13;
 }
 
 message PostsRequest {
@@ -264,6 +266,8 @@ message SharesEntry {
   int64 sharer_id = 12;
   google.protobuf.Timestamp announce_datetime = 13;
   int64 shares_count = 14;
+  // Tag list separated by |
+  string tags = 15;
 }
 
 message SharesResponse {
