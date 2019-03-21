@@ -28,11 +28,9 @@ const (
 	timeoutDuration      = time.Minute * 5
 )
 
-type createArticleStruct struct {
-	Author           string `json:"author"`
-	Body             string `json:"body"`
-	Title            string `json:"title"`
-	CreationDatetime string `json:"creation_datetime"`
+type clientResp struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
 
 func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Timestamp, error) {
@@ -492,16 +490,27 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 	}
 }
 
+type createArticleStruct struct {
+	Author           string   `json:"author"`
+	Body             string   `json:"body"`
+	Title            string   `json:"title"`
+	CreationDatetime string   `json:"creation_datetime"`
+	Tags             []string `json:"tags"`
+}
+
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t createArticleStruct
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			cResp.Error = "Invalid JSON"
+			enc.Encode(cResp)
 			return
 		}
 
@@ -514,8 +523,9 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Create Article call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Login Required")
+			w.WriteHeader(http.StatusUnauthorized)
+			cResp.Error = "Login Required"
+			enc.Encode(cResp)
 			return
 		}
 
@@ -525,6 +535,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
 			Foreign:          false,
+			Tags:             t.Tags,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -533,13 +544,22 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not create new article: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with creating article\n")
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
+			return
+		}
+		if resp.ResultType == pb.NewArticleResponse_ERROR {
+			log.Printf("Could not create new article: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
 			return
 		}
 
 		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
-		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
-		// TODO(sailslick) send the response
+		w.WriteHeader(http.StatusOK)
+		cResp.Message = "Article created"
+		enc.Encode(cResp)
 	}
 }
 
