@@ -56,8 +56,8 @@ type serverWrapper struct {
 	create                    pb.CreateClient
 	usersConn                 *grpc.ClientConn
 	users                     pb.UsersClient
-	s2sDeleteConn             *grpc.ClientConn
-	s2sDelete                 pb.S2SDeleteClient
+	s2sUndoConn               *grpc.ClientConn
+	s2sUndo                   pb.S2SUndoClient
 	s2sFollowConn             *grpc.ClientConn
 	s2sFollow                 pb.S2SFollowClient
 	s2sLikeConn               *grpc.ClientConn
@@ -91,7 +91,7 @@ func (s *serverWrapper) shutdown() {
 	s.createConn.Close()
 	s.feedConn.Close()
 	s.usersConn.Close()
-	s.s2sDeleteConn.Close()
+	s.s2sUndoConn.Close()
 	s.s2sFollowConn.Close()
 	s.s2sLikeConn.Close()
 	s.rssConn.Close()
@@ -158,9 +158,9 @@ func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
 	return conn, pb.NewS2SLikeClient(conn)
 }
 
-func createS2SDeleteClient() (*grpc.ClientConn, pb.S2SDeleteClient) {
+func createS2SUndoClient() (*grpc.ClientConn, pb.S2SUndoClient) {
 	conn := grpcConn("DELETE_SERVICE_HOST", "1608")
-	return conn, pb.NewS2SDeleteClient(conn)
+	return conn, pb.NewS2SUndoClient(conn)
 }
 
 func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
@@ -225,7 +225,7 @@ func buildServerWrapper() *serverWrapper {
 	usersConn, usersClient := createUsersClient()
 	rssConn, rssClient := createRSSClient()
 	ldNormConn, ldNormClient := createLDNormClient()
-	s2sDeleteConn, s2sDeleteClient := createS2SDeleteClient()
+	s2sUndoConn, s2sUndoClient := createS2SUndoClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
@@ -252,8 +252,8 @@ func buildServerWrapper() *serverWrapper {
 		create:                    createClient,
 		usersConn:                 usersConn,
 		users:                     usersClient,
-		s2sDeleteConn:             s2sDeleteConn,
-		s2sDelete:                 s2sDeleteClient,
+		s2sUndoConn:               s2sUndoConn,
+		s2sUndo:                   s2sUndoClient,
 		s2sFollowConn:             s2sFollowConn,
 		s2sFollow:                 s2sFollowClient,
 		s2sLikeConn:               s2sLikeConn,

@@ -548,7 +548,7 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 			return
 		}
 
-		f := &pb.ReceivedLikeDeleteDetails{
+		f := &pb.ReceivedLikeUndoDetails{
 			LikedObjectApId: t.Object.Object,
 			LikingUserApId:  t.Object.Actor.Id,
 		}
@@ -556,13 +556,13 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		resp, err := s.s2sDelete.ReceiveLikeDeleteActivity(ctx, f)
+		resp, err := s.s2sUndo.ReceiveLikeUndoActivity(ctx, f)
 		if err != nil {
 			log.Printf("Could not receive like delete activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Issue with receiving like delete activity.\n")
 			return
-		} else if resp.ResultType == pb.DeleteResponse_ERROR {
+		} else if resp.ResultType == pb.UndoResponse_ERROR {
 			log.Printf("Could not receive like delete activity. Error: %v",
 				resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -570,7 +570,7 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 			return
 		}
 
-		log.Println("Like delete activity received successfully.")
+		log.Println("Like undo activity received successfully.")
 		fmt.Fprintf(w, "{}\n")
 	}
 }

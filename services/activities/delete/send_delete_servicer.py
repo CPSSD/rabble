@@ -3,7 +3,7 @@ import sys
 
 from activities.like import like_util
 from services.proto import database_pb2 as dbpb
-from services.proto import delete_pb2 as dpb
+from services.proto import undo_pb2 as upb
 
 HOSTNAME_ENV = 'HOST_NAME'
 
@@ -45,8 +45,8 @@ class SendLikeDeleteServicer:
         )
 
     def _build_error_response(self, err):
-        return dpb.DeleteResponse(
-            result_type=dpb.DeleteResponse.ERROR,
+        return upb.UndoResponse(
+            result_type=upb.UndoResponse.ERROR,
             error=err,
         )
 
@@ -69,9 +69,9 @@ class SendLikeDeleteServicer:
             if err:
                 raise SendDeleteException(err)
         except SendDeleteException as e:
-            return dpb.DeleteResponse(
-                result_type=dpb.DeleteResponse.ERROR,
+            return upb.UndoResponse(
+                result_type=upb.UndoResponse.ERROR,
                 error=str(e)
             )
-        return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
+        return upb.UndoResponse(result_type=upb.UndoResponse.OK)
 

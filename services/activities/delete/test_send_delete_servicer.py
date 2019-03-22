@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 from send_delete_servicer import SendLikeDeleteServicer
 from services.proto import database_pb2 as dbpb
-from services.proto import delete_pb2 as dpb
+from services.proto import undo_pb2 as upb
 from utils.activities import ActivitiesUtil
 from utils.users import UsersUtil
 
@@ -43,7 +43,7 @@ class MockDB:
 
 class SendLikeDeleteServicerTest(unittest.TestCase):
     def setUp(self):
-        self.req = dpb.LikeDeleteDetails(
+        self.req = upb.LikeDeleteDetails(
             article_id=3,
             liker_handle="cian",
         )
@@ -64,7 +64,7 @@ class SendLikeDeleteServicerTest(unittest.TestCase):
 
     def test_foreign_request(self):
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
-        self.assertEqual(resp.result_type, dpb.DeleteResponse.OK)
+        self.assertEqual(resp.result_type, upb.UndoResponse.OK)
         # Check the objects are correct
         self.assertEqual(self.data["type"], "Delete")
         self.assertEqual(self.data["object"]["type"], "Like")
@@ -78,7 +78,7 @@ class SendLikeDeleteServicerTest(unittest.TestCase):
         self.db.posts_response.results[0].ClearField('ap_id')
         self.db.users_response.results[0].ClearField('host')
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
-        self.assertEqual(resp.result_type, dpb.DeleteResponse.OK)
+        self.assertEqual(resp.result_type, upb.UndoResponse.OK)
         # Check the objects are correct
         self.assertEqual(self.data["type"], "Delete")
         self.assertEqual(self.data["object"]["type"], "Like")
@@ -90,14 +90,14 @@ class SendLikeDeleteServicerTest(unittest.TestCase):
     def test_sending_error(self):
         self.activ_util.send_activity = lambda *_: (None, "Error 404")
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
-        self.assertEqual(resp.result_type, dpb.DeleteResponse.ERROR)
+        self.assertEqual(resp.result_type, upb.UndoResponse.ERROR)
 
     def test_no_article(self):
         self.db.posts_response.ClearField('results')
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
-        self.assertEqual(resp.result_type, dpb.DeleteResponse.ERROR)
+        self.assertEqual(resp.result_type, upb.UndoResponse.ERROR)
 
     def test_no_user(self):
         self.db.users_response.ClearField('results')
         resp = self.servicer.SendLikeDeleteActivity(self.req, None)
-        self.assertEqual(resp.result_type, dpb.DeleteResponse.ERROR)
+        self.assertEqual(resp.result_type, upb.UndoResponse.ERROR)

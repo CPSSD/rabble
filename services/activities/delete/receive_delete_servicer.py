@@ -3,7 +3,7 @@ import sys
 
 from activities.like import like_util
 from services.proto import database_pb2 as dbpb
-from services.proto import delete_pb2 as dpb
+from services.proto import undo_pb2 as upb
 
 HOSTNAME_ENV = 'HOST_NAME'
 
@@ -19,8 +19,8 @@ class ReceiveLikeDeleteServicer:
             sys.exit(1)
 
     def gen_error(self, err):
-        return dpb.DeleteResponse(
-            result_type=dpb.DeleteResponse.ERROR,
+        return upb.UndoResponse(
+            result_type=upb.UndoResponse.ERROR,
             error=err,
         )
 
@@ -73,7 +73,7 @@ class ReceiveLikeDeleteServicer:
                 req.liked_object_ap_id))
             # Forward it to the followers
             self._activ_util.forward_activity_to_followers(article.author_id, a)
-        return dpb.DeleteResponse(
-            result_type=dpb.DeleteResponse.OK,
+        return upb.UndoResponse(
+            result_type=upb.UndoResponse.OK,
         )
 

@@ -7,7 +7,7 @@ import os
 import sys
 
 from services.proto import database_pb2_grpc
-from services.proto import delete_pb2_grpc
+from services.proto import undo_pb2_grpc
 from utils.activities import ActivitiesUtil
 from utils.connect import get_service_channel
 from utils.logger import get_logger
@@ -35,7 +35,7 @@ def main():
     activ_util = ActivitiesUtil(logger, db_stub)
     users_util = UsersUtil(logger, db_stub)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    delete_pb2_grpc.add_S2SDeleteServicer_to_server(
+    undo_pb2_grpc.add_S2SUndoServicer_to_server(
         S2SDeleteServicer(logger, db_stub, activ_util, users_util),
         server
     )

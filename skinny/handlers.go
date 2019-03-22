@@ -740,13 +740,13 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			}
 		} else {
 			// Send an unlike (delete)
-			del := &pb.LikeDeleteDetails{
+			del := &pb.LikeUndoDetails{
 				ArticleId:   t.ArticleId,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			resp, err := s.s2sDelete.SendLikeDeleteActivity(ctx, del)
+			resp, err := s.s2sUndo.SendLikeUndoActivity(ctx, del)
 			if err != nil {
 				log.Printf("Could not send delete: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -754,7 +754,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 				r.ErrorStr = "Issue with unliking"
 				enc.Encode(r)
 				return
-			} else if resp.ResultType != pb.DeleteResponse_OK {
+			} else if resp.ResultType != pb.UndoResponse_OK {
 				log.Printf("Could not send delete: %v", resp.Error)
 				w.WriteHeader(http.StatusInternalServerError)
 				r.Success = false

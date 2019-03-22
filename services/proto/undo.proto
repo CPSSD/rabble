@@ -2,12 +2,12 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-message LikeDeleteDetails {
+message LikeUndoDetails {
   int64 article_id = 1;
   string liker_handle = 2;
 }
 
-message DeleteResponse {
+message UndoResponse {
   enum ResultType {
     OK = 0;
     ERROR = 1;
@@ -19,7 +19,7 @@ message DeleteResponse {
   string error = 2;
 }
 
-message ReceivedLikeDeleteDetails {
+message ReceivedLikeUndoDetails {
   // The ActivityPub ID of the object being liked.
   string liked_object_ap_id = 1;
 
@@ -28,9 +28,9 @@ message ReceivedLikeDeleteDetails {
 }
 
 
-// Service for sending and receiving server-to-server delete activities.
-service S2SDelete {
-  rpc ReceiveLikeDeleteActivity(ReceivedLikeDeleteDetails) returns (DeleteResponse);
-  rpc SendLikeDeleteActivity(LikeDeleteDetails) returns (DeleteResponse);
-  // Further specialisations, i.e. SendArticleDelete, to be placed here.
+// Service for sending and receiving server-to-server undo activities.
+service S2SUndo {
+  rpc ReceiveLikeUndoActivity(ReceivedLikeUndoDetails) returns (UndoResponse);
+  rpc SendLikeUndoActivity(LikeUndoDetails) returns (UndoResponse);
+  // Further specialisations, i.e. SendArticleUndo, to be placed here.
 }
