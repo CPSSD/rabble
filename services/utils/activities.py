@@ -43,10 +43,10 @@ class ActivitiesUtil:
         s = self.normalise_url(s)
         return s
 
-    def build_delete(self, obj):
+    def build_undo(self, obj):
         return {
             "@context": self.rabble_context(),
-            "type": "Delete",
+            "type": "Undo",
             "object": obj
         }
 

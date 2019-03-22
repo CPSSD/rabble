@@ -7,7 +7,7 @@ from services.proto import undo_pb2 as upb
 
 HOSTNAME_ENV = 'HOST_NAME'
 
-class ReceiveLikeDeleteServicer:
+class ReceiveLikeUndoServicer:
     def __init__(self, logger, db, activ_util, users_util, hostname=None):
         self._logger = logger
         self._db = db
@@ -15,7 +15,7 @@ class ReceiveLikeDeleteServicer:
         self._users_util = users_util
         self._hostname = hostname if hostname else os.environ.get(HOSTNAME_ENV)
         if not self._hostname:
-            self._logger.error("Hostname for SendLikeDeleteServicer not set")
+            self._logger.error("Hostname for SendLikeUndoServicer not set")
             sys.exit(1)
 
     def gen_error(self, err):
@@ -50,8 +50,8 @@ class ReceiveLikeDeleteServicer:
             return False
         return True
 
-    def ReceiveLikeDeleteActivity(self, req, ctx):
-        self._logger.debug("Got delete for like object")
+    def ReceiveLikeUndoActivity(self, req, ctx):
+        self._logger.debug("Got undo for like object")
         user = self.get_user(req.liking_user_ap_id)
         if user is None:
             return self.gen_error("Couldn't get user: " +
@@ -68,7 +68,7 @@ class ReceiveLikeDeleteServicer:
         # the unlike
         if self._users_util.user_is_local(article.author_id):
             # Build the activity.
-            a = self._activ_util.build_delete(like_util.build_like_activity(
+            a = self._activ_util.build_undo(like_util.build_like_activity(
                 req.liking_user_ap_id,
                 req.liked_object_ap_id))
             # Forward it to the followers
