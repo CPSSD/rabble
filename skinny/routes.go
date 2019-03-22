@@ -57,15 +57,15 @@ func (s *serverWrapper) setupRoutes() {
 	// ActorInbox routes are routed based on the activity type
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create":   s.handleCreateActivity(),
-		"undo":   s.handleDeleteActivity(),
+		"undo":     s.handleUndoActivity(),
 		"follow":   s.handleFollowActivity(),
 		"like":     s.handleLikeActivity(),
 		"accept":   approvalHandler,
 		"reject":   approvalHandler,
 		"announce": s.handleAnnounceActivity(),
 	}
-	s.deleteActivityRouter = map[string]http.HandlerFunc{
-		"like": s.handleLikeDeleteActivity(),
+	s.undoActivityRouter = map[string]http.HandlerFunc{
+		"like": s.handleLikeUndoActivity(),
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 	r.HandleFunc("/ap/@{username}", s.handleActor())

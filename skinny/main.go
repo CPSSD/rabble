@@ -32,9 +32,9 @@ type serverWrapper struct {
 	// based on the Type json parameter
 	actorInboxRouter map[string]http.HandlerFunc
 
-	// This map is responsible for correctly routing Delete activities
-	// to the function handling the deleteionn of that particular object.
-	deleteActivityRouter map[string]http.HandlerFunc
+	// This map is responsible for correctly routing Undo activities
+	// to the function handling the undoing of that particular object.
+	undoActivityRouter map[string]http.HandlerFunc
 
 	// shutdownWait specifies how long the server should wait when shutting
 	// down for existing connections to finish before forcing a shutdown.
@@ -159,7 +159,7 @@ func createS2SLikeClient() (*grpc.ClientConn, pb.S2SLikeClient) {
 }
 
 func createS2SUndoClient() (*grpc.ClientConn, pb.S2SUndoClient) {
-	conn := grpcConn("DELETE_SERVICE_HOST", "1608")
+	conn := grpcConn("UNDO_SERVICE_HOST", "1608")
 	return conn, pb.NewS2SUndoClient(conn)
 }
 

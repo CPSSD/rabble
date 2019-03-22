@@ -473,45 +473,45 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 	}
 }
 
-type deleteActivity struct {
+type undoActivity struct {
 	Context string   `json:"@context"`
 	Object  activity `json:"object"`
 	Type    string   `json:"type"`
 }
 
-func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
+func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
-		log.Printf("User %v received a delete activity.\n", recipient)
+		log.Printf("User %v received a undo activity.\n", recipient)
 
-		// Pass control to corresponding delete type
+		// Pass control to corresponding undo type
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(r.Body)
 		body := buf.String()
 
 		d := json.NewDecoder(strings.NewReader(body))
-		var del deleteActivity
+		var del undoActivity
 
 		if err := d.Decode(&del); err != nil {
-			log.Printf("Could not decode Delete activity: %#v", err)
+			log.Printf("Could not decode Undo activity: %#v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not decode Delete activity")
+			fmt.Fprintf(w, "Could not decode Undo activity")
 			return
 		}
 
-		if s.deleteActivityRouter == nil || len(s.deleteActivityRouter) == 0 {
-			log.Fatalf("Delete router not initalized, can not continue.")
+		if s.undoActivityRouter == nil || len(s.undoActivityRouter) == 0 {
+			log.Fatalf("Undo router not initalized, can not continue.")
 		}
 
 		// Similarily to the actorInboxRouter different functions are called
-		// depending on the type of the object to be deleted.
-		m, exists := s.deleteActivityRouter[strings.ToLower(del.Object.Type)]
+		// depending on the type of the object to be undone.
+		m, exists := s.undoActivityRouter[strings.ToLower(del.Object.Type)]
 		if !exists {
-			log.Printf("Could not find delete handle for object of type %#v",
+			log.Printf("Could not find undo handle for object of type %#v",
 				del.Object.Type)
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, "Could not handle Delete activity for '%#v'",
+			fmt.Fprintf(w, "Could not handle Undo activity for '%#v'",
 				del.Object.Type)
 			return
 		}
@@ -524,20 +524,20 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 	}
 }
 
-type likeDeleteActivity struct {
+type likeUndoActivity struct {
 	Context string             `json:"@context"`
 	Object  likeActivityStruct `json:"object"`
 	Type    string             `json:"type"`
 }
 
-func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
+func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
-		log.Printf("User %v received a like Delete activity.\n", recipient)
+		log.Printf("User %v received a like Undo activity.\n", recipient)
 
 		decoder := json.NewDecoder(r.Body)
-		var t likeDeleteActivity
+		var t likeUndoActivity
 
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
@@ -558,15 +558,15 @@ func (s *serverWrapper) handleLikeDeleteActivity() http.HandlerFunc {
 
 		resp, err := s.s2sUndo.ReceiveLikeUndoActivity(ctx, f)
 		if err != nil {
-			log.Printf("Could not receive like delete activity. Error: %v", err)
+			log.Printf("Could not receive like undo activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving like delete activity.\n")
+			fmt.Fprintf(w, "Issue with receiving like undo activity.\n")
 			return
 		} else if resp.ResultType == pb.UndoResponse_ERROR {
-			log.Printf("Could not receive like delete activity. Error: %v",
+			log.Printf("Could not receive like undo activity. Error: %v",
 				resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving like delete activity.\n")
+			fmt.Fprintf(w, "Issue with receiving like undo activity.\n")
 			return
 		}
 
