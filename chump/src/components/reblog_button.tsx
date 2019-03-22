@@ -33,7 +33,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
   }
 
   public render() {
-    let button = ( <div/> );
+    let button = (<div/>);
     if (this.props.display) {
       button = this.renderButton();
     }
