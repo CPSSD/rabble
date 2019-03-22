@@ -2,6 +2,26 @@ html {
   font-family: sans;
 }
 
+:root {
+  --primary-bg-color: #0097a7;
+
+  /* These two colors are by default white and black, and represent everyday
+   * elements like text and the white page background. */
+  --primary-light-color: #000;
+  --primary-dark-color: #FFF;
+
+  /* These gray colors are generally used to offset from normal text */
+  --dark-color-one: #AAA;
+  --dark-color-two: #888;
+  --dark-color-three: #666;
+
+  /* This color is generally used for disabled items in the UI */
+  --dark-color-disabled: #938d8b;
+
+  /* This color is used for higlighting */
+  --light-color-highlight: #a8201a;
+}
+
 html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   font-family: Georgia, Times, "Times New Roman", serif;
   font-size: 21px;
@@ -13,20 +33,20 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   padding: 0;
   height: 100%;
   text-align: center;
-  color: #fff;
+  color: var(--primary-dark-color);
 }
 
 .pure-menu-link:hover {
   background-color: rgb(255, 255, 255, 0.5);
-  color: #0097a7;
+  color: var(--primary-bg-color);
 }
 
 .topnav {
   padding-top: 0.2em;
   padding-bottom: 0.2em;
   margin-bottom: 1em;
-  background-color: #0097a7;
-  color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .topnav p {
@@ -40,7 +60,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .brand {
-  color: #fff;
+  color: var(--primary-dark-color);
   font-size: 1.2em;
   font-weight: bold;
   text-decoration: none;
@@ -56,7 +76,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   padding-bottom: 0;
   font-size: 0.8em;
   text-align: left;
-  color: #666;
+  color: var(--dark-color-three);
 }
 
 .reblog-line {
@@ -65,7 +85,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   padding-bottom: 0;
   font-size: 1em;
   text-align: left;
-  color: #666;
+  color: var(--dark-color-three);
 }
 
 .article-title {
@@ -77,7 +97,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   font-size: 2.6em;
   line-height: 1.1em;
   text-decoration: none;
-  color: #000;
+  color: var(--primary-light-color);
 }
 
 .article-body {
@@ -86,7 +106,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .author-about {
-  color: #666;
+  color: var(--dark-color-three);
   font-size: 0.75em;
   margin-top: 1em;
 }
@@ -101,27 +121,27 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   margin-right: 10px;
   font-weight: bold;
   font-size: 1.15em;
-  color: #666;
+  color: var(--dark-color-three);
   text-decoration: none;
 }
 
 .author-displayname:hover {
-  color: #888;
+  color: var(--dark-color-two);
 }
 
 .author-handle {
   font-style: italic;
-  color: #888;
+  color: var(--dark-color-two);
 }
 
 .author-bio {
   word-break: break-all;
-  color: #666;
+  color: var(--dark-color-three);
   font-size: 0.88em;
 }
 
 .author-handle:hover {
-  color: #AAA;
+  color: var(--dark-color-one);
 }
 
 .blog-post-holder {
@@ -155,8 +175,8 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .menu-dropdown {
-  background-color: #0097a7;
-  color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .button-link {
@@ -170,7 +190,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .pure-form .search-rounded[name="query"] {
-  color: #0097a7;
+  color: var(--primary-bg-color);
   border-radius: 2em;
   padding: .1em 0.5em;
 }
@@ -180,14 +200,14 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .search-button {
-  color: #0097a7;
-  background-color: #FFF;
+  color: var(--primary-bg-color);
+  background-color: var(--primary-dark-color);
   border-radius: 1em;
   padding: .2em 0.2em;
 }
 
 .primary-button {
-  background: #0097a7;
+  background: var(--primary-bg-color);
 }
 
 @media only screen and (max-width: 700px) {
@@ -206,7 +226,7 @@ button.follow-button {
 /* When it is not hovered, Unfollow button says "Following" and is grey. */
 
 button.follow-button.unfollow {
-  background-color: #938d8b;
+  background-color: var(--dark-color-disabled);
 }
 
 button.follow-button .unfollow-button-content {
@@ -219,9 +239,8 @@ button.follow-button .following-button-content {
 
 
 /* When it is hovered, Unfollow button says "Unfollow" and turns red. */
-
 button.follow-button.unfollow:hover {
-  background-color: #a8201a;
+  background-color: var(--light-color-highlight);
 }
 
 button.follow-button:hover .following-button-content {
@@ -246,8 +265,8 @@ button.follow-button svg {
 }
 
 .user-dropdown {
-  background-color: #0097a7;
-  color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .full-search-form {
@@ -255,13 +274,13 @@ button.follow-button svg {
 }
 
 .reblog-icon {
-  color: #000000;
-  background-color: #0097a7;
+  color: var(--primary-light-color);
+  background-color: var(--primary-bg-color);
   padding: 4px 4px 4px 4px;
 }
 
 .reblog-icon-reblogged {
-  color: #000000;
-  background-color: #938d8b;
+  color: var(--primary-light-color);
+  background-color: var(--dark-color-disabled);
   padding: 4px 4px 4px 4px;
 }
