@@ -76,6 +76,8 @@ type serverWrapper struct {
 	actors                    pb.ActorsClient
 	searchConn                *grpc.ClientConn
 	search                    pb.SearchClient
+	postRecommendationsConn   *grpc.ClientConn
+	postRecommendations       pb.PostRecommendationsClient
 }
 
 func (s *serverWrapper) shutdown() {
@@ -98,6 +100,10 @@ func (s *serverWrapper) shutdown() {
 	s.actorsConn.Close()
 	s.searchConn.Close()
 	s.announceConn.Close()
+	s.postRecommendationsConn.Close()
+	s.followRecommendationsConn.Close()
+	s.ldNormConn.Close()
+	s.approverConn.Close()
 }
 
 func grpcConn(env string, port string) *grpc.ClientConn {
@@ -193,6 +199,11 @@ func createAnnounceClient() (*grpc.ClientConn, pb.AnnounceClient) {
 	return conn, pb.NewAnnounceClient(conn)
 }
 
+func createPostRecommendationsClient() (*grpc.ClientConn, pb.PostRecommendationsClient) {
+	conn := grpcConn("POST_RECOMMENDATIONS_SERVICE_HOST", "1814")
+	return conn, pb.NewPostRecommendationsClient(conn)
+}
+
 // buildServerWrapper sets up all necessary individual parts of the server
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
@@ -234,6 +245,7 @@ func buildServerWrapper() *serverWrapper {
 	actorsConn, actorsClient := createActorsClient()
 	searchConn, searchClient := createSearchClient()
 	announceConn, announceClient := createAnnounceClient()
+	postRecommendationsConn, postRecommendationsClient := createPostRecommendationsClient()
 	s := &serverWrapper{
 		router:                    r,
 		server:                    srv,
@@ -272,6 +284,8 @@ func buildServerWrapper() *serverWrapper {
 		actors:                    actorsClient,
 		searchConn:                searchConn,
 		search:                    searchClient,
+		postRecommendationsConn:   postRecommendationsConn,
+		postRecommendations:       postRecommendationsClient,
 	}
 	s.setupRoutes()
 	return s
