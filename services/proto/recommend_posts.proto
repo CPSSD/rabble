@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+import "google/protobuf/wrappers.proto";
+import "services/proto/feed.proto";
+
+// Request a feed for the given user.
+message PostRecommendationsRequest {
+  int64 user_id = 1;
+}
+
+message PostRecommendationsResponse {
+  enum PostRecommendationsError {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  repeated Post results = 1;
+  PostRecommendationsError error = 2;
+}
+
+service PostRecommendations {
+  rpc Get(PostRecommendationsRequest) returns (PostRecommendationsResponse);
+}
