@@ -2,37 +2,36 @@ html {
   font-family: sans;
 }
 
-html, button, input, select, textarea,
-.pure-g [class *= "pure-u"] {
-    font-family: Georgia, Times, "Times New Roman", serif;
-    font-size: 21px;
-    line-height: 1.5;
+html, button, input, select, textarea, .pure-g [class *="pure-u"] {
+  font-family: Georgia, Times, "Times New Roman", serif;
+  font-size: 21px;
+  line-height: 1.5;
 }
 
 .pure-menu-link {
-    margin: 0.2em;
-    padding: 0;
-    height: 100%;
-    text-align: center;
-    color: #fff;
+  margin: 0.2em;
+  padding: 0;
+  height: 100%;
+  text-align: center;
+  color: #fff;
 }
 
 .pure-menu-link:hover {
-    background-color: rgb(255, 255, 255, 0.5);
-    color: #0097a7;
+  background-color: rgb(255, 255, 255, 0.5);
+  color: #0097a7;
 }
 
 .topnav {
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
-    margin-bottom: 1em;
-    background-color: #0097a7;
-    color: #FFF;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin-bottom: 1em;
+  background-color: #0097a7;
+  color: #FFF;
 }
 
 .topnav p {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .centre-brand {
@@ -150,7 +149,7 @@ html, button, input, select, textarea,
   margin-right: 5%;
 }
 
-.home-menu  {
+.home-menu {
   float: left;
   text-align: left;
 }
@@ -161,18 +160,18 @@ html, button, input, select, textarea,
 }
 
 .button-link {
-  background:none;
-  border:none;
-  padding:0;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
-.pure-menu-has-children > .button-link::after {
+.pure-menu-has-children>.button-link::after {
   font-size: medium;
 }
 
 .pure-form .search-rounded[name="query"] {
   color: #0097a7;
-  border-radius:2em;
+  border-radius: 2em;
   padding: .1em 0.5em;
 }
 
@@ -192,59 +191,63 @@ html, button, input, select, textarea,
 }
 
 @media only screen and (max-width: 700px) {
-    .search-form {
-        display: none;
-    }
+  .search-form {
+    display: none;
+  }
 }
 
 button.follow-button {
-    text-align: right;
-    min-width: 8em;
-    font-size: 0.9em;
+  text-align: right;
+  min-width: 8em;
+  font-size: 0.9em;
 }
 
+
 /* When it is not hovered, Unfollow button says "Following" and is grey. */
+
 button.follow-button.unfollow {
-    background-color: #938d8b;
+  background-color: #938d8b;
 }
 
 button.follow-button .unfollow-button-content {
-    display: none;
+  display: none;
 }
 
 button.follow-button .following-button-content {
-    display: block;
+  display: block;
 }
 
+
 /* When it is hovered, Unfollow button says "Unfollow" and turns red. */
+
 button.follow-button.unfollow:hover {
-    background-color: #a8201a;
+  background-color: #a8201a;
 }
 
 button.follow-button:hover .following-button-content {
-    display: none;
+  display: none;
 }
 
 button.follow-button:hover .unfollow-button-content {
-    display: block;
+  display: block;
 }
 
 button.follow-button svg {
-    float: left;
-    padding-right: 0.5em;
+  float: left;
+  padding-right: 0.5em;
 }
 
 .follow-holder {
-    float: right;
+  float: right;
 }
 
 .username-holder {
-    float: left;
+  float: left;
 }
 
 .user-dropdown {
-    background-color: #0097a7;
-    color: #FFF;
+  background-color: #0097a7;
+  color: #FFF;
 }
 
 .full-search-form {
