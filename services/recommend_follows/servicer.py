@@ -31,7 +31,6 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         # objects (out of the constructors in self.RECOMMENDERS).
         self.active_recommenders = self._get_active_recommenders()
 
-
     def _get_active_recommenders(self):
         '''Get the list of recommender system objects based on an env
         var (self.ENV_VAR) provided by the user. The user can give a

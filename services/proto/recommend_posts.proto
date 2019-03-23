@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = "services/proto";
 
-import "google/protobuf/wrappers.proto";
 import "services/proto/feed.proto";
 
 // Request a feed for the given user.

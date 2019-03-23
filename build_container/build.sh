@@ -32,7 +32,20 @@ echo "Building docker-compose configs"
 cp -R containers/ build_out/
 # Set default value for env vars
 export RABBLE_SEARCH_TYPE="${RABBLE_SEARCH_TYPE:-simple-search}"
+# Use no-op container if no method of recommendation is supplied
 export RABBLE_FOLLOW_RECOMMENDER_METHOD="${RABBLE_FOLLOW_RECOMMENDER_METHOD:-none}"
+RABBLE_FOLLOWS_SERVICE_LOCATION="./services/noop"
+if [ "$RABBLE_FOLLOW_RECOMMENDER_METHOD" != "none" ]; then
+  RABBLE_FOLLOWS_SERVICE_LOCATION="./services/recommend_follows"
+fi
+export RABBLE_FOLLOWS_SERVICE_LOCATION
+
+export RABBLE_POSTS_RECOMMENDER_METHOD="${RABBLE_POSTS_RECOMMENDER_METHOD:-none}"
+RABBLE_POSTS_SERVICE_LOCATION="./services/noop"
+if [ "$RABBLE_POSTS_RECOMMENDER_METHOD" != "none" ]; then
+  RABBLE_POSTS_SERVICE_LOCATION="./services/recommend_posts"
+fi
+export RABBLE_POSTS_SERVICE_LOCATION
 . build_out/containers/gen_first_config.sh
 . build_out/containers/gen_second_config.sh
 
