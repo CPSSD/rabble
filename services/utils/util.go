@@ -25,6 +25,31 @@ var (
 	UserNotFoundErr = errors.New("GetAuthorFromDb: user not found")
 )
 
+// ParseUsername takes a fully qualified username and returns the username and
+// host seperatly.
+//
+// Invalid urls return a non-nil error.
+//
+// For example:
+//   "admin@rabble.dev" returns ("admin", "rabble.dev", nil)
+//   "@admin" returns ("admin", "", nil)
+//   "admin@foo@bar" returns ("", "", error)
+func ParseUsername(fqu string) (string, string, error) {
+	fqu = strings.TrimLeft(fqu, "@")
+	split := strings.Split(fqu, "@")
+	if len(split) == 1 {
+		// Local user
+		return split[0], "", nil
+	}
+	if len(split) == 2 {
+		return split[0], split[1], nil
+	}
+
+	e := fmt.Sprintf("Couldn't parse username %s", fqu)
+	log.Println(e)
+	return "", "", errors.New(e)
+}
+
 // ConvertPbTimestamp converts a timestamp into a format readable by the frontend
 func ConvertPbTimestamp(t *tspb.Timestamp) string {
 	goTime, err := ptypes.Timestamp(t)
