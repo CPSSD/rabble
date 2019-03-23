@@ -170,7 +170,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   private renderTags() {
     return this.props.blogPost.tags.map((e: string, i: number) => {
       return (
-        <div className="pure-u-3-24" key={i}>
+        <div className="pure-u-3-24 post-tag-holder" key={i}>
           <p className="post-tag">{e}</p>
         </div>
       );

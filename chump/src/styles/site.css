@@ -299,3 +299,7 @@ button.follow-button svg {
   color: #0097a7;
   border: 1px solid #0097a7;
 }
+
+.post-tag-holder {
+  text-align: center;
+}
