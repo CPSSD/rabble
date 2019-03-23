@@ -1111,3 +1111,34 @@ func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
 		}
 	}
 }
+
+// NoOpReplyStruct Reply structure for a noop request
+type NoOpReplyStruct struct {
+	Message string `json:"message"`
+}
+
+func (s *serverWrapper) handleNoOp() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handleNoOp: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+
+		reply := NoOpReplyStruct{
+			Message: "This option has been turned off on this rabble instance",
+		}
+		w.WriteHeader(http.StatusNotImplemented)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(reply)
+		if err != nil {
+			log.Printf("Could not marshal no op reply: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
