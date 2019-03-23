@@ -33,15 +33,15 @@ func TestParseUsername(t *testing.T) {
 		},
 	}
 
-	for i, tcase := range tests {
+	for _, tcase := range tests {
 		u, h, err := ParseUsername(tcase.fqu)
 		if err != nil && tcase.err {
 			continue
 		} else if err != nil {
-			t.Errorf("Unexpected error for tcase %v: %v", i, err)
+			t.Errorf("ParseUsername(%#v): unexpected error: %v", tcase.fqu, err)
 			continue
 		} else if tcase.err {
-			t.Errorf("Wanted error for tcase %v", i)
+			t.Errorf("ParseUsername(%#v): want error", tcase.fqu)
 			continue
 		}
 
