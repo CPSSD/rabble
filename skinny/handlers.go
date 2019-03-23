@@ -987,3 +987,37 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fq := &pb.GetFollowsRequest{
+			Username: username,
+		}
+
+		followers, err := s.follows.GetFollowers(ctx, fq)
+		if err != nil {
+			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(followers)
+		if err != nil {
+			log.Printf("could not marshal followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
