@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { Redirect } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import {
   EditUserProfilePicPromise, EditUserPromise,
@@ -21,6 +20,7 @@ interface IAccountEditState {
 
 interface IAccountEditProps {
   username: string;
+  resetCallback(): void;
 }
 
 export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditState> {
@@ -55,7 +55,8 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
 
   public render() {
     if (this.state.redirect) {
-      return (<Redirect to={{ pathname: "/@" + this.props.username  }} />);
+      this.props.resetCallback();
+      return false;
     }
 
     return (

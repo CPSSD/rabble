@@ -56,6 +56,8 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
 
     this.renderTab = this.renderTab.bind(this);
     this.getCurrentPage = this.getCurrentPage.bind(this);
+    this.resetViewing = this.resetViewing.bind(this);
+    this.renderTab = this.renderTab.bind(this);
   }
 
   public render() {
@@ -111,9 +113,9 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
       case ViewingTab.Posts:
         return <User username={this.props.username} viewing={this.props.match.params.user}/>;
       case ViewingTab.UserSettings:
-        return <AccountEdit username={this.props.username}/>;
+        return <AccountEdit username={this.props.username} resetCallback={this.resetViewing}/>;
       case ViewingTab.FollowRequests:
-        return <Pending username={this.props.username}/>;
+        return <Pending username={this.props.username} />;
       case ViewingTab.Followers:
         return "followers will go here!";
       case ViewingTab.Following:
