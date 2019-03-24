@@ -90,7 +90,7 @@ class SendLikeServicerTest(unittest.TestCase):
         self.assertEqual(self.data["actor"]["type"], "Person")
         self.assertIn("localhost/ap/@farmlover73", self.data["actor"]["id"])
         # Check the object is the article URL.
-        self.assertEqual("https://localhost/ap/@minecraft4ever/123",
+        self.assertEqual("http://localhost/ap/@minecraft4ever/123",
                          self.data["object"])
         # TODO(CianLR): Check that the article ID is in the object.
         # Check the request was sent to a valid URL.

@@ -52,7 +52,7 @@ To run Rabble on a production server, first go and edit your configs.
 | `chump/rabble_config.js`        | Frontend constants          |
 
 The most important environment variables to change are:
-- **RABBLE_SKINNY_HOST** - `gen_first_config.sh` - this should be the domain of the your instance
+- **RABBLE_EXTERNAL_ADDRESS** - `gen_first_config.sh` - this should be the domain of the your instance
 
-To set up continuous integration, read 
+To set up continuous integration, read
 [the redeploy instructions](https://github.com/CPSSD/rabble/blob/master/script/redeploy/README.md)

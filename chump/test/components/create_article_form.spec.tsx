@@ -17,6 +17,7 @@ const examplePost = {
   likes_count: 1,
   parsed_date: now,
   published: "",
+  shares_count: 1,
   title: "the man, the myth, the legend",
 };
 

@@ -284,3 +284,7 @@ button.follow-button svg {
   background-color: var(--dark-color-disabled);
   padding: 4px 4px 4px 4px;
 }
+
+.shares-count {
+  margin-top: 0;
+}

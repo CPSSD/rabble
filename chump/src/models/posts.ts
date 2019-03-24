@@ -15,6 +15,7 @@ interface IBlogPost {
   title: string;
   is_followed: boolean;
   is_shared: boolean;
+  shares_count: number;
 }
 
 interface ISharedPost extends IBlogPost {

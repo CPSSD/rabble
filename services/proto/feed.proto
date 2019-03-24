@@ -34,6 +34,7 @@ message Post {
   bool is_shared = 11;
   int64 author_id = 12;
   string author_host = 13;
+  int64 shares_count = 14;
 }
 
 message Share {
@@ -53,6 +54,7 @@ message Share {
   string share_datetime = 14;
   string author_host = 15;
   int64 author_id = 16;
+  int64 shares_count = 17;
 }
 
 message FeedResponse {

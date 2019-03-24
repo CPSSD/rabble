@@ -22,7 +22,7 @@ class PostsDatabaseServicer:
             "p.global_id, p.author_id, p.title, p.body, "
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
             "l.user_id IS NOT NULL, f.follower IS NOT NULL, "
-            "s.user_id IS NOT NULL "
+            "s.user_id IS NOT NULL, p.shares_count "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
             "LEFT OUTER JOIN shares s ON "
@@ -162,7 +162,7 @@ class PostsDatabaseServicer:
         resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 11:
+        if len(tup) != 12:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -180,6 +180,7 @@ class PostsDatabaseServicer:
             entry.is_liked = tup[8]
             entry.is_followed = tup[9]
             entry.is_shared = tup[10]
+            entry.shares_count = tup[11]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: " +

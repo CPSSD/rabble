@@ -43,6 +43,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         likes_count: 0,
         parsed_date: new Date(),
         published: "",
+        shares_count: 0,
         title: "string",
       },
       showModal: false,
@@ -173,6 +174,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         post.parsed_date = new Date();
         post.bio = defaultBio;
         post.likes_count = 0;
+        post.shares_count = 0;
         post.image = defaultImage;
         this.setState({
           post,
