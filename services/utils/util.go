@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -32,6 +33,19 @@ func ConvertPbTimestamp(t *tspb.Timestamp) string {
 		return time.Now().Format(timeParseFormat)
 	}
 	return goTime.Format(timeParseFormat)
+}
+
+// SplitTags converts a string of tags separated by | into a string array
+func SplitTags(tags string) []string {
+	var cleanTags []string
+	splitTags := strings.Split(tags, "|")
+	for _, tag := range splitTags {
+		// -1 stand for replace all strings.
+		if tag != "" {
+			cleanTags = append(cleanTags, strings.Replace(tag, "%7C", "|", -1))
+		}
+	}
+	return cleanTags
 }
 
 type UsersGetter interface {
@@ -85,21 +99,24 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Post{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
-			Author:     author.Handle,
-			AuthorHost: author.Host,
-			AuthorId:   r.AuthorId,
-			Title:      r.Title,
-			Bio:        author.Bio,
-			Body:       r.Body,
-			Image:      defaultImage,
-			LikesCount: r.LikesCount,
-			IsLiked:    r.IsLiked,
-			Published:  ConvertPbTimestamp(r.CreationDatetime),
-			IsFollowed: r.IsFollowed,
-			IsShared:   r.IsShared,
+			Author:      author.Handle,
+			AuthorHost:  author.Host,
+			AuthorId:    r.AuthorId,
+			Title:       r.Title,
+			Bio:         author.Bio,
+			Body:        r.Body,
+			Image:       defaultImage,
+			LikesCount:  r.LikesCount,
+			IsLiked:     r.IsLiked,
+			Published:   ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:  r.IsFollowed,
+			IsShared:    r.IsShared,
+			SharesCount: r.SharesCount,
+			Tags:        tags,
 		}
 		pe = append(pe, np)
 	}
@@ -127,6 +144,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Share{
 			GlobalId: r.GlobalId,
 			// TODO(iandioch): Consider what happens for foreign users.
@@ -145,6 +163,8 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			Sharer:        sharer.Handle,
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 			AuthorId:      author.GlobalId,
+			SharesCount:   r.SharesCount,
+			Tags:          tags,
 		}
 		pe = append(pe, np)
 	}

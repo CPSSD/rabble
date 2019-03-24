@@ -29,6 +29,9 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     if (this.props.blogPost.is_liked === undefined) {
       this.props.blogPost.is_liked = false;
     }
+    if (this.props.blogPost.shares_count === undefined) {
+      this.props.blogPost.shares_count = 0;
+    }
     if (this.props.blogPost.is_shared === undefined) {
       this.props.blogPost.is_shared = false;
     }
@@ -63,6 +66,18 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         />
       );
     }
+
+    let tags;
+    if (typeof this.props.blogPost.tags !== "undefined" && this.props.blogPost.tags.length !== 0) {
+      tags = (
+        <div className="pure-g">
+          <div className="pure-u-3-24" key={-1}>
+            <p>Tags:</p>
+          </div>
+          {this.renderTags()}
+        </div>
+      );
+    }
     return (
       <div className="pure-u-10-24">
         {customStyle}
@@ -81,14 +96,14 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
 
-        <div>
-          <Reblog
-            username={this.props.username}
-            initReblogged={this.props.blogPost.is_shared}
-            display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-            blogPost={this.props.blogPost}
-          />
-        </div>
+        <Reblog
+          username={this.props.username}
+          initReblogged={this.props.blogPost.is_shared}
+          sharesCount={this.props.blogPost.shares_count}
+          display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+          blogPost={this.props.blogPost}
+        />
+        {tags}
       </div>
     );
   }
@@ -150,6 +165,16 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private renderTags() {
+    return this.props.blogPost.tags.map((e: string, i: number) => {
+      return (
+        <div className="pure-u-3-24 post-tag-holder" key={i}>
+          <p className="post-tag">{e}</p>
+        </div>
+      );
+    });
   }
 
   private handleNoProfilePic(event: any) {

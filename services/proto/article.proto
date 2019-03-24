@@ -15,6 +15,7 @@ message NewArticle {
   // The ActivityPub ID of this article. May not be set.
   string ap_id = 6;
   int64 author_id = 7;
+  repeated string tags = 8;
 }
 
 // NewArticleResponse is a simple response.
