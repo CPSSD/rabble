@@ -73,7 +73,14 @@ export class User extends React.Component<IUserProps, IUserState> {
 
   public renderPosts() {
     if (!this.state.ready) {
-      return "Loading..";
+      return (
+        <div>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <p>"Loading.."</p>
+          </div>
+        </div>
+      );
     }
 
     if (this.state.publicBlog.length === 0) {
