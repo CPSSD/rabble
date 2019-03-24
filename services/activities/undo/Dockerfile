@@ -9,4 +9,4 @@ RUN pip3 install requests
 
 ENV PYTHONPATH="/repo/build_out"
 
-CMD ["python3", "-u", "-B", "/repo/build_out/activities/delete/main.py", "-v"]
+CMD ["python3", "-u", "-B", "/repo/build_out/activities/undo/main.py", "-v"]
