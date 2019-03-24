@@ -15,11 +15,7 @@ describe("User", () => {
     const render = sinon.spy(User.prototype, "renderPosts");
 
     const userProps = {
-      match: {
-        params: {
-          user: "cian",
-        },
-      },
+      viewing: "cian",
       username: "",
     };
     const wrapper = mount(
@@ -38,41 +34,23 @@ describe("User", () => {
 
   it("should properly render posts", () => {
     const userProps = {
-      match: {
-        params: {
-          user: "sips",
-        },
-      },
+      viewing: "sips",
       username: "",
     };
     const wrapper = shallow(<User {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Post")).to.have.lengthOf(0);
 
-    wrapper.setState({publicBlog: [
-      {
+    wrapper.setState({
+      publicBlog: [{
         author: "sips",
         body: "id be in so much trouble<br>i'd never live it down<br>lol",
         title: "the man, the myth, the legend",
-      },
-    ]});
+      }],
+      ready: true,
+    });
 
     expect(wrapper.find("div")).to.have.lengthOf(2);
     expect(wrapper.find("Post")).to.have.lengthOf(1);
   });
-
-  it("should render user links when user is looking at their own page", () => {
-    const userProps = {
-      match: {
-        params: {
-          user: "sips",
-        },
-      },
-      username: "sips",
-    };
-    const wrapper = shallow(<User {...userProps} />);
-    expect(wrapper.find("div")).to.have.lengthOf(7);
-    expect(wrapper.find("Post")).to.have.lengthOf(0);
-  });
-
 });
