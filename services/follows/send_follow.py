@@ -35,7 +35,10 @@ class SendFollowServicer:
         s2s_follow.follower.host = self._host_name
         s2s_follow.followed.handle = to_handle
         s2s_follow.followed.host = to_host
-        self._follow_activity_stub.SendFollowActivity(s2s_follow)
+        resp = self._follow_activity_stub.SendFollowActivity(s2s_follow)
+        if resp.result_type == s2s_follow_pb2.FollowActivityResponse.ERROR:
+            return resp.error
+        return None
 
     def _add_follow(self, resp, follower_id, followed_id, is_private_followed, is_foreign):
         state = database_pb2.Follow.ACTIVE
@@ -68,6 +71,16 @@ class SendFollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = 'Could not parse followed username'
             return resp
+        # Perform s2s request early so we don't write to the DB if it
+        # throws an error.
+        is_foreign = to_instance is not None
+        if is_foreign:
+            err = self._send_s2s(from_handle, to_handle, to_instance)
+            if err is not None:
+                self._logger.error("Error from s2sFollow: %s", err)
+                resp.result_type = follows_pb2.FollowResponse.ERROR
+                resp.error = err
+                return resp
 
         # Get user IDs for follow.
         follower_entry = self._users_util.get_or_create_user_from_db(
@@ -94,7 +107,6 @@ class SendFollowServicer:
                           follower_entry.global_id,
                           followed_entry.global_id)
 
-        is_foreign = to_instance is not None
         err = self._add_follow(resp,
                                follower_entry.global_id,
                                followed_entry.global_id,
@@ -102,7 +114,5 @@ class SendFollowServicer:
                                is_foreign)
         if err is not None:
             return resp
-        if is_foreign:
-            self._send_s2s(from_handle, to_handle, to_instance)
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
