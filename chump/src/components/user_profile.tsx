@@ -1,7 +1,6 @@
 import * as React from "react";
 import { RouteProps } from "react-router-dom";
 import { AccountEdit } from "./account_edit";
-import { Followers } from "./followers";
 import { Pending } from "./pending";
 import { User } from "./user_feed";
 
