@@ -15,8 +15,8 @@ describe("User", () => {
     const render = sinon.spy(User.prototype, "renderPosts");
 
     const userProps = {
-      viewing: "cian",
       username: "",
+      viewing: "cian",
     };
     const wrapper = mount(
       <MemoryRouter>
@@ -34,8 +34,8 @@ describe("User", () => {
 
   it("should properly render posts", () => {
     const userProps = {
-      viewing: "sips",
       username: "",
+      viewing: "sips",
     };
     const wrapper = shallow(<User {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
