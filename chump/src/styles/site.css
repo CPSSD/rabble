@@ -290,14 +290,14 @@ button.follow-button svg {
 }
 
 .react-tagsinput-tag {
-  background-color: #0097a7;
-  color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
   border: none;
 }
 
 .post-tag {
-  color: #0097a7;
-  border: 1px solid #0097a7;
+  color: var(--primary-bg-color);
+  border: 1px solid var(--primary-bg-color);
 }
 
 .post-tag-holder {
