@@ -40,6 +40,11 @@ export function CreateArticle(username: string, title: string, blogText: string,
   return CreateAPIPromise(endpoint, postBody);
 }
 
+export function EditArticle(article_id: string, title: string, blogText: string, tags: string[]) {
+  // TODO(CianLR): Send edit request.
+  alert("Sending edit");
+}
+
 export function CreatePreview(username: string, title: string, blogText: string) {
   const endpoint: string = "/c2s/preview_article";
   const createdTime: string = new Date().toISOString();

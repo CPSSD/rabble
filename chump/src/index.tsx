@@ -140,7 +140,11 @@ export class App extends React.Component<{}, IAppState> {
               username={this.state.username}
               component={AccountEdit}
             />
-            <PrivateRoute path="/write" username={this.state.username} component={Write}/>
+            <PrivateRoute
+              path="/write/:article_id?"
+              username={this.state.username}
+              component={Write}
+            />
           </Switch>
         </div>
       </HashRouter>

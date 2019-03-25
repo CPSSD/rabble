@@ -1,22 +1,28 @@
 import * as React from "react";
 import * as RModal from "react-modal";
-import { HashRouter } from "react-router-dom";
+import { HashRouter, RouteProps } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview } from "../models/article";
-import { IParsedPost } from "../models/posts";
+import { GetSinglePost, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
 
 interface IFormState {
   blogText: string;
+  isEdit: boolean;
   post: IParsedPost;
   showModal: boolean;
   tags: string[];
   title: string;
 }
 
-export interface IFormProps {
+export interface IFormProps extends RouteProps {
+  match: {
+    params: {
+      article_id: string,
+    },
+  };
   username: string;
 }
 
@@ -29,8 +35,10 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
 
+    const article_id = this.props.match.params.article_id;
     this.state = {
       blogText: "",
+      isEdit: typeof article_id !== "undefined" && article_id !== "",
       post: {
         author: "string",
         author_host: "",
@@ -54,6 +62,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       title: "",
     };
 
+    this.prefillArticle = this.prefillArticle.bind(this);
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTagInputChange = this.handleTagInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
@@ -61,6 +70,10 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
     this.renderModal = this.renderModal.bind(this);
+
+    if (this.state.isEdit) {
+      this.prefillArticle(article_id);
+    }
   }
 
   public renderModal() {
@@ -152,6 +165,27 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         {previewModel}
       </div>
     );
+  }
+
+  private prefillArticle(article_id: string) {
+    GetSinglePost(this.props.username, article_id)
+      .then((posts: IParsedPost[]) => {
+        if (posts.length > 0) {
+          const p = posts[0];
+          const tags = typeof(p.tags) === "undefined" ? [] : p.tags;
+          this.setState({
+            blogText: p.body,
+            post: p,
+            tags,
+            title: p.title,
+          });
+        }
+      })
+      .catch(this.handleGetPostError);
+  }
+
+  private handleGetPostError() {
+    this.alertUser("Could not prefill post details");
   }
 
   private handleTitleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
