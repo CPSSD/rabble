@@ -7,6 +7,7 @@ import time
 
 from utils.connect import get_service_channel
 from utils.logger import get_logger
+from utils.users import UsersUtil
 from servicer import PostRecommendationsServicer
 
 from services.proto import database_pb2_grpc
@@ -29,10 +30,11 @@ def main():
 
     with get_service_channel(logger, "DB_SERVICE_HOST", 1798) as db_chan:
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
+        users_util = UsersUtil(logger, db_stub)
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-        servicer = PostRecommendationsServicer(logger, db_stub)
+        servicer = PostRecommendationsServicer(users_util, logger, db_stub)
         recommend_posts_pb2_grpc.add_PostRecommendationsServicer_to_server(servicer,
                                                                            server)
 

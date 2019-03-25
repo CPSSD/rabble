@@ -11,4 +11,13 @@ class RandomRecommender:
         self._db = database_stub
 
     def get_recommendations(self, user_id, n):
-        return [], None
+        find_req = database_pb2.RandomPostsRequest(
+            num_posts=n,
+            user_id=user_id
+        )
+        find_resp = self._db.RandomPosts(find_req)
+        if find_resp.result_type == database_pb2.PostsResponse.ERROR:
+            self._logger.info(
+                'Got error getting RandomPosts: {}'.format(find_resp.error))
+            return [], find_resp.error
+        return find_resp.results, None
