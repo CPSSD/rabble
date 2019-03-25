@@ -10,5 +10,5 @@ class RandomRecommender:
         self._logger = logger
         self._db = database_stub
 
-    def get_recommendations(self, user_id):
-        return []
+    def get_recommendations(self, user_id, n):
+        return [], None

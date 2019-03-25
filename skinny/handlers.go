@@ -1094,8 +1094,8 @@ func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if resp.Error != pb.PostRecommendationsResponse_OK {
-			log.Printf("Error in postRecommendations.Get")
+		if resp.ResultType != pb.PostRecommendationsResponse_OK {
+			log.Printf("Error in postRecommendations.Get: %v", resp.Message)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

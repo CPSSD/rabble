@@ -1,3 +1,4 @@
+import os
 import json
 import time
 from services.proto import database_pb2
@@ -23,9 +24,9 @@ class RecommendersUtil:
         default system (self.DEFAULT_RECOMMENDER) will be used.'''
         keys = [self.DEFAULT_RECOMMENDER]
         if self.ENV_VAR not in os.environ or os.environ[self.ENV_VAR] == "":
-            self._logger.warning('No value set for "follow_recommender" ' +
-                                 'environment variable, using default of ' +
-                                 '"{}".'.format(self.DEFAULT_RECOMMENDER))
+            self._logger.warning('No value set for "follow_recommender" '
+                                 + 'environment variable, using default of '
+                                 + '"{}".'.format(self.DEFAULT_RECOMMENDER))
         else:
             # Parse the given recommender names.
             keys = set()
@@ -34,17 +35,18 @@ class RecommendersUtil:
                 if a in self.RECOMMENDERS:
                     keys.add(a)
                 else:
-                    self._logger.warning('Follow recommender "{}" '.format(a) +
-                                         'requested, but no such system found. '
+                    self._logger.warning('Follow recommender "{}" '.format(a)
+                                         + 'requested, but no such system found. '
                                          'Skipping.')
 
             if len(keys) == 0:
                 # User didn't give any valid names.
-                self._logger.warning('No valid values given for follow ' +
-                                     'recommender, using default of ' +
-                                     '"{}".'.format(self.DEFAULT_RECOMMENDER))
+                self._logger.warning('No valid values given for follow '
+                                     + 'recommender, using default of '
+                                     + '"{}".'.format(self.DEFAULT_RECOMMENDER))
                 keys = [self.DEFAULT_RECOMMENDER]
-        self._logger.info("Using follow recommenders [" + ', '.join(k for k in keys) + "].")
+        self._logger.info(
+            "Using follow recommenders [" + ', '.join(k for k in keys) + "].")
 
         # At this point, keys[] should contain either the default system, or
         # a list of user-chosen ones.

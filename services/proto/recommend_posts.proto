@@ -10,13 +10,14 @@ message PostRecommendationsRequest {
 }
 
 message PostRecommendationsResponse {
-  enum PostRecommendationsError {
+  enum ResultType {
     OK = 0;
     ERROR = 1;
   }
 
   repeated Post results = 1;
-  PostRecommendationsError error = 2;
+  ResultType result_type = 2;
+  string message = 3;
 }
 
 service PostRecommendations {

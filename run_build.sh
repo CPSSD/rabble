@@ -64,9 +64,11 @@ do
       ;;
     --follow-recommender-method=*)
       RABBLE_FOLLOW_RECOMMENDER_METHOD="${i#*=}"
+      shift
       ;;
     --posts-recommender-method=*)
       RABBLE_POSTS_RECOMMENDER_METHOD="${i#*=}"
+      shift
       ;;
     *)
       ;;

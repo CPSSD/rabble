@@ -1,5 +1,3 @@
-import os
-
 from surprise_recommender import SurpriseRecommender
 from noop_recommender import NoopRecommender
 from cn_recommender import CNRecommender
@@ -8,6 +6,7 @@ from gd_recommender import GraphDistanceRecommender
 from services.proto import follows_pb2_grpc
 from services.proto import database_pb2
 from services.proto import recommend_follows_pb2
+from utils.recommenders import RecommendersUtil
 
 
 class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
@@ -27,7 +26,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         self._users_util = users_util
         self._db_stub = db_stub
         self._recommender_util = RecommendersUtil(
-            logger, db, DEFAULT_RECOMMENDER, ENV_VAR, RECOMMENDERS)
+            logger, db_stub, self.DEFAULT_RECOMMENDER, self.ENV_VAR, self.RECOMMENDERS)
 
         # self.active_recommenders contains one or more recommender system
         # objects (out of the constructors in self.RECOMMENDERS).
