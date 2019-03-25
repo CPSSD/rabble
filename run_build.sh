@@ -65,6 +65,9 @@ do
     --follow-recommender-method=*)
       RABBLE_FOLLOW_RECOMMENDER_METHOD="${i#*=}"
       ;;
+    --posts-recommender-method=*)
+      RABBLE_POSTS_RECOMMENDER_METHOD="${i#*=}"
+      ;;
     *)
       ;;
   esac
@@ -78,6 +81,7 @@ docker run \
   -e TEST_RABBLE=$_TEST_RABBLE \
   -e RABBLE_SEARCH_TYPE=$RABBLE_SEARCH_TYPE \
   -e RABBLE_FOLLOW_RECOMMENDER_METHOD="${RABBLE_FOLLOW_RECOMMENDER_METHOD}" \
+  -e RABBLE_POSTS_RECOMMENDER_METHOD="${RABBLE_POSTS_RECOMMENDER_METHOD}" \
   $IMAGE_NAME
 
 echo "Done build"

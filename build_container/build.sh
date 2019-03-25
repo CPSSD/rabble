@@ -83,6 +83,9 @@ cp -R services/users build_out/
 echo "Building recommend_follows service"
 cp -R services/recommend_follows build_out/
 
+echo "Building recommend_posts service"
+cp -R services/recommend_posts build_out/
+
 echo "Building ldnorm service"
 cp -R services/ldnormaliser build_out/
 
