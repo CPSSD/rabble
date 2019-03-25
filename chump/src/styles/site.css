@@ -285,6 +285,12 @@ button.follow-button svg {
   padding: 4px 4px 4px 4px;
 }
 
+.edit-icon {
+  color: var(--primary-light-color);
+  background-color: var(--primary-bg-color);
+  padding: 4px 4px 4px 4px;
+}
+
 .shares-count {
   margin-top: 0;
 }
