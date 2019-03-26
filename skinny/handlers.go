@@ -1074,40 +1074,40 @@ func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
 			return
 		}
 	}
+}
 
-	func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
+func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 
-			uid, err := s.getSessionGlobalId(r)
-			if err != nil {
-				log.Printf("Access denied in handlePostRecommendations: %v", err)
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
-			prr := &pb.PostRecommendationsRequest{UserId: uid}
-			resp, err := s.postRecommendations.Get(ctx, prr)
-			if err != nil {
-				log.Printf("Error in postRecommendations.Get(%v): %v", *prr, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			if resp.Error != pb.PostRecommendationsResponse_OK {
-				log.Printf("Error in postRecommendations.Get(%v)", *prr)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+		uid, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handlePostRecommendations: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		prr := &pb.PostRecommendationsRequest{UserId: uid}
+		resp, err := s.postRecommendations.Get(ctx, prr)
+		if err != nil {
+			log.Printf("Error in postRecommendations.Get: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.Error != pb.PostRecommendationsResponse_OK {
+			log.Printf("Error in postRecommendations.Get")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-			w.Header().Set("Content-Type", "application/json")
-			enc := json.NewEncoder(w)
-			enc.SetEscapeHTML(false)
-			err = enc.Encode(resp)
-			if err != nil {
-				log.Printf("Could not marshal post recommendations: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal post recommendations: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -1117,6 +1117,10 @@ type NoOpReplyStruct struct {
 	Message string `json:"message"`
 }
 
+// handleNoOp is the handler a handler for a service that is not running on this
+// instance. The services that are configurable provide their docker routes as
+// env vars to the skinny server. If those routes are equal to the no-op
+// container skinny will route all calls to those services to this handler.
 func (s *serverWrapper) handleNoOp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := s.getSessionGlobalId(r)
