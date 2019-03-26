@@ -36,6 +36,7 @@ message Post {
   string author_host = 13;
   int64 shares_count = 14;
   repeated string tags = 15;
+  string md_body = 16;
 }
 
 message Share {

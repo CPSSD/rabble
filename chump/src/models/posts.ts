@@ -10,6 +10,7 @@ interface IBlogPost {
   global_id: number;
   image: string;
   likes_count: number;
+  md_body: string;
   is_liked: boolean;
   published: string;
   title: string;

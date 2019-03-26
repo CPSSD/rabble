@@ -51,6 +51,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         is_liked: false,
         is_shared: false,
         likes_count: 0,
+        md_body: "",
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
@@ -174,7 +175,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           const p = posts[0];
           const tags = typeof(p.tags) === "undefined" ? [] : p.tags;
           this.setState({
-            blogText: p.body,
+            blogText: p.md_body,
             post: p,
             tags,
             title: p.title,
@@ -253,6 +254,10 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     let showModal = this.state.showModal;
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
+    }
+    if (this.state.isEdit) {
+      this.alertUser("Edits not implemented");
+      return;
     }
     const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText, this.state.tags);
     promise
