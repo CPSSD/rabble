@@ -20,6 +20,9 @@ interface IAccountEditState {
 
 interface IAccountEditProps {
   username: string;
+  // resetCallback is a callback that is called when the account edit page
+  // is submitted. The component in charge of rendering the page should react
+  // by no longer rendering the account edit.
   resetCallback(): void;
 }
 
