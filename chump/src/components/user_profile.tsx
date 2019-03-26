@@ -20,13 +20,21 @@ import { User } from "./user_feed";
  * to persist the life of Component state without clogging up the implementation.
  */
 
-export enum ViewingTab {
-    Posts = config.posts,
-    Following = config.following,
-    Followers = config.followers,
-    UserSettings = config.settings,
-    FollowRequests = config.follow_requests,
+enum ViewingTab {
+    Posts = 0,
+    Following,
+    Followers,
+    UserSettings,
+    FollowRequests,
 }
+
+const ViewingTabLookup = [
+  config.posts,
+  config.following,
+  config.followers,
+  config.settings,
+  config.follow_requests,
+]
 
 interface IUserProfileState {
   viewing: ViewingTab;
@@ -60,14 +68,6 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     this.getCurrentPage = this.getCurrentPage.bind(this);
     this.resetViewing = this.resetViewing.bind(this);
     this.renderTab = this.renderTab.bind(this);
-  }
-
-  public isViewingOwnPage() {
-    const userMatch = props.match.params.user === props.username;
-    const validUsername = props.username !== "";
-    // Ensure the user isn't viewing a page of a foriegn user.
-    const noHost = !probs.match.params.user.includes("@");
-    return userMatch && validUsername && noHost;
   }
 
   public render() {
@@ -112,7 +112,7 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
           onClick={this.setViewing(e)}
           className="profile-button pure-menu-link"
         >
-          {e}
+          {ViewingTabLookup[e]}
         </a>
       </li>
     );
@@ -134,4 +134,13 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
         return "You have bent the space time continuum to see this message.";
     }
   }
+
+  private isViewingOwnPage() {
+    const userMatch = this.props.match.params.user === this.props.username;
+    const validUsername = this.props.username !== "";
+    // Ensure the user isn't viewing a page of a foriegn user.
+    const noHost = !this.props.match.params.user.includes("@");
+    return userMatch && validUsername && noHost;
+  }
+
 }
