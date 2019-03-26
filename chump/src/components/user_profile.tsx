@@ -1,14 +1,16 @@
 import * as React from "react";
+
 import { RouteProps } from "react-router-dom";
 import { AccountEdit } from "./account_edit";
 import { Pending } from "./pending";
 import { User } from "./user_feed";
+import * as config from "../../rabble_config.json";
 
 /*
  * The profile page is where somebody lands if they click on a specific user.
  *
  * It has three seperate tabs, Posts, Followers, Following.
- * It also has some specific buttons if a viewer is viewing their own page.
+ * It also has some extra buttons if a viewer is viewing their own page.
  *
  * To simplify this user page we don't keep any state belonging to subcomponents here
  * This slightly impacts performance, because the REST endpoints are called
@@ -19,11 +21,11 @@ import { User } from "./user_feed";
  */
 
 export enum ViewingTab {
-    Posts = "Posts",
-    Following = "Following",
-    Followers = "Followers",
-    UserSettings = "Settings",
-    FollowRequests = "Follow Requests",
+    Posts = config.posts,
+    Following = config.following,
+    Followers = config.followers,
+    UserSettings = config.settings,
+    FollowRequests = config.follow_requests,
 }
 
 interface IUserProfileState {
@@ -45,7 +47,7 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     super(props);
 
     let v = [ViewingTab.Posts, ViewingTab.Following, ViewingTab.Followers];
-    if (props.match.params.user === props.username && props.username !== "") {
+    if (this.isViewingOwnPage()) {
       v = v.concat([ViewingTab.UserSettings, ViewingTab.FollowRequests]);
     }
 
@@ -58,6 +60,14 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     this.getCurrentPage = this.getCurrentPage.bind(this);
     this.resetViewing = this.resetViewing.bind(this);
     this.renderTab = this.renderTab.bind(this);
+  }
+
+  public isViewingOwnPage() {
+    const userMatch = props.match.params.user === props.username;
+    const validUsername = props.username !== "";
+    // Ensure the user isn't viewing a page of a foriegn user.
+    const noHost = !probs.match.params.user.includes("@")
+    return userMatch && validUsername && noHost
   }
 
   public render() {

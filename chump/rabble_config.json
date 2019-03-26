@@ -34,6 +34,10 @@
   "track_views": true,
   "send_logs_to_server": true,
   "accept": "Accept",
-  "deny": "Deny"
+  "deny": "Deny",
+  "posts": "Posts",
+  "followers": "Followers",
+  "settings": "Settings",
+  "loading": "Loading&hellip;"
 }
 

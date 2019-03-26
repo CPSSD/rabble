@@ -6,6 +6,7 @@ import { Post } from "./post";
 import { SharedPost } from "./shared_post";
 
 import * as superagent from "superagent";
+import * as config from "../../rabble_config.json";
 
 interface IUserState {
   publicBlog: IAnyParsedPost[];
@@ -77,7 +78,7 @@ export class User extends React.Component<IUserProps, IUserState> {
         <div>
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
-            <p>"Loading.."</p>
+            <p>{config.loading}</p>
           </div>
         </div>
       );
