@@ -3,7 +3,7 @@ import * as RModal from "react-modal";
 import { HashRouter, RouteProps } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
-import { CreateArticle, CreatePreview } from "../models/article";
+import { CreateArticle, CreatePreview, EditArticle } from "../models/article";
 import { GetSinglePost, IParsedPost } from "../models/posts";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
@@ -71,6 +71,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
     this.renderModal = this.renderModal.bind(this);
+    this.sendRequest = this.sendRequest.bind(this);
 
     if (this.state.isEdit) {
       this.prefillArticle(article_id);
@@ -168,8 +169,8 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     );
   }
 
-  private prefillArticle(article_id: string) {
-    GetSinglePost(this.props.username, article_id)
+  private prefillArticle(articleId: string) {
+    GetSinglePost(this.props.username, articleId)
       .then((posts: IParsedPost[]) => {
         if (posts.length > 0) {
           const p = posts[0];
@@ -243,6 +244,24 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       });
   }
 
+  private sendRequest() {
+    if (this.state.isEdit) {
+      return EditArticle(
+        this.props.match.params.article_id,
+        this.state.title,
+        this.state.blogText,
+        this.state.tags,
+      );
+    } else {
+      return CreateArticle(
+        this.props.username,
+        this.state.title,
+        this.state.blogText,
+        this.state.tags,
+      );
+    }
+  }
+
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (this.state.title === "") {
@@ -259,8 +278,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       this.alertUser("Edits not implemented");
       return;
     }
-    const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText, this.state.tags);
-    promise
+    this.sendRequest()
       .then((res: any) => {
         let message = "Posted article";
         if (res.text) {

@@ -40,9 +40,11 @@ export function CreateArticle(username: string, title: string, blogText: string,
   return CreateAPIPromise(endpoint, postBody);
 }
 
-export function EditArticle(article_id: string, title: string, blogText: string, tags: string[]) {
+export function EditArticle(articleId: string, title: string, blogText: string, tags: string[]) {
   // TODO(CianLR): Send edit request.
-  alert("Sending edit");
+  return new Promise((resolve, reject) => {
+    reject({ message: "Edits not implemented" });
+  });
 }
 
 export function CreatePreview(username: string, title: string, blogText: string) {
