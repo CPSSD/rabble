@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Edit } from "react-feather";
+import { Redirect } from "react-router-dom";
 
 import * as config from "../../rabble_config.json";
 import { IParsedPost } from "../models/posts";
@@ -12,9 +13,17 @@ interface IEditProps {
   blogPost: IParsedPost;
 }
 
-export class EditButton extends RootComponent<IEditProps, {}> {
+interface IEditState {
+  redirect: boolean;
+}
+
+export class EditButton extends RootComponent<IEditProps, IEditState> {
   constructor(props: IEditProps) {
     super(props);
+
+    this.state = {
+      redirect: false,
+    };
 
     this.handleEdit = this.handleEdit.bind(this);
   }
@@ -22,6 +31,9 @@ export class EditButton extends RootComponent<IEditProps, {}> {
   public render() {
     if (!this.props.display) {
       return (<div/>);
+    } else if (this.state.redirect) {
+      const url = `/write/${this.props.blogPost.global_id}`;
+      return (<Redirect to={{ pathname: url }}/>);
     }
     return (
       <div onClick={this.handleEdit} className="pure-u-5-24">
@@ -31,20 +43,6 @@ export class EditButton extends RootComponent<IEditProps, {}> {
   }
 
   private handleEdit() {
-    alert("Yo");
-    // SendReblog(this.props.blogPost.global_id)
-    //   .then((res: any) => {
-    //     this.setState({
-    //       isReblogged: true,
-    //       sharesCount: this.state.sharesCount + 1,
-    //     });
-    //   })
-    //   .catch((err: any) => {
-    //     let message = err.message;
-    //     if (err.response) {
-    //       message = err.response.text;
-    //     }
-    //     this.alertUser(message);
-    //   });
+    this.setState({ redirect: true });
   }
 }
