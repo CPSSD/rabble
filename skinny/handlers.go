@@ -1117,7 +1117,7 @@ type NoOpReplyStruct struct {
 	Message string `json:"message"`
 }
 
-// handleNoOp is the handler a handler for a service that is not running on this
+// handleNoOp is the handler for any service that is not running on this
 // instance. The services that are configurable provide their docker routes as
 // env vars to the skinny server. If those routes are equal to the no-op
 // container skinny will route all calls to those services to this handler.
