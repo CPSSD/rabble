@@ -22,6 +22,15 @@ const examplePost = {
   title: "the man, the myth, the legend",
 };
 
+const exampleProps = {
+  match: {
+    params: {
+      article_id: undefined,
+    },
+  },
+  username:  "ross",
+};
+
 describe("CreateArticleForm", () => {
   let testComponent: any;
   let createStub: any;
@@ -34,12 +43,12 @@ describe("CreateArticleForm", () => {
   });
 
   it("can mount", (done) => {
-    testComponent = mount(<CreateArticleForm username={"ross"}/>);
+    testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     done();
   });
 
   it("can handle title input", (done) => {
-    testComponent = mount(<CreateArticleForm username={"ross"}/>);
+    testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     testComponent.find("[name=\"title\"]").simulate("change", {
         target: {
           name: "title",
@@ -51,7 +60,7 @@ describe("CreateArticleForm", () => {
   });
 
   it("can handle TextArea input", (done) => {
-    testComponent = mount(<CreateArticleForm username={"ross"}/>);
+    testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     testComponent.find("[name=\"blogText\"]").simulate("change", {
         target: {
           name: "blogText",
@@ -64,7 +73,7 @@ describe("CreateArticleForm", () => {
 
   it("can submit form", (done) => {
     const submitStub: any = sandbox.stub(CreateArticleForm.prototype, "handleSubmitForm" as any);
-    testComponent = mount(<CreateArticleForm username={"ross"}/>);
+    testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     testComponent.find("form").first().simulate("submit");
     expect(submitStub.called).to.equal(true);
     done();
@@ -79,7 +88,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle success", (done) => {
       const alertMessage: string = "Request went well";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ text: alertMessage });
       });
@@ -101,7 +110,7 @@ describe("CreateArticleForm", () => {
 
     it("and block submissions without a title", (done) => {
       const alertMessage: string = "A post cannot have an empty title";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       testComponent.find("form").first().simulate("submit");
       expect(alertStub.called).to.equal(true);
       expect(alertStub.calledWith(alertMessage)).to.equal(true);
@@ -110,7 +119,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle a 403: permission denied", (done) => {
       const alertMessage: string = "403";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -132,7 +141,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle a 400: bad request", (done) => {
       const alertMessage: string = "400";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -154,7 +163,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle other error", (done) => {
       const alertMessage: string = "500";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });
@@ -183,7 +192,7 @@ describe("CreateArticleForm", () => {
     });
 
     it("successfully get and show preview", (done) => {
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ body: examplePost });
       });
@@ -206,7 +215,7 @@ describe("CreateArticleForm", () => {
       const createPromise = new bluebird.Promise((resolve) => {
         resolve({ text: alertMessage });
       });
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       previewStub.returns(promise);
       createStub.returns(createPromise);
       testComponent.find("[name=\"title\"]").simulate("change", {
@@ -229,7 +238,7 @@ describe("CreateArticleForm", () => {
 
     it("and handle req error", (done) => {
       const alertMessage: string = "500";
-      testComponent = mount(<CreateArticleForm username={"ross"}/>);
+      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
         reject(new Error(alertMessage));
       });

@@ -31,6 +31,7 @@ const validParsedPost: IParsedPost[] = [{
   is_liked: false,
   is_shared: false,
   likes_count: 1,
+  md_body: "",
   parsed_date: now,
   published: "",
   shares_count: 1,
