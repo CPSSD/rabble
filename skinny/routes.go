@@ -3,9 +3,24 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	webfinger "github.com/writeas/go-webfinger"
 )
+
+const (
+	noOpLocation             = "./services/noop"
+	postServiceLocationEnv   = "POST_RECOMMENDATIONS_NO_OP"
+	followServiceLocationEnv = "FOLLOW_RECOMMENDATIONS_NO_OP"
+)
+
+func (s *serverWrapper) getNoOpServiceHandler(env string, defaultFunc http.HandlerFunc) http.HandlerFunc {
+	serviceLocation := os.Getenv(env)
+	if serviceLocation == noOpLocation {
+		return s.handleNoOp()
+	}
+	return defaultFunc
+}
 
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
@@ -34,9 +49,17 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
 	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
 	r.HandleFunc("/c2s/@{username}/css", s.handleUserCss())
-	r.HandleFunc("/c2s/@{username}/recommend_follows", s.handleRecommendFollows())
 	r.HandleFunc("/c2s/@{username}/followers", s.handleGetFollowers())
 	r.HandleFunc("/c2s/@{username}/following", s.handleGetFollowing())
+
+	// TODO(sailslick): move these below after user_id change comes in
+	// That change will stop perArticle from catching all urls
+	// These may be no-op services
+	r.HandleFunc("/c2s/@{username}/recommend_follows",
+		s.getNoOpServiceHandler(followServiceLocationEnv, s.handleRecommendFollows()))
+	r.HandleFunc("/c2s/recommend_posts",
+		s.getNoOpServiceHandler(postServiceLocationEnv, s.handlePostRecommendations()))
+
 	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/unfollow", s.handleUnfollow())

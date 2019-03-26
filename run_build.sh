@@ -24,7 +24,7 @@ mkdir $BUILD_OUT
 
 
 DOCKERFILE="$REPO_ROOT/build_container/Dockerfile"
-DOCKERFILE_HASH="$(md5sum $DOCKERFILE | head -c 15)"
+DOCKERFILE_HASH="$(shasum $DOCKERFILE | head -c 40)"
 IMAGE="rabblenetwork/rabble_build"
 IMAGE_NAME="$IMAGE:$DOCKERFILE_HASH"
 
@@ -64,6 +64,11 @@ do
       ;;
     --follow-recommender-method=*)
       RABBLE_FOLLOW_RECOMMENDER_METHOD="${i#*=}"
+      shift
+      ;;
+    --posts-recommender-method=*)
+      RABBLE_POSTS_RECOMMENDER_METHOD="${i#*=}"
+      shift
       ;;
     *)
       ;;
@@ -78,6 +83,7 @@ docker run \
   -e TEST_RABBLE=$_TEST_RABBLE \
   -e RABBLE_SEARCH_TYPE=$RABBLE_SEARCH_TYPE \
   -e RABBLE_FOLLOW_RECOMMENDER_METHOD="${RABBLE_FOLLOW_RECOMMENDER_METHOD}" \
+  -e RABBLE_POSTS_RECOMMENDER_METHOD="${RABBLE_POSTS_RECOMMENDER_METHOD}" \
   $IMAGE_NAME
 
 echo "Done build"

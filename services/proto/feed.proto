@@ -20,6 +20,8 @@ message ArticleRequest {
 // These responses will eventually be database.PostsResponse or at least use
 // PostsEntry. Right now our builds don't allow for importing proto files
 // between services. For that reason we'll keep it simple and ignore errors.
+// If this is updated the ConvertDBToFeed method in utils/util.go and Get method
+// in recommend_posts/servicer must be updated
 message Post {
   int64 global_id = 1;
   string author = 2;
@@ -69,7 +71,7 @@ message FeedResponse {
   repeated Post results = 1;
   FeedError error = 2;
 
-  repeated Share share_results = 5;
+  repeated Share share_results = 3;
 }
 
 service Feed {
