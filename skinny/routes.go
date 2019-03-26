@@ -52,7 +52,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/@{username}/followers", s.handleGetFollowers())
 	r.HandleFunc("/c2s/@{username}/following", s.handleGetFollowing())
 
-	// TODO (sailslick) move these below after user_id change comes in
+	// TODO(sailslick): move these below after user_id change comes in
 	// That change will stop perArticle from catching all urls
 	// These may be no-op services
 	r.HandleFunc("/c2s/@{username}/recommend_follows",
