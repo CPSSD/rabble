@@ -43,7 +43,7 @@ export function CreateArticle(username: string, title: string, blogText: string,
 export function EditArticle(articleId: string, title: string, blogText: string, tags: string[]) {
   // TODO(CianLR): Send edit request.
   return new Promise((resolve, reject) => {
-    reject({ message: "Edits not implemented" });
+    reject({ message: "Edits not implemented yet" });
   });
 }
 

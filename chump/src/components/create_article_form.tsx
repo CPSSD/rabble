@@ -274,10 +274,6 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    if (this.state.isEdit) {
-      this.alertUser("Edits not implemented");
-      return;
-    }
     this.sendRequest()
       .then((res: any) => {
         let message = "Posted article";
