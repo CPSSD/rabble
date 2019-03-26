@@ -58,7 +58,7 @@ export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: 
   b = b as IParsedPost[];
   b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
-    if (e.author_display === undefined || e.author_display === "") {
+    if (typeof(e.author_display) === "undefined" || e.author_display === "") {
       e.author_display = e.author;
     }
     if (e.bio === undefined || e.bio === "") {
