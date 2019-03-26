@@ -141,7 +141,7 @@ export function GetSinglePost(id: string) {
   return PostsAPIPromise(url);
 }
 
-export function GetPublicPosts(userId= 0) {
+export function GetPublicPosts(userId=0) {
   const url = userId === 0 ? feedApiURL : `${feedApiURL}/${userId.toString()}`;
   return PostsAPIPromise(url);
 }
