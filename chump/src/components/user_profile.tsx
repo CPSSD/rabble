@@ -1,10 +1,10 @@
 import * as React from "react";
 
 import { RouteProps } from "react-router-dom";
+import * as config from "../../rabble_config.json";
 import { AccountEdit } from "./account_edit";
 import { Pending } from "./pending";
 import { User } from "./user_feed";
-import * as config from "../../rabble_config.json";
 
 /*
  * The profile page is where somebody lands if they click on a specific user.
@@ -66,8 +66,8 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     const userMatch = props.match.params.user === props.username;
     const validUsername = props.username !== "";
     // Ensure the user isn't viewing a page of a foriegn user.
-    const noHost = !probs.match.params.user.includes("@")
-    return userMatch && validUsername && noHost
+    const noHost = !probs.match.params.user.includes("@");
+    return userMatch && validUsername && noHost;
   }
 
   public render() {
