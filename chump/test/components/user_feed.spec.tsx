@@ -17,7 +17,7 @@ describe("User", () => {
     const userProps = {
       match: {
         params: {
-          user: 1,
+          user: "1",
         },
       },
       userId: 0,
@@ -41,7 +41,7 @@ describe("User", () => {
     const userProps = {
       match: {
         params: {
-          user: 1,
+          user: "1",
         },
       },
       userId: 0,
@@ -67,7 +67,7 @@ describe("User", () => {
     const userProps = {
       match: {
         params: {
-          user: 0,
+          user: "sips",
         },
       },
       userId: 0,

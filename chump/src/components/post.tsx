@@ -123,7 +123,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
-    const userLink = GenerateUserLinks(this.props.blogPost.author, this.props.blogPost.author_host);
+    const userLink = GenerateUserLinks(this.props.blogPost.author,
+      this.props.blogPost.author_host, this.props.blogPost.author_display);
 
     return (
       <div className="pure-u-3-24">

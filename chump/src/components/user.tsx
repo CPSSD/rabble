@@ -20,8 +20,8 @@ export class User extends React.Component<IUserProps, {}> {
   }
 
   public render() {
-    const userLink = GenerateUserLinks(this.props.blogUser.global_id,
-      this.props.blogUser.handle, this.props.blogUser.host);
+    const userLink = GenerateUserLinks(this.props.blogUser.handle,
+      this.props.blogUser.host, this.props.blogUser.display_name);
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
