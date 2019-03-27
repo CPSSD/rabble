@@ -139,3 +139,46 @@ export function AcceptFollow(handle: string, follower: IPendingFollow, isAccepte
       });
   });
 }
+
+export interface IFollowUser {
+  handle: string;
+  host: string | undefined;
+  display_name: string;
+}
+
+export interface IFollowers {
+  results: IFollowUser[];
+}
+
+export function GetFollowers(username: string) {
+  const url: string = "/c2s/@" + username + "/followers";
+  return GetFollows(url, username);
+}
+
+export function GetFollowing(username: string) {
+  const url: string = "/c2s/@" + username + "/following";
+  return GetFollows(url, username);
+}
+
+function GetFollows(url: string, username: string) {
+  return new Promise<IFollowUser[]>((resolve, reject) => {
+    request
+      .get(url)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        const r = res!.body as IFollowers;
+        if (r === null) {
+          reject("could not parse result");
+        }
+        if (r.results === undefined || r.results === null) {
+          resolve([] as IFollowUser[]);
+        } else {
+          resolve(r.results as IFollowUser[]);
+        }
+      });
+  });
+}
