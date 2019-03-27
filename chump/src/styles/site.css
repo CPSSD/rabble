@@ -303,3 +303,17 @@ button.follow-button svg {
 .post-tag-holder {
   text-align: center;
 }
+
+.profile-item {
+  margin-right: 1em;
+}
+
+.profile-button {
+  color: var(--dark-color-three);
+}
+
+.profile-list {
+ border-bottom-width: 2px;
+ border-bottom-color: var(--primary-bg-color);
+ border-bottom-style: solid;
+}

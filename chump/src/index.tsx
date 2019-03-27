@@ -15,9 +15,8 @@ import {Logout} from "./components/logout";
 import {User} from "./components/user_feed";
 import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
-import {AccountEdit} from "./components/account_edit";
-import {Pending} from "./components/pending";
 import {SearchResults} from "./components/search_results";
+import {UserProfile} from "./components/user_profile";
 
 import { SendView } from "./models/view";
 
@@ -119,7 +118,11 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/@:user"
-              render={(props) => <User {...props} username={this.state.username} userId={this.state.userId} />}
+              render={(props) =>
+                <UserProfile {...props}
+                  username={this.state.username}
+                  userId={this.state.userId}
+               />}
             />
             <Route
               path="/login"
@@ -148,16 +151,6 @@ export class App extends React.Component<{}, IAppState> {
               username={this.state.username}
               userId={this.state.userId}
               component={Follow}
-            />
-            <PrivateRoute
-              path="/@/pending"
-              username={this.state.username}
-              component={Pending}
-            />
-            <PrivateRoute
-              path="/@/edit"
-              username={this.state.username}
-              component={AccountEdit}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>
