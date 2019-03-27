@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
+import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
@@ -11,6 +12,7 @@ interface IFormState {
   blogText: string;
   post: IParsedPost;
   showModal: boolean;
+  tags: string[];
   title: string;
 }
 
@@ -45,13 +47,16 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
+        tags: [],
         title: "string",
       },
       showModal: false,
+      tags: [],
       title: "",
     };
 
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
+    this.handleTagInputChange = this.handleTagInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handlePreview = this.handlePreview.bind(this);
@@ -87,7 +92,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-            <Post username={this.props.username} blogPost={this.state.post} preview={true} customCss={true}/>
+              <Post username={this.props.username} blogPost={this.state.post} preview={true} customCss={true}/>
             </HashRouter>
           </div>
         </RModal>
@@ -113,6 +118,12 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
               className="pure-input-1-2"
               placeholder={config.title_text}
               required={true}
+            />
+            <TagsInput
+              value={this.state.tags}
+              onChange={this.handleTagInputChange}
+              onlyUnique={true}
+              maxTags={7}
             />
             <textarea
               name="blogText"
@@ -148,6 +159,13 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     const target = event.target;
     this.setState({
       title: target.value,
+    });
+  }
+
+  private handleTagInputChange(tags: string[]) {
+    const uniqueTags = [...new Set(tags)];
+    this.setState({
+      tags: uniqueTags,
     });
   }
 
@@ -203,7 +221,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    const promise = CreateArticle(this.state.title, this.state.blogText);
+    const promise = CreateArticle(this.state.title, this.state.blogText, this.state.tags);
     promise
       .then((res: any) => {
         let message = "Posted article";

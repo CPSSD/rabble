@@ -260,7 +260,7 @@ func TestHandleRssFollowNotLoggedIn(t *testing.T) {
 func TestHandleCreateArticleSuccess(t *testing.T) {
 	timeParseFormat := "2006-01-02T15:04:05.000Z"
 	currentTimeString := time.Now().Format(timeParseFormat)
-	jsonString := `{ "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `" }`
+	jsonString := `{ "author": "jose", "body": "test post", "title": "test title", "creation_datetime": "` + currentTimeString + `", "tags": [] }`
 	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
 	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
 	req.Header.Set("Content-Type", "application/json")
@@ -271,9 +271,11 @@ func TestHandleCreateArticleSuccess(t *testing.T) {
 	if res.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK, got %#v", res.Code)
 	}
-	expectedString := "Created blog with title: test title and result type: 0\n"
-	if res.Body.String() != expectedString {
-		t.Errorf("Expected '"+expectedString+"' body, got %#v", res.Body.String())
+	expectedString := "Article created"
+	var r clientResp
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.Message != expectedString {
+		t.Errorf("Expected '"+expectedString+"' Message, got %#v", res.Body.String())
 	}
 }
 
@@ -287,8 +289,8 @@ func TestHandleCreateArticleNotLoggedIn(t *testing.T) {
 	res := httptest.NewRecorder()
 	srv := newTestServerWrapper()
 	srv.handleCreateArticle()(res, req)
-	if res.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	if res.Code != http.StatusUnauthorized {
+		t.Errorf("Expected 401 Unauthorized, got %#v", res.Code)
 	}
 }
 
@@ -308,8 +310,11 @@ func TestHandleCreateArticleBadJSON(t *testing.T) {
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
 	}
-	if res.Body.String() != "Invalid JSON\n" {
-		t.Errorf("Expected 'Invalid JSON' body, got %#v", res.Body.String())
+	expectedBody := "Invalid JSON"
+	var r clientResp
+	json.Unmarshal([]byte(res.Body.String()), &r)
+	if r.Error != expectedBody {
+		t.Errorf("Expected '"+expectedBody+"' Error, got %#v", res.Body.String())
 	}
 }
 

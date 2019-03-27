@@ -20,6 +20,11 @@ class NewArticleServicer:
         res = self._md_stub.MarkdownToHTML(convert_req)
         return res.html_body
 
+    def convert_to_tags_string(self, tags_array):
+        # Using | to separate tags. So url encode | character in tags
+        tags_array = [x.replace("|", "%7C") for x in tags_array]
+        return "|".join(tags_array)
+
     def index(self, post_entry):
         """
         index takes a post proto and indexes it in the search service/
@@ -45,6 +50,7 @@ class NewArticleServicer:
         global_id = author.global_id
 
         html_body = self.get_html_body(req.body)
+        tags_string = self.convert_to_tags_string(req.tags)
         pe = database_pb2.PostsEntry(
             author_id=global_id,
             title=req.title,
@@ -52,6 +58,7 @@ class NewArticleServicer:
             md_body=req.body,
             creation_datetime=req.creation_datetime,
             ap_id=req.ap_id,
+            tags=tags_string,
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,

@@ -23,6 +23,11 @@ To change these options set the corresponding environment variable when running
  - `RABBLE_FOLLOW_RECOMMENDER_METHOD`:
    - none (default)
    - surprise
+   - cn
+   - graphdist
+ - `RABBLE_POSTS_RECOMMENDER_METHOD`:
+   - none (default)
+   - random
 
 ## Running Rabble
 

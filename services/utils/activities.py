@@ -49,10 +49,10 @@ class ActivitiesUtil:
         normalised_host = self._normalise_hostname(author.host)
         return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
 
-    def build_delete(self, obj):
+    def build_undo(self, obj):
         return {
             "@context": self.rabble_context(),
-            "type": "Delete",
+            "type": "Undo",
             "object": obj
         }
 

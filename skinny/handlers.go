@@ -28,10 +28,9 @@ const (
 	timeoutDuration      = time.Minute * 5
 )
 
-type createArticleStruct struct {
-	Body             string `json:"body"`
-	Title            string `json:"title"`
-	CreationDatetime string `json:"creation_datetime"`
+type clientResp struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
 
 func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Timestamp, error) {
@@ -518,16 +517,27 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 	}
 }
 
+type createArticleStruct struct {
+	Author           string   `json:"author"`
+	Body             string   `json:"body"`
+	Title            string   `json:"title"`
+	CreationDatetime string   `json:"creation_datetime"`
+	Tags             []string `json:"tags"`
+}
+
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t createArticleStruct
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			cResp.Error = "Invalid JSON"
+			enc.Encode(cResp)
 			return
 		}
 
@@ -540,8 +550,9 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalId(r)
 		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Login Required")
+			w.WriteHeader(http.StatusUnauthorized)
+			cResp.Error = "Login Required"
+			enc.Encode(cResp)
 			return
 		}
 
@@ -551,6 +562,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
 			Foreign:          false,
+			Tags:             t.Tags,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -559,13 +571,22 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not create new article: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with creating article\n")
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
+			return
+		}
+		if resp.ResultType == pb.NewArticleResponse_ERROR {
+			log.Printf("Could not create new article: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
 			return
 		}
 
 		log.Printf("User Id: %#v attempted to create a post with title: %v\n", globalID, t.Title)
-		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
-		// TODO(sailslick) send the response
+		w.WriteHeader(http.StatusOK)
+		cResp.Message = "Article created"
+		enc.Encode(cResp)
 	}
 }
 
@@ -773,23 +794,23 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 				return
 			}
 		} else {
-			// Send an unlike (delete)
-			del := &pb.LikeDeleteDetails{
+			// Send an unlike (undo)
+			del := &pb.LikeUndoDetails{
 				ArticleId:   t.ArticleId,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			resp, err := s.s2sDelete.SendLikeDeleteActivity(ctx, del)
+			resp, err := s.s2sUndo.SendLikeUndoActivity(ctx, del)
 			if err != nil {
-				log.Printf("Could not send delete: %v", err)
+				log.Printf("Could not send undo: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				r.Success = false
 				r.ErrorStr = "Issue with unliking"
 				enc.Encode(r)
 				return
-			} else if resp.ResultType != pb.DeleteResponse_OK {
-				log.Printf("Could not send delete: %v", resp.Error)
+			} else if resp.ResultType != pb.UndoResponse_OK {
+				log.Printf("Could not send undo: %v", resp.Error)
 				w.WriteHeader(http.StatusInternalServerError)
 				r.Success = false
 				r.ErrorStr = "Issue with unliking"
@@ -1027,5 +1048,144 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fq := &pb.GetFollowsRequest{
+			Username: username,
+		}
+
+		followers, err := s.follows.GetFollowers(ctx, fq)
+		if err != nil {
+			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(followers)
+		if err != nil {
+			log.Printf("could not marshal followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fq := &pb.GetFollowsRequest{
+			Username: username,
+		}
+
+		followers, err := s.follows.GetFollowing(ctx, fq)
+		if err != nil {
+			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(followers)
+		if err != nil {
+			log.Printf("could not marshal followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		uid, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handlePostRecommendations: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		prr := &pb.PostRecommendationsRequest{UserId: uid}
+		resp, err := s.postRecommendations.Get(ctx, prr)
+		if err != nil {
+			log.Printf("Error in postRecommendations.Get: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.ResultType != pb.PostRecommendationsResponse_OK {
+			log.Printf("Error in postRecommendations.Get: %v", resp.Message)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal post recommendations: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// NoOpReplyStruct Reply structure for a noop request
+type NoOpReplyStruct struct {
+	Message string `json:"message"`
+}
+
+// handleNoOp is the handler for any service that is not running on this
+// instance. The services that are configurable provide their docker routes as
+// env vars to the skinny server. If those routes are equal to the no-op
+// container skinny will route all calls to those services to this handler.
+func (s *serverWrapper) handleNoOp() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handleNoOp: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+
+		reply := NoOpReplyStruct{
+			Message: "This option has been turned off on this rabble instance",
+		}
+		w.WriteHeader(http.StatusNotImplemented)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(reply)
+		if err != nil {
+			log.Printf("Could not marshal no op reply: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }

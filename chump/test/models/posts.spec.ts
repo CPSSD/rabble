@@ -36,6 +36,7 @@ const validBody: IFeedResponse = {
     likes_count: 1,
     published: "",
     shares_count: 1,
+    tags: [""],
     title: "how to write a plugin",
   }],
   share_results: [],
@@ -57,6 +58,7 @@ const evalidBody: IParsedPost[] = [{
   parsed_date: now,
   published: "",
   shares_count: 1,
+  tags: [""],
   title: "how to write a plugin",
 }];
 

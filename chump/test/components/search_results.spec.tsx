@@ -33,6 +33,7 @@ const validParsedPost: IParsedPost[] = [{
   parsed_date: now,
   published: "",
   shares_count: 1,
+  tags: ["test"],
   title: "how to write a plugin",
 }];
 

@@ -8,6 +8,7 @@ message FollowRecommendationUser {
     string display_name = 3;
     string bio = 4;
     string image = 5;
+    int64 global_id = 6;
 }
 
 message FollowRecommendationRequest {
