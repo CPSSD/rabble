@@ -47,6 +47,7 @@ interface IUserProfileProps extends RouteProps {
       user: string,
     },
   };
+  userId: number;
   username: string;
 }
 
@@ -121,9 +122,20 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
   private getCurrentPage() {
     switch (this.state.viewing) {
       case ViewingTab.Posts:
-        return <User username={this.props.username} viewing={this.props.match.params.user}/>;
+        return (
+          <User
+            username={this.props.username}
+            viewing={this.props.match.params.user}
+            userId={this.props.userId}
+          />
+        );
       case ViewingTab.UserSettings:
-        return <AccountEdit username={this.props.username} resetCallback={this.resetViewing}/>;
+        return (
+          <AccountEdit
+            username={this.props.username}
+            resetCallback={this.resetViewing}
+          />
+        );
       case ViewingTab.FollowRequests:
         return <Pending username={this.props.username} />;
       case ViewingTab.Followers:
