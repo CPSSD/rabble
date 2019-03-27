@@ -1,5 +1,5 @@
-import * as React from "react";
 import * as Promise from "bluebird";
+import * as React from "react";
 
 import { GetFollowers, GetFollowing, IFollowUser } from "../models/follow";
 import { RootComponent } from "./root_component";
@@ -36,7 +36,7 @@ interface IFollowListProps {
   username: string;
   // headerText should reflect whether we are reanding Following or Followers.
   headerText: string;
-  queryList(username:string): Promise<IFollowUser[]>;
+  queryList(username: string): Promise<IFollowUser[]>;
 }
 
 interface IFollowListState {
