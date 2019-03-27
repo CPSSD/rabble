@@ -5,7 +5,6 @@ import { Redirect } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { IParsedPost } from "../models/posts";
 import { RootComponent } from "./root_component";
-// import { SendReblog } from "../models/reblog";
 
 interface IEditProps {
   username: string;
@@ -32,7 +31,7 @@ export class EditButton extends RootComponent<IEditProps, IEditState> {
     if (!this.props.display) {
       return (<div/>);
     } else if (this.state.redirect) {
-      const url = `/write/${this.props.blogPost.global_id}`;
+      const url = `/edit/${this.props.blogPost.global_id}`;
       return (<Redirect to={{ pathname: url }}/>);
     }
     return (

@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as RModal from "react-modal";
-import { HashRouter, RouteProps } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview, EditArticle } from "../models/article";
@@ -10,20 +10,16 @@ import { RootComponent } from "./root_component";
 
 interface IFormState {
   blogText: string;
-  isEdit: boolean;
   post: IParsedPost;
   showModal: boolean;
   tags: string[];
   title: string;
 }
 
-export interface IFormProps extends RouteProps {
-  match: {
-    params: {
-      article_id: string,
-    },
-  };
+interface IFormProps {
   username: string;
+  prefillState: (state: Readonly<IFormState>, props: Readonly<IFormProps>) => any;
+  onSubmit: (u: string, t: string, b: string, tags: string[]) => any;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
@@ -35,10 +31,8 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   constructor(props: IFormProps) {
     super(props);
 
-    const article_id = this.props.match.params.article_id;
     this.state = {
       blogText: "",
-      isEdit: typeof article_id !== "undefined" && article_id !== "",
       post: {
         author: "string",
         author_host: "",
@@ -63,7 +57,6 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       title: "",
     };
 
-    this.prefillArticle = this.prefillArticle.bind(this);
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTagInputChange = this.handleTagInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
@@ -71,11 +64,10 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
     this.renderModal = this.renderModal.bind(this);
-    this.sendRequest = this.sendRequest.bind(this);
+  }
 
-    if (this.state.isEdit) {
-      this.prefillArticle(article_id);
-    }
+  public componentDidMount() {
+    this.setState(this.props.pre);
   }
 
   public renderModal() {
@@ -244,24 +236,6 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       });
   }
 
-  private sendRequest() {
-    if (this.state.isEdit) {
-      return EditArticle(
-        this.props.match.params.article_id,
-        this.state.title,
-        this.state.blogText,
-        this.state.tags,
-      );
-    } else {
-      return CreateArticle(
-        this.props.username,
-        this.state.title,
-        this.state.blogText,
-        this.state.tags,
-      );
-    }
-  }
-
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (this.state.title === "") {
@@ -274,7 +248,8 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    this.sendRequest()
+    this.props.onSubmit(this.props.username, this.state.title,
+                        this.state.blogText, this.state.tags)
       .then((res: any) => {
         let message = "Posted article";
         if (res.text) {

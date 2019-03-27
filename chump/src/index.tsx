@@ -6,6 +6,7 @@ import * as config from "../rabble_config.json";
 
 import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
+import {Edit} from "./components/edit";
 import {Header} from "./components/header";
 import {Feed} from "./components/feed";
 import {Register} from "./components/register";
@@ -141,9 +142,14 @@ export class App extends React.Component<{}, IAppState> {
               component={AccountEdit}
             />
             <PrivateRoute
-              path="/write/:article_id?"
+              path="/write/"
               username={this.state.username}
               component={Write}
+            />
+            <PrivateRoute
+              path="/edit/:article_id"
+              username={this.state.username}
+              component={Edit}
             />
           </Switch>
         </div>
