@@ -3,7 +3,7 @@ import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
-import { CreateArticle, CreatePreview, EditArticle } from "../models/article";
+import { CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
@@ -18,7 +18,7 @@ interface IFormState {
 
 interface IFormProps {
   username: string;
-  prefillState: (updateFunc: (a: string, b: string, c: string[]) => void ) => void;
+  prefillState: (updateFunc: (a: string, b: string, c: string[]) => void) => void;
   onSubmit: (u: string, t: string, b: string, tags: string[]) => any;
 }
 

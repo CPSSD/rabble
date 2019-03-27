@@ -8,13 +8,14 @@ interface IWriteProps {
 }
 
 export const Write: React.StatelessComponent<IWriteProps> = (props) => {
+  const prefillState = (_: any) => { return; };
   return (
     <div>
       <div className="pure-u-1-5"/>
       <div className="pure-u-3-5 center-form">
         <CreateArticleForm
           username={props.username}
-          prefillState={() => {}}
+          prefillState={prefillState}
           onSubmit={CreateArticle}
         />
       </div>

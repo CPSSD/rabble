@@ -23,11 +23,8 @@ const examplePost = {
 };
 
 const exampleProps = {
-  match: {
-    params: {
-      article_id: undefined,
-    },
-  },
+  onSubmit: () =>  new bluebird((r: any, _: any) => { r(); }),
+  prefillState: () => { return; },
   username:  "ross",
 };
 
@@ -82,23 +79,23 @@ describe("CreateArticleForm", () => {
   describe("can call Article model for create article", () => {
 
     beforeEach(() => {
-      createStub = sandbox.stub(article, "CreateArticle");
       alertStub = sandbox.stub(CreateArticleForm.prototype, "alertUser" as any);
+      createStub = sandbox.stub();
     });
 
     it("and handle success", (done) => {
       const alertMessage: string = "Request went well";
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ text: alertMessage });
       });
       createStub.returns(promise);
+      testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
       testComponent.find("[name=\"title\"]").simulate("change", {
-          target: {
-            name: "title",
-            value: "Great Title",
-          },
-        });
+        target: {
+          name: "title",
+          value: "Great Title",
+        },
+      });
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       promise.finally(() => {
@@ -109,80 +106,80 @@ describe("CreateArticleForm", () => {
     });
 
     it("and block submissions without a title", (done) => {
-      const alertMessage: string = "A post cannot have an empty title";
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
-      testComponent.find("form").first().simulate("submit");
+    const alertMessage: string = "A post cannot have an empty title";
+    testComponent = mount(<CreateArticleForm {...exampleProps}/>);
+    testComponent.find("form").first().simulate("submit");
+    expect(alertStub.called).to.equal(true);
+    expect(alertStub.calledWith(alertMessage)).to.equal(true);
+    done();
+  });
+
+    it("and handle a 403: permission denied", (done) => {
+    const alertMessage: string = "403";
+    const promise = new bluebird.Promise((resolve, reject) => {
+      reject(new Error(alertMessage));
+    });
+    createStub.returns(promise);
+    testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
+    testComponent.find("[name=\"title\"]").simulate("change", {
+        target: {
+          name: "title",
+          value: "Great Title",
+        },
+      });
+    testComponent.find("form").first().simulate("submit");
+    expect(createStub.called).to.equal(true);
+    setTimeout(() => {
       expect(alertStub.called).to.equal(true);
       expect(alertStub.calledWith(alertMessage)).to.equal(true);
       done();
-    });
-
-    it("and handle a 403: permission denied", (done) => {
-      const alertMessage: string = "403";
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
-      const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
-      });
-      createStub.returns(promise);
-      testComponent.find("[name=\"title\"]").simulate("change", {
-          target: {
-            name: "title",
-            value: "Great Title",
-          },
-        });
-      testComponent.find("form").first().simulate("submit");
-      expect(createStub.called).to.equal(true);
-      setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
-        done();
-      }, 200);
-    });
+    }, 200);
+  });
 
     it("and handle a 400: bad request", (done) => {
-      const alertMessage: string = "400";
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
-      const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
-      });
-      createStub.returns(promise);
-      testComponent.find("[name=\"title\"]").simulate("change", {
-          target: {
-            name: "title",
-            value: "Great Title",
-          },
-        });
-      testComponent.find("form").first().simulate("submit");
-      expect(createStub.called).to.equal(true);
-      setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
-        done();
-      }, 200);
+    const alertMessage: string = "400";
+    const promise = new bluebird.Promise((resolve, reject) => {
+      reject(new Error(alertMessage));
     });
+    createStub.returns(promise);
+    testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
+    testComponent.find("[name=\"title\"]").simulate("change", {
+        target: {
+          name: "title",
+          value: "Great Title",
+        },
+      });
+    testComponent.find("form").first().simulate("submit");
+    expect(createStub.called).to.equal(true);
+    setTimeout(() => {
+      expect(alertStub.called).to.equal(true);
+      expect(alertStub.calledWith(alertMessage)).to.equal(true);
+      done();
+    }, 200);
+  });
 
     it("and handle other error", (done) => {
-      const alertMessage: string = "500";
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
-      const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
-      });
-      createStub.returns(promise);
-      testComponent.find("[name=\"title\"]").simulate("change", {
-          target: {
-            name: "title",
-            value: "Great Title",
-          },
-        });
-      testComponent.find("form").first().simulate("submit");
-      expect(createStub.called).to.equal(true);
-      setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
-        done();
-      }, 200);
+    const alertMessage: string = "500";
+    const promise = new bluebird.Promise((resolve, reject) => {
+      reject(new Error(alertMessage));
     });
+    createStub.returns(promise);
+    testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
+    testComponent.find("[name=\"title\"]").simulate("change", {
+        target: {
+          name: "title",
+          value: "Great Title",
+        },
+      });
+    testComponent.find("form").first().simulate("submit");
+    expect(createStub.called).to.equal(true);
+    setTimeout(() => {
+      expect(alertStub.called).to.equal(true);
+      expect(alertStub.calledWith(alertMessage)).to.equal(true);
+      done();
+    }, 200);
   });
+});
 
   describe("can handle previewing", () => {
 
@@ -192,11 +189,11 @@ describe("CreateArticleForm", () => {
     });
 
     it("successfully get and show preview", (done) => {
-      testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve) => {
         resolve({ body: examplePost });
       });
       previewStub.returns(promise);
+      testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
       testComponent.find("button").at(0).simulate("click");
       expect(previewStub.called).to.equal(true);
       promise.finally(() => {

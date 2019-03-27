@@ -2,7 +2,7 @@ import * as React from "react";
 import { RouteProps } from "react-router-dom";
 
 import { EditArticle } from "../models/article";
-import { IParsedPost, GetSinglePost } from "../models/posts";
+import { GetSinglePost, IParsedPost } from "../models/posts";
 import { CreateArticleForm } from "./create_article_form";
 
 interface IEditProps extends RouteProps {
@@ -12,7 +12,7 @@ interface IEditProps extends RouteProps {
     },
   };
   username: string;
-};
+}
 
 export const Edit: React.StatelessComponent<IEditProps> = (props) => {
   const fillArticle = (updateFunc: any) => {
@@ -25,7 +25,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
         }
       })
       .catch(() => alert("Could not prefill post details"));
-  }
+  };
   const onSubmit = (_: string, title: string, text: string, tags: string[]) => {
     return EditArticle(
       props.match.params.article_id,
@@ -33,7 +33,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
       text,
       tags,
     );
-  }
+  };
   return (
     <div>
       <div className="pure-u-1-5"/>
