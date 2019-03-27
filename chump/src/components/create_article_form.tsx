@@ -4,7 +4,7 @@ import { HashRouter } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
 import { CreateArticle, CreatePreview, EditArticle } from "../models/article";
-import { GetSinglePost, IParsedPost } from "../models/posts";
+import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
 
@@ -18,7 +18,7 @@ interface IFormState {
 
 interface IFormProps {
   username: string;
-  prefillState: (state: Readonly<IFormState>, props: Readonly<IFormProps>) => any;
+  prefillState: (updateFunc: (a: string, b: string, c: string[]) => void ) => void;
   onSubmit: (u: string, t: string, b: string, tags: string[]) => any;
 }
 
@@ -67,7 +67,9 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   }
 
   public componentDidMount() {
-    this.setState(this.props.pre);
+    this.props.prefillState((title: string, blogText: string, tags: string[]) => {
+      this.setState({ title, blogText, tags });
+    });
   }
 
   public renderModal() {
@@ -159,27 +161,6 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         {previewModel}
       </div>
     );
-  }
-
-  private prefillArticle(articleId: string) {
-    GetSinglePost(this.props.username, articleId)
-      .then((posts: IParsedPost[]) => {
-        if (posts.length > 0) {
-          const p = posts[0];
-          const tags = typeof(p.tags) === "undefined" ? [] : p.tags;
-          this.setState({
-            blogText: p.md_body,
-            post: p,
-            tags,
-            title: p.title,
-          });
-        }
-      })
-      .catch(this.handleGetPostError);
-  }
-
-  private handleGetPostError() {
-    this.alertUser("Could not prefill post details");
   }
 
   private handleTitleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
