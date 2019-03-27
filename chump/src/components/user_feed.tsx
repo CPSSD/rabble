@@ -18,6 +18,7 @@ interface IUserState {
 interface IUserProps {
   viewing: string;
   username: string;
+  userId: number;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {

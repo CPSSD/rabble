@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 // ArticleDetails holds content from a c2s request with timestamp
 // converted to protobuf format.
 message ArticleDetails {
-  string author = 1;
+  int64 author_id = 1;
   string title = 2;
   string body = 3;
   google.protobuf.Timestamp creation_datetime = 4;

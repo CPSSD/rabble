@@ -33,6 +33,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
       blogText: "",
       post: {
         author: "string",
+        author_display: "",
         author_host: "",
         author_id: 0,
         bio: defaultBio,
@@ -181,7 +182,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
 
   private handlePreview(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    const promise = CreatePreview(this.props.username, this.state.title, this.state.blogText);
+    const promise = CreatePreview(this.state.title, this.state.blogText);
     promise
       .then((res: any) => {
         const post = res!.body;
@@ -220,7 +221,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    const promise = CreateArticle(this.props.username, this.state.title, this.state.blogText, this.state.tags);
+    const promise = CreateArticle(this.state.title, this.state.blogText, this.state.tags);
     promise
       .then((res: any) => {
         let message = "Posted article";

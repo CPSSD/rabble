@@ -1,19 +1,19 @@
 from services.proto import database_pb2
 from services.proto import users_pb2
 
+
 class GetCssHandler:
     def __init__(self, logger, db_stub):
         self._logger = logger
         self._db = db_stub
 
     def GetCss(self, request, context):
-        self._logger.info("Request to get the CSS for user %s",
-                          request.handle)
+        self._logger.info("Request to get the CSS for user id %s",
+                          request.user_id)
         resp = self._db.Users(database_pb2.UsersRequest(
             request_type=database_pb2.UsersRequest.FIND,
             match=database_pb2.UsersEntry(
-                handle=request.handle,
-                host_is_null=True,
+                global_id=request.user_id,
             )
         ))
         if resp.result_type != database_pb2.UsersResponse.OK:
@@ -34,4 +34,3 @@ class GetCssHandler:
             result=users_pb2.GetCssResponse.OK,
             css=resp.results[0].custom_css,
         )
-

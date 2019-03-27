@@ -34,6 +34,7 @@ type registerRequest struct {
 type userResponse struct {
 	Error   string `json:"error"`
 	Success bool   `json:"success"`
+	UserID  int64  `json:"user_id"`
 }
 
 // handleLogin sends an RPC to the users service to check if a login
@@ -42,12 +43,16 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t loginStruct
+		var jsonResp userResponse
+		enc := json.NewEncoder(w)
 		err := decoder.Decode(&t)
 		if err != nil {
 			log.Printf("Invalid JSON\n")
 			log.Printf("Error: %s\n", err)
+			jsonResp.Error = "Invalid JSON"
+			jsonResp.Success = false
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			enc.Encode(jsonResp)
 			return
 		}
 		lr := &pb.LoginRequest{
@@ -60,18 +65,24 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 		resp, err := s.users.Login(ctx, lr)
 		if err != nil {
 			log.Println(err)
+			jsonResp.Error = "Issue with handling login request"
+			jsonResp.Success = false
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with handling login request\n")
+			enc.Encode(jsonResp)
 			return
 		}
 		if resp.Result == pb.LoginResponse_ACCEPTED {
 			session, err := s.store.Get(r, "rabble-session")
 			if err != nil {
 				log.Println(err)
+				jsonResp.Error = "Issue with handling login request"
+				jsonResp.Success = false
 				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintf(w, "Issue with handling login request\n")
+				enc.Encode(jsonResp)
 				return
 			}
+			jsonResp.Success = true
+			jsonResp.UserID = resp.GlobalId
 			session.Values["handle"] = t.Handle
 			session.Values["global_id"] = resp.GlobalId
 			session.Values["display_name"] = resp.DisplayName
@@ -79,13 +90,10 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		enc := json.NewEncoder(w)
 		success := resp.Result == pb.LoginResponse_ACCEPTED
 		log.Printf("User %s login success: %t", t.Handle, success)
 		// Intentionally not revealing to the user if an error occurred.
-		err = enc.Encode(map[string]bool{
-			"success": success,
-		})
+		enc.Encode(jsonResp)
 	}
 }
 
@@ -93,25 +101,29 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 func (s *serverWrapper) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.store.Get(r, "rabble-session")
+		var jsonResp userResponse
+		enc := json.NewEncoder(w)
 		if err != nil {
 			fmt.Println(err)
+			jsonResp.Error = "Issue with handling logout request"
+			jsonResp.Success = false
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with handling logout request\n")
+			enc.Encode(jsonResp)
 			return
 		}
 		session.Options.MaxAge = -1 // Marks the session for deletion.
 		err = session.Save(r, w)
 		if err != nil {
 			fmt.Println(err)
+			jsonResp.Error = "Issue with handling logout request"
+			jsonResp.Success = false
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with handling logout request\n")
+			enc.Encode(jsonResp)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		enc := json.NewEncoder(w)
-		err = enc.Encode(map[string]bool{
-			"success": true,
-		})
+		jsonResp.Success = true
+		enc.Encode(jsonResp)
 	}
 }
 
@@ -160,6 +172,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 				jsonResp.Error = "Issue with login after create\n"
 				jsonResp.Success = false
 			} else {
+				jsonResp.UserID = resp.GlobalId
 				session.Values["handle"] = req.Handle
 				session.Values["global_id"] = resp.GlobalId
 				session.Values["display_name"] = req.DisplayName

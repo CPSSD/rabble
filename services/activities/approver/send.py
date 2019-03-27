@@ -1,5 +1,6 @@
 from services.proto import approver_pb2
 
+
 class SendApprovalServicer:
     def __init__(self, logger, activ_util):
         self._logger = logger

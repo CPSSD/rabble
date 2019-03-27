@@ -43,13 +43,11 @@ class NewArticleServicer:
 
     def send_insert_request(self, req):
         global_id = req.author_id
-        if not req.foreign:
-            author = self._users_util.get_user_from_db(handle=req.author,
-                                                       host_is_null=True)
-            if author is None:
-                self._logger.error('Could not find user in db: ' + str(req.author))
-                return database_pb2.PostsResponse.error, None
-            global_id = author.global_id
+        author = self._users_util.get_user_from_db(global_id=global_id)
+        if author is None:
+            self._logger.error('Could not find user id in db: ' + str(global_id))
+            return database_pb2.PostsResponse.error, None
+        global_id = author.global_id
 
         html_body = self.get_html_body(req.body)
         tags_string = self.convert_to_tags_string(req.tags)
@@ -78,7 +76,7 @@ class NewArticleServicer:
     def send_create_activity_request(self, req, global_id):
         html_body = self.get_html_body(req.body)
         ad = create_pb2.ArticleDetails(
-            author=req.author,
+            author_id=req.author_id,
             title=req.title,
             body=html_body,
             md_body=req.body,

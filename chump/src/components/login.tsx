@@ -5,7 +5,7 @@ import {GetLoginPromise, ILoginResult} from "../models/login";
 import {RootComponent} from "./root_component";
 
 interface ILoginProps extends RouteProps {
-  loginCallback(username: string): void;
+  loginCallback(username: string, userId: number): void;
 }
 
 interface ILoginState {
@@ -39,7 +39,7 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
         if (!response.success) {
           this.alertUser("Incorrect login!");
         } else {
-          this.props.loginCallback(this.state.username);
+          this.props.loginCallback(this.state.username, response.user_id);
           this.setState({
             redirect: true,
           });

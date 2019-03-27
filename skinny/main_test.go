@@ -125,6 +125,7 @@ func newTestServerWrapper() *serverWrapper {
 func addFakeSession(s *serverWrapper, w http.ResponseWriter, r *http.Request) {
 	session, _ := s.store.Get(r, "rabble-session")
 	session.Values["handle"] = "jose"
+	session.Values["global_id"] = int64(0)
 	session.Save(r, w)
 }
 
@@ -331,23 +332,6 @@ func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
 	}
 	if res.Body.String() != "Invalid creation time\n" {
 		t.Errorf("Expected 'Invalid creation time' body, got %#v", res.Body.String())
-	}
-}
-
-func TestHandleCreateArticleOldCreationDatetime(t *testing.T) {
-	jsonString := `{ "author": "jose", "body": "test post", "title": "test title", "creation_datetime": "2006-01-02T15:04:05.000Z" }`
-	jsonBuffer := bytes.NewBuffer([]byte(jsonString))
-	req, _ := http.NewRequest("POST", "/test", jsonBuffer)
-	req.Header.Set("Content-Type", "application/json")
-	res := httptest.NewRecorder()
-	srv := newTestServerWrapper()
-	addFakeSession(srv, res, req)
-	srv.handleCreateArticle()(res, req)
-	if res.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400, got %#v", res.Code)
-	}
-	if res.Body.String() != "Old creation time\n" {
-		t.Errorf("Expected 'Old creation time' body, got %#v", res.Body.String())
 	}
 }
 

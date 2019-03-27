@@ -15,6 +15,7 @@ describe("User", () => {
     const render = sinon.spy(User.prototype, "renderPosts");
 
     const userProps = {
+      userId: 0,
       username: "",
       viewing: "cian",
     };
@@ -34,6 +35,7 @@ describe("User", () => {
 
   it("should properly render posts", () => {
     const userProps = {
+      userId: 0,
       username: "",
       viewing: "sips",
     };

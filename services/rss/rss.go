@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	findUserErrorFmt      = "ERROR: User(%v) find failed. message: %v\n"
+	findUserErrorFmt      = "ERROR: User id(%v) find failed. message: %v\n"
 	findUserPostsErrorFmt = "ERROR: User id(%v) posts find failed. message: %v\n"
 	rssTimeParseFormat    = "Mon, 02 Jan 2006 15:04:05 -0700"
 	rssDeclare            = `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel>`
@@ -67,9 +67,9 @@ func (s *serverWrapper) convertRssUrlToHandle(url string) string {
 	return strings.Replace(url, "/", "-", -1)
 }
 
-func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, title string, content string, cTime *tspb.Timestamp) {
+func (s *serverWrapper) sendCreateArticle(ctx context.Context, authorID int64, title string, content string, cTime *tspb.Timestamp) {
 	na := &pb.NewArticle{
-		Author:           author,
+		AuthorId:         authorID,
 		Title:            title,
 		Body:             content,
 		CreationDatetime: cTime,
@@ -84,7 +84,7 @@ func (s *serverWrapper) sendCreateArticle(ctx context.Context, author string, ti
 }
 
 // createArticlesFromFeed converts gofeed.Feed types to article type.
-func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, author string) {
+func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.Feed, authorID int64) {
 	for _, r := range gf.Items {
 		// convert time to creation_datetime
 		creationTime, creationErr := s.convertFeedItemDatetime(r)
@@ -95,7 +95,7 @@ func (s *serverWrapper) createArticlesFromFeed(ctx context.Context, gf *gofeed.F
 		if content == "" {
 			content = r.Description
 		}
-		s.sendCreateArticle(ctx, author, r.Title, content, creationTime)
+		s.sendCreateArticle(ctx, authorID, r.Title, content, creationTime)
 	}
 }
 
@@ -121,42 +121,42 @@ func (s *serverWrapper) createRssItem(ue *pb.UsersEntry, pe *pb.PostsEntry) stri
 
 }
 
-func (s *serverWrapper) GetUser(ctx context.Context, handle string) (*pb.UsersEntry, error) {
+func (s *serverWrapper) GetUser(ctx context.Context, globalID int64) (*pb.UsersEntry, error) {
 	urFind := &pb.UsersRequest{
 		RequestType: pb.UsersRequest_FIND,
 		Match: &pb.UsersEntry{
-			Handle: handle,
+			GlobalId: globalID,
 		},
 	}
 	findResp, findErr := s.db.Users(ctx, urFind)
 	if findErr != nil {
-		return nil, fmt.Errorf(findUserErrorFmt, handle, findErr)
+		return nil, fmt.Errorf(findUserErrorFmt, globalID, findErr)
 	}
 	if findResp.ResultType != pb.UsersResponse_OK {
-		return nil, fmt.Errorf(findUserErrorFmt, handle, findResp.Error)
+		return nil, fmt.Errorf(findUserErrorFmt, globalID, findResp.Error)
 	}
 	if len(findResp.Results) < 1 {
-		return nil, fmt.Errorf("No users in db in handle: %v\n", handle)
+		return nil, fmt.Errorf("No users in db with id: %v\n", globalID)
 	}
 	if len(findResp.Results) > 1 {
-		return nil, fmt.Errorf("Multiple users with handle: %v in db\n", handle)
+		return nil, fmt.Errorf("Multiple users with id: %v in db\n", globalID)
 	}
 	return findResp.Results[0], nil
 }
 
-func (s *serverWrapper) GetUserPosts(ctx context.Context, authorId int64) ([]*pb.PostsEntry, error) {
+func (s *serverWrapper) GetUserPosts(ctx context.Context, authorID int64) ([]*pb.PostsEntry, error) {
 	findReq := &pb.PostsRequest{
 		RequestType: pb.PostsRequest_FIND,
 		Match: &pb.PostsEntry{
-			AuthorId: authorId,
+			AuthorId: authorID,
 		},
 	}
 	findResp, findErr := s.db.Posts(ctx, findReq)
 	if findErr != nil {
-		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findErr)
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorID, findErr)
 	}
 	if findResp.ResultType != pb.PostsResponse_OK {
-		return nil, fmt.Errorf(findUserPostsErrorFmt, authorId, findResp.Error)
+		return nil, fmt.Errorf(findUserPostsErrorFmt, authorID, findResp.Error)
 	}
 	return findResp.Results, nil
 }
@@ -172,11 +172,11 @@ func (s *serverWrapper) GetRssFeed(url string) (*gofeed.Feed, error) {
 }
 
 func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.RssResponse, error) {
-	log.Printf("Got a per user request for user: %s\n", r.Handle)
+	log.Printf("Got a per user request for user id: %s\n", r.GlobalId)
 	rssr := &pb.RssResponse{}
 
 	// Get user details
-	ue, userErr := s.GetUser(ctx, r.Handle)
+	ue, userErr := s.GetUser(ctx, r.GlobalId)
 	if userErr != nil {
 		log.Printf("PerUserRss user find got: %v\n", userErr.Error())
 		rssr.ResultType = pb.RssResponse_ERROR
@@ -185,7 +185,7 @@ func (s *serverWrapper) PerUserRss(ctx context.Context, r *pb.UsersEntry) (*pb.R
 	}
 
 	if ue.Private != nil && ue.Private.Value {
-		log.Printf("%s is a private user.\n", r.Handle)
+		log.Printf("id: %s is a private user.\n", r.GlobalId)
 		rssr.ResultType = pb.RssResponse_ERROR
 		rssr.Message = "Can not create RSS feed for private user."
 		return rssr, nil
@@ -295,7 +295,7 @@ func (s *serverWrapper) NewRssFollow(ctx context.Context, r *pb.NewRssFeed) (*pb
 
 	log.Println(feed.Title)
 	// convert feed to post items and save
-	s.createArticlesFromFeed(ctx, feed, findResp.Results[0].Handle)
+	s.createArticlesFromFeed(ctx, feed, findResp.Results[0].GlobalId)
 
 	rssr.ResultType = pb.NewRssFeedResponse_ACCEPTED
 	rssr.GlobalId = findResp.Results[0].GlobalId

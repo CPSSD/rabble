@@ -14,7 +14,7 @@ function mountHeader() {
   testComponent = mount(
     <HashRouter>
       <div>
-        <Header username={"ross"}/>
+        <Header username={"ross"} userId={1}/>
       </div>
     </HashRouter>,
   );
@@ -38,7 +38,7 @@ describe("Header", () => {
     testComponent = mount(
       <HashRouter>
         <div>
-          <Header username={""}/>
+          <Header username={""} userId={0}/>
         </div>
       </HashRouter>,
     );

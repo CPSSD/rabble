@@ -42,24 +42,22 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             yield from r.get_recommendations(user_id)
 
     def GetFollowRecommendations(self, request, context):
-        self._logger.debug('GetFollowRecommendations, username = %s',
-                           request.username)
+        self._logger.debug('GetFollowRecommendations, user_id = %s',
+                           request.user_id)
 
         resp = recommend_follows_pb2.FollowRecommendationResponse()
 
-        handle, host = self._users_util.parse_username(request.username)
-        if not (host is None or host == ""):
-            resp.result_type = \
-                recommend_follows_pb2.FollowRecommendationResponse.ERROR
-            resp.error = "Can only give recommendations for local users."
-            return resp
-
-        user = self._users_util.get_user_from_db(
-            handle=handle, host_is_null=True)
+        user = self._users_util.get_user_from_db(global_id=request.user_id)
         if user is None:
             resp.result_type = \
                 recommend_follows_pb2.FollowRecommendationResponse.ERROR
-            resp.error = "Could not find the given username."
+            resp.error = "Could not find the given user_id."
+            return resp
+
+        if not (user.host is None or user.host == ""):
+            resp.result_type = \
+                recommend_follows_pb2.FollowRecommendationResponse.ERROR
+            resp.error = "Can only give recommendations for local users."
             return resp
 
         resp.result_type = \
