@@ -36,12 +36,14 @@ export function RecommendedFollowsAPIPromise(endpoint: string) {
       .set("Accept", "application/json")
       .retry(2)
       .end((error, res) => {
-        if (error) {
+        let body = res!.body;
+        if (error && error.status === 501) {
+          body = [];
+        } else if (error) {
           reject(error);
           return;
         }
         // Feed will respond with a null response if no users are avaiable.
-        let body = res!.body;
         if (body === null) {
           body = {};
         }
