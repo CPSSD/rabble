@@ -34,7 +34,7 @@ const ViewingTabLookup = [
   config.followers,
   config.settings,
   config.follow_requests,
-]
+];
 
 interface IUserProfileState {
   viewing: ViewingTab;
