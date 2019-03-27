@@ -9,6 +9,7 @@ message FeedRequest {
   // To request all posts on this instance, send a blank username.
   int64 user_id = 1;
   google.protobuf.Int64Value user_global_id = 2;
+  string username = 3;
 }
 
 // To request for a specific article

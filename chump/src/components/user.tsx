@@ -36,9 +36,6 @@ export class User extends React.Component<IUserProps, {}> {
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
             <div className="pure-u-1-3 username-holder">
-              <Link to={`/@${this.props.blogUser.global_id}`} className="author-displayname">
-                {this.props.blogUser.display_name}
-              </Link>
               {userLink}
             </div>
             <div className="pure-u-1-3"/>

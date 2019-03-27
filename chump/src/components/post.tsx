@@ -63,7 +63,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         <link
           rel="stylesheet"
           type="text/css"
-          href={`/c2s/@${this.props.blogPost.author_id}/css`}
+          href={`/c2s/${this.props.blogPost.author_id}/css`}
         />
       );
     }
@@ -123,8 +123,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
-    const userLink = GenerateUserLinks(this.props.blogPost.author_id,
-      this.props.blogPost.author, this.props.blogPost.author_host);
+    const userLink = GenerateUserLinks(this.props.blogPost.author, this.props.blogPost.author_host);
 
     return (
       <div className="pure-u-3-24">
@@ -136,9 +135,6 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           />
           <div style={{width: "100%"}}>
             <div style={{float: "left"}} >
-              <Link to={`/@${this.props.blogPost.author_id}`} className="author-displayname">
-                {this.props.blogPost.author_display}
-              </Link><br/>
               {userLink}
             </div>
             <div style={{float: "right"}} >

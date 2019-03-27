@@ -134,20 +134,14 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		strUserID, ok := v["userId"]
-		if !ok || strUserID == "" {
-			log.Printf("Could not parse userId from url in FeedPerUser\n")
-			w.WriteHeader(http.StatusBadRequest) // Bad Request.
-			return
-		}
-		userID, err := strconv.ParseInt(strUserID, 10, 64)
-		if err != nil {
-			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+
+		username, ok := v["username"]
+		if !ok || username == "" {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 
-		fr := &pb.FeedRequest{UserId: userID}
+		fr := &pb.FeedRequest{Username: username}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}

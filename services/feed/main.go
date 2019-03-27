@@ -233,11 +233,16 @@ func (s *server) checkFollowing(follower_id int64, followed_id int64) (bool, err
 }
 
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
-	if r.UserId == 0 {
-		return nil, fmt.Errorf("feed.PerUser failed: userId field empty")
+	if r.Username == "" {
+		return nil, fmt.Errorf("feed.PerUser failed: Username field empty")
 	}
-	// Does not return foreign users.
-	author, err := utils.GetAuthorFromDb(ctx, "", "", true, r.UserId, s.db)
+
+	handle, host, err := utils.ParseUsername(r.Username)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: %v", err)
+	}
+	hostIsNull := host == ""
+	author, err := utils.GetAuthorFromDb(ctx, handle, host, hostIsNull, 0, s.db)
 	if err != nil {
 		log.Print(err)
 		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil
