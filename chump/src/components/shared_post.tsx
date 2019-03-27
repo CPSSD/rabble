@@ -6,6 +6,7 @@ import { SendLike } from "../models/like";
 import { IParsedSharedPost } from "../models/posts";
 import { Post } from "./post";
 import { Reblog } from "./reblog_button";
+import { RemoveProtocol } from "./util";
 
 interface ISharedPostProps {
   blogPost: IParsedSharedPost;
@@ -45,7 +46,7 @@ export class SharedPost extends React.Component<ISharedPostProps, {}> {
     let reblogger = this.props.blogPost.sharer;
     const host = this.props.blogPost.sharer_host;
     if (host !== null && host !== "" && typeof host !== "undefined") {
-      reblogger = this.props.blogPost.sharer + "@" + this.props.blogPost.sharer_host;
+      reblogger = this.props.blogPost.sharer + "@" + RemoveProtocol(this.props.blogPost.sharer_host);
     }
     return (
       <div className="pure-u-10-24">

@@ -7,7 +7,7 @@ import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
-import { GenerateUserLinks } from "./util";
+import { GenerateUserLinks, RemoveProtocol } from "./util";
 
 interface IPostProps {
   blogPost: IParsedPost;
