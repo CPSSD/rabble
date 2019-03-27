@@ -99,7 +99,7 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
         <button onClick={this.toggleDropdown} className="button-link pure-menu-link">{this.props.username}</button>
         <ul id="dropdown" className="menu-dropdown pure-menu-children" style={{display: this.state.display}}>
           <li className="pure-menu-item">
-            <Link to={`/@${this.props.userId}`} className="pure-menu-link" onClick={this.resetDropdown}>
+            <Link to={`/@${this.props.username}`} className="pure-menu-link" onClick={this.resetDropdown}>
               Profile
             </Link>
           </li>

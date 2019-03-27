@@ -59,7 +59,8 @@ class SendCreateServicer:
         headers = {"Content-Type": "application/ld+json"}
 
         # s2s inbox for user. Format banana.com/ap/@banana/inbox
-        target_inbox = self._activ_util.build_inbox_url(follower.handle, follower.host)
+        target_inbox = self._activ_util.build_inbox_url(
+            follower.handle, follower.host)
         encoded_body = json.dumps(create_activity).encode("utf-8")
         self._logger.info(target_inbox)
 
@@ -71,9 +72,11 @@ class SendCreateServicer:
                 retries=2,
                 headers=headers
             )
-            self._logger.debug("Create activity sent. Response status: %s", r.status)
+            self._logger.debug(
+                "Create activity sent. Response status: %s", r.status)
         except Exception as e:
-            self._logger.error("Create activity for follower: %s failed", target)
+            self._logger.error(
+                "Create activity for follower: %s failed", target)
             self._logger.error(e)
 
     def SendCreate(self, req, context):
@@ -81,8 +84,10 @@ class SendCreateServicer:
 
         author = self._users_util.get_user_from_db(global_id=req.author_id)
         # Insert ActivityPub ID into database.
+        # build author entry from scratch to add host into call
         ap_id = self._activ_util.build_article_url(
-            author,
+            database_pb2.UsersEntry(
+                handle=author.handle, host=self._host_name),
             database_pb2.PostsEntry(global_id=req.global_id))
         err = self._add_ap_id(req.global_id, ap_id)
         if err is not None:

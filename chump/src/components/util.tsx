@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-export function GenerateUserLinks(author: string, host: string, displayName: string) {
+export function GenerateUserLinks(author: string, host: string, displayName: string, divClassName: string) {
   let userAddress = `/@${author}`;
   let userHandleHost = (
     <Link to={userAddress} className="author-handle">
@@ -17,10 +17,10 @@ export function GenerateUserLinks(author: string, host: string, displayName: str
     );
   }
   const userLinks = (
-    <div>
+    <div className={divClassName}>
       <Link to={userAddress} className="author-displayname">
         {displayName}
-      </Link>
+      </Link><br/>
       {userHandleHost}
     </div>
   );

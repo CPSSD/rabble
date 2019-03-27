@@ -12,6 +12,8 @@ interface IUserProps {
   display: string;
 }
 
+const userLinksClassName = "pure-u-1-3 username-holder";
+
 export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
     super(props);
@@ -21,7 +23,8 @@ export class User extends React.Component<IUserProps, {}> {
 
   public render() {
     const userLink = GenerateUserLinks(this.props.blogUser.handle,
-      this.props.blogUser.host, this.props.blogUser.display_name);
+      this.props.blogUser.host, this.props.blogUser.display_name,
+      userLinksClassName);
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
@@ -35,9 +38,7 @@ export class User extends React.Component<IUserProps, {}> {
           </div>
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
-            <div className="pure-u-1-3 username-holder">
-              {userLink}
-            </div>
+            {userLink}
             <div className="pure-u-1-3"/>
             <div className="pure-u-1-3 follow-holder">
                 <FollowButton

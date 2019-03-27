@@ -21,6 +21,8 @@ interface IPostState {
   isLiked: boolean;
 }
 
+const userLinksClassName = "username-holder";
+
 export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
@@ -124,7 +126,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     }
 
     const userLink = GenerateUserLinks(this.props.blogPost.author,
-      this.props.blogPost.author_host, this.props.blogPost.author_display);
+      this.props.blogPost.author_host, this.props.blogPost.author_display,
+      userLinksClassName);
 
     return (
       <div className="pure-u-3-24">
@@ -135,9 +138,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             className="author-thumbnail"
           />
           <div style={{width: "100%"}}>
-            <div style={{float: "left"}} >
-              {userLink}
-            </div>
+            {userLink}
             <div style={{float: "right"}} >
                 <FollowButton
                     follower={this.props.username}

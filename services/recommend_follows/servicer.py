@@ -47,8 +47,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
 
         resp = recommend_follows_pb2.FollowRecommendationResponse()
 
-        user = self._users_util.get_user_from_db(
-            global_id=request.user_id, host_is_null=True)
+        user = self._users_util.get_user_from_db(global_id=request.user_id)
         if user is None:
             resp.result_type = \
                 recommend_follows_pb2.FollowRecommendationResponse.ERROR
