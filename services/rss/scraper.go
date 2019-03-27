@@ -108,7 +108,7 @@ func (s *serverWrapper) runScraper() {
 			for _, p := range postFormArray {
 				if latestTimestamp.GetSeconds() < p.CreationDatetime.GetSeconds() {
 					log.Printf("Making new article, title: %s\n", p.Title)
-					s.sendCreateArticle(ctx, u.Handle, p.Title, p.Body, p.CreationDatetime)
+					s.sendCreateArticle(ctx, u.GlobalId, p.Title, p.Body, p.CreationDatetime)
 				}
 			}
 

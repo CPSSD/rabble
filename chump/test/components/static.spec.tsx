@@ -17,7 +17,7 @@ describe("About", () => {
 describe("Header", () => {
   it("should render correctly", () => {
     // Since we"re doing a real render, we need a parent router.
-    const wrapper = render(<MemoryRouter><Header username={"x0x"}/></MemoryRouter>);
+    const wrapper = render(<MemoryRouter><Header username={"x0x"} userId={0}/></MemoryRouter>);
     expect(wrapper.find("a").text()).to.contain("Rabble");
     expect(wrapper.find(".pure-menu-link").text()).to.contain("Write");
     expect(wrapper.find(".pure-menu-link").text()).to.contain("x0x");

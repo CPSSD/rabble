@@ -23,6 +23,7 @@ interface IUserProps extends RouteProps {
     },
   };
   username: string;
+  userId: number;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {

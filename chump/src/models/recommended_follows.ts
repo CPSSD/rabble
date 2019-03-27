@@ -4,7 +4,7 @@ import * as request from "superagent";
 export interface IParsedUser {
   bio: string;
   display_name: string;
-  global_id: string;
+  global_id: number;
   handle: string;
   host: string;
   image: string;
@@ -36,12 +36,14 @@ export function RecommendedFollowsAPIPromise(endpoint: string) {
       .set("Accept", "application/json")
       .retry(2)
       .end((error, res) => {
-        if (error) {
+        let body = res!.body;
+        if (error && error.status === 501) {
+          body = [];
+        } else if (error) {
           reject(error);
           return;
         }
         // Feed will respond with a null response if no users are avaiable.
-        let body = res!.body;
         if (body === null) {
           body = {};
         }
@@ -52,7 +54,7 @@ export function RecommendedFollowsAPIPromise(endpoint: string) {
   });
 }
 
-export function GetRecommendedFollows(username: string) {
-  const endpoint: string = "/c2s/@" + username + "/recommend_follows";
+export function GetRecommendedFollows(userId: number) {
+  const endpoint: string = "/c2s/" + userId.toString() + "/recommend_follows";
   return RecommendedFollowsAPIPromise(endpoint);
 }

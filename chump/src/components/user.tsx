@@ -4,12 +4,15 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { IParsedUser } from "../models/search";
 import { FollowButton} from "./follow_button";
+import { GenerateUserLinks } from "./util";
 
 interface IUserProps {
   username: string;
   blogUser: IParsedUser;
   display: string;
 }
+
+const userLinksClassName = "pure-u-1-3 username-holder";
 
 export class User extends React.Component<IUserProps, {}> {
   constructor(props: IUserProps) {
@@ -19,6 +22,9 @@ export class User extends React.Component<IUserProps, {}> {
   }
 
   public render() {
+    const userLink = GenerateUserLinks(this.props.blogUser.handle,
+      this.props.blogUser.host, this.props.blogUser.display_name,
+      userLinksClassName);
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
@@ -32,14 +38,7 @@ export class User extends React.Component<IUserProps, {}> {
           </div>
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
-            <div className="pure-u-1-3 username-holder">
-                <Link to={`/@${this.props.blogUser.handle}`} className="author-displayname">
-                  {this.props.blogUser.display_name}
-                </Link>
-                <Link to={`/@${this.props.blogUser.handle}`} className="author-handle">
-                  @{this.props.blogUser.handle}
-                </Link>
-            </div>
+            {userLink}
             <div className="pure-u-1-3"/>
             <div className="pure-u-1-3 follow-holder">
                 <FollowButton

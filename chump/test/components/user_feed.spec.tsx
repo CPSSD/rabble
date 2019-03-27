@@ -17,9 +17,10 @@ describe("User", () => {
     const userProps = {
       match: {
         params: {
-          user: "cian",
+          user: "1",
         },
       },
+      userId: 0,
       username: "",
     };
     const wrapper = mount(
@@ -40,9 +41,10 @@ describe("User", () => {
     const userProps = {
       match: {
         params: {
-          user: "sips",
+          user: "1",
         },
       },
+      userId: 0,
       username: "",
     };
     const wrapper = shallow(<User {...userProps} />);
@@ -68,6 +70,7 @@ describe("User", () => {
           user: "sips",
         },
       },
+      userId: 0,
       username: "sips",
     };
     const wrapper = shallow(<User {...userProps} />);

@@ -10,7 +10,7 @@ import * as config from "../../rabble_config.json";
 
 interface IFeedProps {
   username: string;
-  queryUsername: string;
+  queryUserId: number;
 }
 
 interface IFeedState {
@@ -28,7 +28,7 @@ export class Feed extends RootComponent<IFeedProps, IFeedState> {
   }
 
   public getPosts() {
-    GetPublicPosts(this.props.queryUsername)
+    GetPublicPosts(this.props.queryUserId)
       .then((posts: IAnyParsedPost[]) => {
         this.setState({ publicBlog: posts });
       })
@@ -65,7 +65,7 @@ export class Feed extends RootComponent<IFeedProps, IFeedState> {
   public render() {
     const blogPosts = this.renderPosts();
     let feedHeader = config.feed_title;
-    if (this.props.queryUsername !== "") {
+    if (this.props.queryUserId !== 0) {
       feedHeader = config.user_feed_title;
     }
     return (

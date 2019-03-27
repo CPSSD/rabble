@@ -45,22 +45,22 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
-	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
+	r.HandleFunc("/c2s/feed/{userId}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
-	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
-	r.HandleFunc("/c2s/@{username}/css", s.handleUserCss())
+	r.HandleFunc("/c2s/{userId}/rss", s.handleRssPerUser())
+	r.HandleFunc("/c2s/{userId}/css", s.handleUserCss())
+	r.HandleFunc("/c2s/article/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/@{username}/followers", s.handleGetFollowers())
 	r.HandleFunc("/c2s/@{username}/following", s.handleGetFollowing())
 
 	// TODO(sailslick): move these below after user_id change comes in
 	// That change will stop perArticle from catching all urls
 	// These may be no-op services
-	r.HandleFunc("/c2s/@{username}/recommend_follows",
+	r.HandleFunc("/c2s/{userId}/recommend_follows",
 		s.getNoOpServiceHandler(followServiceLocationEnv, s.handleRecommendFollows()))
 	r.HandleFunc("/c2s/recommend_posts",
 		s.getNoOpServiceHandler(postServiceLocationEnv, s.handlePostRecommendations()))
 
-	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/unfollow", s.handleUnfollow())
 	r.HandleFunc("/c2s/rss_follow", s.handleRssFollow())

@@ -3,6 +3,7 @@ import * as superagent from "superagent";
 
 export interface ILoginResult {
   success: boolean;
+  user_id: number;
 }
 
 export function GetLoginPromise(handle: string, password: string) {

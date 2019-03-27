@@ -61,7 +61,6 @@ class ReceiveAnnounceServicer:
         self._logger.debug("Calling article service with new foreign article")
         # set flag in article service that is foreign (so no need to create service)
         na = article_pb2.NewArticle(
-            author=author.handle,
             author_id=author.global_id,
             title=req.title,
             body=req.body,

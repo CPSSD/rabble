@@ -126,22 +126,22 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 		}
 		tags := SplitTags(r.Tags)
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
-			Author:      author.Handle,
-			AuthorHost:  author.Host,
-			AuthorId:    r.AuthorId,
-			Title:       r.Title,
-			Bio:         author.Bio,
-			Body:        r.Body,
-			Image:       defaultImage,
-			LikesCount:  r.LikesCount,
-			IsLiked:     r.IsLiked,
-			Published:   ConvertPbTimestamp(r.CreationDatetime),
-			IsFollowed:  r.IsFollowed,
-			IsShared:    r.IsShared,
-			SharesCount: r.SharesCount,
-			Tags:        tags,
+			GlobalId:      r.GlobalId,
+			Author:        author.Handle,
+			AuthorDisplay: author.DisplayName,
+			AuthorHost:    author.Host,
+			AuthorId:      r.AuthorId,
+			Title:         r.Title,
+			Bio:           author.Bio,
+			Body:          r.Body,
+			Image:         defaultImage,
+			LikesCount:    r.LikesCount,
+			IsLiked:       r.IsLiked,
+			Published:     ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:    r.IsFollowed,
+			IsShared:      r.IsShared,
+			SharesCount:   r.SharesCount,
+			Tags:          tags,
 		}
 		pe = append(pe, np)
 	}
@@ -171,9 +171,9 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 		}
 		tags := SplitTags(r.Tags)
 		np := &pb.Share{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
+			GlobalId:      r.GlobalId,
 			Author:        author.Handle,
+			AuthorDisplay: author.DisplayName,
 			AuthorHost:    author.Host,
 			Title:         r.Title,
 			Bio:           author.Bio,
@@ -186,6 +186,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			IsShared:      r.IsShared,
 			SharerBio:     sharer.Bio,
 			Sharer:        sharer.Handle,
+			SharerHost:    sharer.Host,
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 			AuthorId:      author.GlobalId,
 			SharesCount:   r.SharesCount,

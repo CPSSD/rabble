@@ -7,8 +7,9 @@ import "google/protobuf/wrappers.proto";
 // Request a feed for the given user.
 message FeedRequest {
   // To request all posts on this instance, send a blank username.
-  string username = 1;
+  int64 user_id = 1;
   google.protobuf.Int64Value user_global_id = 2;
+  string username = 3;
 }
 
 // To request for a specific article
@@ -38,6 +39,7 @@ message Post {
   string author_host = 13;
   int64 shares_count = 14;
   repeated string tags = 15;
+  string author_display = 16;
 }
 
 message Share {
@@ -59,6 +61,8 @@ message Share {
   int64 author_id = 16;
   int64 shares_count = 17;
   repeated string tags = 18;
+  string author_display = 19;
+  string sharer_host = 20;
 }
 
 message FeedResponse {

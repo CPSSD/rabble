@@ -5,7 +5,7 @@ import {GetRegisterPromise, IRegisterResult} from "../models/register";
 import {RootComponent} from "./root_component";
 
 interface IRegisterProps extends RouteProps {
-  loginCallback(username: string): void;
+  loginCallback(username: string, userId: number): void;
 }
 
 interface IRegisterState {
@@ -54,7 +54,7 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
         if (!response.success) {
           this.alertUser("Error registering: " + response.error);
         } else {
-          this.props.loginCallback(this.state.username);
+          this.props.loginCallback(this.state.username, response.user_id);
           this.setState({
             redirect: true,
           });

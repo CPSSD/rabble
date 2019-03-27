@@ -4,6 +4,7 @@ import * as superagent from "superagent";
 export interface IRegisterResult {
   error: string;
   success: boolean;
+  user_id: number;
 }
 
 export function GetRegisterPromise(handle: string,
