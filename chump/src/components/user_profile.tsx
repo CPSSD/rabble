@@ -40,6 +40,7 @@ const ViewingTabLookup = [
 interface IUserProfileState {
   viewing: ViewingTab;
   viewable: ViewingTab[];
+  viewingUser: string;
 }
 
 interface IUserProfileProps extends RouteProps {
@@ -56,20 +57,25 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
   constructor(props: IUserProfileProps) {
     super(props);
 
-    let v = [ViewingTab.Posts, ViewingTab.Following, ViewingTab.Followers];
-    if (this.isViewingOwnPage()) {
-      v = v.concat([ViewingTab.UserSettings, ViewingTab.FollowRequests]);
-    }
-
     this.state = {
-      viewable: v,
+      viewable: this.getViewable(),
       viewing: ViewingTab.Posts,
+      viewingUser: this.props.match.params.user,
     };
 
     this.renderTab = this.renderTab.bind(this);
     this.getCurrentPage = this.getCurrentPage.bind(this);
     this.resetViewing = this.resetViewing.bind(this);
     this.renderTab = this.renderTab.bind(this);
+    this.getViewable = this.getViewable.bind(this);
+  }
+
+  public getViewable() {
+    let v = [ViewingTab.Posts, ViewingTab.Following, ViewingTab.Followers];
+    if (this.isViewingOwnPage()) {
+      v = v.concat([ViewingTab.UserSettings, ViewingTab.FollowRequests]);
+    }
+    return v;
   }
 
   public render() {
@@ -89,6 +95,16 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
         {page}
       </div>
     );
+  }
+
+  public componentDidUpdate(prevProps: IUserProfileProps) {
+    if (this.props.match.params.user !== this.state.viewingUser) {
+      this.setState({
+        viewable: this.getViewable(),
+        viewing: ViewingTab.Posts,
+        viewingUser: this.props.match.params.user,
+      });
+    }
   }
 
   private resetViewing() {
@@ -126,7 +142,7 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
         return (
           <User
             username={this.props.username}
-            viewing={this.props.match.params.user}
+            viewing={this.state.viewingUser}
             userId={this.props.userId}
           />
         );
@@ -140,16 +156,16 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
       case ViewingTab.FollowRequests:
         return <Pending username={this.props.username} />;
       case ViewingTab.Followers:
-        return <Followers username={this.props.match.params.user} />;
+        return <Followers username={this.state.viewingUser} />;
       case ViewingTab.Following:
-        return <Following username={this.props.match.params.user} />;
+        return <Following username={this.state.viewingUser} />;
       default:
         return "You have bent the space time continuum to see this message.";
     }
   }
 
   private isViewingOwnPage() {
-    const userMatch = this.props.match.params.user === this.props.username;
+    const userMatch = this.props.match.params.user  === this.props.username;
     const validUsername = this.props.username !== "";
     // Ensure the user isn't viewing a page of a foriegn user.
     const noHost = !this.props.match.params.user.includes("@");
