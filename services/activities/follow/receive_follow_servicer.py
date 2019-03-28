@@ -32,3 +32,17 @@ class ReceiveFollowServicer:
         resp.result_type = follows_resp.result_type
         resp.error = follows_resp.error
         return resp
+
+    def ReceiveUnfollowActivity(self, req, context):
+        self._logger.debug('Received unfollow activity.')
+        resp = s2s_follow_pb2.FollowActivityResponse()
+
+        follow = self._s2s_req_to_follows_req(req)
+        self._logger.info('{}@{} requested to unfollow {}.'.format(
+            follow.follower_handle, follow.follower_host, follow.followed))
+
+        follows_resp = self._follows_stub.ReceiveUnfollow(follow)
+
+        resp.result_type = follows_resp.result_type
+        resp.error = follows_resp.error
+        return resp

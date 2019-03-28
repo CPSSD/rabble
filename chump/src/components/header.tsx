@@ -6,6 +6,7 @@ import * as config from "../../rabble_config.json";
 
 interface IHeaderProps {
   username: string;
+  userId: number;
 }
 
 interface IHeaderState {

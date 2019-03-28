@@ -8,6 +8,7 @@ import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
+import { GenerateUserLinks, RemoveProtocol } from "./util";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -20,6 +21,8 @@ interface IPostState {
   likesCount: number;
   isLiked: boolean;
 }
+
+const userLinksClassName = "username-holder";
 
 export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
@@ -63,7 +66,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         <link
           rel="stylesheet"
           type="text/css"
-          href={`/c2s/@${this.props.blogPost.author}/css`}
+          href={`/c2s/${this.props.blogPost.author_id}/css`}
         />
       );
     }
@@ -128,6 +131,10 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
+    const userLink = GenerateUserLinks(this.props.blogPost.author,
+      this.props.blogPost.author_host, this.props.blogPost.author_display,
+      userLinksClassName);
+
     return (
       <div className="pure-u-3-24">
         <div className="author-about">
@@ -137,22 +144,15 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             className="author-thumbnail"
           />
           <div style={{width: "100%"}}>
-              <div style={{float: "left"}} >
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
-                    {this.props.blogPost.author}
-                  </Link><br/>
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
-                    @{this.props.blogPost.author}
-                  </Link>
-              </div>
-              <div style={{float: "right"}} >
-                  <FollowButton
-                      follower={this.props.username}
-                      followed={this.props.blogPost.author}
-                      followed_host={this.props.blogPost.author_host}
-                      following={this.props.blogPost.is_followed}
-                  />
-              </div>
+            {userLink}
+            <div style={{float: "right"}} >
+                <FollowButton
+                    follower={this.props.username}
+                    followed={this.props.blogPost.author}
+                    followed_host={this.props.blogPost.author_host}
+                    following={this.props.blogPost.is_followed}
+                />
+            </div>
           </div>
 
           <div style={{clear: "both"}}>

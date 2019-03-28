@@ -7,8 +7,9 @@ import "google/protobuf/wrappers.proto";
 // Request a feed for the given user.
 message FeedRequest {
   // To request all posts on this instance, send a blank username.
-  string username = 1;
+  int64 user_id = 1;
   google.protobuf.Int64Value user_global_id = 2;
+  string username = 3;
 }
 
 // To request for a specific article
@@ -20,6 +21,8 @@ message ArticleRequest {
 // These responses will eventually be database.PostsResponse or at least use
 // PostsEntry. Right now our builds don't allow for importing proto files
 // between services. For that reason we'll keep it simple and ignore errors.
+// If this is updated the ConvertDBToFeed method in utils/util.go and Get method
+// in recommend_posts/servicer must be updated
 message Post {
   int64 global_id = 1;
   string author = 2;
@@ -36,7 +39,8 @@ message Post {
   string author_host = 13;
   int64 shares_count = 14;
   repeated string tags = 15;
-  string md_body = 16;
+  string author_display = 16;
+  string md_body = 17;
 }
 
 message Share {
@@ -58,6 +62,8 @@ message Share {
   int64 author_id = 16;
   int64 shares_count = 17;
   repeated string tags = 18;
+  string author_display = 19;
+  string sharer_host = 20;
 }
 
 message FeedResponse {
@@ -70,7 +76,7 @@ message FeedResponse {
   repeated Post results = 1;
   FeedError error = 2;
 
-  repeated Share share_results = 5;
+  repeated Share share_results = 3;
 }
 
 service Feed {

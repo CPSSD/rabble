@@ -20,6 +20,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.InstanceFeed = posts_servicer.InstanceFeed
         self.SearchArticles = posts_servicer.SearchArticles
         self.CreatePostsIndex = posts_servicer.CreatePostsIndex
+        self.RandomPosts = posts_servicer.RandomPosts
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
         self.SearchUsers = users_servicer.SearchUsers

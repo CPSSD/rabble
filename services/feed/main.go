@@ -62,16 +62,16 @@ func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow
 func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	const feedErr = "feed.GetUserFeed(%v) failed: %v"
 
-	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", true, 0, s.db)
+	author, err := utils.GetAuthorFromDb(ctx, "", "", true, r.UserId, s.db)
 	if err != nil {
-		err := fmt.Errorf(feedErr, r.Username, err)
+		err := fmt.Errorf(feedErr, r.UserId, err)
 		log.Print(err)
 		return nil, err
 	}
 
 	follows, err := s.getFollows(ctx, author)
 	if err != nil {
-		err := fmt.Errorf(feedErr, r.Username, err)
+		err := fmt.Errorf(feedErr, r.UserId, err)
 		log.Print(err)
 		return nil, err
 	}
@@ -90,12 +90,12 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 
 		resp, err := s.db.Posts(ctx, pr)
 		if err != nil {
-			err := fmt.Errorf(feedErr, r.Username, err)
+			err := fmt.Errorf(feedErr, r.UserId, err)
 			log.Print(err)
 			return nil, err
 		}
 		if resp.ResultType != pb.PostsResponse_OK {
-			err := fmt.Errorf(feedErr, r.Username, resp.Error)
+			err := fmt.Errorf(feedErr, r.UserId, resp.Error)
 			log.Print(err)
 			return nil, err
 		}
@@ -113,12 +113,12 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 
 		sharesResp, err := s.db.SharedPosts(ctx, spr)
 		if err != nil {
-			err := fmt.Errorf(feedErr, r.Username, err)
+			err := fmt.Errorf(feedErr, r.UserId, err)
 			log.Print(err)
 			return nil, err
 		}
 		if sharesResp.ResultType != pb.SharesResponse_OK {
-			err := fmt.Errorf(feedErr, r.Username, sharesResp.Error)
+			err := fmt.Errorf(feedErr, r.UserId, sharesResp.Error)
 			log.Print(err)
 			return nil, err
 		}
@@ -133,8 +133,8 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 // It takes an optional username argument, if it exists it sends the request to
 // GetUserFeed, otherwise it returns all articles on the instance.
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
-	log.Printf("Username: %s\n", r.Username)
-	if r.Username != "" {
+	log.Printf("UserId: %s\n", r.UserId)
+	if r.UserId != 0 {
 		return s.GetUserFeed(ctx, r)
 	}
 
@@ -234,22 +234,27 @@ func (s *server) checkFollowing(follower_id int64, followed_id int64) (bool, err
 
 func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
 	if r.Username == "" {
-		return nil, fmt.Errorf("feed.PerUser failed: username field empty")
+		return nil, fmt.Errorf("feed.PerUser failed: Username field empty")
 	}
-	// Does not return foreign users.
-	author, err := utils.GetAuthorFromDb(ctx, r.Username, "", true, 0, s.db)
+
+	handle, host, err := utils.ParseUsername(r.Username)
+	if err != nil {
+		return nil, fmt.Errorf("feed.PerUser failed: %v", err)
+	}
+	hostIsNull := host == ""
+	author, err := utils.GetAuthorFromDb(ctx, handle, host, hostIsNull, 0, s.db)
 	if err != nil {
 		log.Print(err)
 		return &pb.FeedResponse{Error: pb.FeedResponse_USER_NOT_FOUND}, nil
 	}
-	authorId := author.GlobalId
+	authorID := author.GlobalId
 
 	if author.Private != nil && author.Private.Value {
 		if r.UserGlobalId == nil {
 			// User not logged in.
 			return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
 		}
-		following, err := s.checkFollowing(r.UserGlobalId.Value, author.GlobalId)
+		following, err := s.checkFollowing(r.UserGlobalId.Value, authorID)
 		if err != nil {
 			return nil, err
 		} else if !following {
@@ -262,7 +267,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		RequestType:  pb.PostsRequest_FIND,
 		UserGlobalId: r.UserGlobalId,
 		Match: &pb.PostsEntry{
-			AuthorId: authorId,
+			AuthorId: authorID,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -278,7 +283,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 
 	spr := &pb.SharedPostsRequest{
 		NumPosts:     MaxItemsReturned,
-		SharerId:     authorId,
+		SharerId:     authorID,
 		UserGlobalId: r.UserGlobalId,
 	}
 

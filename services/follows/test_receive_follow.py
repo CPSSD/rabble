@@ -3,6 +3,7 @@ import os
 from unittest.mock import Mock
 
 from receive_follow import ReceiveFollowServicer
+from util import Util
 from services.proto import follows_pb2
 from services.proto import database_pb2
 
@@ -80,11 +81,14 @@ class ReceiveFollowTest(unittest.TestCase):
     def setUp(self):
         os.environ["HOST_NAME"] = "cianisharrypotter.secret"
         self.db = FakeDatabase()
-        util = Mock()
+
         user_util = Mock()
-        util.create_follow_in_db = self.db.add_follow
         user_util.get_user_from_db = self.db.get_user
         user_util.get_or_create_user_from_db = self.db.get_or_create_user
+
+        util = Util(Mock(), self.db, Mock(), user_util)
+        util.create_follow_in_db = self.db.add_follow
+
         # TODO(devoxel): Test approver interactions
         self.servicer = ReceiveFollowServicer(Mock(),
                                               util,

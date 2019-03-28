@@ -6,6 +6,7 @@ import { User } from "./user";
 
 interface IRecommendedFollowsProps extends RouteProps {
   username: string;
+  userId: number;
 }
 
 interface IRecommendedFollowsState {
@@ -25,7 +26,7 @@ export class RecommendedFollows extends React.Component<IRecommendedFollowsProps
   }
 
   public getRecommendedFollows() {
-    GetRecommendedFollows(this.props.username)
+    GetRecommendedFollows(this.props.userId)
       .then((resp: IRecommendedFollowsResponse) => {
         this.setState({
           recommendedFollows: resp.recommendedFollows,

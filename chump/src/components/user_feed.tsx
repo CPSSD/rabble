@@ -1,28 +1,24 @@
 import * as React from "react";
-import { Link, RouteProps } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { GetUsersPosts, IAnyParsedPost, IParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
 import { Post } from "./post";
 import { SharedPost } from "./shared_post";
 
 import * as superagent from "superagent";
+import * as config from "../../rabble_config.json";
 
 interface IUserState {
   publicBlog: IAnyParsedPost[];
-  // username whose page we're looking at, filled when we complete our lookup
-  // In state so we can tell when switching to a different user's page
-  user: string;
+  ready: boolean;
   // used to determine what error message to display.
   error: string;
 }
 
-interface IUserProps extends RouteProps {
-  match: {
-    params: {
-      user: string,
-    },
-  };
+interface IUserProps {
+  viewing: string;
   username: string;
+  userId: number;
 }
 
 export class User extends React.Component<IUserProps, IUserState> {
@@ -31,18 +27,18 @@ export class User extends React.Component<IUserProps, IUserState> {
     this.state = {
       error: "",
       publicBlog: [],
-      user: "",
+      ready: false,
     };
 
     this.handleGetPostsErr = this.handleGetPostsErr.bind(this);
   }
 
   public getPosts() {
-    GetUsersPosts(this.props.match.params.user)
+    GetUsersPosts(this.props.viewing)
       .then((posts: IAnyParsedPost[]) => {
         this.setState({
           publicBlog: posts,
-          user: this.props.match.params.user,
+          ready: true,
         });
       })
       .catch(this.handleGetPostsErr);
@@ -64,18 +60,29 @@ export class User extends React.Component<IUserProps, IUserState> {
         msg = "An error occured, it was probably " + your + " fault.";
     }
 
-    // We need to set user as well in the error handler because we use
+    // We need to set ready as well in the error handler because we use
     // it as a mechanism for detecting when we've already sent our first
     // request.
     this.setState({
       error: msg,
-      user: this.props.match.params.user,
+      ready: true,
     });
   }
 
+  public componentDidMount() {
+    this.getPosts();
+  }
+
   public renderPosts() {
-    if (this.props.match.params.user !== this.state.user) {
-      this.getPosts();
+    if (!this.state.ready) {
+      return (
+        <div>
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-10-24">
+            <p>{config.loading}</p>
+          </div>
+        </div>
+      );
     }
 
     if (this.state.publicBlog.length === 0) {
@@ -117,35 +124,10 @@ export class User extends React.Component<IUserProps, IUserState> {
     });
   }
 
-  public userLinks() {
-    // TODO(devoxel): Putting links here is a bit of a hack
-    if (! (this.props.username === this.props.match.params.user)) {
-      return false;
-    }
-
-    return (
-      <div>
-        <div className="pure-u-5-24"/>
-        <div className="pure-u-10-24 user-menu">
-          <Link to={"/@/edit"} className="pure-button">
-            Edit account
-          </Link>
-          <Link to={"/@/pending"} className="pure-button">
-            Follow requests
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   public render() {
-    // TODO: Make "Edit your account" button less ugly.
-    const userEdit = this.userLinks();
-    const blogPosts = this.renderPosts();
     return (
       <div>
-        {userEdit}
-        {blogPosts}
+        {this.renderPosts()}
       </div>
     );
   }

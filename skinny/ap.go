@@ -42,6 +42,8 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 		buf.ReadFrom(r.Body)
 		body := buf.String()
 
+		log.Printf("Received activity to %#v's inbox: %#v\n", recipient, body)
+
 		d := json.NewDecoder(strings.NewReader(body))
 		var a activity
 
@@ -243,14 +245,6 @@ type createActivityStruct struct {
 	Type      string                     `json:"type"`
 }
 
-type followActivityStruct struct {
-	Actor     string   `json:"actor"`
-	Context   string   `json:"@context"`
-	Object    string   `json:"object"`
-	Recipient []string `json:"to"`
-	Type      string   `json:"type"`
-}
-
 func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
@@ -300,21 +294,39 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	}
 }
 
+type followActivityStruct struct {
+	Actor     string   `json:"actor"`
+	Context   string   `json:"@context"`
+	Object    string   `json:"object"`
+	Recipient []string `json:"to"`
+	Type      string   `json:"type"`
+}
+
+type followActivityResponse struct {
+	Success  bool   `json:"success"`
+	ErrorStr string `json:"error"`
+}
+
 func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
-		recipient := v["username"]
-		log.Printf("User %v received a follow activity.\n", recipient)
+		if recipient, ok := v["username"]; ok {
+			log.Printf("User %v received a follow activity.\n", recipient)
+		}
 
+		var res followActivityResponse
+		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json")
 		// TODO: Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t followActivityStruct
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf("Invalid JSON\nError: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			res.Success = false
+			res.ErrorStr = "Invalid JSON"
+			enc.Encode(res)
 			return
 		}
 
@@ -331,12 +343,54 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			resp.ResultType == pb.FollowActivityResponse_ERROR {
 			log.Printf("Could not receive follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with receiving follow activity.\n")
+			res.Success = false
+			res.ErrorStr = "Issue with receiving follow activity."
+			enc.Encode(res)
 			return
 		}
 
 		log.Println("Activity received successfully.")
-		fmt.Fprintf(w, "{}\n")
+		res.Success = true
+		enc.Encode(res)
+	}
+}
+
+type followUndoActivity struct {
+	Context string               `json:"@context"`
+	Object  followActivityStruct `json:"object"`
+	Type    string               `json:"type"`
+}
+
+func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t followUndoActivity
+
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+		f := &pb.ReceivedFollowDetails{
+			Follower: t.Object.Actor,
+			Followed: t.Object.Object,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sFollow.ReceiveUnfollowActivity(ctx, f)
+		if err != nil || resp.ResultType == pb.FollowActivityResponse_ERROR {
+			log.Printf("Could not receive undo follow activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving undo follow activity.\n")
+			return
+		}
+
+		log.Println("Activity received successfully.")
 	}
 }
 

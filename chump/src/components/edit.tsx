@@ -26,7 +26,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
       })
       .catch(() => alert("Could not prefill post details"));
   };
-  const onSubmit = (_: string, title: string, text: string, tags: string[]) => {
+  const onSubmit = (title: string, text: string, tags: string[]) => {
     return EditArticle(
       props.match.params.article_id,
       title,

@@ -238,6 +238,11 @@ message InstanceFeedRequest {
   google.protobuf.Int64Value user_global_id = 2;
 }
 
+message RandomPostsRequest {
+  int32 num_posts = 1;
+  int64 user_id = 2;
+}
+
 message SharedPostsRequest {
   int32 num_posts = 1;
   // The global ID of the user making this request, not set if none.
@@ -385,6 +390,8 @@ service Database {
   rpc LikesCollection(LikesCollectionRequest) returns (LikedCollectionResponse);
   // Get the N most recent posts from local users.
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
+  // Get the N random posts from posts.
+  rpc RandomPosts(RandomPostsRequest) returns (PostsResponse);
   // Get the N most recent shared posts for a user.
   rpc SharedPosts(SharedPostsRequest) returns (SharesResponse);
   // Get PENDING Follows with handles rather than ids

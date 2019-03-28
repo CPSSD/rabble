@@ -21,10 +21,12 @@ class SendUnfollowTest(unittest.TestCase):
         user_util.get_or_create_user_from_db = self.db.get_or_create_user
         user_util.parse_username = self.db.parse_username
         database_stub.Follow = self.db.Follow
+        s2s_stub = Mock()
         self.servicer = SendUnfollowServicer(Mock(),
                                              util,
                                              user_util,
-                                             database_stub)
+                                             database_stub,
+                                             s2s_stub)
 
     def tearDown(self):
         del os.environ["HOST_NAME"]

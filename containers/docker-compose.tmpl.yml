@@ -35,6 +35,9 @@ services:
       - ACTORS_SERVICE_HOST=actors_service_[[INSTANCE_ID]]
       - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
       - ANNOUNCE_SERVICE_HOST=announce_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_SERVICE_HOST=recommend_posts_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_NO_OP=[[POSTS_SERVICE_LOCATION]]
+      - FOLLOW_RECOMMENDATIONS_NO_OP=[[FOLLOWS_SERVICE_LOCATION]]
   feed_service_[[INSTANCE_ID]]:
     build:
       context: ./services/feed
@@ -207,6 +210,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   markdown_service_[[INSTANCE_ID]]:
     build:
       context: ./services/mdc
@@ -234,7 +238,7 @@ services:
       - HOST_NAME=[[EXTERNAL_ADDRESS]]
   recommend_follows_service_[[INSTANCE_ID]]:
     build:
-      context: ./services/recommend_follows
+      context: [[FOLLOWS_SERVICE_LOCATION]]
       dockerfile: Dockerfile
     volumes:
       - .:/repo
@@ -247,6 +251,7 @@ services:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - FOLLOW_RECOMMENDER_METHOD=[[FOLLOW_RECOMMENDER_METHOD]]
+      - SERVICE_NAME=recommend_follows_service_[[INSTANCE_ID]]
   actors_service_[[INSTANCE_ID]]:
     build:
       context: ./services/actors
@@ -295,3 +300,19 @@ services:
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - ARTICLE_SERVICE_HOST=article_service_[[INSTANCE_ID]]
       - HOST_NAME=[[EXTERNAL_ADDRESS]]
+  recommend_posts_service_[[INSTANCE_ID]]:
+    build:
+      context: [[POSTS_SERVICE_LOCATION]]
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    depends_on:
+      - "database_service_[[INSTANCE_ID]]"
+    environment:
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - POSTS_RECOMMENDER_METHOD=[[POSTS_RECOMMENDER_METHOD]]
+      - SERVICE_NAME=recommend_posts_service_[[INSTANCE_ID]]
