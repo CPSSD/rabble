@@ -99,6 +99,6 @@ service Follows {
   rpc AcceptFollow(AcceptFollowRequest) returns (FollowResponse);
   // Acknowledge a local user unfollowing any other user.
   rpc SendUnfollow(LocalToAnyFollow) returns (FollowResponse);
-
+  // Acknowledge a foreign user unfollowing a local user.
   rpc ReceiveUnfollow(ForeignToLocalFollow) returns (FollowResponse);
 }
