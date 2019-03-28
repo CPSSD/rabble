@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "services/proto/search.proto";
 
 /* LocalToAnyFollow represents either a local user following another local
@@ -64,6 +65,9 @@ message FollowUser {
 message GetFollowsRequest {
     /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
     string username = 1;
+
+    // The global id of the user making the request.
+    google.protobuf.Int64Value user_global_id = 4;
 }
 
 message GetFollowsResponse {

@@ -19,6 +19,7 @@ import (
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
 	wrapperpb "github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -1045,7 +1046,10 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 	}
 }
 
-func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
+type FollowGetter func(context.Context, *pb.GetFollowsRequest,
+	...grpc.CallOption) (*pb.GetFollowsResponse, error)
+
+func (s *serverWrapper) handleGetFollows(f FollowGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		username, ok := v["username"]
@@ -1060,7 +1064,11 @@ func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
 			Username: username,
 		}
 
-		followers, err := s.follows.GetFollowers(ctx, fq)
+		if uid, err := s.getSessionGlobalId(r); err == nil {
+			fq.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
+		}
+
+		followers, err := f(ctx, fq)
 		if err != nil {
 			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -1079,38 +1087,12 @@ func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
 	}
 }
 
+func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
+	return s.handleGetFollows(s.follows.GetFollowers)
+}
+
 func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		v := mux.Vars(r)
-		username, ok := v["username"]
-		if !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request.
-			return
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		fq := &pb.GetFollowsRequest{
-			Username: username,
-		}
-
-		followers, err := s.follows.GetFollowing(ctx, fq)
-		if err != nil {
-			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		enc := json.NewEncoder(w)
-		enc.SetEscapeHTML(false)
-		err = enc.Encode(followers)
-		if err != nil {
-			log.Printf("could not marshal followers: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
+	return s.handleGetFollows(s.follows.GetFollowing)
 }
 
 func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {

@@ -14,17 +14,20 @@ class GetFollowsReceiver:
         self._database_stub = database_stub
         self.RequestType = Enum('RequestType', 'FOLLOWING FOLLOWERS')
 
-    def create_rich_user(self, resp, user):
-        post = resp.rich_results.add()
-        post.handle = user.handle
-        post.host = user.host
-        post.global_id = user.global_id
-        post.bio = user.bio
-        post.is_followed = user.is_followed
-        post.image = DEFAULT_IMAGE
-        post.display_name = user.display_name
-        post.private.CopyFrom(user.private)
-        post.custom_css = user.custom_css
+    def create_rich_user(self, resp, user, requester_follows):
+        u = resp.rich_results.add()
+        u.handle = user.handle
+        u.host = user.host
+        u.global_id = user.global_id
+        u.bio = user.bio
+        u.is_followed = user.is_followed
+        u.image = DEFAULT_IMAGE
+        u.display_name = user.display_name
+        u.private.CopyFrom(user.private)
+        u.custom_css = user.custom_css
+        if requester_follows is not None:
+            u.is_followed = user.global_id in requester_follows
+        return True
 
     def _get_follows(self, request, context, request_type):
         if request_type == self.RequestType.FOLLOWERS:
@@ -62,6 +65,12 @@ class GetFollowsReceiver:
         else:
             following_ids = self._util.get_follows(follower_id=user_id).results
 
+        user_following_ids = None
+        if request.HasField("user_global_id") and request.user_global_id:
+            uid = request.user_global_id.value
+            user_following = self._util.get_follows(follower_id=uid).results
+            user_following_ids = set([x.followed for x in user_following])
+
         # Convert other following users and add to output proto.
         for following_id in following_ids:
             _id = following_id.followed
@@ -73,10 +82,10 @@ class GetFollowsReceiver:
                                      _id)
                 continue
 
-            ok = self.create_rich_user(resp, user)
+            ok = self.create_rich_user(resp, user, user_following_ids)
             if not ok:
                 self._logger.warning('Could not convert user %s@%s to ' +
-                                     'FollowUser', user.handle, user.host)
+                                     'RichUser', user.handle, user.host)
 
             ok = self._util.convert_db_user_to_follow_user(user,
                                                            resp.results.add())
