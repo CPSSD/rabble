@@ -80,7 +80,6 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
           username={this.props.username}
           blogUser={e}
           display="follow-user"
-          showFollowButton={false}
         />
       );
     });

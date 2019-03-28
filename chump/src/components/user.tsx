@@ -10,7 +10,6 @@ interface IUserProps {
   username: string;
   blogUser: IParsedUser;
   display: string;
-  showFollowButton: boolean;
 }
 
 const userLinksClassName = "pure-u-1-3 username-holder";
@@ -28,7 +27,7 @@ export class User extends React.Component<IUserProps, {}> {
       userLinksClassName);
 
     let followButton: JSX.Element | boolean = false;
-    if (this.props.showFollowButton) {
+    if (this.props.username !== null || this.props.username !== "") {
       followButton = (
         <FollowButton
           follower={this.props.username}

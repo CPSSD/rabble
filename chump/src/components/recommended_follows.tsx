@@ -50,7 +50,6 @@ export class RecommendedFollows extends React.Component<IRecommendedFollowsProps
             username={this.props.username}
             blogUser={e}
             display="inherit"
-            showFollowButton={true}
           />
         </div>
       );

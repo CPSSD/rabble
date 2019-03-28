@@ -130,7 +130,6 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
             username={this.props.username}
             blogUser={this.state.foundUsers[0]}
             display={SHOW_ITEM}
-            showFollowButton={true}
           />
         </div>
       );
@@ -143,7 +142,6 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
               username={this.props.username}
               blogUser={e}
               display={SHOW_ITEM}
-              showFollowButton={true}
             />
           </div>
         );
@@ -154,7 +152,6 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
             username={this.props.username}
             blogUser={e}
             display={this.state.display}
-            showFollowButton={true}
           />
         </div>
       );
