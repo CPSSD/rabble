@@ -210,6 +210,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - FOLLOWS_SERVICE_HOST=follows_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
   markdown_service_[[INSTANCE_ID]]:
     build:
       context: ./services/mdc

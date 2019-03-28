@@ -6,10 +6,11 @@ from services.proto import approver_pb2
 
 class Util:
 
-    def __init__(self, logger, db_stub, approver_stub):
+    def __init__(self, logger, db_stub, approver_stub, users_util):
         self._logger = logger
         self._db = db_stub
         self._approver_stub = approver_stub
+        self._users_util = users_util
 
     def create_follow_in_db(self, follower_id, followed_id,
                             state=database_pb2.Follow.ACTIVE):
@@ -27,6 +28,23 @@ class Util:
         follow_resp = self._db.Follow(follow_req)
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Could not add follow to database: %s',
+                               follow_resp.error)
+        return follow_resp
+
+    def delete_follow_in_db(self, follower_id, followed_id):
+        self._logger.debug('Deleting <User ID %d following User ID %d> from db.',
+                           follower_id, followed_id)
+        follow_entry = database_pb2.Follow(
+            follower=follower_id,
+            followed=followed_id,
+        )
+        follow_req = database_pb2.DbFollowRequest(
+            request_type=database_pb2.DbFollowRequest.DELETE,
+            match=follow_entry
+        )
+        follow_resp = self._db.Follow(follow_req)
+        if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
+            self._logger.error('Could not delete follow from database: %s',
                                follow_resp.error)
         return follow_resp
 
@@ -78,3 +96,51 @@ class Util:
         )
         # TODO(devoxel): Add response logic
         print(self._approver_stub.SendApproval(req))
+
+    def validate_and_get_users(self, resp, request):
+        """
+        _validate_and_get_users validates request fields and finds the
+        requested users. It takes as an argument the response field, and
+        handles errors if they should happen.
+        Returns:
+          local_user, foreign_user
+          If either is None, then the request has failed and the error has
+          already been written.
+        """
+        from_handle, from_host = request.follower_handle, request.follower_host
+        to_handle = request.followed
+
+        self._logger.info('%s@%s has requested to follow %s (local user).',
+                          from_handle,
+                          from_host,
+                          to_handle)
+
+        if from_host is None or from_host == '':
+            error = \
+                'No host associated with foreign user {}'.format(from_handle)
+            self._logger.error(error)
+            self._logger.error('Aborting follow request')
+            resp.result_type = follows_pb2.FollowResponse.ERROR
+            resp.error = error
+            return None, None
+
+        local_user = self._users_util.get_user_from_db(handle=to_handle,
+                                                       host_is_null=True)
+        if local_user is None:
+            error = 'Could not find local user {}'.format(to_handle)
+            self._logger.error(error)
+            resp.result_type = follows_pb2.FollowResponse.ERROR
+            resp.error = error
+            return None, None
+
+        foreign_user = self._users_util.get_or_create_user_from_db(
+            handle=from_handle,
+            host=from_host)
+
+        if foreign_user is None:
+            error = 'Could not find user {}@{}'.format(from_handle, from_host)
+            self._logger.error(error)
+            resp.result_type = follows_pb2.FollowResponse.ERROR
+            resp.error = error
+            return local_user, None
+        return local_user, foreign_user

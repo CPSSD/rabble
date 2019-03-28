@@ -2,6 +2,7 @@ from get_followers import GetFollowsReceiver
 from receive_follow import ReceiveFollowServicer
 from send_follow import SendFollowServicer
 from send_unfollow import SendUnfollowServicer
+from receive_unfollow import ReceiveUnfollowServicer
 from rss_follow import RssFollowServicer
 from accept_follow import AcceptFollowServicer
 
@@ -23,9 +24,12 @@ class FollowsServicer(follows_pb2_grpc.FollowsServicer):
                                            database_stub, follow_activity_stub)
         self.SendFollowRequest = send_servicer.SendFollowRequest
 
-        unfollow_servicer = SendUnfollowServicer(
-            logger, util, users_util, database_stub)
-        self.SendUnfollow = unfollow_servicer.SendUnfollow
+        send_unfollow_servicer = SendUnfollowServicer(logger,
+                                                      util,
+                                                      users_util,
+                                                      database_stub,
+                                                      follow_activity_stub)
+        self.SendUnfollow = send_unfollow_servicer.SendUnfollow
         rss_servicer = RssFollowServicer(logger, util, users_util,
                                          database_stub, rss_stub)
         self.RssFollowRequest = rss_servicer.RssFollowRequest
@@ -41,3 +45,9 @@ class FollowsServicer(follows_pb2_grpc.FollowsServicer):
         accept_follows_servicer = AcceptFollowServicer(logger, util, users_util,
                                                        database_stub)
         self.AcceptFollow = accept_follows_servicer.AcceptFollow
+
+        rec_unfollow_servicer = ReceiveUnfollowServicer(logger,
+                                                        util,
+                                                        users_util,
+                                                        database_stub)
+        self.ReceiveUnfollow = rec_unfollow_servicer.ReceiveUnfollow
