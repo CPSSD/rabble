@@ -36,6 +36,7 @@ export function RecommendedPostsAPIPromise(endpoint: string) {
   });
 }
 
-export function GetRecommendedPosts() {
+// Parameter unUsed is only there so GetRecommendedPosts can stand for posts.GetPublicPosts
+export function GetRecommendedPosts(unUsed: number) {
   return RecommendedPostsAPIPromise(recommendPostsApiURL);
 }
