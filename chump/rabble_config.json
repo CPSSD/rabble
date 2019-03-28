@@ -38,6 +38,7 @@
   "posts": "Posts",
   "followers": "Followers",
   "settings": "Settings",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "recommended_posts_title": "Recommended Posts",
+  "recommended_posts_text": "Explore"
 }
-

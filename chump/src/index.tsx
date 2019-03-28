@@ -17,6 +17,7 @@ import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
 import {SearchResults} from "./components/search_results";
 import {UserProfile} from "./components/user_profile";
+import {RecommendedPosts} from "./components/recommended_posts";
 
 import { SendView } from "./models/view";
 
@@ -145,6 +146,12 @@ export class App extends React.Component<{}, IAppState> {
               queryUserId={this.state.userId}
               username={this.state.username}
               component={Feed}
+            />
+            <PrivateRoute
+              path="/recommended_posts"
+              queryUserId={this.state.userId}
+              username={this.state.username}
+              component={RecommendedPosts}
             />
             <PrivateRoute
               path="/follow"
