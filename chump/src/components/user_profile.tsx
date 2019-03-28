@@ -3,6 +3,7 @@ import * as React from "react";
 import { RouteProps } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { AccountEdit } from "./account_edit";
+import { Followers, Following } from "./follow_user_list";
 import { Pending } from "./pending";
 import { User } from "./user_feed";
 
@@ -139,9 +140,9 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
       case ViewingTab.FollowRequests:
         return <Pending username={this.props.username} />;
       case ViewingTab.Followers:
-        return "followers will go here!";
+        return <Followers username={this.props.match.params.user} />;
       case ViewingTab.Following:
-        return "following will go here!";
+        return <Following username={this.props.match.params.user} />;
       default:
         return "You have bent the space time continuum to see this message.";
     }
