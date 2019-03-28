@@ -343,9 +343,9 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 }
 
 type followDeleteActivity struct {
-	Context   string             `json:"@context"`
-	Object    followActivityStruct `json:"object"`
-	Type      string             `json:"type"`
+	Context string               `json:"@context"`
+	Object  followActivityStruct `json:"object"`
+	Type    string               `json:"type"`
 }
 
 func (s *serverWrapper) handleFollowDeleteActivity() http.HandlerFunc {

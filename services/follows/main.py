@@ -45,9 +45,9 @@ def main():
         rss_stub = rss_pb2_grpc.RSSStub(rss_chan)
         follow_stub = s2s_follow_pb2_grpc.S2SFollowStub(follow_chan)
         approver_stub = approver_pb2_grpc.ApproverStub(approver_chan)
-
-        util = Util(logger, db_stub, approver_stub)
         users_util = UsersUtil(logger, db_stub)
+
+        util = Util(logger, db_stub, approver_stub, users_util)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
         follows_servicer = FollowsServicer(logger, util, users_util, db_stub,
