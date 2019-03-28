@@ -7,6 +7,11 @@ import "services/proto/feed.proto";
 import "google/protobuf/wrappers.proto";
 
 // This user is a stripped down version of UsersEntry, see database.proto
+//
+// This is currently used in:
+// - utils/util.go (see StripUser)
+// - follows/get_followers.py (see create_rich_user)
+// Both need to be updated if you update a field.
 message User {
   string handle = 1;
   string host = 2;
