@@ -126,7 +126,12 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
     if (this.state.foundUsers.length === 1) {
       return (
         <div className="pure-g pure-u-1" key={this.state.foundPosts.length}>
-          <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={SHOW_ITEM}/>
+          <User
+            username={this.props.username}
+            blogUser={this.state.foundUsers[0]}
+            display={SHOW_ITEM}
+            showFollowButton={true}
+          />
         </div>
       );
     }
@@ -134,13 +139,23 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
       if (i === 0) {
         return (
           <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
-            <User username={this.props.username} blogUser={e} display={SHOW_ITEM}/>
+            <User
+              username={this.props.username}
+              blogUser={e}
+              display={SHOW_ITEM}
+              showFollowButton={true}
+            />
           </div>
         );
       }
       return (
         <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
-          <User username={this.props.username} blogUser={e} display={this.state.display}/>
+          <User
+            username={this.props.username}
+            blogUser={e}
+            display={this.state.display}
+            showFollowButton={true}
+          />
         </div>
       );
     });

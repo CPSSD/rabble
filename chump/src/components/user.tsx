@@ -10,6 +10,7 @@ interface IUserProps {
   username: string;
   blogUser: IParsedUser;
   display: string;
+  showFollowButton: boolean;
 }
 
 const userLinksClassName = "pure-u-1-3 username-holder";
@@ -25,6 +26,19 @@ export class User extends React.Component<IUserProps, {}> {
     const userLink = GenerateUserLinks(this.props.blogUser.handle,
       this.props.blogUser.host, this.props.blogUser.display_name,
       userLinksClassName);
+
+    let followButton: JSX.Element | boolean = false;
+    if (this.props.showFollowButton) {
+      followButton = (
+        <FollowButton
+          follower={this.props.username}
+          followed={this.props.blogUser.handle}
+          followed_host={this.props.blogUser.host}
+          following={this.props.blogUser.is_followed}
+        />
+      );
+    }
+
     return (
       <div className="blog-post-holder" style={{display: this.props.display}}>
         <div className="pure-u-5-24"/>
@@ -41,12 +55,7 @@ export class User extends React.Component<IUserProps, {}> {
             {userLink}
             <div className="pure-u-1-3"/>
             <div className="pure-u-1-3 follow-holder">
-                <FollowButton
-                    follower={this.props.username}
-                    followed={this.props.blogUser.handle}
-                    followed_host={this.props.blogUser.host}
-                    following={this.props.blogUser.is_followed}
-                />
+              {followButton}
             </div>
             <div className="pure-u-1">
                 <p className="author-bio">{this.props.blogUser.bio}</p>

@@ -46,7 +46,12 @@ export class RecommendedFollows extends React.Component<IRecommendedFollowsProps
     const users = this.state.recommendedFollows.map((e: IParsedUser, i: number) => {
       return (
         <div className="pure-g pure-u-1" key={i}>
-          <User username={this.props.username} blogUser={e} display="inherit" />
+          <User
+            username={this.props.username}
+            blogUser={e}
+            display="inherit"
+            showFollowButton={true}
+          />
         </div>
       );
     });
