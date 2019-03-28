@@ -16,7 +16,7 @@ interface IEditProps extends RouteProps {
 
 export const Edit: React.StatelessComponent<IEditProps> = (props) => {
   const fillArticle = (updateFunc: any) => {
-    GetSinglePost("test", props.match.params.article_id)
+    GetSinglePost(props.match.params.article_id)
       .then((posts: IParsedPost[]) => {
         if (posts.length > 0) {
           const p = posts[0];

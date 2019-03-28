@@ -19,7 +19,7 @@ interface IFormState {
 interface IFormProps {
   username: string;
   prefillState: (updateFunc: (a: string, b: string, c: string[]) => void) => void;
-  onSubmit: (u: string, t: string, b: string, tags: string[]) => any;
+  onSubmit: (t: string, b: string, tags: string[]) => any;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
