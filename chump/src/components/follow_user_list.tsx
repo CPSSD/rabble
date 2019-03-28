@@ -2,8 +2,10 @@ import * as Promise from "bluebird";
 import * as React from "react";
 
 import * as config from "../../rabble_config.json";
-import { GetFollowers, GetFollowing, IFollowUser } from "../models/follow";
+import { GetFollowers, GetFollowing } from "../models/follow";
+import { IParsedUser } from "../models/search";
 import { RootComponent } from "./root_component";
+import { User } from "./user";
 
 interface IFollowProps {
   username: string;
@@ -37,12 +39,12 @@ interface IFollowListProps {
   username: string;
   // headerText should reflect whether we are reading Following or Followers.
   headerText: string;
-  queryList(username: string): Promise<IFollowUser[]>;
+  queryList(username: string): Promise<IParsedUser[]>;
 }
 
 interface IFollowListState {
   ready: boolean;
-  users: IFollowUser[];
+  users: IParsedUser[];
 }
 
 class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
@@ -57,7 +59,7 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
   public componentDidMount() {
     // Start request for getting followers
     this.props.queryList(this.props.username)
-      .then((users: IFollowUser[]) => {
+      .then((users: IParsedUser[]) => {
         this.setState({
           ready: true,
           users,
@@ -67,15 +69,18 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
   }
 
   public renderFollowers() {
-    return this.state.users.map((e: IFollowUser, i: number) => {
+    return this.state.users.map((e: IParsedUser, i: number) => {
       let at = "";
       if (e.host !== undefined && e.host !== "") {
         at = "@" + e.host;
       }
       return (
-        <div className="pure-u-5-5" key={i}>
-          <p>{e.display_name} (@{e.handle}{at})</p>
-        </div>
+        <User
+          username={this.props.username}
+          blogUser={e}
+          display="follow-user"
+          showFollowButton={false}
+        />
       );
     });
   }
