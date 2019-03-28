@@ -30,7 +30,7 @@ export function RecommendedPostsAPIPromise(endpoint: string) {
           };
         }
 
-        const recommendedPosts = ParsePosts(posts);
+        const recommendedPosts = ParsePosts(posts.results);
         resolve(recommendedPosts);
       });
   });

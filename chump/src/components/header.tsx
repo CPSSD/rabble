@@ -109,6 +109,11 @@ export class Header extends React.Component<IHeaderProps, IHeaderState> {
             </Link>
           </li>
           <li className="pure-menu-item">
+            <Link to="/recommended_posts" className="pure-menu-link" onClick={this.resetDropdown}>
+              {config.recommended_posts_text}
+            </Link>
+          </li>
+          <li className="pure-menu-item">
             <Link to="/logout" className="pure-menu-link" onClick={this.resetDropdown}>
               {config.logout_text}
             </Link>
