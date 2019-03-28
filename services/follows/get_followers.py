@@ -3,6 +3,7 @@ from enum import Enum
 from services.proto import database_pb2
 from services.proto import follows_pb2
 
+DEFAULT_IMAGE = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 
 class GetFollowsReceiver:
 
@@ -12,6 +13,18 @@ class GetFollowsReceiver:
         self._users_util = users_util
         self._database_stub = database_stub
         self.RequestType = Enum('RequestType', 'FOLLOWING FOLLOWERS')
+
+    def create_rich_user(self, resp, user):
+        post = resp.rich_results.add()
+        post.handle = user.handle
+        post.host = user.host
+        post.global_id = user.global_id
+        post.bio = user.bio
+        post.is_followed = user.is_followed
+        post.image = DEFAULT_IMAGE
+        post.display_name = user.display_name
+        post.private.CopyFrom(user.private)
+        post.custom_css = user.custom_css
 
     def _get_follows(self, request, context, request_type):
         if request_type == self.RequestType.FOLLOWERS:
@@ -59,6 +72,11 @@ class GetFollowsReceiver:
                 self._logger.warning('Could not find user for id %d',
                                      _id)
                 continue
+
+            ok = self.create_rich_user(resp, user)
+            if not ok:
+                self._logger.warning('Could not convert user %s@%s to ' +
+                                     'FollowUser', user.handle, user.host)
 
             ok = self._util.convert_db_user_to_follow_user(user,
                                                            resp.results.add())
