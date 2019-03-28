@@ -1,6 +1,7 @@
 import * as Promise from "bluebird";
 import * as React from "react";
 
+import * as config from "../../rabble_config.json";
 import { GetFollowers, GetFollowing, IFollowUser } from "../models/follow";
 import { RootComponent } from "./root_component";
 
@@ -13,7 +14,7 @@ export class Followers extends RootComponent<IFollowProps, {}> {
     return (
       <FollowUserList
         username={this.props.username}
-        headerText="Followers"
+        headerText={config.followers}
         queryList={GetFollowers}
       />
     );
@@ -25,7 +26,7 @@ export class Following extends RootComponent<IFollowProps, {}> {
     return (
       <FollowUserList
         username={this.props.username}
-        headerText="Following"
+        headerText={config.following}
         queryList={GetFollowing}
       />
     );
