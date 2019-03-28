@@ -34,7 +34,7 @@ export class Following extends RootComponent<IFollowProps, {}> {
 
 interface IFollowListProps {
   username: string;
-  // headerText should reflect whether we are reanding Following or Followers.
+  // headerText should reflect whether we are reading Following or Followers.
   headerText: string;
   queryList(username: string): Promise<IFollowUser[]>;
 }
