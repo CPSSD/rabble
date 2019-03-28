@@ -76,6 +76,7 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
       }
       return (
         <User
+          key={i}
           username={this.props.username}
           blogUser={e}
           display="follow-user"
@@ -96,8 +97,10 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
           <div className="pure-u-5-24"/>
           <div className="pure-u-14-24">
             <h2> {this.props.headerText} </h2>
-            {list}
           </div>
+        </div>
+        <div className="pure-g">
+          {list}
         </div>
       </div>
     );
