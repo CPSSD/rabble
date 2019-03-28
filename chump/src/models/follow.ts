@@ -172,7 +172,7 @@ function GetFollows(url: string, username: string) {
         }
         const r = res!.body as IFollowers;
         if (r === null) {
-          reject("could not parse result");
+          reject("Could not parse result");
         }
         if (r.results === undefined || r.results === null) {
           resolve([] as IFollowUser[]);
