@@ -1,4 +1,7 @@
+import json
+
 from services.proto import s2s_follow_pb2
+
 
 class SendFollowServicer:
 
@@ -37,6 +40,20 @@ class SendFollowServicer:
         }
         return d
 
+    def _send(self, activ, url):
+        jresp, err = self._activ_util.send_activity(activ, url)
+        if err is not None:
+            return err
+        try:
+            resp = json.loads(jresp.text)
+        except json.decoder.JSONDecodeError as e:
+            return str(e)
+        if "success" not in resp:
+            return "JSON has no success attribute"
+        elif not resp["success"]:
+            return resp["error"] if "error" in resp else "Foreign error"
+        return None
+
     def SendFollowActivity(self, req, context):
         resp = s2s_follow_pb2.FollowActivityResponse()
         follower_actor = self._activ_util.build_actor(
@@ -48,7 +65,8 @@ class SendFollowServicer:
             req.followed.handle, req.followed.host)
         self._logger.debug('Sending follow activity to foreign server')
         self._logger.debug(str(activity))
-        _, err = self._activ_util.send_activity(activity, inbox_url)
+
+        err = self._send(activity, inbox_url)
         if err is None:
             resp.result_type = s2s_follow_pb2.FollowActivityResponse.OK
         else:

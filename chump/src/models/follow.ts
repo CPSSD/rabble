@@ -37,7 +37,6 @@ export function CreateFollow(username: string, followedHandle: string, followedH
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(postBody)
-      .retry(2)
       .end((error, res) => {
         if (error) {
           reject(error);

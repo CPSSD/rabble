@@ -11,6 +11,8 @@ class SendFollowServicerTest(unittest.TestCase):
     def setUp(self):
         self.activ_util = ActivitiesUtil(Mock(), Mock())
         self.servicer = SendFollowServicer(Mock(), self.activ_util)
+        self.mock_response = Mock()
+        self.mock_response.text = '{"success": true, "error": ""}'
 
     def test_build_activity(self):
         e = self.servicer._build_activity('FOLLOWER', 'FOLLOWED')
@@ -23,7 +25,7 @@ class SendFollowServicerTest(unittest.TestCase):
 
     def test_SendFollowActivity(self):
         with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
-            mock_send.return_value = ("response", None)
+            mock_send.return_value = (self.mock_response, None)
             req = s2s_follow_pb2.FollowDetails()
             req.follower.host = 'follower.com'
             req.follower.handle = 'a'
@@ -33,6 +35,40 @@ class SendFollowServicerTest(unittest.TestCase):
             self.assertEqual(resp.result_type,
                              s2s_follow_pb2.FollowActivityResponse.OK)
             self.assertEqual(resp.error, '')
+            expected = self.servicer._build_activity('https://follower.com/ap/@a',
+                                                     'https://followed.com/ap/@b')
+            mock_send.assert_called_once_with(expected,
+                                              'https://followed.com/ap/@b/inbox')
+
+    def test_SendFollowActivity_foreign_error(self):
+        self.mock_response.text = '{"success": false, "error": "Some Error"}'
+        with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
+            mock_send.return_value = (self.mock_response, None)
+            req = s2s_follow_pb2.FollowDetails()
+            req.follower.host = 'follower.com'
+            req.follower.handle = 'a'
+            req.followed.host = 'followed.com'
+            req.followed.handle = 'b'
+            resp = self.servicer.SendFollowActivity(req, None)
+            self.assertEqual(resp.result_type,
+                             s2s_follow_pb2.FollowActivityResponse.ERROR)
+            expected = self.servicer._build_activity('https://follower.com/ap/@a',
+                                                     'https://followed.com/ap/@b')
+            mock_send.assert_called_once_with(expected,
+                                              'https://followed.com/ap/@b/inbox')
+
+    def test_SendFollowActivity_json_error(self):
+        self.mock_response.text = "{invalid-json}}}}"
+        with patch(__name__ + '.ActivitiesUtil.send_activity') as mock_send:
+            mock_send.return_value = (self.mock_response, None)
+            req = s2s_follow_pb2.FollowDetails()
+            req.follower.host = 'follower.com'
+            req.follower.handle = 'a'
+            req.followed.host = 'followed.com'
+            req.followed.handle = 'b'
+            resp = self.servicer.SendFollowActivity(req, None)
+            self.assertEqual(resp.result_type,
+                             s2s_follow_pb2.FollowActivityResponse.ERROR)
             expected = self.servicer._build_activity('https://follower.com/ap/@a',
                                                      'https://followed.com/ap/@b')
             mock_send.assert_called_once_with(expected,

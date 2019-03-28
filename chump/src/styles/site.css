@@ -2,37 +2,56 @@ html {
   font-family: sans;
 }
 
-html, button, input, select, textarea,
-.pure-g [class *= "pure-u"] {
-    font-family: Georgia, Times, "Times New Roman", serif;
-    font-size: 21px;
-    line-height: 1.5;
+:root {
+  --primary-bg-color: #0097a7;
+
+  /* These two colors are by default white and black, and represent everyday
+   * elements like text and the white page background. */
+  --primary-light-color: #000;
+  --primary-dark-color: #FFF;
+
+  /* These gray colors are generally used to offset from normal text */
+  --dark-color-one: #AAA;
+  --dark-color-two: #888;
+  --dark-color-three: #666;
+
+  /* This color is generally used for disabled items in the UI */
+  --dark-color-disabled: #938d8b;
+
+  /* This color is used for higlighting */
+  --light-color-highlight: #a8201a;
+}
+
+html, button, input, select, textarea, .pure-g [class *="pure-u"] {
+  font-family: Georgia, Times, "Times New Roman", serif;
+  font-size: 21px;
+  line-height: 1.5;
 }
 
 .pure-menu-link {
-    margin: 0.2em;
-    padding: 0;
-    height: 100%;
-    text-align: center;
-    color: #fff;
+  margin: 0.2em;
+  padding: 0;
+  height: 100%;
+  text-align: center;
+  color: var(--primary-dark-color);
 }
 
 .pure-menu-link:hover {
-    background-color: rgb(255, 255, 255, 0.5);
-    color: #0097a7;
+  background-color: rgb(255, 255, 255, 0.5);
+  color: var(--primary-bg-color);
 }
 
 .topnav {
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
-    margin-bottom: 1em;
-    background-color: #0097a7;
-    color: #FFF;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin-bottom: 1em;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .topnav p {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .centre-brand {
@@ -41,7 +60,7 @@ html, button, input, select, textarea,
 }
 
 .brand {
-  color: #fff;
+  color: var(--primary-dark-color);
   font-size: 1.2em;
   font-weight: bold;
   text-decoration: none;
@@ -57,7 +76,7 @@ html, button, input, select, textarea,
   padding-bottom: 0;
   font-size: 0.8em;
   text-align: left;
-  color: #666;
+  color: var(--dark-color-three);
 }
 
 .reblog-line {
@@ -66,7 +85,7 @@ html, button, input, select, textarea,
   padding-bottom: 0;
   font-size: 1em;
   text-align: left;
-  color: #666;
+  color: var(--dark-color-three);
 }
 
 .article-title {
@@ -78,7 +97,7 @@ html, button, input, select, textarea,
   font-size: 2.6em;
   line-height: 1.1em;
   text-decoration: none;
-  color: #000;
+  color: var(--primary-light-color);
 }
 
 .article-body {
@@ -87,7 +106,7 @@ html, button, input, select, textarea,
 }
 
 .author-about {
-  color: #666;
+  color: var(--dark-color-three);
   font-size: 0.75em;
   margin-top: 1em;
 }
@@ -102,27 +121,27 @@ html, button, input, select, textarea,
   margin-right: 10px;
   font-weight: bold;
   font-size: 1.15em;
-  color: #666;
+  color: var(--dark-color-three);
   text-decoration: none;
 }
 
 .author-displayname:hover {
-  color: #888;
+  color: var(--dark-color-two);
 }
 
 .author-handle {
   font-style: italic;
-  color: #888;
+  color: var(--dark-color-two);
 }
 
 .author-bio {
   word-break: break-all;
-  color: #666;
+  color: var(--dark-color-three);
   font-size: 0.88em;
 }
 
 .author-handle:hover {
-  color: #AAA;
+  color: var(--dark-color-one);
 }
 
 .blog-post-holder {
@@ -150,29 +169,29 @@ html, button, input, select, textarea,
   margin-right: 5%;
 }
 
-.home-menu  {
+.home-menu {
   float: left;
   text-align: left;
 }
 
 .menu-dropdown {
-  background-color: #0097a7;
-  color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .button-link {
-  background:none;
-  border:none;
-  padding:0;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
-.pure-menu-has-children > .button-link::after {
+.pure-menu-has-children>.button-link::after {
   font-size: medium;
 }
 
 .pure-form .search-rounded[name="query"] {
-  color: #0097a7;
-  border-radius:2em;
+  color: var(--primary-bg-color);
+  border-radius: 2em;
   padding: .1em 0.5em;
 }
 
@@ -181,70 +200,73 @@ html, button, input, select, textarea,
 }
 
 .search-button {
-  color: #0097a7;
-  background-color: #FFF;
+  color: var(--primary-bg-color);
+  background-color: var(--primary-dark-color);
   border-radius: 1em;
   padding: .2em 0.2em;
 }
 
 .primary-button {
-  background: #0097a7;
+  background: var(--primary-bg-color);
 }
 
 @media only screen and (max-width: 700px) {
-    .search-form {
-        display: none;
-    }
+  .search-form {
+    display: none;
+  }
 }
 
 button.follow-button {
-    text-align: right;
-    min-width: 8em;
-    font-size: 0.9em;
+  text-align: right;
+  min-width: 8em;
+  font-size: 0.9em;
 }
 
+
 /* When it is not hovered, Unfollow button says "Following" and is grey. */
+
 button.follow-button.unfollow {
-    background-color: #938d8b;
+  background-color: var(--dark-color-disabled);
 }
 
 button.follow-button .unfollow-button-content {
-    display: none;
+  display: none;
 }
 
 button.follow-button .following-button-content {
-    display: block;
+  display: block;
 }
+
 
 /* When it is hovered, Unfollow button says "Unfollow" and turns red. */
 button.follow-button.unfollow:hover {
-    background-color: #a8201a;
+  background-color: var(--light-color-highlight);
 }
 
 button.follow-button:hover .following-button-content {
-    display: none;
+  display: none;
 }
 
 button.follow-button:hover .unfollow-button-content {
-    display: block;
+  display: block;
 }
 
 button.follow-button svg {
-    float: left;
-    padding-right: 0.5em;
+  float: left;
+  padding-right: 0.5em;
 }
 
 .follow-holder {
-    float: right;
+  float: right;
 }
 
 .username-holder {
-    float: left;
+  float: left;
 }
 
 .user-dropdown {
-    background-color: #0097a7;
-    color: #FFF;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
 }
 
 .full-search-form {
@@ -252,13 +274,46 @@ button.follow-button svg {
 }
 
 .reblog-icon {
-  color: #000000;
-  background-color: #0097a7;
+  color: var(--primary-light-color);
+  background-color: var(--primary-bg-color);
   padding: 4px 4px 4px 4px;
 }
 
 .reblog-icon-reblogged {
-  color: #000000;
-  background-color: #938d8b;
+  color: var(--primary-light-color);
+  background-color: var(--dark-color-disabled);
   padding: 4px 4px 4px 4px;
+}
+
+.shares-count {
+  margin-top: 0;
+}
+
+.react-tagsinput-tag {
+  background-color: var(--primary-bg-color);
+  color: var(--primary-dark-color);
+  border: none;
+}
+
+.post-tag {
+  color: var(--primary-bg-color);
+  border: 1px solid var(--primary-bg-color);
+}
+
+.post-tag-holder {
+  text-align: center;
+}
+
+.profile-item {
+  margin-right: 1em;
+}
+
+.profile-button {
+  color: var(--dark-color-three);
+}
+
+.profile-list {
+ border-bottom-width: 2px;
+ border-bottom-color: var(--primary-bg-color);
+ border-bottom-style: solid;
 }

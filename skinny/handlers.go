@@ -28,11 +28,9 @@ const (
 	timeoutDuration      = time.Minute * 5
 )
 
-type createArticleStruct struct {
-	Author           string `json:"author"`
-	Body             string `json:"body"`
-	Title            string `json:"title"`
-	CreationDatetime string `json:"creation_datetime"`
+type clientResp struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
 
 func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Timestamp, error) {
@@ -57,12 +55,6 @@ func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Ti
 		return nil, fmt.Errorf(invalidCreationTimeMessage)
 	}
 
-	timeSinceRequest := time.Since(parsedCreationDatetime)
-	if !old && (timeSinceRequest >= timeoutDuration || timeSinceRequest < 0) {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Old creation time\n")
-		return nil, fmt.Errorf("Old creation time")
-	}
 	return protoTimestamp, nil
 }
 
@@ -96,8 +88,19 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
+		strUserID := v["userId"]
+		userID := int64(0)
+		if strUserID != "" {
+			var err error
+			userID, err = strconv.ParseInt(strUserID, 10, 64)
+			if err != nil {
+				log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+				w.WriteHeader(http.StatusBadRequest) // Bad Request.
+				return
+			}
+		}
 
-		fr := &pb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{UserId: userID}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
@@ -131,12 +134,14 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
+
+		username, ok := v["username"]
+		if !ok || username == "" {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 
-		fr := &pb.FeedRequest{Username: v["username"]}
+		fr := &pb.FeedRequest{Username: username}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
@@ -170,11 +175,19 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in RssPerUserl\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
-		ue := &pb.UsersEntry{Handle: v["username"]}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		ue := &pb.UsersEntry{GlobalId: userID}
 		resp, err := s.rss.PerUserRss(ctx, ue)
 		if err != nil {
 			log.Printf("Error in rss.PerUserRss(%v): %v", *ue, err)
@@ -201,14 +214,22 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 func (s *serverWrapper) handleUserCss() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest)
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in UserCss\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		resp, err := s.users.GetCss(ctx, &pb.GetCssRequest{
-			Handle: v["username"],
+			UserId: userID,
 		})
 		if err != nil {
 			log.Printf("Error in users.GetCss: %v", err)
@@ -232,23 +253,21 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		log.Println("Per Article page called")
 
 		v := mux.Vars(r)
-		username, uOk := v["username"]
-		strArticleId, aOk := v["article_id"]
-		if !uOk || !aOk || strArticleId == "" || username == "" {
-			log.Println("Per Article page passed bad url values")
+		strArticleID, aOk := v["article_id"]
+		if !aOk || strArticleID == "" {
+			log.Println("Per Article page passed bad articleId value")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		articleId, string2IntErr := strconv.ParseInt(strArticleId, 10, 64)
-
+		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
 		if string2IntErr != nil {
 			log.Println("Article ID could not be converted to int")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		fr := &pb.ArticleRequest{ArticleId: articleId}
+		fr := &pb.ArticleRequest{ArticleId: articleID}
 		if global_id, err := s.getSessionGlobalId(r); err == nil {
 			// If the user is logged in then propagate their global ID.
 			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
@@ -492,16 +511,27 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 	}
 }
 
+type createArticleStruct struct {
+	Author           string   `json:"author"`
+	Body             string   `json:"body"`
+	Title            string   `json:"title"`
+	CreationDatetime string   `json:"creation_datetime"`
+	Tags             []string `json:"tags"`
+}
+
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t createArticleStruct
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			cResp.Error = "Invalid JSON"
+			enc.Encode(cResp)
 			return
 		}
 
@@ -511,20 +541,22 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			return
 		}
 
-		handle, err := s.getSessionHandle(r)
-		if err != nil {
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Login Required")
+			w.WriteHeader(http.StatusUnauthorized)
+			cResp.Error = "Login Required"
+			enc.Encode(cResp)
 			return
 		}
 
 		na := &pb.NewArticle{
-			Author:           handle,
+			AuthorId:         globalID,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
 			Foreign:          false,
+			Tags:             t.Tags,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -533,13 +565,22 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not create new article: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with creating article\n")
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
+			return
+		}
+		if resp.ResultType == pb.NewArticleResponse_ERROR {
+			log.Printf("Could not create new article: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with creating article"
+			enc.Encode(cResp)
 			return
 		}
 
-		log.Printf("User %#v attempted to create a post with title: %v\n", t.Author, t.Title)
-		fmt.Fprintf(w, "Created blog with title: %v and result type: %d\n", t.Title, resp.ResultType)
-		// TODO(sailslick) send the response
+		log.Printf("User Id: %#v attempted to create a post with title: %v\n", globalID, t.Title)
+		w.WriteHeader(http.StatusOK)
+		cResp.Message = "Article created"
+		enc.Encode(cResp)
 	}
 }
 
@@ -562,8 +603,16 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
+			log.Printf("Preview Article call from user not logged in")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Login Required")
+			return
+		}
+
 		na := &pb.NewArticle{
-			Author:           t.Author,
+			AuthorId:         globalID,
 			Body:             t.Body,
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
@@ -579,7 +628,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("User %#v attempted to create preview with title: %v\n", t.Author, t.Title)
+		log.Printf("User Id: %#v attempted to create preview with title: %v\n", globalID, t.Title)
 		w.Header().Set("Content-Type", "application/json")
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc := json.NewEncoder(w)
@@ -739,23 +788,23 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 				return
 			}
 		} else {
-			// Send an unlike (delete)
-			del := &pb.LikeDeleteDetails{
+			// Send an unlike (undo)
+			del := &pb.LikeUndoDetails{
 				ArticleId:   t.ArticleId,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			resp, err := s.s2sDelete.SendLikeDeleteActivity(ctx, del)
+			resp, err := s.s2sUndo.SendLikeUndoActivity(ctx, del)
 			if err != nil {
-				log.Printf("Could not send delete: %v", err)
+				log.Printf("Could not send undo: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				r.Success = false
 				r.ErrorStr = "Issue with unliking"
 				enc.Encode(r)
 				return
-			} else if resp.ResultType != pb.DeleteResponse_OK {
-				log.Printf("Could not send delete: %v", resp.Error)
+			} else if resp.ResultType != pb.UndoResponse_OK {
+				log.Printf("Could not send undo: %v", resp.Error)
 				w.WriteHeader(http.StatusInternalServerError)
 				r.Success = false
 				r.ErrorStr = "Issue with unliking"
@@ -774,12 +823,20 @@ func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 		defer cancel()
 
 		v := mux.Vars(r)
-		if username, ok := v["username"]; !ok || username == "" {
-			w.WriteHeader(http.StatusBadRequest) // Bad Request
+		strUserID, ok := v["userId"]
+		if !ok || strUserID == "" {
+			log.Printf("Could not parse userId from url in handleRecommendFollows\n")
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+		userID, err := strconv.ParseInt(strUserID, 10, 64)
+		if err != nil {
+			log.Printf("Could not convert userId to int64: id(%v)\n", strUserID)
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 
-		req := &pb.FollowRecommendationRequest{Username: v["username"]}
+		req := &pb.FollowRecommendationRequest{UserId: userID}
 		resp, err := s.followRecommendations.GetFollowRecommendations(ctx, req)
 		if err != nil {
 			log.Printf("Error in handleRecommendFollows(%v): %v", *req, err)
@@ -985,5 +1042,144 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (s *serverWrapper) handleGetFollowers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fq := &pb.GetFollowsRequest{
+			Username: username,
+		}
+
+		followers, err := s.follows.GetFollowers(ctx, fq)
+		if err != nil {
+			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(followers)
+		if err != nil {
+			log.Printf("could not marshal followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fq := &pb.GetFollowsRequest{
+			Username: username,
+		}
+
+		followers, err := s.follows.GetFollowing(ctx, fq)
+		if err != nil {
+			log.Printf("Error in handleGetFollowers(): could not get followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(followers)
+		if err != nil {
+			log.Printf("could not marshal followers: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		uid, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handlePostRecommendations: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		prr := &pb.PostRecommendationsRequest{UserId: uid}
+		resp, err := s.postRecommendations.Get(ctx, prr)
+		if err != nil {
+			log.Printf("Error in postRecommendations.Get: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if resp.ResultType != pb.PostRecommendationsResponse_OK {
+			log.Printf("Error in postRecommendations.Get: %v", resp.Message)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("Could not marshal post recommendations: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// NoOpReplyStruct Reply structure for a noop request
+type NoOpReplyStruct struct {
+	Message string `json:"message"`
+}
+
+// handleNoOp is the handler for any service that is not running on this
+// instance. The services that are configurable provide their docker routes as
+// env vars to the skinny server. If those routes are equal to the no-op
+// container skinny will route all calls to those services to this handler.
+func (s *serverWrapper) handleNoOp() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := s.getSessionGlobalId(r)
+		if err != nil {
+			log.Printf("Access denied in handleNoOp: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+
+		reply := NoOpReplyStruct{
+			Message: "This option has been turned off on this rabble instance",
+		}
+		w.WriteHeader(http.StatusNotImplemented)
+		enc.SetEscapeHTML(false)
+		err = enc.Encode(reply)
+		if err != nil {
+			log.Printf("Could not marshal no op reply: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }

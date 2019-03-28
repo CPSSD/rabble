@@ -7,6 +7,7 @@ import { IParsedPost } from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
+import { GenerateUserLinks, RemoveProtocol } from "./util";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -20,6 +21,8 @@ interface IPostState {
   isLiked: boolean;
 }
 
+const userLinksClassName = "username-holder";
+
 export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
@@ -28,6 +31,9 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     }
     if (this.props.blogPost.is_liked === undefined) {
       this.props.blogPost.is_liked = false;
+    }
+    if (this.props.blogPost.shares_count === undefined) {
+      this.props.blogPost.shares_count = 0;
     }
     if (this.props.blogPost.is_shared === undefined) {
       this.props.blogPost.is_shared = false;
@@ -59,8 +65,20 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         <link
           rel="stylesheet"
           type="text/css"
-          href={`/c2s/@${this.props.blogPost.author}/css`}
+          href={`/c2s/${this.props.blogPost.author_id}/css`}
         />
+      );
+    }
+
+    let tags;
+    if (typeof this.props.blogPost.tags !== "undefined" && this.props.blogPost.tags.length !== 0) {
+      tags = (
+        <div className="pure-g">
+          <div className="pure-u-3-24" key={-1}>
+            <p>Tags:</p>
+          </div>
+          {this.renderTags()}
+        </div>
       );
     }
     return (
@@ -81,14 +99,14 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
         />
 
-        <div>
-          <Reblog
-            username={this.props.username}
-            initReblogged={this.props.blogPost.is_shared}
-            display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-            blogPost={this.props.blogPost}
-          />
-        </div>
+        <Reblog
+          username={this.props.username}
+          initReblogged={this.props.blogPost.is_shared}
+          sharesCount={this.props.blogPost.shares_count}
+          display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+          blogPost={this.props.blogPost}
+        />
+        {tags}
       </div>
     );
   }
@@ -107,6 +125,10 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       LikeButton = false;
     }
 
+    const userLink = GenerateUserLinks(this.props.blogPost.author,
+      this.props.blogPost.author_host, this.props.blogPost.author_display,
+      userLinksClassName);
+
     return (
       <div className="pure-u-3-24">
         <div className="author-about">
@@ -116,22 +138,15 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             className="author-thumbnail"
           />
           <div style={{width: "100%"}}>
-              <div style={{float: "left"}} >
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-displayname">
-                    {this.props.blogPost.author}
-                  </Link><br/>
-                  <Link to={`/@${this.props.blogPost.author}`} className="author-handle">
-                    @{this.props.blogPost.author}
-                  </Link>
-              </div>
-              <div style={{float: "right"}} >
-                  <FollowButton
-                      follower={this.props.username}
-                      followed={this.props.blogPost.author}
-                      followed_host={this.props.blogPost.author_host}
-                      following={this.props.blogPost.is_followed}
-                  />
-              </div>
+            {userLink}
+            <div style={{float: "right"}} >
+                <FollowButton
+                    follower={this.props.username}
+                    followed={this.props.blogPost.author}
+                    followed_host={this.props.blogPost.author_host}
+                    following={this.props.blogPost.is_followed}
+                />
+            </div>
           </div>
 
           <div style={{clear: "both"}}>
@@ -150,6 +165,16 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </div>
       </div>
     );
+  }
+
+  private renderTags() {
+    return this.props.blogPost.tags.map((e: string, i: number) => {
+      return (
+        <div className="pure-u-3-24 post-tag-holder" key={i}>
+          <p className="post-tag">{e}</p>
+        </div>
+      );
+    });
   }
 
   private handleNoProfilePic(event: any) {

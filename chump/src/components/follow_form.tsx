@@ -11,6 +11,7 @@ interface IFormState {
 
 export interface IFormProps {
   username: string;
+  userId: number;
 }
 
 export class FollowForm extends RootComponent<IFormProps, IFormState> {

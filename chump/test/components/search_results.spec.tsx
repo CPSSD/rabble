@@ -19,6 +19,7 @@ let searchRequestPromise: any;
 
 const validParsedPost: IParsedPost[] = [{
   author: "aaron",
+  author_display: "",
   author_host: "",
   author_id: 0,
   bio: "bio",
@@ -31,13 +32,15 @@ const validParsedPost: IParsedPost[] = [{
   likes_count: 1,
   parsed_date: now,
   published: "",
+  shares_count: 1,
+  tags: ["test"],
   title: "how to write a plugin",
 }];
 
 const validUser: Search.IParsedUser = {
   bio: "bio",
   display_name: "the.aaron",
-  global_id: "4",
+  global_id: 4,
   handle: "aaron",
   host: "google.com",
   image: "test",

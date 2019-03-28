@@ -7,14 +7,13 @@ import { RootComponent } from "./root_component";
 
 interface ISinglePostState {
   posts: IParsedPost[];
-  user: string;
 }
 
 interface ISinglePostProps extends RouteProps {
   match: {
     params: {
-      user: string,
       article_id: string,
+      user: string,
     },
   };
   username: string;
@@ -25,16 +24,14 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
     super(props);
     this.state = {
       posts: [],
-      user: "",
     };
   }
 
   public componentDidMount() {
-    GetSinglePost(this.props.match.params.user, this.props.match.params.article_id)
+    GetSinglePost(this.props.match.params.article_id)
       .then((posts: IParsedPost[]) => {
         this.setState({
           posts,
-          user: this.props.match.params.user,
         });
       })
       .catch(this.handleGetPostErr);

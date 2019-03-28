@@ -3,9 +3,24 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	webfinger "github.com/writeas/go-webfinger"
 )
+
+const (
+	noOpLocation             = "./services/noop"
+	postServiceLocationEnv   = "POST_RECOMMENDATIONS_NO_OP"
+	followServiceLocationEnv = "FOLLOW_RECOMMENDATIONS_NO_OP"
+)
+
+func (s *serverWrapper) getNoOpServiceHandler(env string, defaultFunc http.HandlerFunc) http.HandlerFunc {
+	serviceLocation := os.Getenv(env)
+	if serviceLocation == noOpLocation {
+		return s.handleNoOp()
+	}
+	return defaultFunc
+}
 
 // setupRoutes specifies the routing of all endpoints on the server.
 // Centralised routing config allows easier debugging of a specific endpoint,
@@ -30,12 +45,22 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
-	r.HandleFunc("/c2s/feed/{username}", s.handleFeed())
+	r.HandleFunc("/c2s/feed/{userId}", s.handleFeed())
 	r.HandleFunc("/c2s/@{username}", s.handleFeedPerUser())
-	r.HandleFunc("/c2s/@{username}/rss", s.handleRssPerUser())
-	r.HandleFunc("/c2s/@{username}/css", s.handleUserCss())
-	r.HandleFunc("/c2s/@{username}/recommend_follows", s.handleRecommendFollows())
-	r.HandleFunc("/c2s/@{username}/{article_id}", s.handlePerArticlePage())
+	r.HandleFunc("/c2s/{userId}/rss", s.handleRssPerUser())
+	r.HandleFunc("/c2s/{userId}/css", s.handleUserCss())
+	r.HandleFunc("/c2s/article/{article_id}", s.handlePerArticlePage())
+	r.HandleFunc("/c2s/@{username}/followers", s.handleGetFollowers())
+	r.HandleFunc("/c2s/@{username}/following", s.handleGetFollowing())
+
+	// TODO(sailslick): move these below after user_id change comes in
+	// That change will stop perArticle from catching all urls
+	// These may be no-op services
+	r.HandleFunc("/c2s/{userId}/recommend_follows",
+		s.getNoOpServiceHandler(followServiceLocationEnv, s.handleRecommendFollows()))
+	r.HandleFunc("/c2s/recommend_posts",
+		s.getNoOpServiceHandler(postServiceLocationEnv, s.handlePostRecommendations()))
+
 	r.HandleFunc("/c2s/follow", s.handleFollow())
 	r.HandleFunc("/c2s/unfollow", s.handleUnfollow())
 	r.HandleFunc("/c2s/rss_follow", s.handleRssFollow())
@@ -57,16 +82,16 @@ func (s *serverWrapper) setupRoutes() {
 	// ActorInbox routes are routed based on the activity type
 	s.actorInboxRouter = map[string]http.HandlerFunc{
 		"create":   s.handleCreateActivity(),
-		"delete":   s.handleDeleteActivity(),
+		"undo":     s.handleUndoActivity(),
 		"follow":   s.handleFollowActivity(),
 		"like":     s.handleLikeActivity(),
 		"accept":   approvalHandler,
 		"reject":   approvalHandler,
 		"announce": s.handleAnnounceActivity(),
 	}
-	s.deleteActivityRouter = map[string]http.HandlerFunc{
-		"like": s.handleLikeDeleteActivity(),
-		"follow": s.handleFollowDeleteActivity(),
+	s.undoActivityRouter = map[string]http.HandlerFunc{
+		"like": s.handleLikeUndoActivity(),
+    "follow": s.handleFollowDeleteActivity(),
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 	r.HandleFunc("/ap/@{username}", s.handleActor())

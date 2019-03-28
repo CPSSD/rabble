@@ -13,10 +13,12 @@ const now: Date = new Date();
 const examplePost = {
   author: "sips",
   body: "id be in so much trouble<br>i'd never live it down<br>lol",
-  global_id: "3",
+  global_id: 3,
   likes_count: 1,
   parsed_date: now,
   published: "",
+  shares_count: 1,
+  tags: ["test"],
   title: "the man, the myth, the legend",
 };
 

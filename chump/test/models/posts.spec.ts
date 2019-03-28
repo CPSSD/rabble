@@ -23,6 +23,7 @@ const validBody: IFeedResponse = {
   post_title_css: "",
   results: [{
     author: "aaron",
+    author_display: "",
     author_host: "",
     author_id: 0,
     bio: "bio",
@@ -34,6 +35,8 @@ const validBody: IFeedResponse = {
     is_shared: false,
     likes_count: 1,
     published: "",
+    shares_count: 1,
+    tags: [""],
     title: "how to write a plugin",
   }],
   share_results: [],
@@ -41,6 +44,7 @@ const validBody: IFeedResponse = {
 
 const evalidBody: IParsedPost[] = [{
   author: "aaron",
+  author_display: "",
   author_host: "",
   author_id: 0,
   bio: "bio",
@@ -53,6 +57,8 @@ const evalidBody: IParsedPost[] = [{
   likes_count: 1,
   parsed_date: now,
   published: "",
+  shares_count: 1,
+  tags: [""],
   title: "how to write a plugin",
 }];
 
@@ -72,11 +78,11 @@ describe("GetPublicPosts", () => {
     });
   });
 
-  it("should handle a username", (done) => {
+  it("should handle a userId", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetPublicPosts("username").then((posts: IParsedPost[]) => {
+    GetPublicPosts(2).then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
-      expect(getRequest.calledWith("/c2s/feed/username")).to.be.ok;
+      expect(getRequest.calledWith("/c2s/feed/2")).to.be.ok;
       expect(posts).to.eql(validBody.results);
       done();
     });
@@ -106,9 +112,9 @@ describe("GetPublicPosts", () => {
 
   it("should handle a single Post request", (done) => {
     const getRequest = createFakeResponse(validBody);
-    GetSinglePost("username", "id").then((posts: IParsedPost[]) => {
+    GetSinglePost("2").then((posts: IParsedPost[]) => {
       expect(getRequest).to.have.property("callCount", 1);
-      expect(getRequest.calledWith("/c2s/@username/id")).to.be.ok;
+      expect(getRequest.calledWith("/c2s/article/2")).to.be.ok;
       expect(posts).to.eql(validBody.results);
       done();
     });

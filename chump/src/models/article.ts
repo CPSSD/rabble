@@ -2,10 +2,10 @@ import * as Promise from "bluebird";
 import * as request from "superagent";
 
 interface ICreateArticlePostBody {
-  author: string;
   body: string;
   creation_datetime: string;
   title: string;
+  tags: string[];
 }
 
 export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostBody) {
@@ -15,7 +15,6 @@ export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostB
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(postBody)
-      .retry(2)
       .end((error, res) => {
         if (error) {
           reject(error);
@@ -26,25 +25,25 @@ export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostB
   });
 }
 
-export function CreateArticle(username: string, title: string, blogText: string) {
+export function CreateArticle(title: string, blogText: string, tags: string[]) {
   const endpoint: string = "/c2s/create_article";
   const createdTime: string = new Date().toISOString();
   const postBody: ICreateArticlePostBody = {
-    author: username,
     body: blogText,
     creation_datetime: createdTime,
+    tags,
     title,
   };
   return CreateAPIPromise(endpoint, postBody);
 }
 
-export function CreatePreview(username: string, title: string, blogText: string) {
+export function CreatePreview(title: string, blogText: string) {
   const endpoint: string = "/c2s/preview_article";
   const createdTime: string = new Date().toISOString();
   const postBody: ICreateArticlePostBody = {
-    author: username,
     body: blogText,
     creation_datetime: createdTime,
+    tags: [],
     title,
   };
   return CreateAPIPromise(endpoint, postBody);

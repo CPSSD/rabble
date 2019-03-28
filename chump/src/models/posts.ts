@@ -3,6 +3,7 @@ import * as superagent from "superagent";
 
 interface IBlogPost {
   author: string;
+  author_display: string;
   author_host: string;
   author_id: number;
   bio: string;
@@ -15,12 +16,15 @@ interface IBlogPost {
   title: string;
   is_followed: boolean;
   is_shared: boolean;
+  shares_count: number;
+  tags: string[];
 }
 
 interface ISharedPost extends IBlogPost {
   share_datetime: string;
   sharer: string;
   sharer_bio: string;
+  sharer_host: string;
 }
 
 export interface IFeedResponse {
@@ -43,6 +47,7 @@ export interface IParsedSharedPost extends IParsedPost, ISharedPost {
 export type IAnyParsedPost = IParsedPost | IParsedSharedPost;
 
 const feedApiURL = "/c2s/feed";
+const singleArticleApiURL = "/c2s/article/";
 const perUserApiURL = "/c2s/@";
 
 export function IsSharedPost(p: IAnyParsedPost) {
@@ -54,6 +59,9 @@ export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: 
   b = b as IParsedPost[];
   b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
+    if (typeof(e.author_display) === "undefined" || e.author_display === "") {
+      e.author_display = e.author;
+    }
     if (e.bio === undefined || e.bio === "") {
       e.bio = "Nowadays everybody wanna talk like they got something to say. \
       But nothing comes out when they move their lips; just a bunch of gibberish.";
@@ -125,16 +133,16 @@ export function PostsAPIPromise(url: string) {
 }
 
 export function GetUsersPosts(username: string) {
-  const url = `${perUserApiURL}${encodeURIComponent(username)}`;
+  const url = `${perUserApiURL}${username}`;
   return PostsAPIPromise(url);
 }
 
-export function GetSinglePost(username: string, id: string) {
-  const url = `${perUserApiURL}${encodeURIComponent(username)}/${id}`;
+export function GetSinglePost(id: string) {
+  const url = `${singleArticleApiURL}${id}`;
   return PostsAPIPromise(url);
 }
 
-export function GetPublicPosts(username= "") {
-  const url = username === "" ? feedApiURL : `${feedApiURL}/${encodeURIComponent(username)}`;
+export function GetPublicPosts(userId= 0) {
+  const url = userId === 0 ? feedApiURL : `${feedApiURL}/${userId.toString()}`;
   return PostsAPIPromise(url);
 }

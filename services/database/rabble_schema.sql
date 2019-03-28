@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS posts (
   md_body           text    NOT NULL,
   ap_id             text    NOT NULL,
   likes_count       integer NOT NULL DEFAULT 0,
-  shares_count      integer NOT NULL DEFAULT 0
+  shares_count      integer NOT NULL DEFAULT 0,
+  tags              text    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (

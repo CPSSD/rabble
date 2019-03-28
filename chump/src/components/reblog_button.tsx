@@ -11,10 +11,12 @@ interface IReblogProps {
   initReblogged: boolean;
   display: boolean;
   blogPost: IParsedPost;
+  sharesCount: number;
 }
 
 interface IReblogState {
   isReblogged: boolean;
+  sharesCount: number;
 }
 
 export class Reblog extends RootComponent<IReblogProps, IReblogState> {
@@ -23,16 +25,30 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
 
     this.state = {
       isReblogged: this.props.initReblogged,
+      sharesCount: this.props.sharesCount,
     };
 
     this.handleReblog = this.handleReblog.bind(this);
+    this.renderButton = this.renderButton.bind(this);
   }
 
   public render() {
-    if (!this.props.display) {
-      return null;
+    let button = (<div/>);
+    if (this.props.display) {
+      button = this.renderButton();
     }
 
+    return (
+      <div>
+        <div className="pure-u-5-24">
+            <p className="shares-count"> Shares: {this.state.sharesCount} </p>
+        </div>
+        {button}
+      </div>
+    );
+  }
+
+  public renderButton() {
     let inner = this.reblogInner;
     let handler = this.handleReblog;
     if (this.state.isReblogged) {
@@ -42,7 +58,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
     }
 
     return (
-      <div onClick={handler}>
+      <div onClick={handler} className="pure-u-5-24">
         {inner()}
       </div>
     );
@@ -65,6 +81,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
       .then((res: any) => {
         this.setState({
           isReblogged: true,
+          sharesCount: this.state.sharesCount + 1,
         });
       })
       .catch((err: any) => {

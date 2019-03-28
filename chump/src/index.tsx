@@ -15,9 +15,8 @@ import {Logout} from "./components/logout";
 import {User} from "./components/user_feed";
 import {Follow} from "./components/follow";
 import {SinglePost} from "./components/single_post";
-import {AccountEdit} from "./components/account_edit";
-import {Pending} from "./components/pending";
 import {SearchResults} from "./components/search_results";
+import {UserProfile} from "./components/user_profile";
 
 import { SendView } from "./models/view";
 
@@ -26,10 +25,12 @@ require("./styles/site.css"); // tslint:disable-line
 // IAppState is top level state.
 // Don't put state that might change often here.
 interface IAppState {
-  username: string
+  username: string;
+  userId: number;
 }
 
 const LOCAL_STORAGE_USERNAME : string = "username";
+const LOCAL_STORAGE_USERID : string = "userid";
 
 export class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {
@@ -37,6 +38,7 @@ export class App extends React.Component<{}, IAppState> {
 
     this.state = {
       username: this.getUsername(),
+      userId: this.getUserId(),
     }
 
     this.getUsername = this.getUsername.bind(this);
@@ -52,14 +54,29 @@ export class App extends React.Component<{}, IAppState> {
     return localStorage.getItem(LOCAL_STORAGE_USERNAME)!;
   }
 
-  login(username: string) {
-    this.setState({username});
+  getUserId() : number {
+    if (!localStorage.hasOwnProperty(LOCAL_STORAGE_USERID)) {
+      return 0;
+    }
+    return parseInt(localStorage.getItem(LOCAL_STORAGE_USERID)!);
+  }
+
+  login(username: string, userId: number) {
+    this.setState({
+      username,
+      userId
+    });
     localStorage.setItem(LOCAL_STORAGE_USERNAME, username);
+    localStorage.setItem(LOCAL_STORAGE_USERID, userId.toString());
   }
 
   logout() {
-    this.setState({username: ""});
+    this.setState({
+      username: "",
+      userId: 0,
+    });
     localStorage.removeItem(LOCAL_STORAGE_USERNAME);
+    localStorage.removeItem(LOCAL_STORAGE_USERID);
   }
 
   trackView() {
@@ -80,19 +97,19 @@ export class App extends React.Component<{}, IAppState> {
 
   render() {
     if (config.track_views) {
-        // Must manually log the view the first time, 
+        // Must manually log the view the first time,
         // as only hash *changes* trigger a log.
         this.trackView();
     }
     return (
       <HashRouter>
         <div>
-          <Header username={this.state.username} />
+          <Header username={this.state.username} userId={this.state.userId} />
           <Switch>
             <Route
               exact={true}
               path="/"
-              render={(props) => <Feed {...props} queryUsername="" username={this.state.username} />}
+              render={(props) => <Feed {...props} queryUserId={0} username={this.state.username} />}
             />
             <Route path="/about" component={About}/>
             <Route
@@ -101,7 +118,11 @@ export class App extends React.Component<{}, IAppState> {
             />
             <Route
               path="/@:user"
-              render={(props) => <User {...props} username={this.state.username} />}
+              render={(props) =>
+                <UserProfile {...props}
+                  username={this.state.username}
+                  userId={this.state.userId}
+               />}
             />
             <Route
               path="/login"
@@ -121,24 +142,15 @@ export class App extends React.Component<{}, IAppState> {
             />
             <PrivateRoute
               path="/feed"
-              queryUsername={this.state.username}
+              queryUserId={this.state.userId}
               username={this.state.username}
               component={Feed}
             />
             <PrivateRoute
               path="/follow"
               username={this.state.username}
+              userId={this.state.userId}
               component={Follow}
-            />
-            <PrivateRoute
-              path="/@/pending"
-              username={this.state.username}
-              component={Pending}
-            />
-            <PrivateRoute
-              path="/@/edit"
-              username={this.state.username}
-              component={AccountEdit}
             />
             <PrivateRoute path="/write" username={this.state.username} component={Write}/>
           </Switch>

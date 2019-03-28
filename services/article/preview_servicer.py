@@ -18,7 +18,7 @@ class PreviewServicer:
         self._logger.info('Recieved a new article to Preview.')
         html_body = self.get_html_body(req.body)
         na = article_pb2.NewArticle(
-            author=req.author,
+            author_id=req.author_id,
             title=req.title,
             body=html_body,
             creation_datetime=req.creation_datetime

@@ -20,6 +20,11 @@ class NewArticleServicer:
         res = self._md_stub.MarkdownToHTML(convert_req)
         return res.html_body
 
+    def convert_to_tags_string(self, tags_array):
+        # Using | to separate tags. So url encode | character in tags
+        tags_array = [x.replace("|", "%7C") for x in tags_array]
+        return "|".join(tags_array)
+
     def index(self, post_entry):
         """
         index takes a post proto and indexes it in the search service/
@@ -28,7 +33,7 @@ class NewArticleServicer:
         - post_entry (database.PostsEntry): A proto representing the post.
           This should have a valid global_id field.
         """
-        req = search_pb2.IndexRequest(post = post_entry)
+        req = search_pb2.IndexRequest(post=post_entry)
         resp = self._search_stub.Index(req)
 
         if resp.error:
@@ -38,15 +43,14 @@ class NewArticleServicer:
 
     def send_insert_request(self, req):
         global_id = req.author_id
-        if not req.foreign:
-            author = self._users_util.get_user_from_db(handle=req.author,
-                                                       host_is_null=True)
-            if author is None:
-                self._logger.error('Could not find user in db: ' + str(req.author))
-                return database_pb2.PostsResponse.error, None
-            global_id = author.global_id
+        author = self._users_util.get_user_from_db(global_id=global_id)
+        if author is None:
+            self._logger.error('Could not find user id in db: ' + str(global_id))
+            return database_pb2.PostsResponse.error, None
+        global_id = author.global_id
 
         html_body = self.get_html_body(req.body)
+        tags_string = self.convert_to_tags_string(req.tags)
         pe = database_pb2.PostsEntry(
             author_id=global_id,
             title=req.title,
@@ -54,6 +58,7 @@ class NewArticleServicer:
             md_body=req.body,
             creation_datetime=req.creation_datetime,
             ap_id=req.ap_id,
+            tags=tags_string,
         )
         pr = database_pb2.PostsRequest(
             request_type=database_pb2.PostsRequest.INSERT,
@@ -71,7 +76,7 @@ class NewArticleServicer:
     def send_create_activity_request(self, req, global_id):
         html_body = self.get_html_body(req.body)
         ad = create_pb2.ArticleDetails(
-            author=req.author,
+            author_id=req.author_id,
             title=req.title,
             body=html_body,
             md_body=req.body,

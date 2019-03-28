@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
@@ -24,6 +25,31 @@ var (
 	UserNotFoundErr = errors.New("GetAuthorFromDb: user not found")
 )
 
+// ParseUsername takes a fully qualified username and returns the username and
+// host seperatly.
+//
+// Invalid urls return a non-nil error.
+//
+// For example:
+//   "admin@rabble.dev" returns ("admin", "rabble.dev", nil)
+//   "@admin" returns ("admin", "", nil)
+//   "admin@foo@bar" returns ("", "", error)
+func ParseUsername(fqu string) (string, string, error) {
+	fqu = strings.TrimLeft(fqu, "@")
+	split := strings.Split(fqu, "@")
+	if len(split) == 1 {
+		// Local user
+		return split[0], "", nil
+	}
+	if len(split) == 2 {
+		return split[0], split[1], nil
+	}
+
+	e := fmt.Sprintf("Couldn't parse username %s", fqu)
+	log.Println(e)
+	return "", "", errors.New(e)
+}
+
 // ConvertPbTimestamp converts a timestamp into a format readable by the frontend
 func ConvertPbTimestamp(t *tspb.Timestamp) string {
 	goTime, err := ptypes.Timestamp(t)
@@ -32,6 +58,19 @@ func ConvertPbTimestamp(t *tspb.Timestamp) string {
 		return time.Now().Format(timeParseFormat)
 	}
 	return goTime.Format(timeParseFormat)
+}
+
+// SplitTags converts a string of tags separated by | into a string array
+func SplitTags(tags string) []string {
+	var cleanTags []string
+	splitTags := strings.Split(tags, "|")
+	for _, tag := range splitTags {
+		// -1 stand for replace all strings.
+		if tag != "" {
+			cleanTags = append(cleanTags, strings.Replace(tag, "%7C", "|", -1))
+		}
+	}
+	return cleanTags
 }
 
 type UsersGetter interface {
@@ -85,21 +124,24 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Post{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
-			Author:     author.Handle,
-			AuthorHost: author.Host,
-			AuthorId:   r.AuthorId,
-			Title:      r.Title,
-			Bio:        author.Bio,
-			Body:       r.Body,
-			Image:      defaultImage,
-			LikesCount: r.LikesCount,
-			IsLiked:    r.IsLiked,
-			Published:  ConvertPbTimestamp(r.CreationDatetime),
-			IsFollowed: r.IsFollowed,
-			IsShared:   r.IsShared,
+			GlobalId:      r.GlobalId,
+			Author:        author.Handle,
+			AuthorDisplay: author.DisplayName,
+			AuthorHost:    author.Host,
+			AuthorId:      r.AuthorId,
+			Title:         r.Title,
+			Bio:           author.Bio,
+			Body:          r.Body,
+			Image:         defaultImage,
+			LikesCount:    r.LikesCount,
+			IsLiked:       r.IsLiked,
+			Published:     ConvertPbTimestamp(r.CreationDatetime),
+			IsFollowed:    r.IsFollowed,
+			IsShared:      r.IsShared,
+			SharesCount:   r.SharesCount,
+			Tags:          tags,
 		}
 		pe = append(pe, np)
 	}
@@ -127,10 +169,11 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			log.Println(err)
 			continue
 		}
+		tags := SplitTags(r.Tags)
 		np := &pb.Share{
-			GlobalId: r.GlobalId,
-			// TODO(iandioch): Consider what happens for foreign users.
+			GlobalId:      r.GlobalId,
 			Author:        author.Handle,
+			AuthorDisplay: author.DisplayName,
 			AuthorHost:    author.Host,
 			Title:         r.Title,
 			Bio:           author.Bio,
@@ -143,8 +186,11 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			IsShared:      r.IsShared,
 			SharerBio:     sharer.Bio,
 			Sharer:        sharer.Handle,
+			SharerHost:    sharer.Host,
 			ShareDatetime: ConvertPbTimestamp(r.AnnounceDatetime),
 			AuthorId:      author.GlobalId,
+			SharesCount:   r.SharesCount,
+			Tags:          tags,
 		}
 		pe = append(pe, np)
 	}

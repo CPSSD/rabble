@@ -21,16 +21,16 @@ class ReceiveCreateServicer:
         )
         if author_entry is None:
             self._logger.error("Could not find foreign author in db")
-            return None, None, None
+            return None, None
 
         follower_entry = self._users_util.get_user_from_db(
             handle=follower
         )
         if follower_entry is None:
             self._logger.error("Could not find local follower user in db")
-            return None, None, None
+            return None, None
 
-        return author_entry.global_id, follower_entry.global_id, author_user[1]
+        return author_entry.global_id, follower_entry.global_id
 
     def _check_follow(self, foreign_id, local_user_id):
         self._logger.info("Checking follow for new foreign article")
@@ -58,11 +58,10 @@ class ReceiveCreateServicer:
 
         return True
 
-    def _add_to_posts_db(self, author_handle, author_id, req):
+    def _add_to_posts_db(self, author_id, req):
         self._logger.debug("Calling article service with new foreign article")
         # set flag in article service that is foreign (so no need to create service)
         na = article_pb2.NewArticle(
-            author=author_handle,
             author_id=author_id,
             title=req.title,
             body=req.content,
@@ -84,9 +83,7 @@ class ReceiveCreateServicer:
         resp = create_pb2.CreateResponse()
 
         # get actor ids
-        # TODO (sailslick) when author ids are sent from client instead of handles
-        # Remove extra return variable author_handle
-        author_id, follower_id, author_handle = self._get_actor_ids(req.attributedTo, req.recipient)
+        author_id, follower_id = self._get_actor_ids(req.attributedTo, req.recipient)
         if author_id is None:
             resp.result_type = create_pb2.CreateResponse.ERROR
             return resp
@@ -98,7 +95,7 @@ class ReceiveCreateServicer:
             return resp
 
         # add to article db
-        added_flag = self._add_to_posts_db(author_handle, author_id, req)
+        added_flag = self._add_to_posts_db(author_id, req)
         if added_flag == False:
             resp.result_type = create_pb2.CreateResponse.ERROR
             return resp
