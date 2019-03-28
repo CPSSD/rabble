@@ -6,7 +6,10 @@ import * as config from "../rabble_config.json";
 
 import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
+import {AccountEdit} from "./components/account_edit";
+import {Edit} from "./components/edit";
 import {Header} from "./components/header";
+import {Pending} from "./components/pending";
 import {Feed} from "./components/feed";
 import {Register} from "./components/register";
 import {Write} from "./components/write";
@@ -159,7 +162,26 @@ export class App extends React.Component<{}, IAppState> {
               userId={this.state.userId}
               component={Follow}
             />
-            <PrivateRoute path="/write" username={this.state.username} component={Write}/>
+            <PrivateRoute
+              path="/@/pending"
+              username={this.state.username}
+              component={Pending}
+            />
+            <PrivateRoute
+              path="/@/edit"
+              username={this.state.username}
+              component={AccountEdit}
+            />
+            <PrivateRoute
+              path="/write/"
+              username={this.state.username}
+              component={Write}
+            />
+            <PrivateRoute
+              path="/edit/:article_id"
+              username={this.state.username}
+              component={Edit}
+            />
           </Switch>
         </div>
       </HashRouter>

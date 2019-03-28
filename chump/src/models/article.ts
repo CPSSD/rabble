@@ -37,6 +37,13 @@ export function CreateArticle(title: string, blogText: string, tags: string[]) {
   return CreateAPIPromise(endpoint, postBody);
 }
 
+export function EditArticle(articleId: string, title: string, blogText: string, tags: string[]) {
+  // TODO(CianLR): Send edit request.
+  return new Promise((resolve, reject) => {
+    reject({ message: "Edits not implemented yet" });
+  });
+}
+
 export function CreatePreview(title: string, blogText: string) {
   const endpoint: string = "/c2s/preview_article";
   const createdTime: string = new Date().toISOString();

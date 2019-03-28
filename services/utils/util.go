@@ -136,6 +136,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			Body:          r.Body,
 			Image:         defaultImage,
 			LikesCount:    r.LikesCount,
+			MdBody:        r.MdBody,
 			IsLiked:       r.IsLiked,
 			Published:     ConvertPbTimestamp(r.CreationDatetime),
 			IsFollowed:    r.IsFollowed,

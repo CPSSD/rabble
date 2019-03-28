@@ -3,7 +3,7 @@ import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
 import * as config from "../../rabble_config.json";
-import { CreateArticle, CreatePreview } from "../models/article";
+import { CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
@@ -16,8 +16,10 @@ interface IFormState {
   title: string;
 }
 
-export interface IFormProps {
+interface IFormProps {
   username: string;
+  prefillState: (updateFunc: (a: string, b: string, c: string[]) => void) => void;
+  onSubmit: (t: string, b: string, tags: string[]) => any;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
@@ -44,6 +46,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         is_liked: false,
         is_shared: false,
         likes_count: 0,
+        md_body: "",
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
@@ -62,6 +65,12 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
     this.renderModal = this.renderModal.bind(this);
+  }
+
+  public componentDidMount() {
+    this.props.prefillState((title: string, blogText: string, tags: string[]) => {
+      this.setState({ title, blogText, tags });
+    });
   }
 
   public renderModal() {
@@ -221,8 +230,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    const promise = CreateArticle(this.state.title, this.state.blogText, this.state.tags);
-    promise
+    this.props.onSubmit(this.state.title, this.state.blogText, this.state.tags)
       .then((res: any) => {
         let message = "Posted article";
         if (res.text) {

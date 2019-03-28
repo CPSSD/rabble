@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
+import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
@@ -104,6 +105,11 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           initReblogged={this.props.blogPost.is_shared}
           sharesCount={this.props.blogPost.shares_count}
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+          blogPost={this.props.blogPost}
+        />
+        <EditButton
+          username={this.props.username}
+          display={this.viewerIsAuthor() && !this.nonInteractivePost()}
           blogPost={this.props.blogPost}
         />
         {tags}
