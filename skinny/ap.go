@@ -344,7 +344,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			log.Printf("Could not receive follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			res.Success = false
-			res.ErrorStr =  "Issue with receiving follow activity."
+			res.ErrorStr = "Issue with receiving follow activity."
 			enc.Encode(res)
 			return
 		}
@@ -355,16 +355,16 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 	}
 }
 
-type followDeleteActivity struct {
+type followUndoActivity struct {
 	Context string               `json:"@context"`
 	Object  followActivityStruct `json:"object"`
 	Type    string               `json:"type"`
 }
 
-func (s *serverWrapper) handleFollowDeleteActivity() http.HandlerFunc {
+func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
-		var t followDeleteActivity
+		var t followUndoActivity
 
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {

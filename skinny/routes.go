@@ -90,8 +90,8 @@ func (s *serverWrapper) setupRoutes() {
 		"announce": s.handleAnnounceActivity(),
 	}
 	s.undoActivityRouter = map[string]http.HandlerFunc{
-		"like": s.handleLikeUndoActivity(),
-    "follow": s.handleFollowDeleteActivity(),
+		"like":   s.handleLikeUndoActivity(),
+		"follow": s.handleFollowUndoActivity(),
 	}
 	r.HandleFunc("/ap/@{username}/inbox", s.handleActorInbox())
 	r.HandleFunc("/ap/@{username}", s.handleActor())
