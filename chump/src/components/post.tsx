@@ -28,18 +28,6 @@ const userLinksClassName = "username-holder";
 export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
-    if (this.props.blogPost.likes_count === undefined) {
-      this.props.blogPost.likes_count = 0;
-    }
-    if (this.props.blogPost.is_liked === undefined) {
-      this.props.blogPost.is_liked = false;
-    }
-    if (this.props.blogPost.shares_count === undefined) {
-      this.props.blogPost.shares_count = 0;
-    }
-    if (this.props.blogPost.is_shared === undefined) {
-      this.props.blogPost.is_shared = false;
-    }
     this.state = {
       isLiked: this.props.blogPost.is_liked,
       likesCount: this.props.blogPost.likes_count,
