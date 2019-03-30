@@ -70,6 +70,9 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     this.getViewable = this.getViewable.bind(this);
   }
 
+  // getViewable returns the tabs that render on a given profile page.
+  // If a user is viewing their own profile then they also see UserSettings
+  // and FollowRequests.
   public getViewable() {
     let v = [ViewingTab.Posts, ViewingTab.Following, ViewingTab.Followers];
     if (this.isViewingOwnPage()) {
