@@ -28,6 +28,7 @@ const evalidBody: posts.IParsedPost[] = [{
   is_liked: false,
   is_shared: false,
   likes_count: 1,
+  md_body: "rm -rf rabble/",
   parsed_date: now,
   published: "",
   shares_count: 1,

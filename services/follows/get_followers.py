@@ -3,6 +3,7 @@ from enum import Enum
 from services.proto import database_pb2
 from services.proto import follows_pb2
 
+DEFAULT_IMAGE = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
 
 class GetFollowsReceiver:
 
@@ -12,6 +13,21 @@ class GetFollowsReceiver:
         self._users_util = users_util
         self._database_stub = database_stub
         self.RequestType = Enum('RequestType', 'FOLLOWING FOLLOWERS')
+
+    def create_rich_user(self, resp, user, requester_follows):
+        u = resp.rich_results.add()
+        u.handle = user.handle
+        u.host = user.host
+        u.global_id = user.global_id
+        u.bio = user.bio
+        u.is_followed = user.is_followed
+        u.image = DEFAULT_IMAGE
+        u.display_name = user.display_name
+        u.private.CopyFrom(user.private)
+        u.custom_css = user.custom_css
+        if requester_follows is not None:
+            u.is_followed = user.global_id in requester_follows
+        return True
 
     def _get_follows(self, request, context, request_type):
         if request_type == self.RequestType.FOLLOWERS:
@@ -49,6 +65,12 @@ class GetFollowsReceiver:
         else:
             following_ids = self._util.get_follows(follower_id=user_id).results
 
+        user_following_ids = None
+        if request.HasField("user_global_id") and request.user_global_id:
+            uid = request.user_global_id.value
+            user_following = self._util.get_follows(follower_id=uid).results
+            user_following_ids = set([x.followed for x in user_following])
+
         # Convert other following users and add to output proto.
         for following_id in following_ids:
             _id = following_id.followed
@@ -59,6 +81,11 @@ class GetFollowsReceiver:
                 self._logger.warning('Could not find user for id %d',
                                      _id)
                 continue
+
+            ok = self.create_rich_user(resp, user, user_following_ids)
+            if not ok:
+                self._logger.warning('Could not convert user %s@%s to ' +
+                                     'RichUser', user.handle, user.host)
 
             ok = self._util.convert_db_user_to_follow_user(user,
                                                            resp.results.add())

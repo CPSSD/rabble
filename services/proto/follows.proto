@@ -3,6 +3,8 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "services/proto/search.proto";
 
 /* LocalToAnyFollow represents either a local user following another local
  * user, or a local user following a foreign user. The fact that these
@@ -63,6 +65,9 @@ message FollowUser {
 message GetFollowsRequest {
     /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
     string username = 1;
+
+    // The global id of the user making the request.
+    google.protobuf.Int64Value user_global_id = 4;
 }
 
 message GetFollowsResponse {
@@ -79,6 +84,13 @@ message GetFollowsResponse {
 
     /* Should only be set if result_type is OK. */
     repeated FollowUser results = 3;
+
+    /*
+     * rich_results correspond to full user results.
+     * This is a search.proto User, obviously.
+     * Should only be set if result_type is OK.
+     */
+    repeated User rich_results = 4;
 }
 
 message AcceptFollowRequest {

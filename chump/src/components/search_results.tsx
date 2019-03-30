@@ -126,21 +126,26 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
     if (this.state.foundUsers.length === 1) {
       return (
         <div className="pure-g pure-u-1" key={this.state.foundPosts.length}>
-          <User username={this.props.username} blogUser={this.state.foundUsers[0]} display={SHOW_ITEM}/>
+          <User
+            username={this.props.username}
+            blogUser={this.state.foundUsers[0]}
+            display={SHOW_ITEM}
+          />
         </div>
       );
     }
     const blogUsers = this.state.foundUsers.map((e: IParsedUser, i: number) => {
+      let display = this.state.display;
       if (i === 0) {
-        return (
-          <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
-            <User username={this.props.username} blogUser={e} display={SHOW_ITEM}/>
-          </div>
-        );
+        display = SHOW_ITEM;
       }
       return (
         <div className="pure-g pure-u-1" key={this.state.foundPosts.length + i}>
-          <User username={this.props.username} blogUser={e} display={this.state.display}/>
+          <User
+            username={this.props.username}
+            blogUser={e}
+            display={display}
+          />
         </div>
       );
     });

@@ -1,5 +1,6 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
+import { CleanUsers, IParsedUser } from "./search";
 
 interface ICreateFollowPostBody {
   followed: string;
@@ -146,14 +147,8 @@ export function AcceptFollow(handle: string, follower: IPendingFollow, isAccepte
   });
 }
 
-export interface IFollowUser {
-  handle: string;
-  host: string | undefined;
-  display_name: string;
-}
-
 export interface IFollowers {
-  results: IFollowUser[];
+  rich_results: IParsedUser[];
 }
 
 export function GetFollowers(username: string) {
@@ -167,7 +162,7 @@ export function GetFollowing(username: string) {
 }
 
 function GetFollows(url: string, username: string) {
-  return new Promise<IFollowUser[]>((resolve, reject) => {
+  return new Promise<IParsedUser[]>((resolve, reject) => {
     request
       .get(url)
       .retry(2)
@@ -180,10 +175,12 @@ function GetFollows(url: string, username: string) {
         if (r === null) {
           reject("Could not parse result");
         }
-        if (r.results === undefined || r.results === null) {
-          resolve([] as IFollowUser[]);
+        if (r.rich_results === undefined || r.rich_results === null) {
+          resolve([] as IParsedUser[]);
         } else {
-          resolve(r.results as IFollowUser[]);
+
+          const cleanedUsers = CleanUsers(r.rich_results);
+          resolve(cleanedUsers as IParsedUser[]);
         }
       });
   });

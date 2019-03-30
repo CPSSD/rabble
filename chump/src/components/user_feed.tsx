@@ -73,6 +73,12 @@ export class User extends React.Component<IUserProps, IUserState> {
     this.getPosts();
   }
 
+  public componentDidUpdate(prevProps: IUserProps) {
+    if (prevProps.viewing !== this.props.viewing) {
+      this.getPosts();
+    }
+  }
+
   public renderPosts() {
     if (!this.state.ready) {
       return (
