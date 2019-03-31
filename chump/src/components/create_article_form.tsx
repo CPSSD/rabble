@@ -14,12 +14,13 @@ interface IFormState {
   showModal: boolean;
   tags: string[];
   title: string;
+  summary: string;
 }
 
 interface IFormProps {
   username: string;
-  prefillState: (updateFunc: (a: string, b: string, c: string[]) => void) => void;
-  onSubmit: (t: string, b: string, tags: string[]) => any;
+  prefillState: (updateFunc: (a: string, b: string, c: string[], d: string) => void) => void;
+  onSubmit: (t: string, b: string, tags: string[], summary: string) => any;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
@@ -54,6 +55,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         title: "string",
       },
       showModal: false,
+      summary: "",
       tags: [],
       title: "",
     };
@@ -61,6 +63,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     this.handleTitleInputChange = this.handleTitleInputChange.bind(this);
     this.handleTagInputChange = this.handleTagInputChange.bind(this);
     this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
+    this.handleSummaryInputChange = this.handleSummaryInputChange.bind(this);
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handlePreview = this.handlePreview.bind(this);
     this.handleClosePreview = this.handleClosePreview.bind(this);
@@ -68,8 +71,9 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   }
 
   public componentDidMount() {
-    this.props.prefillState((title: string, blogText: string, tags: string[]) => {
-      this.setState({ title, blogText, tags });
+    this.props.prefillState((title: string, blogText: string,
+                             tags: string[], summary: string) => {
+      this.setState({ title, blogText, tags, summary });
     });
   }
 
@@ -126,6 +130,15 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
               onChange={this.handleTitleInputChange}
               className="pure-input-1-2"
               placeholder={config.title_text}
+              required={true}
+            />
+            <input
+              type="text"
+              name="summary"
+              value={this.state.summary}
+              onChange={this.handleSummaryInputChange}
+              className="pure-input-1"
+              placeholder={config.summary_text}
               required={true}
             />
             <TagsInput
@@ -185,6 +198,13 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     });
   }
 
+  private handleSummaryInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target;
+    this.setState({
+      summary: target.value,
+    });
+  }
+
   private handleClosePreview() {
     this.setState({ showModal: false });
   }
@@ -230,7 +250,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
-    this.props.onSubmit(this.state.title, this.state.blogText, this.state.tags)
+    this.props.onSubmit(this.state.title, this.state.blogText, this.state.tags, this.state.summary)
       .then((res: any) => {
         let message = "Posted article";
         if (res.text) {
@@ -240,6 +260,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         this.setState({
           blogText: "",
           showModal,
+          summary: "",
           title: "",
         });
       })

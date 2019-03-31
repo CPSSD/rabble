@@ -4,6 +4,7 @@ import * as request from "superagent";
 interface ICreateArticlePostBody {
   body: string;
   creation_datetime: string;
+  summary: string;
   title: string;
   tags: string[];
 }
@@ -25,12 +26,13 @@ export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostB
   });
 }
 
-export function CreateArticle(title: string, blogText: string, tags: string[]) {
+export function CreateArticle(title: string, blogText: string, tags: string[], summary: string) {
   const endpoint: string = "/c2s/create_article";
   const createdTime: string = new Date().toISOString();
   const postBody: ICreateArticlePostBody = {
     body: blogText,
     creation_datetime: createdTime,
+    summary,
     tags,
     title,
   };
@@ -50,6 +52,7 @@ export function CreatePreview(title: string, blogText: string) {
   const postBody: ICreateArticlePostBody = {
     body: blogText,
     creation_datetime: createdTime,
+    summary: "",
     tags: [],
     title,
   };
