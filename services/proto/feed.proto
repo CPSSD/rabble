@@ -41,6 +41,7 @@ message Post {
   repeated string tags = 15;
   string author_display = 16;
   string md_body = 17;
+  string summary = 18;
 }
 
 message Share {
@@ -64,6 +65,7 @@ message Share {
   repeated string tags = 18;
   string author_display = 19;
   string sharer_host = 20;
+  string summary = 21;
 }
 
 message FeedResponse {
