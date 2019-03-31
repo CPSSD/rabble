@@ -51,6 +51,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         parsed_date: new Date(),
         published: "",
         shares_count: 0,
+        summary: "string",
         tags: [],
         title: "string",
       },
