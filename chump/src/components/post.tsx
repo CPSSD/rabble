@@ -86,7 +86,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       );
     }
 
-    const innerText = this.props.useSummary ? post.summary : post.body
+    const innerText = this.props.useSummary ? post.summary : post.body;
 
     return (
       <div className="pure-u-10-24">

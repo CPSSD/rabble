@@ -106,7 +106,13 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           </div>
           <div className="pure-g" key={1}>
             <HashRouter>
-              <Post username={this.props.username} blogPost={this.state.post} preview={true} customCss={true}/>
+              <Post
+                username={this.props.username}
+                blogPost={this.state.post}
+                preview={true}
+                customCss={true}
+                useSummary={false}
+              />
             </HashRouter>
           </div>
         </RModal>

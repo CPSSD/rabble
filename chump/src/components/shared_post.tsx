@@ -35,6 +35,7 @@ export class SharedPost extends React.Component<ISharedPostProps, {}> {
             blogPost={this.props.blogPost}
             preview={false}
             customCss={true}
+            useSummary={true}
           />
         </div>
       </div>

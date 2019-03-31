@@ -58,7 +58,13 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
 
       return (
         <div className="pure-g" key={i}>
-          <Post username={this.props.username} blogPost={e} preview={false} customCss={false}/>
+          <Post
+            username={this.props.username}
+            blogPost={e}
+            preview={false}
+            customCss={false}
+            useSummary={true}
+          />
         </div>
       );
     });
