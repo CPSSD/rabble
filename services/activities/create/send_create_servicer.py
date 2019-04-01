@@ -53,6 +53,11 @@ class SendCreateServicer:
                 "attributedTo": actor,
                 "to": [target],
                 "content": req.body,
+                "preview": {
+                    "type": "Note",
+                    "name": "Summary",
+                    "content": req.summary,
+                },
                 "id": ap_id,
             }
         }
