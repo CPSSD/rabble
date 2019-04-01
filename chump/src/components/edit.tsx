@@ -21,7 +21,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
         if (posts.length > 0) {
           const p = posts[0];
           const tags = typeof(p.tags) === "undefined" ? [] : p.tags;
-          updateFunc(p.title, p.md_body, p.tags);
+          updateFunc(p.title, p.md_body, tags);
         }
       })
       .catch(() => alert("Could not prefill post details"));
