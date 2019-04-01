@@ -54,6 +54,12 @@ class SendFollowServicer:
             resp.error = 'Could not add requested follow to database'
             return resp.error
 
+    def _roll_back_follow(self, follower_id, followed_id, user_created):
+        self._logger.info("Rolling back follow of %d", followed_id)
+        self._util.delete_follow_in_db(follower_id, followed_id)
+        if user_created:
+            self._users_util.delete_user_from_db(followed_id)
+
     def SendFollowRequest(self, request, context):
         resp = follows_pb2.FollowResponse()
         self._logger.info('Sending follow request.')
@@ -71,16 +77,6 @@ class SendFollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = 'Could not parse followed username'
             return resp
-        # Perform s2s request early so we don't write to the DB if it
-        # throws an error.
-        is_foreign = to_instance is not None
-        if is_foreign:
-            err = self._send_s2s(from_handle, to_handle, to_instance)
-            if err is not None:
-                self._logger.error("Error from s2sFollow: %s", err)
-                resp.result_type = follows_pb2.FollowResponse.ERROR
-                resp.error = err
-                return resp
 
         # Get user IDs for follow.
         follower_entry = self._users_util.get_or_create_user_from_db(
@@ -93,15 +89,17 @@ class SendFollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = error
             return resp
-        
-        followed_entry = None
-        if not is_foreign:
-            # Require a local user to already exist.
-            followed_entry = self._users_util.get_user_from_db(
-                handle=to_handle, host_is_null=True)
-        else:
+
+        is_local = to_instance is None
+        created_user = False
+        followed_entry = self._users_util.get_user_from_db(
+            handle=to_handle, host=to_instance,
+            host_is_null=is_local)
+        if not is_local:
+            created_user = True
             followed_entry = self._users_util.get_or_create_user_from_db(
                 handle=to_handle, host=to_instance)
+
         if followed_entry is None:
             error = 'Could not find or create user {}@{}'.format(to_handle,
                                                                  to_instance)
@@ -117,8 +115,20 @@ class SendFollowServicer:
                                follower_entry.global_id,
                                followed_entry.global_id,
                                followed_entry.private.value,
-                               is_foreign)
+                               not is_local)
         if err is not None:
             return resp
+
+        if not is_local:
+            err = self._send_s2s(from_handle, to_handle, to_instance)
+            if err is not None:
+                self._logger.error("Error from s2sFollow: %s", err)
+                self._roll_back_follow(follower_entry.global_id,
+                                       followed_entry.global_id,
+                                       created_user)
+                resp.result_type = follows_pb2.FollowResponse.ERROR
+                resp.error = err
+                return resp
+
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
