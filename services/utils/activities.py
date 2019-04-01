@@ -1,5 +1,7 @@
 import json
+import sys
 import time
+import os
 from services.proto import database_pb2
 
 import requests
@@ -7,8 +9,13 @@ import requests
 
 class ActivitiesUtil:
     def __init__(self, logger, db):
+        host_name = os.environ.get("HOST_NAME")
+        if not host_name:
+            print("Please set HOST_NAME env variable")
+        self._host_name = host_name
         self._logger = logger
         self._db = db
+
 
     @staticmethod
     def rabble_context():
@@ -57,9 +64,16 @@ class ActivitiesUtil:
     def _remove_protocol_from_host(self, host):
         return host.split('://')[-1]
 
+    def build_local_actor_url(self, handle, host):
+        return f'{host}/ap/@{handle}'
+
     def build_actor(self, handle, host):
         normalised_host = self._normalise_hostname(host)
-        return f'{normalised_host}/ap/@{handle}'
+        if host == self._host_name:
+            return self.build_local_actor_url(handle, normalised_host)
+        actor_url = self.get_activitypub_actor_url(normalised_host, handle)
+        return actor_url
+        #return f'{normalised_host}/ap/@{handle}'
 
     def get_host_name_param(self, host, hostname):
         # Remove protocol
