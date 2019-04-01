@@ -13,6 +13,7 @@ message ArticleDetails {
   google.protobuf.Timestamp creation_datetime = 4;
   string md_body = 5;
   int64 global_id = 6;
+  string summary = 7;
 }
 
 // NewForeignArticle is the message generated from a s2s call received
@@ -25,6 +26,7 @@ message NewForeignArticle {
   google.protobuf.Timestamp published = 5;
   string md_body = 6;
   string id = 7;
+  string summary = 8;
 }
 
 message CreateResponse {
