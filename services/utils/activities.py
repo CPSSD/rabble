@@ -14,6 +14,35 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
+    def get_webfinger_document(self, host, handle):
+        full_username = '@{}@{}'.format(host, handle)
+        url = '{}/.well_known/webfinger?resouce=acct:{}'.format(host,
+                                                                full_username)
+        resp = requests.get(url)
+        if resp.status_code != 200:
+            self._logger.warning('Non-200 response code for webfinger lookup '
+                'at url: {}'.format(url))
+            return None
+        return resp.json()
+
+    def parse_actor_url_from_webfinger(self, doc):
+        if 'links' not in doc:
+            self._logger.warning('No "links" field in webfinger document.')
+            return None
+        for link in doc['links']:
+            if link['rel'] == 'self':
+                return link['href']
+        self._logger.warning('No link with "rel" field = "self" found in '
+            'webfinger document.')
+        return None
+
+    def get_activitypub_actor_url(self, host, handle):
+        webfinger_doc = self.get_webfinger_doc(host, handle)
+        if webfinger_doc is None:
+            return None
+        return self.parse_actor_url_from_webfinger(webfinger_doc)
+
+
     def _normalise_hostname(self, hostname):
         if not hostname.startswith('http'):
             old_hostname = hostname
