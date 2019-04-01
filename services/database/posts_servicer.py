@@ -133,7 +133,7 @@ class PostsDatabaseServicer:
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN\n'
                 + '  INSERT INTO posts_idx(posts_idx, rowid, title, body) '
-                + "VALUES ('delete', new.global_id, new.title, new.body); \n"
+                + "VALUES ('delete', old.global_id, old.title, old.body); \n"
                 + 'END;')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN\n'

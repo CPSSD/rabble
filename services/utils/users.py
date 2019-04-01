@@ -93,6 +93,21 @@ class UsersUtil:
             return None
         return insert_resp.global_id
 
+    def delete_user_from_db(self, global_id):
+        self._logger.debug("Deleteing user with global_id %d", global_id)
+        resp = self._db.Users(database_pb2.UsersRequest(
+            request_type=database_pb2.UsersRequest.DELETE,
+            entry=database_pb2.UsersEntry(
+                global_id=global_id
+            ),
+        ))
+        if resp.result_type != database_pb2.UsersResponse.OK:
+            self._logger.error("Error deleting from db: %s",
+                               resp.error)
+            return False
+        return True
+
+
     def get_or_create_user_from_db(self,
                                    handle=None,
                                    host=None,
