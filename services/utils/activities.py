@@ -15,8 +15,8 @@ class ActivitiesUtil:
         return "https://www.w3.org/ns/activitystreams"
 
     def get_webfinger_document(self, host, handle):
-        full_username = '@{}@{}'.format(host, handle)
-        url = '{}/.well_known/webfinger?resouce=acct:{}'.format(host,
+        full_username = '{}@{}'.format(handle, self._remove_protocol_from_host(host))
+        url = '{}/.well-known/webfinger?resource=acct:{}'.format(host,
                                                                 full_username)
         resp = requests.get(url)
         if resp.status_code != 200:
@@ -37,11 +37,10 @@ class ActivitiesUtil:
         return None
 
     def get_activitypub_actor_url(self, host, handle):
-        webfinger_doc = self.get_webfinger_doc(host, handle)
+        webfinger_doc = self.get_webfinger_document(host, handle)
         if webfinger_doc is None:
             return None
         return self.parse_actor_url_from_webfinger(webfinger_doc)
-
 
     def _normalise_hostname(self, hostname):
         if not hostname.startswith('http'):
@@ -54,6 +53,9 @@ class ActivitiesUtil:
                               old_hostname,
                               hostname)
         return hostname
+
+    def _remove_protocol_from_host(self, host):
+        return host.split('://')[-1]
 
     def build_actor(self, handle, host):
         normalised_host = self._normalise_hostname(host)
@@ -86,9 +88,24 @@ class ActivitiesUtil:
         }
 
     def build_inbox_url(self, handle, host):
+        self._logger.info("Building inbox url")
         # TODO(CianLR): Remove dupe logic from here and UsersUtil.
         normalised_host = self._normalise_hostname(host)
-        return f'{normalised_host}/ap/@{handle}/inbox'
+
+        actor_url = self.get_activitypub_actor_url(normalised_host, handle)
+        self._logger.info("Actor url = {}".format(actor_url))
+        if actor_url is None:
+            return None
+        headers = { 'Accept': 'application/activity+json, application/ld+json' }
+        actor_doc_resp = requests.get(actor_url, headers=headers)
+        if actor_doc_resp.status_code != 200:
+            self._logger.warning('Non-200 response when fetching actor '
+                'document at URL "{}"'.format(actor_url))
+            return None
+        doc = actor_doc_resp.json()
+        self._logger.info("Actor doc = {}".format(doc))
+        self._logger.info('Inbox url = {}'.format(doc['inbox']))
+        return doc['inbox']
 
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
