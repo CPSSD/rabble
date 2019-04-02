@@ -323,3 +323,7 @@ button.follow-button svg {
  border-bottom-color: var(--primary-bg-color);
  border-bottom-style: solid;
 }
+
+.reblog-holder {
+  width: 100%;
+}

@@ -1,10 +1,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { IAnyParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
-import { Post } from "./post";
+import { IAnyParsedPost } from "../models/posts";
+import { Card } from "./card";
 import { RootComponent } from "./root_component";
-import { SharedPost } from "./shared_post";
 
 import * as config from "../../rabble_config.json";
 
@@ -43,27 +42,12 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
 
   public renderPosts() {
     return this.state.publicBlog.map((e: IAnyParsedPost, i: number) => {
-
-      if (IsSharedPost(e)) {
-        return (
-          <SharedPost
-            username={this.props.username}
-            blogPost={e as IParsedSharedPost}
-            preview={false}
-            customCss={true}
-            key={i}
-          />
-        );
-      }
-
       return (
         <div className="pure-g" key={i}>
-          <Post
+          <Card
             username={this.props.username}
             blogPost={e}
-            preview={false}
             customCss={false}
-            useSummary={true}
           />
         </div>
       );

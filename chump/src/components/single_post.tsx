@@ -60,7 +60,6 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
           blogPost={this.state.posts[0]}
           preview={false}
           customCss={true}
-          useSummary={false}
         />
       </div>
     );

@@ -111,7 +111,6 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
                 blogPost={this.state.post}
                 preview={true}
                 customCss={true}
-                useSummary={false}
               />
             </HashRouter>
           </div>
