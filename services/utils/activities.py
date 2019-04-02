@@ -2,9 +2,12 @@ import json
 import sys
 import time
 import os
+
 from services.proto import database_pb2
 
 import requests
+
+from requests_http_signature import HTTPSignatureAuth
 
 
 class ActivitiesUtil:
@@ -25,6 +28,8 @@ class ActivitiesUtil:
         Fetch the webfinger document for the user with the given handle on the
         given host.
         """
+        self._logger.debug(
+            'Fetching webfinger doc for user {}@{}'.format(handle, normalised_host))
         # Webfinger users are of the form `bob@example.com`, so remove the
         # protocol from the host if it's there.
         host_no_protocol = self._remove_protocol_from_host(normalised_host)
@@ -78,6 +83,30 @@ class ActivitiesUtil:
 
     def _build_local_actor_url(self, handle, normalised_host):
         return f'{normalised_host}/ap/@{handle}'
+
+    def _get_user_by_id(self, _id):
+        # TODO(iandioch): Document.
+        self._logger.info('Fetching user document from database: {}'.format(_id))
+        user_resp = self._db.Users(database_pb2.UsersRequest(
+            request_type=database_pb2.UsersRequest.FIND,
+            match=database_pb2.UsersEntry(global_id=_id)))
+        if user_resp.result_type != database_pb2.UsersResponse.OK:
+            self._logger.warning('Could not find user: {}'.format(user_resp.error))
+            return b''
+        if not len(user_resp.results):
+            self._logger.warning('Could not find user.')
+            return b''
+        return user_resp.results[0]
+
+    def _get_private_key(self, user_obj):
+        # TODO(iandioch): Document.
+        return user_obj.private_key.encode('utf-8')
+
+    def _get_key_id(self, user_obj):
+        # TODO(iandioch): Document.
+        handle = user_obj.handle
+        normalised_host = self._normalise_hostname(self._host_name)
+        return '{}#main-key'.format(self._build_local_actor_url(handle, normalised_host))
 
     def build_actor(self, handle, host):
         """
@@ -153,16 +182,26 @@ class ActivitiesUtil:
             inbox_url, handle, host))
         return inbox_url
 
-    def send_activity(self, activity, target_inbox):
+    def send_activity(self, activity, target_inbox, sender_id=None):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
+
+        auth = None
+        if sender_id is not None:
+            user_obj = self._get_user_by_id(sender_id)
+            private_key = self._get_private_key(user_obj)
+            key_id = self._get_key_id(user_obj)
+            auth = HTTPSignatureAuth(algorithm="rsa-sha256", key=private_key, key_id=key_id)
+            self._logger.info('Signing activity with key_id {}'.format(key_id))
+
         req = requests.Request('POST', target_inbox,
-                               data=body, headers=headers)
+                               data=body, headers=headers, auth=auth)
         req = req.prepare()
         self._logger.debug('Sending activity to foreign server (%s):\n%s',
                            target_inbox, body)
         try:
             resp = requests.Session().send(req)
+            self._logger.info('Got response "{}" (status code {})'.format(resp.text, resp.status_code))
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
