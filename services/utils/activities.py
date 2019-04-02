@@ -21,18 +21,27 @@ class ActivitiesUtil:
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
 
-    def get_webfinger_document(self, host, handle):
-        full_username = '{}@{}'.format(handle, self._remove_protocol_from_host(host))
-        url = '{}/.well-known/webfinger?resource=acct:{}'.format(host,
-                                                                full_username)
+    def _get_webfinger_document(self, normalised_host, handle):
+        """
+        Fetch the webfinger document for the user with the given handle on the
+        given host.
+        """
+        # Webfinger users are of the form `bob@example.com`, so remove the
+        # protocol from the host if it's there.
+        host_no_protocol = self._remove_protocol_from_host(normalised_host)
+        username = '{}@{}'.format(handle, host_no_protocol)
+        url = f'{normalised_host}/.well-known/webfinger?resource=acct:{username}'
         resp = requests.get(url)
         if resp.status_code != 200:
-            self._logger.warning('Non-200 response code for webfinger lookup '
-                'at url: {}'.format(url))
+            self._logger.warning(('Non-200 response code ({}) for webfinger ' +
+                'lookup for URL: {}').format(resp.status_code, url))
             return None
         return resp.json()
 
-    def parse_actor_url_from_webfinger(self, doc):
+    def _parse_actor_url_from_webfinger(self, doc):
+        """
+        Given a webfinger document, parse out the actor's URL and return it.
+        """
         if 'links' not in doc:
             self._logger.warning('No "links" field in webfinger document.')
             return None
@@ -43,11 +52,15 @@ class ActivitiesUtil:
             'webfinger document.')
         return None
 
-    def get_activitypub_actor_url(self, host, handle):
-        webfinger_doc = self.get_webfinger_document(host, handle)
+    def _get_activitypub_actor_url(self, host, handle):
+        """
+        Fetch the webfinger document for a given user, and return the actor ID
+        URL from it.
+        """
+        webfinger_doc = self._get_webfinger_document(host, handle)
         if webfinger_doc is None:
             return None
-        return self.parse_actor_url_from_webfinger(webfinger_doc)
+        return self._parse_actor_url_from_webfinger(webfinger_doc)
 
     def _normalise_hostname(self, hostname):
         if not hostname.startswith('http'):
@@ -64,16 +77,24 @@ class ActivitiesUtil:
     def _remove_protocol_from_host(self, host):
         return host.split('://')[-1]
 
-    def build_local_actor_url(self, handle, host):
-        return f'{host}/ap/@{handle}'
+    def _build_local_actor_url(self, handle, normalised_host):
+        return f'{normalised_host}/ap/@{handle}'
 
     def build_actor(self, handle, host):
+        """
+        Return the actor ID/URL for the user with the given handle and host.
+        Firstly, normalise & add protocol to the given host.
+        - If the given user is local, then build the string with the host and
+          handle.
+        - If the given user is foreign, then fetch their Webfinger document and
+          extract the actor URL from it.
+        To use this function, the `HOST_NAME` env var should be set.
+        """
         normalised_host = self._normalise_hostname(host)
         if host == self._host_name:
-            return self.build_local_actor_url(handle, normalised_host)
-        actor_url = self.get_activitypub_actor_url(normalised_host, handle)
+            return self._build_local_actor_url(handle, normalised_host)
+        actor_url = self._get_activitypub_actor_url(normalised_host, handle)
         return actor_url
-        #return f'{normalised_host}/ap/@{handle}'
 
     def get_host_name_param(self, host, hostname):
         # Remove protocol
@@ -102,24 +123,34 @@ class ActivitiesUtil:
         }
 
     def build_inbox_url(self, handle, host):
-        self._logger.info("Building inbox url")
-        # TODO(CianLR): Remove dupe logic from here and UsersUtil.
+        """
+        Fetch the inbox URL for the user with the given handle and host.
+        """
         normalised_host = self._normalise_hostname(host)
 
-        actor_url = self.get_activitypub_actor_url(normalised_host, handle)
-        self._logger.info("Actor url = {}".format(actor_url))
+        # Get the URL of this user's actor document.
+        actor_url = self._get_activitypub_actor_url(normalised_host, handle)
         if actor_url is None:
             return None
-        headers = { 'Accept': 'application/activity+json, application/ld+json' }
-        actor_doc_resp = requests.get(actor_url, headers=headers)
-        if actor_doc_resp.status_code != 200:
-            self._logger.warning('Non-200 response when fetching actor '
-                'document at URL "{}"'.format(actor_url))
+        
+        # Mastodon requires the Accept header to be set, otherwise it redirects
+        # to the user-facing page for this user.
+        headers = {
+            'Accept': 'application/activity+json, application/ld+json'
+        }
+
+        # Fetch the actor document.
+        resp = requests.get(actor_url, headers=headers)
+        if resp.status_code != 200:
+            self._logger.warning(('Non-200 response ({}) when fetching actor ' +
+                'document at URL "{}"').format(resp.status_code, actor_url))
             return None
-        doc = actor_doc_resp.json()
-        self._logger.info("Actor doc = {}".format(doc))
-        self._logger.info('Inbox url = {}'.format(doc['inbox']))
-        return doc['inbox']
+        doc = resp.json()
+
+        inbox_url = doc['inbox']
+        self._logger.info('Found inbox URL {} for user {} at host {}'.format(
+            inbox_url, handle, host))
+        return inbox_url
 
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
