@@ -24,14 +24,17 @@ export class Card extends RootComponent<ICardProps, {}> {
   }
 
   public render() {
-    let card;
-    card = IsSharedPost(this.props.blogPost) ?
-           this.renderSharedCard() : this.renderCard();
+    if (IsSharedPost(this.props.blogPost)) {
+      return this.renderSharedCard();
+    }
+    return this.renderFull();
+  }
 
+  private renderFull() {
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
-        {card}
+        {this.renderCard()}
         <div className="pure-u-1-24"/>
         {this.renderBio()}
       </div>
@@ -59,7 +62,9 @@ export class Card extends RootComponent<ICardProps, {}> {
             </p>
           </div>
         </div>
-        {this.renderCard()}
+        <div className="pure-g">
+          {this.renderFull()}
+        </div>
       </div>
     );
   }
