@@ -1,6 +1,18 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
+export function GetCustomCSS(author_id: number, enable: boolean) {
+  if (!enable) {
+    return false;
+  }
+
+  return <link
+    rel="stylesheet"
+    type="text/css"
+    href={`/c2s/${author_id}/css`}
+  />
+}
+
 export function GenerateUserLinks(author: string, host: string, displayName: string, divClassName: string) {
   let userAddress = `/@${author}`;
   let userHandleHost = (

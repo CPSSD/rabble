@@ -8,7 +8,7 @@ import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
-import { GenerateUserLinks, RemoveProtocol } from "./util";
+import { GenerateUserLinks, GetCustomCSS, RemoveProtocol } from "./util";
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -49,18 +49,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
 
   private renderPost() {
     const post = this.props.blogPost;
-
-    // Set custom CSS for user if enabled.
-    let customStyle;
-    if (this.props.customCss) {
-      customStyle = (
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href={`/c2s/${post.author_id}/css`}
-        />
-      );
-    }
+    const customStyle = GetCustomCSS(post.author_id, this.props.customCss);
 
     let tags;
     if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
