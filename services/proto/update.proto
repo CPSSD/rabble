@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "services/proto";
+
+message UpdateDetails {
+}
+
+message UpdateResponse {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  ResultType result_type = 1;
+
+  // Should only be set if result_type is not OK
+  string error = 2;
+}
+
+message ReceivedUpdateDetails {
+}
+
+
+// Service for sending and receiving server-to-server update activities.
+service S2SUpdate {
+  rpc ReceiveUpdateActivity(ReceivedUpdateDetails) returns (UpdateResponse);
+  rpc SendUpdateActivity(UpdateDetails) returns (UpdateResponse);
+}

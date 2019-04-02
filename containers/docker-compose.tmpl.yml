@@ -30,6 +30,7 @@ services:
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
       - LIKE_SERVICE_HOST=like_service_[[INSTANCE_ID]]
       - UNDO_SERVICE_HOST=undo_service_[[INSTANCE_ID]]
+      - UPDATE_SERVICE_HOST=update_service_[[INSTANCE_ID]]
       - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
       - FOLLOW_RECOMMENDATIONS_HOST=recommend_follows_service_[[INSTANCE_ID]]
       - ACTORS_SERVICE_HOST=actors_service_[[INSTANCE_ID]]
@@ -81,6 +82,21 @@ services:
   undo_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/undo
+      dockerfile: Dockerfile
+    volumes:
+      - .:/repo
+    networks:
+      - [[NETWORK_NAME]]
+      - default
+    depends_on:
+      - "logger_service_[[INSTANCE_ID]]"
+    environment:
+      - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
+      - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - HOST_NAME=[[EXTERNAL_ADDRESS]]
+  update_service_[[INSTANCE_ID]]:
+    build:
+      context: ./services/activities/update
       dockerfile: Dockerfile
     volumes:
       - .:/repo
