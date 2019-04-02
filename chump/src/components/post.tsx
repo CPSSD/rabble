@@ -9,6 +9,7 @@ import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
 import { GenerateUserLinks, GetCustomCSS, RemoveProtocol } from "./util";
+import { Tags } from "./tags"
 
 interface IPostProps {
   blogPost: IParsedPost;
@@ -52,18 +53,20 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     const customStyle = GetCustomCSS(post.author_id, this.props.customCss);
 
     let tags;
-    if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
+    if (typeof(post.tags) !== "undefined" && post.tags.length !== 0) {
       tags = (
         <div className="pure-g">
           <div className="pure-u-3-24" key={-1}>
             <p>Tags:</p>
           </div>
-          {this.renderTags()}
+          <Tags
+            tags={post.tags}
+            tagHolderClass="pure-u-3-24 post-tag-holder"
+            tagClass="post-tag"
+          />
         </div>
       );
     }
-
-    const innerText = this.props.useSummary ? post.summary : post.body;
 
     return (
       <div className="pure-u-10-24">
@@ -80,7 +83,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </Link>
         <p
           className="article-body"
-          dangerouslySetInnerHTML={{ __html: innerText }}
+          dangerouslySetInnerHTML={{ __html: post.body }}
         />
 
         <Reblog
@@ -154,16 +157,6 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </div>
       </div>
     );
-  }
-
-  private renderTags() {
-    return this.props.blogPost.tags.map((e: string, i: number) => {
-      return (
-        <div className="pure-u-3-24 post-tag-holder" key={i}>
-          <p className="post-tag">{e}</p>
-        </div>
-      );
-    });
   }
 
   private handleNoProfilePic(event: any) {
