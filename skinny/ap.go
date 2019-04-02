@@ -227,14 +227,21 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 }
 
 type createActivityObjectStruct struct {
-	Content      string   `json:"content"`
-	Name         string   `json:"name"`
-	Published    string   `json:"published"`
-	AttributedTo string   `json:"attributedTo"`
-	Recipient    []string `json:"to"`
-	Type         string   `json:"type"`
-	Id           string   `json:"id"`
-	URL          string   `json:"url"`
+	Content      string                `json:"content"`
+	Name         string                `json:"name"`
+	Published    string                `json:"published"`
+	AttributedTo string                `json:"attributedTo"`
+	Recipient    []string              `json:"to"`
+	Type         string                `json:"type"`
+	Id           string                `json:"id"`
+	URL          string                `json:"url"`
+	Preview      createActivityPreview `json:"preview"`
+}
+
+type createActivityPreview struct {
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	Content string `json:"content"`
 }
 
 type createActivityStruct struct {
@@ -270,6 +277,11 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
+		summary := ""
+		if t.Object.Preview.Type == "Note" && t.Object.Preview.Name == "Summary" {
+			summary = t.Object.Preview.Content
+		}
+
 		nfa := &pb.NewForeignArticle{
 			AttributedTo: t.Object.AttributedTo,
 			Content:      t.Object.Content,
@@ -277,6 +289,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			Recipient:    recipient,
 			Title:        t.Object.Name,
 			Id:           t.Object.Id,
+			Summary:      summary,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()

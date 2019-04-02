@@ -83,6 +83,7 @@ class NewArticleServicer:
             md_body=req.body,
             creation_datetime=req.creation_datetime,
             global_id=global_id,
+            summary=req.summary,
         )
         create_resp = self._create_stub.SendCreate(ad)
 
