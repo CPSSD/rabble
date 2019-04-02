@@ -625,6 +625,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 			UserId:    globalID,
 			ArticleId: t.ArticleID,
 			Body:      t.Body,
+			Tags:      t.Tags,
 			Title:     t.Title,
 			Summary:   t.Summary,
 		}
