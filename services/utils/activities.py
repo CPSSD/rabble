@@ -62,6 +62,10 @@ class ActivitiesUtil:
         return f'{normalised_host}/ap/@{handle}/inbox'
 
     def build_article(self, ap_id, title, timestamp, author, content, summary):
+        """
+        Builds an ActivityPub article object.
+        The timestamp must be in json format, not protobuf.
+        """
         return {
             "@context": self.rabble_context(),
             "type": "Article",

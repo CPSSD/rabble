@@ -8,6 +8,10 @@ def convert_to_tags_string(tags_array):
 
 
 def get_article(logger, db, global_id):
+    """
+    Retrieve a single PostEntry from the database.
+    Returns None on error.
+    """
     logger.info("Getting article %d", global_id)
     resp = db.Posts(database_pb2.PostsRequest(
         request_type=database_pb2.PostsRequest.FIND,
