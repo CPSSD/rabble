@@ -90,7 +90,8 @@ class ActivitiesUtil:
         To use this function, the `HOST_NAME` env var should be set.
         """
         normalised_host = self._normalise_hostname(host)
-        if host == self._host_name:
+        if host == self._host_name or host is None:
+            self._logger.info('Building actor for local user')
             return self._build_local_actor_url(handle, normalised_host)
         actor_url = self._get_activitypub_actor_url(normalised_host, handle)
         return actor_url
@@ -100,6 +101,7 @@ class ActivitiesUtil:
         foreign_host = host.split('://')[-1]
         local_host = hostname.split('://')[-1]
         if foreign_host == local_host:
+            self._logger.info('Foreign host = local_host')
             return None
         return host
 
@@ -130,6 +132,7 @@ class ActivitiesUtil:
         # Get the URL of this user's actor document.
         actor_url = self._get_activitypub_actor_url(normalised_host, handle)
         if actor_url is None:
+            self._logger.warning('Actor URL is None.')
             return None
 
         # Mastodon requires the Accept header to be set, otherwise it redirects
