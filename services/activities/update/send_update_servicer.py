@@ -18,5 +18,6 @@ class SendUpdateServicer:
             sys.exit(1)
 
     def SendUpdateActivity(self, req, ctx):
+        self._logger.info("Got request to update article %d from %d", req.article_id, req.user_id)
         return upb.UpdateResponse(result_type=upb.UpdateResponse.OK)
 

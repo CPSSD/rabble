@@ -28,7 +28,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
   };
   const onSubmit = (title: string, text: string, tags: string[], summary: string) => {
     return EditArticle(
-      props.match.params.article_id,
+      parseInt(props.match.params.article_id, 10),
       title,
       text,
       tags,

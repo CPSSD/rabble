@@ -588,7 +588,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 }
 
 type editArticleRequest struct {
-	ArticleID        string   `json:"article_id"`
+	ArticleID        int64    `json:"article_id"`
 	Body             string   `json:"body"`
 	Title            string   `json:"title"`
 	Tags             []string `json:"tags"`
@@ -622,6 +622,11 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 		}
 
 		ud := &pb.UpdateDetails{
+			UserId:    globalID,
+			ArticleId: t.ArticleID,
+			Body:      t.Body,
+			Title:     t.Title,
+			Summary:   t.Summary,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()

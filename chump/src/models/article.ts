@@ -10,7 +10,7 @@ interface ICreateArticlePostBody {
 }
 
 interface IEditArticlePostBody {
-  article_id: string;
+  article_id: number;
   body: string;
   summary: string;
   title: string;
@@ -47,7 +47,7 @@ export function CreateArticle(title: string, blogText: string, tags: string[], s
   return CreateAPIPromise(endpoint, postBody);
 }
 
-export function EditArticle(articleId: string, title: string, blogText: string,
+export function EditArticle(articleId: number, title: string, blogText: string,
                             tags: string[], summary: string) {
     const endpoint: string = "/c2s/edit_article";
     const postBody: IEditArticlePostBody = {
@@ -56,7 +56,7 @@ export function EditArticle(articleId: string, title: string, blogText: string,
       summary,
       tags,
       title,
-    }
+    };
     return new Promise((resolve, reject) => {
       request
         .post(endpoint)

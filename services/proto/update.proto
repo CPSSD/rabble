@@ -3,6 +3,12 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 message UpdateDetails {
+  int64 user_id = 1;
+  int64 article_id = 2;
+  string body = 3;
+  string title = 4;
+  repeated string tags = 5;
+  string summary = 6;
 }
 
 message UpdateResponse {
