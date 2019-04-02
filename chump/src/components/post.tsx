@@ -16,7 +16,6 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
-  useSummary: boolean;
 }
 
 interface IPostState {

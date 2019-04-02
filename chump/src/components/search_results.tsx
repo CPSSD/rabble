@@ -111,7 +111,6 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
             blogPost={e}
             preview={false}
             customCss={false}
-            useSummary={true}
           />
         </div>
       );
