@@ -16,7 +16,6 @@ class ActivitiesUtil:
         self._logger = logger
         self._db = db
 
-
     @staticmethod
     def rabble_context():
         return "https://www.w3.org/ns/activitystreams"
@@ -34,7 +33,7 @@ class ActivitiesUtil:
         resp = requests.get(url)
         if resp.status_code != 200:
             self._logger.warning(('Non-200 response code ({}) for webfinger ' +
-                'lookup for URL: {}').format(resp.status_code, url))
+                                  'lookup for URL: {}').format(resp.status_code, url))
             return None
         return resp.json()
 
@@ -49,7 +48,7 @@ class ActivitiesUtil:
             if link['rel'] == 'self':
                 return link['href']
         self._logger.warning('No link with "rel" field = "self" found in '
-            'webfinger document.')
+                             'webfinger document.')
         return None
 
     def _get_activitypub_actor_url(self, host, handle):
@@ -132,7 +131,7 @@ class ActivitiesUtil:
         actor_url = self._get_activitypub_actor_url(normalised_host, handle)
         if actor_url is None:
             return None
-        
+
         # Mastodon requires the Accept header to be set, otherwise it redirects
         # to the user-facing page for this user.
         headers = {
@@ -143,7 +142,7 @@ class ActivitiesUtil:
         resp = requests.get(actor_url, headers=headers)
         if resp.status_code != 200:
             self._logger.warning(('Non-200 response ({}) when fetching actor ' +
-                'document at URL "{}"').format(resp.status_code, actor_url))
+                                  'document at URL "{}"').format(resp.status_code, actor_url))
             return None
         doc = resp.json()
 
@@ -155,7 +154,8 @@ class ActivitiesUtil:
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
-        req = requests.Request('POST', target_inbox, data=body, headers=headers)
+        req = requests.Request('POST', target_inbox,
+                               data=body, headers=headers)
         req = req.prepare()
         self._logger.debug('Sending activity to foreign server (%s):\n%s',
                            target_inbox, body)
