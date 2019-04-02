@@ -525,6 +525,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t createArticleStruct
+		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 		var cResp clientResp
 
