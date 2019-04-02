@@ -61,6 +61,22 @@ class ActivitiesUtil:
         normalised_host = self._normalise_hostname(host)
         return f'{normalised_host}/ap/@{handle}/inbox'
 
+    def build_article(self, ap_id, title, timestamp, author, content, summary):
+        return {
+            "@context": self.rabble_context(),
+            "type": "Article",
+            "id": ap_id,
+            "name": title,
+            "published": timestamp,
+            "attributedTo": author,
+            "content": content,
+            "preview": {
+                "type": "Note",
+                "name": "Summary",
+                "content": summary,
+            },
+        }
+
     def send_activity(self, activity, target_inbox):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
