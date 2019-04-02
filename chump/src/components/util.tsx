@@ -1,16 +1,18 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-export function GetCustomCSS(author_id: number, enable: boolean) {
+export function GetCustomCSS(authorId: number, enable: boolean) {
   if (!enable) {
     return false;
   }
 
-  return <link
-    rel="stylesheet"
-    type="text/css"
-    href={`/c2s/${author_id}/css`}
-  />
+  return (
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href={`/c2s/${authorId}/css`}
+    />
+  );
 }
 
 export function GenerateUserLinks(author: string, host: string, displayName: string, divClassName: string) {

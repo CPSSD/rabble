@@ -5,8 +5,8 @@ import * as config from "../../rabble_config.json";
 import { IAnyParsedPost, IParsedSharedPost, IsSharedPost} from "../models/posts";
 import { FollowButton} from "./follow_button";
 import { RootComponent } from "./root_component";
-import { GetCustomCSS, GenerateUserLinks, RemoveProtocol } from "./util";
-import { Tags } from "./tags"
+import { Tags } from "./tags";
+import { GenerateUserLinks, GetCustomCSS, RemoveProtocol } from "./util";
 
 interface ICardProps {
   blogPost: IAnyParsedPost;
@@ -25,16 +25,13 @@ export class Card extends RootComponent<ICardProps, {}> {
 
   public render() {
     let card;
-    if (IsSharedPost(this.props.blogPost)) {
-      card = this.renderSharedCard();
-    } else {
-      card = this.renderCard();
-    }
+    card = IsSharedPost(this.props.blogPost) ?
+           this.renderSharedCard() : this.renderCard();
 
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
-        { card }
+        {card}
         <div className="pure-u-1-24"/>
         {this.renderBio()}
       </div>

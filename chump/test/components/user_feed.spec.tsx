@@ -41,7 +41,7 @@ describe("User", () => {
     };
     const wrapper = shallow(<User {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
-    expect(wrapper.find("Post")).to.have.lengthOf(0);
+    expect(wrapper.find("Card")).to.have.lengthOf(0);
 
     wrapper.setState({
       publicBlog: [{
@@ -53,6 +53,6 @@ describe("User", () => {
     });
 
     expect(wrapper.find("div")).to.have.lengthOf(2);
-    expect(wrapper.find("Post")).to.have.lengthOf(1);
+    expect(wrapper.find("Card")).to.have.lengthOf(1);
   });
 });

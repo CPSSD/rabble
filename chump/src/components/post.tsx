@@ -8,8 +8,8 @@ import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
+import { Tags } from "./tags";
 import { GenerateUserLinks, GetCustomCSS, RemoveProtocol } from "./util";
-import { Tags } from "./tags"
 
 interface IPostProps {
   blogPost: IParsedPost;
