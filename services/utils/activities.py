@@ -101,7 +101,6 @@ class ActivitiesUtil:
         foreign_host = host.split('://')[-1]
         local_host = hostname.split('://')[-1]
         if foreign_host == local_host:
-            self._logger.info('Foreign host = local_host')
             return None
         return host
 
