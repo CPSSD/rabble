@@ -12,7 +12,7 @@ class LogDatabaseServicer:
     def AddLog(self, req, context):
         self._logger.debug(
             "Adding log '%s' by user %d",
-            req.message, req.user
+            req.message.strip(), req.user
         )
         response = db_pb.AddLogResponse()
         try:

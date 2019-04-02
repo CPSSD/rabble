@@ -27,6 +27,7 @@ class UsersDatabaseServicer:
             database_pb2.UsersRequest.FIND: self._users_handle_find,
             database_pb2.UsersRequest.FIND_NOT: self._users_handle_find_not,
             database_pb2.UsersRequest.UPDATE: self._users_handle_update,
+            database_pb2.UsersRequest.DELETE: self._users_handle_delete,
         }
         self._filter_defer = {
             'private': self._private_to_filter,
@@ -149,7 +150,7 @@ class UsersDatabaseServicer:
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN\n' +
                 '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
-                "VALUES ('delete', new.global_id, new.handle); \n" +
+                "VALUES ('delete', old.global_id, old.handle); \n" +
                 'END;')
             res = self._db.execute(
                 'CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN\n' +
@@ -219,6 +220,20 @@ class UsersDatabaseServicer:
             return
         resp.result_type = database_pb2.UsersResponse.OK
         resp.global_id = res[0][0]
+
+    def _users_handle_delete(self, req, resp):
+        if req.entry.global_id == 0:
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = "Global ID is required for delete"
+            return
+        sql = "DELETE FROM users WHERE global_id = ?"
+        try:
+            self._db.execute(sql, req.entry.global_id)
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = str(e)
+            return
+        resp.result_type = database_pb2.UsersResponse.OK
 
     def _users_handle_update(self, req, resp):
         update_clause, u_values = util.entry_to_update(
