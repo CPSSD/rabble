@@ -3,7 +3,7 @@ from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
 from services.proto import search_pb2
-
+from utils.articles import convert_to_tags_string
 
 class NewArticleServicer:
 
@@ -19,11 +19,6 @@ class NewArticleServicer:
         convert_req = mdc_pb2.MDRequest(md_body=body)
         res = self._md_stub.MarkdownToHTML(convert_req)
         return res.html_body
-
-    def convert_to_tags_string(self, tags_array):
-        # Using | to separate tags. So url encode | character in tags
-        tags_array = [x.replace("|", "%7C") for x in tags_array]
-        return "|".join(tags_array)
 
     def index(self, post_entry):
         """
@@ -50,7 +45,7 @@ class NewArticleServicer:
         global_id = author.global_id
 
         html_body = self.get_html_body(req.body)
-        tags_string = self.convert_to_tags_string(req.tags)
+        tags_string = convert_to_tags_string(req.tags)
         pe = database_pb2.PostsEntry(
             author_id=global_id,
             title=req.title,

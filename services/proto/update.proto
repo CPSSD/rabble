@@ -15,6 +15,7 @@ message UpdateResponse {
   enum ResultType {
     OK = 0;
     ERROR = 1;
+    DENIED = 2;
   }
 
   ResultType result_type = 1;

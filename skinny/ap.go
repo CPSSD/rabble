@@ -231,7 +231,6 @@ type createActivityObjectStruct struct {
 	Name         string                `json:"name"`
 	Published    string                `json:"published"`
 	AttributedTo string                `json:"attributedTo"`
-	Recipient    []string              `json:"to"`
 	Type         string                `json:"type"`
 	Id           string                `json:"id"`
 	URL          string                `json:"url"`

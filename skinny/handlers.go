@@ -640,11 +640,16 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 			cResp.Error = "Issue with editing article"
 			enc.Encode(cResp)
 			return
-		}
-		if resp.ResultType == pb.UpdateResponse_ERROR {
+		} else if resp.ResultType == pb.UpdateResponse_ERROR {
 			log.Printf("Could not edit article: %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
 			cResp.Error = "Issue with editing article"
+			enc.Encode(cResp)
+			return
+		} else if resp.ResultType == pb.UpdateResponse_DENIED {
+			log.Printf("Editing of article denied")
+			w.WriteHeader(http.StatusForbidden)
+			cResp.Error = "Editing of article is denied"
 			enc.Encode(cResp)
 			return
 		}
