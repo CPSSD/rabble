@@ -124,6 +124,7 @@ export class User extends React.Component<IUserProps, IUserState> {
             blogPost={e}
             preview={false}
             customCss={true}
+            useSummary={true}
           />
         </div>
       );

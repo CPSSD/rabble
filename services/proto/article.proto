@@ -15,6 +15,7 @@ message NewArticle {
   string ap_id = 5;
   int64 author_id = 6;
   repeated string tags = 7;
+  string summary = 8;
 }
 
 // NewArticleResponse is a simple response.
