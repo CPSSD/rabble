@@ -16,7 +16,7 @@ class ShareDatabaseServicer:
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
             "l.user_id IS NOT NULL, f.follower IS NOT NULL, "
             "s.user_id = ?, s.announce_datetime, "
-            "s.user_id, p.shares_count, p.tags "
+            "s.user_id, p.shares_count, p.tags, p.summary "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
             "LEFT OUTER JOIN follows f ON "
@@ -51,7 +51,7 @@ class ShareDatabaseServicer:
         return resp
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 15:
+        if len(tup) != 16:
             self._logger.warning(
                 "Error converting tuple to SharesEntry: " +
                 "Wrong number of elements " + str(tup))
@@ -73,6 +73,7 @@ class ShareDatabaseServicer:
             entry.sharer_id = tup[12]
             entry.shares_count = tup[13]
             entry.tags = tup[14]
+            entry.summary = tup[15]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to SharesEntry: " +

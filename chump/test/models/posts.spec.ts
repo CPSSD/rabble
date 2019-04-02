@@ -37,6 +37,7 @@ const validBody: IFeedResponse = {
     md_body: "",
     published: "",
     shares_count: 1,
+    summary: "summary",
     tags: [""],
     title: "how to write a plugin",
   }],
@@ -60,6 +61,7 @@ const evalidBody: IParsedPost[] = [{
   parsed_date: now,
   published: "",
   shares_count: 1,
+  summary: "summary",
   tags: [""],
   title: "how to write a plugin",
 }];

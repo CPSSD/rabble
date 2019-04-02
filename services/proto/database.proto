@@ -25,6 +25,7 @@ message PostsEntry {
   int64 shares_count = 12;
   // Tag list separated by |
   string tags = 13;
+  string summary = 14;
 }
 
 message PostsRequest {
@@ -274,6 +275,7 @@ message SharesEntry {
   int64 shares_count = 14;
   // Tag list separated by |
   string tags = 15;
+  string summary = 16;
 }
 
 message SharesResponse {

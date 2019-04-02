@@ -106,7 +106,13 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
     return this.state.foundPosts.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g pure-u-1" key={i}>
-          <Post username={this.props.username} blogPost={e} preview={false} customCss={false}/>
+          <Post
+            username={this.props.username}
+            blogPost={e}
+            preview={false}
+            customCss={false}
+            useSummary={true}
+          />
         </div>
       );
     });

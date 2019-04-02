@@ -15,6 +15,7 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
+  useSummary: boolean;
 }
 
 interface IPostState {
@@ -59,6 +60,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   }
 
   private renderPost() {
+    const post = this.props.blogPost;
+
     // Set custom CSS for user if enabled.
     let customStyle;
     if (this.props.customCss) {
@@ -66,13 +69,13 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         <link
           rel="stylesheet"
           type="text/css"
-          href={`/c2s/${this.props.blogPost.author_id}/css`}
+          href={`/c2s/${post.author_id}/css`}
         />
       );
     }
 
     let tags;
-    if (typeof this.props.blogPost.tags !== "undefined" && this.props.blogPost.tags.length !== 0) {
+    if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
       tags = (
         <div className="pure-g">
           <div className="pure-u-3-24" key={-1}>
@@ -82,35 +85,38 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         </div>
       );
     }
+
+    const innerText = this.props.useSummary ? post.summary : post.body;
+
     return (
       <div className="pure-u-10-24">
         {customStyle}
         <p className="article-byline">
           {config.published} &nbsp;
-          {this.props.blogPost.parsed_date.toLocaleString()}
+          {post.parsed_date.toLocaleString()}
         </p>
         <Link
-          to={`/@${this.props.blogPost.author}/${this.props.blogPost.global_id}`}
+          to={`/@${post.author}/${post.global_id}`}
           className="article-title"
         >
-          {this.props.blogPost.title}
+          {post.title}
         </Link>
         <p
           className="article-body"
-          dangerouslySetInnerHTML={{ __html: this.props.blogPost.body }}
+          dangerouslySetInnerHTML={{ __html: innerText }}
         />
 
         <Reblog
           username={this.props.username}
-          initReblogged={this.props.blogPost.is_shared}
-          sharesCount={this.props.blogPost.shares_count}
+          initReblogged={post.is_shared}
+          sharesCount={post.shares_count}
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-          blogPost={this.props.blogPost}
+          blogPost={post}
         />
         <EditButton
           username={this.props.username}
           display={this.viewerIsAuthor() && !this.nonInteractivePost()}
-          blogPost={this.props.blogPost}
+          blogPost={post}
         />
         {tags}
       </div>

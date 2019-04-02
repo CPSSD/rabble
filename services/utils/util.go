@@ -143,6 +143,7 @@ func ConvertDBToFeed(ctx context.Context, p *pb.PostsResponse, db UsersGetter) [
 			IsShared:      r.IsShared,
 			SharesCount:   r.SharesCount,
 			Tags:          tags,
+			Summary:       r.Summary,
 		}
 		pe = append(pe, np)
 	}
@@ -192,6 +193,7 @@ func ConvertShareToFeed(ctx context.Context, p *pb.SharesResponse, db UsersGette
 			AuthorId:      author.GlobalId,
 			SharesCount:   r.SharesCount,
 			Tags:          tags,
+			Summary:       r.Summary,
 		}
 		pe = append(pe, np)
 	}

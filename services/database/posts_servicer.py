@@ -22,7 +22,7 @@ class PostsDatabaseServicer:
             "p.global_id, p.author_id, p.title, p.body, "
             "p.creation_datetime, p.md_body, p.ap_id, p.likes_count, "
             "l.user_id IS NOT NULL, f.follower IS NOT NULL, "
-            "s.user_id IS NOT NULL, p.shares_count, p.tags "
+            "s.user_id IS NOT NULL, p.shares_count, p.tags, p.summary "
             "FROM posts p LEFT OUTER JOIN likes l ON "
             "l.article_id=p.global_id AND l.user_id=? "
             "LEFT OUTER JOIN shares s ON "
@@ -158,8 +158,8 @@ class PostsDatabaseServicer:
             self._db.execute(
                 'INSERT INTO posts '
                 '(author_id, title, body, creation_datetime, '
-                'md_body, ap_id, likes_count, tags) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                'md_body, ap_id, likes_count, tags, summary) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 req.entry.author_id, req.entry.title,
                 req.entry.body,
                 req.entry.creation_datetime.seconds,
@@ -167,6 +167,7 @@ class PostsDatabaseServicer:
                 req.entry.ap_id,
                 req.entry.likes_count,
                 req.entry.tags,
+                req.entry.summary,
                 commit=False)
             res = self._db.execute(
                 'SELECT last_insert_rowid() FROM posts LIMIT 1')
@@ -185,7 +186,7 @@ class PostsDatabaseServicer:
         resp.global_id = res[0][0]
 
     def _db_tuple_to_entry(self, tup, entry):
-        if len(tup) != 13:
+        if len(tup) != 14:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: "
                 + "Wrong number of elements " + str(tup))
@@ -205,6 +206,7 @@ class PostsDatabaseServicer:
             entry.is_shared = tup[10]
             entry.shares_count = tup[11]
             entry.tags = tup[12]
+            entry.summary = tup[13]
         except Exception as e:
             self._logger.warning(
                 "Error converting tuple to PostsEntry: "

@@ -19,6 +19,7 @@ interface IBlogPost {
   is_shared: boolean;
   shares_count: number;
   tags: string[];
+  summary: string;
 }
 
 interface ISharedPost extends IBlogPost {

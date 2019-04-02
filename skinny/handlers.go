@@ -518,6 +518,7 @@ type createArticleStruct struct {
 	Title            string   `json:"title"`
 	CreationDatetime string   `json:"creation_datetime"`
 	Tags             []string `json:"tags"`
+	Summary          string   `json:"summary"`
 }
 
 func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
@@ -558,6 +559,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			CreationDatetime: protoTimestamp,
 			Foreign:          false,
 			Tags:             t.Tags,
+			Summary:          t.Summary,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()

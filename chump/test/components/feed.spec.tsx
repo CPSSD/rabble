@@ -32,6 +32,7 @@ const evalidBody: posts.IParsedPost[] = [{
   parsed_date: now,
   published: "",
   shares_count: 1,
+  summary: "summary",
   tags: [""],
   title: "how to write a plugin",
 }];
