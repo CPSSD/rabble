@@ -587,6 +587,69 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 	}
 }
 
+type editArticleRequest struct {
+	ArticleID        string   `json:"article_id"`
+	Body             string   `json:"body"`
+	Title            string   `json:"title"`
+	Tags             []string `json:"tags"`
+	Summary          string   `json:"summary"`
+}
+
+func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t editArticleRequest
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			cResp.Error = "Invalid JSON"
+			enc.Encode(cResp)
+			return
+		}
+
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
+			log.Printf("Edit article call from user not logged in")
+			w.WriteHeader(http.StatusUnauthorized)
+			cResp.Error = "Login Required"
+			enc.Encode(cResp)
+			return
+		}
+
+		ud := &pb.UpdateDetails{
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sUpdate.SendUpdateActivity(ctx, ud)
+		if err != nil {
+			log.Printf("Could not edit article: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with editing article"
+			enc.Encode(cResp)
+			return
+		}
+		if resp.ResultType == pb.UpdateResponse_ERROR {
+			log.Printf("Could not edit article: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with editing article"
+			enc.Encode(cResp)
+			return
+		}
+
+		log.Printf("User Id: %#v attempted to edit an article with title: %v\n",
+				   globalID, t.Title)
+		w.WriteHeader(http.StatusOK)
+		cResp.Message = "Article edited"
+		enc.Encode(cResp)
+	}
+}
+
 func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)

@@ -39,8 +39,8 @@ def main():
         S2SUpdateServicer(logger, db_stub, activ_util, users_util),
         server
     )
-    server.add_insecure_port("0.0.0.0:1608")
-    logger.info("Starting Update service on port 1608")
+    server.add_insecure_port("0.0.0.0:2029")
+    logger.info("Starting Update service on port 2029")
     server.start()
     try:
         while True:

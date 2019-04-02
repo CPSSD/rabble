@@ -62,6 +62,8 @@ type serverWrapper struct {
 	s2sFollow                 pb.S2SFollowClient
 	s2sLikeConn               *grpc.ClientConn
 	s2sLike                   pb.S2SLikeClient
+	s2sUpdateConn             *grpc.ClientConn
+	s2sUpdate                 pb.S2SUpdateClient
 	announceConn              *grpc.ClientConn
 	announce                  pb.AnnounceClient
 	approverConn              *grpc.ClientConn
@@ -94,6 +96,7 @@ func (s *serverWrapper) shutdown() {
 	s.feedConn.Close()
 	s.usersConn.Close()
 	s.s2sUndoConn.Close()
+	s.s2sUpdateConn.Close()
 	s.s2sFollowConn.Close()
 	s.s2sLikeConn.Close()
 	s.rssConn.Close()
@@ -169,6 +172,11 @@ func createS2SUndoClient() (*grpc.ClientConn, pb.S2SUndoClient) {
 	return conn, pb.NewS2SUndoClient(conn)
 }
 
+func createS2SUpdateClient() (*grpc.ClientConn, pb.S2SUpdateClient) {
+	conn := grpcConn("UPDATE_SERVICE_HOST", "2029")
+	return conn, pb.NewS2SUpdateClient(conn)
+}
+
 func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
 	conn := grpcConn("RSS_SERVICE_HOST", "1973")
 	return conn, pb.NewRSSClient(conn)
@@ -237,6 +245,7 @@ func buildServerWrapper() *serverWrapper {
 	rssConn, rssClient := createRSSClient()
 	ldNormConn, ldNormClient := createLDNormClient()
 	s2sUndoConn, s2sUndoClient := createS2SUndoClient()
+	s2sUpdateConn, s2sUpdateClient := createS2SUpdateClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
@@ -266,6 +275,8 @@ func buildServerWrapper() *serverWrapper {
 		users:                     usersClient,
 		s2sUndoConn:               s2sUndoConn,
 		s2sUndo:                   s2sUndoClient,
+		s2sUpdateConn:             s2sUpdateConn,
+		s2sUpdate:                 s2sUpdateClient,
 		s2sFollowConn:             s2sFollowConn,
 		s2sFollow:                 s2sFollowClient,
 		s2sLikeConn:               s2sLikeConn,
