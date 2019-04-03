@@ -58,12 +58,14 @@ class ActivitiesUtil:
                              'webfinger document.')
         return None
 
-    def _get_activitypub_actor_url(self, host, handle):
+    def _get_activitypub_actor_url(self, normalised_host, handle):
         """
         Fetch the webfinger document for a given user, and return the actor ID
         URL from it.
         """
-        webfinger_doc = self._get_webfinger_document(host, handle)
+        if normalised_host is None or normalised_host == self._normalise_hostname(self._host_name):
+            return self._build_local_actor_url(handle, normalised_host)
+        webfinger_doc = self._get_webfinger_document(normalised_host, handle)
         if webfinger_doc is None:
             return None
         return self._parse_actor_url_from_webfinger(webfinger_doc)
@@ -173,6 +175,8 @@ class ActivitiesUtil:
         if actor_url is None:
             self._logger.warning('Actor URL is None.')
             return None
+        if host is None or host == self._host_name:
+            return '{}/inbox'.format(actor_url)
 
         # Mastodon requires the Accept header to be set, otherwise it redirects
         # to the user-facing page for this user.
@@ -223,6 +227,7 @@ class ActivitiesUtil:
             user_obj = self._get_user_by_id(sender_id)
             private_key = self._get_private_key(user_obj)
             key_id = self._get_key_id(user_obj)
+            self._logger.info('Trying to sign activity with key_id {}'.format(key_id))
             auth = HTTPSignatureAuth(algorithm="rsa-sha256",
                                      key=private_key,
                                      key_id=key_id)
@@ -235,6 +240,7 @@ class ActivitiesUtil:
                            target_inbox, body)
         try:
             resp = requests.Session().send(req)
+            self._logger.info('Got response: "{}" (status code {})'.format(resp.text, resp.status_code))
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
