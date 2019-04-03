@@ -5,6 +5,7 @@ FROM rabblenetwork/recommend_follows
 # Then pip3 install numpy, scipy, pandas, scikit-surprise
 
 RUN pip3 install requests
+RUN pip3 install requests-http-signature
 
 ENV PYTHONPATH="/repo/build_out"
 
