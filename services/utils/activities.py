@@ -228,8 +228,6 @@ class ActivitiesUtil:
             private_key = self._get_private_key(user_obj)
             key_id = self._get_key_id(user_obj)
             headers['keyId'] = key_id
-            self._logger.info(
-                'Trying to sign activity with key_id {}'.format(key_id))
             auth = HTTPSignatureHeaderAuth(algorithm="rsa-sha256",
                                            key=private_key,
                                            key_id=key_id)
