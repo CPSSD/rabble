@@ -1,4 +1,11 @@
 from services.proto import database_pb2
+from services.proto import mdc_pb2
+
+
+def md_to_html(md, body):
+    convert_req = mdc_pb2.MDRequest(md_body=body)
+    res = md.MarkdownToHTML(convert_req)
+    return res.html_body
 
 
 def convert_to_tags_string(tags_array):

@@ -3,7 +3,7 @@ from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
 from services.proto import search_pb2
-from utils.articles import convert_to_tags_string
+from utils.articles import convert_to_tags_string, md_to_html
 
 class NewArticleServicer:
 
@@ -14,11 +14,6 @@ class NewArticleServicer:
         self._search_stub = search_stub
         self._logger = logger
         self._users_util = users_util
-
-    def get_html_body(self, body):
-        convert_req = mdc_pb2.MDRequest(md_body=body)
-        res = self._md_stub.MarkdownToHTML(convert_req)
-        return res.html_body
 
     def index(self, post_entry):
         """
@@ -44,7 +39,7 @@ class NewArticleServicer:
             return database_pb2.PostsResponse.error, None
         global_id = author.global_id
 
-        html_body = self.get_html_body(req.body)
+        html_body = md_to_html(self._md_stub, req.body)
         tags_string = convert_to_tags_string(req.tags)
         pe = database_pb2.PostsEntry(
             author_id=global_id,
@@ -70,7 +65,7 @@ class NewArticleServicer:
         return posts_resp.result_type, posts_resp.global_id
 
     def send_create_activity_request(self, req, global_id):
-        html_body = self.get_html_body(req.body)
+        html_body = md_to_html(self._md_stub, req.body)
         ad = create_pb2.ArticleDetails(
             author_id=req.author_id,
             title=req.title,
