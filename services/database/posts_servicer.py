@@ -254,16 +254,24 @@ class PostsDatabaseServicer:
         resp.result_type = database_pb2.PostsResponse.OK
 
     def _handle_update(self, req, resp):
-        # Only support updating ap_id from global_id for now.
-        if not req.match.global_id:
+        # Only support updating with global_id or ap_id.
+        if not req.match.global_id and not req.match.ap_id:
             resp.result_type = database_pb2.PostsResponse.ERROR
-            resp.error = "Must only filter by global_id"
+            resp.error = "Must only filter by global_id or ap_id"
             return
+        match_sql = ''
+        match_val = None
+        if req.match.ap_id:
+            match_sql = 'ap_id = ?'
+            match_val = req.match.ap_id
+        else:
+            match_sql = 'global_id = ?'
+            match_val = req.match.global_id
         update_clause, u_values = util.entry_to_update(req.entry)
-        sql = 'UPDATE posts SET ' + update_clause + ' WHERE global_id = ?'
+        sql = 'UPDATE posts SET ' + update_clause + ' WHERE ' + match_sql
         self._logger.info(sql)
         try:
-            self._db.execute(sql, *u_values, req.match.global_id)
+            self._db.execute(sql, *u_values, match_val)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = str(e)

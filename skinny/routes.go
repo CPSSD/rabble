@@ -89,6 +89,7 @@ func (s *serverWrapper) setupRoutes() {
 		"accept":   approvalHandler,
 		"reject":   approvalHandler,
 		"announce": s.handleAnnounceActivity(),
+		"update":   s.handleUpdateActivity(),
 	}
 	s.undoActivityRouter = map[string]http.HandlerFunc{
 		"like":   s.handleLikeUndoActivity(),
