@@ -269,8 +269,8 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           blogText: "",
           showModal,
           summary: "",
-          title: "",
           tags: [],
+          title: "",
         });
       })
       .catch((err: any) => {
