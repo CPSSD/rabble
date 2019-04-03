@@ -8,9 +8,10 @@ from utils.articles import get_article, convert_to_tags_string
 HOSTNAME_ENV = 'HOST_NAME'
 
 class SendUpdateServicer:
-    def __init__(self, logger, db, activ_util, users_util, hostname=None):
+    def __init__(self, logger, db, md, activ_util, users_util, hostname=None):
         self._logger = logger
         self._db = db
+        self._md = md
         self._activ_util = activ_util
         self._users_util = users_util
         self._hostname = hostname if hostname else os.environ.get(HOSTNAME_ENV)
