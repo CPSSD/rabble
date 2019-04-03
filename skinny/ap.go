@@ -369,11 +369,6 @@ type followActivityStruct struct {
 	Type      string   `json:"type"`
 }
 
-type followActivityResponse struct {
-	Success  bool   `json:"success"`
-	ErrorStr string `json:"error"`
-}
-
 func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
@@ -381,9 +376,6 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			log.Printf("User %v received a follow activity.\n", recipient)
 		}
 
-		var res followActivityResponse
-		enc := json.NewEncoder(w)
-		w.Header().Set("Content-Type", "application/json")
 		// TODO: Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t followActivityStruct
@@ -391,9 +383,6 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		if jsonErr != nil {
 			log.Printf("Invalid JSON\nError: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			res.Success = false
-			res.ErrorStr = "Invalid JSON"
-			enc.Encode(res)
 			return
 		}
 
@@ -410,15 +399,10 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			resp.ResultType == pb.FollowActivityResponse_ERROR {
 			log.Printf("Could not receive follow activity. Error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			res.Success = false
-			res.ErrorStr = "Issue with receiving follow activity."
-			enc.Encode(res)
 			return
 		}
 
 		log.Println("Activity received successfully.")
-		res.Success = true
-		enc.Encode(res)
 	}
 }
 
