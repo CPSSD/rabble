@@ -3,14 +3,15 @@ import sys
 
 from services.proto import database_pb2 as dbpb
 from services.proto import update_pb2 as upb
-from utils.articles import get_article, convert_to_tags_string
+from utils.articles import get_article, convert_to_tags_string, md_to_html
 
 HOSTNAME_ENV = 'HOST_NAME'
 
 class SendUpdateServicer:
-    def __init__(self, logger, db, activ_util, users_util, hostname=None):
+    def __init__(self, logger, db, md, activ_util, users_util, hostname=None):
         self._logger = logger
         self._db = db
+        self._md = md
         self._activ_util = activ_util
         self._users_util = users_util
         self._hostname = hostname if hostname else os.environ.get(HOSTNAME_ENV)
@@ -20,12 +21,14 @@ class SendUpdateServicer:
 
     def _update_locally(self, article, req):
         self._logger.info("Sending update request to DB")
+        html_body = md_to_html(self._md, req.body)
         resp = self._db.Posts(dbpb.PostsRequest(
             request_type=dbpb.PostsRequest.UPDATE,
             match=dbpb.PostsEntry(global_id=article.global_id),
             entry=dbpb.PostsEntry(
                 title=req.title,
-                body=req.body,
+                body=html_body,
+                md_body=req.body,
                 tags=convert_to_tags_string(req.tags),
                 summary=req.summary,
             ),

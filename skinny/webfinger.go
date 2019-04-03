@@ -77,7 +77,7 @@ func (wf *wfResolver) FindUser(handle string, host, requestHost string, r []webf
 	defer cancel()
 
 	// We only support looking up hosts that exist on our server.
-	if host != wf.hostname {
+	if host != wf.hostname && host != wf.debugHost {
 		fmt.Printf("webfinger: lookup on %s, expecting %s", host, wf.hostname)
 		return nil, util.UserNotFoundErr
 	}

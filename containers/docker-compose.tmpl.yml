@@ -108,6 +108,7 @@ services:
     environment:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
+      - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
       - HOST_NAME=[[EXTERNAL_ADDRESS]]
   ldnorm_service_[[INSTANCE_ID]]:
     build:
