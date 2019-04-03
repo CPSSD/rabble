@@ -79,6 +79,8 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
                     post_obj.is_liked = r_p[i].is_liked
                     post_obj.is_followed = r_p[i].is_followed
                     post_obj.shares_count = r_p[i].shares_count
+                    post_obj.summary = r_p[i].summary
+                    post_obj.tags = r_p[i].tags
         resp.result_type = \
             recommend_posts_pb2.PostRecommendationsResponse.OK
         return resp
