@@ -227,7 +227,8 @@ class ActivitiesUtil:
             user_obj = self._get_user_by_id(sender_id)
             private_key = self._get_private_key(user_obj)
             key_id = self._get_key_id(user_obj)
-            self._logger.info('Trying to sign activity with key_id {}'.format(key_id))
+            self._logger.info(
+                'Trying to sign activity with key_id {}'.format(key_id))
             auth = HTTPSignatureAuth(algorithm="rsa-sha256",
                                      key=private_key,
                                      key_id=key_id)
@@ -240,7 +241,8 @@ class ActivitiesUtil:
                            target_inbox, body)
         try:
             resp = requests.Session().send(req)
-            self._logger.info('Got response: "{}" (status code {})'.format(resp.text, resp.status_code))
+            self._logger.info('Got response: "{}" (status code {})'.format(
+                resp.text, resp.status_code))
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
