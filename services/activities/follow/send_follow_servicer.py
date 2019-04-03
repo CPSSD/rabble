@@ -31,10 +31,9 @@ class SendFollowServicer:
 
 
     def _build_undo(self, undoer_actor, unfollowed_actor, follow_activity):
-        # TODO(CianLR): Replace 'Delete' here with 'Undo'.
         d = {
             '@context':  self._activ_util.rabble_context(),
-            'type': 'Delete',
+            'type': 'Undo',
             'actor': undoer_actor,
             'object': follow_activity,
             'to': [unfollowed_actor]
