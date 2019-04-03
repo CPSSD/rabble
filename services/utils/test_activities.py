@@ -7,10 +7,11 @@ from utils.activities import ActivitiesUtil
 class ActivitiesUtilTest(unittest.TestCase):
     def setUp(self):
         self.activ_util = ActivitiesUtil(Mock(), Mock())
+        self.activ_util._host_name = 'b.com'
 
-    def test_build_actor(self):
-        self.assertEqual(self.activ_util.build_actor('a', 'b.com'),
-                         'https://b.com/ap/@a')
+    def test_build_local_actor_url(self):
+        self.assertEqual(self.activ_util._build_local_actor_url('a', 'b.com'),
+                         'b.com/ap/@a')
 
     def test_build_inbox_url(self):
         self.assertEqual(self.activ_util.build_inbox_url('a', 'b.com'),

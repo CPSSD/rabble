@@ -56,6 +56,8 @@ class SendLikeUndoServicerTest(unittest.TestCase):
         self.data = None
         self.url = None
         self.activ_util.send_activity = self.save_request
+        self.activ_util._get_activitypub_actor_url = lambda host, handle: (host + '/' + handle)
+        self.activ_util.build_inbox_url = lambda handle, host: (host + '/' + handle + '/inbox')
 
     def save_request(self, data, url):
         self.data = data

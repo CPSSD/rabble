@@ -71,6 +71,8 @@ class ActivitiesUtil:
         return self._parse_actor_url_from_webfinger(webfinger_doc)
 
     def _normalise_hostname(self, hostname):
+        if hostname is None:
+            return hostname
         if not hostname.startswith('http'):
             old_hostname = hostname
             if hostname != None and "." not in hostname:
