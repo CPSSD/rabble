@@ -40,7 +40,7 @@ class SendFollowServicer:
             'to': [unfollowed_actor]
         }
         return d
-
+      
     def _get_local_user_id(self, handle):
         user = database_pb2.UsersEntry(handle=handle, host_is_null=True)
         req = database_pb2.UsersRequest(request_type=database_pb2.UsersRequest.FIND,
@@ -56,17 +56,11 @@ class SendFollowServicer:
 
     def _send(self, activ, url, handle):
         sender_id = self._get_local_user_id(handle)
-        jresp, err = self._activ_util.send_activity(activ, url, sender_id=sender_id)
+        resp, err = self._activ_util.send_activity(activ, url, sender_id=sender_id)
         if err is not None:
             return err
-        try:
-            resp = json.loads(jresp.text)
-        except json.decoder.JSONDecodeError as e:
-            return str(e)
-        if "success" not in resp:
-            return "JSON has no success attribute"
-        elif not resp["success"]:
-            return resp["error"] if "error" in resp else "Foreign error"
+        elif resp.status_code != 200:
+            return "Got http error {}".format(resp.status_code)
         return None
 
     def SendFollowActivity(self, req, context):
