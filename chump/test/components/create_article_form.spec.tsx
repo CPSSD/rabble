@@ -25,7 +25,7 @@ const examplePost = {
 const exampleProps = {
   onSubmit: () =>  new bluebird((r: any, _: any) => { r(); }),
   prefillState: () => { return; },
-  username:  "ross",
+  username:  "sips",
 };
 
 describe("CreateArticleForm", () => {
@@ -86,7 +86,7 @@ describe("CreateArticleForm", () => {
     it("and handle success", (done) => {
       const alertMessage: string = "Request went well";
       const promise = new bluebird.Promise((resolve) => {
-        resolve({ text: alertMessage });
+        resolve(alertMessage);
       });
       createStub.returns(promise);
       testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
@@ -190,7 +190,7 @@ describe("CreateArticleForm", () => {
 
     it("successfully get and show preview", (done) => {
       const promise = new bluebird.Promise((resolve) => {
-        resolve({ body: examplePost });
+        resolve(examplePost);
       });
       previewStub.returns(promise);
       testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
@@ -207,10 +207,10 @@ describe("CreateArticleForm", () => {
       const submitStub: any = sandbox.stub(CreateArticleForm.prototype, "handleSubmitForm" as any);
       const alertMessage: string = "Request went well";
       const promise = new bluebird.Promise((resolve) => {
-        resolve({ body: examplePost });
+        resolve(examplePost);
       });
       const createPromise = new bluebird.Promise((resolve) => {
-        resolve({ text: alertMessage });
+        resolve(alertMessage);
       });
       testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       previewStub.returns(promise);

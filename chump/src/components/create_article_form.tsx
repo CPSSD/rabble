@@ -219,17 +219,19 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     event.preventDefault();
     const promise = CreatePreview(this.state.title, this.state.blogText);
     promise
-      .then((res: any) => {
-        const post = res!.body;
+      .then((post: any) => {
         if (post === null) {
           this.alertUser("Could not preview");
           return;
         }
+        post.author_display = this.props.username;
+        post.author = this.props.username;
         post.parsed_date = new Date();
         post.bio = defaultBio;
         post.likes_count = 0;
         post.shares_count = 0;
         post.image = defaultImage;
+        post.tags = this.state.tags;
         this.setState({
           post,
           showModal: true,
@@ -258,17 +260,17 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     }
     this.props.onSubmit(this.state.title, this.state.blogText, this.state.tags, this.state.summary)
       .then((res: any) => {
-        let message = "Posted article";
-        if (res.text) {
-          message = res.text;
+        let message = "Error creating article";
+        if (res) {
+          message = res;
         }
         this.alertUser(message);
         this.setState({
           blogText: "",
           showModal,
           summary: "",
-          title: "",
           tags: [],
+          title: "",
         });
       })
       .catch((err: any) => {

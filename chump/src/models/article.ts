@@ -25,11 +25,21 @@ export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostB
       .set("Accept", "application/json")
       .send(postBody)
       .end((error, res) => {
+
         if (error) {
-          reject(error);
-          return;
+          return reject(error);
         }
-        resolve(res);
+        const body = res!.body;
+        if (body === null) {
+          return resolve();
+        }
+
+        if (body.error !== undefined && body.error !== "") {
+          return resolve(body.error);
+        } else if (body.message !== undefined && body.message !== "") {
+          return resolve(body.message);
+        }
+        resolve(body);
       });
   });
 }

@@ -56,3 +56,6 @@ class RecommendersUtil:
             r = constructor(self._logger, self._users_util, self._db_stub)
             recommenders.append(r)
         return recommenders
+
+    def split_tags(self, tags):
+        return [t.replace("%7G", "|") for t in tags.split("|")]
