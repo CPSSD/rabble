@@ -254,7 +254,7 @@ class PostsDatabaseServicer:
         resp.result_type = database_pb2.PostsResponse.OK
 
     def _handle_update(self, req, resp):
-        # Only support updating ap_id from global_id for now.
+        # Only support updating with global_id or ap_id.
         if not req.match.global_id and not req.match.ap_id:
             resp.result_type = database_pb2.PostsResponse.ERROR
             resp.error = "Must only filter by global_id or ap_id"
