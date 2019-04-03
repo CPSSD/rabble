@@ -21,9 +21,9 @@ class CreateHandler:
         subprocess.run(['openssl', 'rsa', '-in', private_key_file, '-outform',
                         'PEM', '-pubout', '-out', public_key_file])
         with open(public_key_file, 'r') as f:
-            public_key = ''.join(line.strip() for line in f.readlines())
+            public_key = f.read()
         with open(private_key_file, 'r') as f:
-            private_key = ''.join(line.strip() for line in f.readlines())
+            private_key = f.read()
         subprocess.run(['rm', public_key_file, private_key_file])
         return public_key, private_key
 
