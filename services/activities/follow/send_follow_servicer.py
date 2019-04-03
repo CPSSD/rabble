@@ -41,17 +41,11 @@ class SendFollowServicer:
         return d
 
     def _send(self, activ, url):
-        jresp, err = self._activ_util.send_activity(activ, url)
+        resp, err = self._activ_util.send_activity(activ, url)
         if err is not None:
             return err
-        try:
-            resp = json.loads(jresp.text)
-        except json.decoder.JSONDecodeError as e:
-            return str(e)
-        if "success" not in resp:
-            return "JSON has no success attribute"
-        elif not resp["success"]:
-            return resp["error"] if "error" in resp else "Foreign error"
+        elif resp.status_code != 200:
+            return "Got http error {}".format(resp.status_code)
         return None
 
     def SendFollowActivity(self, req, context):
