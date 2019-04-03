@@ -18,5 +18,21 @@ class ReceiveUpdateServicer:
             sys.exit(1)
 
     def ReceiveUpdateActivity(self, req, ctx):
+        self._logger.info("Received edit for article '%s'", req.title)
+        resp = self._db.Posts(dbpb.PostsRequest(
+            request_type=dbpb.PostsRequest.UPDATE,
+            match=dbpb.PostsEntry(ap_id=req.ap_id),
+            entry=dbpb.PostsEntry(
+                title=req.title,
+                body=req.body,
+                summary=req.summary,
+            ),
+        ))
+        if resp.result_type != dbpb.PostsResponse.OK:
+            self._logger.error("Could not update article: %s", resp.error)
+            return upb.UpdateResponse(
+                result_type=upb.UpdateRespones.ERROR,
+                error="Error updating article in DB",
+            )
         return upb.UpdateResponse(result_type=upb.UpdateResponse.OK)
 

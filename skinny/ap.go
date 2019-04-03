@@ -226,29 +226,29 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 	}
 }
 
-type createActivityObjectStruct struct {
-	Content      string                `json:"content"`
-	Name         string                `json:"name"`
-	Published    string                `json:"published"`
-	AttributedTo string                `json:"attributedTo"`
-	Type         string                `json:"type"`
-	Id           string                `json:"id"`
-	URL          string                `json:"url"`
-	Preview      createActivityPreview `json:"preview"`
+type articleObjectStruct struct {
+	Content      string               `json:"content"`
+	Name         string               `json:"name"`
+	Published    string               `json:"published"`
+	AttributedTo string               `json:"attributedTo"`
+	Type         string               `json:"type"`
+	Id           string               `json:"id"`
+	URL          string               `json:"url"`
+	Preview      articleObjectPreview `json:"preview"`
 }
 
-type createActivityPreview struct {
+type articleObjectPreview struct {
 	Type    string `json:"type"`
 	Name    string `json:"name"`
 	Content string `json:"content"`
 }
 
 type createActivityStruct struct {
-	Actor     string                     `json:"actor"`
-	Context   string                     `json:"@context"`
-	Object    createActivityObjectStruct `json:"object"`
-	Recipient []string                   `json:"to"`
-	Type      string                     `json:"type"`
+	Actor     string              `json:"actor"`
+	Context   string              `json:"@context"`
+	Object    articleObjectStruct `json:"object"`
+	Recipient []string            `json:"to"`
+	Type      string              `json:"type"`
 }
 
 func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
@@ -305,6 +305,61 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "Created blog with title\n")
 	}
 }
+
+type updateActivity struct {
+	Object    articleObjectStruct `json:"object"`
+	Type      string              `json:"type"`
+}
+
+func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received an update activity\n", recipient)
+
+		decoder := json.NewDecoder(r.Body)
+		var t updateActivity
+		err := decoder.Decode(&t)
+		if err != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		summary := ""
+		if t.Object.Preview.Type == "Note" && t.Object.Preview.Name == "Summary" {
+			summary = t.Object.Preview.Content
+		}
+
+		ud := &pb.ReceivedUpdateDetails{
+			ApId:    t.Object.Id,
+			Body:    t.Object.Content,
+			Title:   t.Object.Name,
+			Summary: summary,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sUpdate.ReceiveUpdateActivity(ctx, ud)
+		if err != nil || resp.ResultType == pb.UpdateResponse_ERROR {
+			if err != nil {
+				log.Printf("Could not receive update activity. Error: %v", err)
+			} else {
+				log.Printf("Could not receive update activity. Error: %v", resp.Error)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving update activity\n")
+			return
+		}
+
+		log.Printf("Update activity was successfully processed\n")
+		fmt.Fprintf(w, "Update successful\n")
+	}
+}
+
+
 
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
@@ -649,13 +704,13 @@ type announceActor struct {
 
 type announceActivityStruct struct {
 	// TODO(#409): Change the object to simply be a createActivityObject
-	// that's gathered by it's id in the original body.
-	Actor     string                     `json:"actor"`
-	Context   string                     `json:"@context"`
-	Type      string                     `json:"type"`
-	Published string                     `json:"published"`
-	Object    createActivityObjectStruct `json:"object"`
-	TargetID  string                     `json:"target"`
+	// that's gathered by its id in the original body.
+	Actor     string              `json:"actor"`
+	Context   string              `json:"@context"`
+	Type      string              `json:"type"`
+	Published string              `json:"published"`
+	Object    articleObjectStruct `json:"object"`
+	TargetID  string              `json:"target"`
 }
 
 func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
