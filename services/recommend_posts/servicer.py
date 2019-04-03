@@ -58,7 +58,7 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
                 # See proto/Feed.Post and proto/database.PostsEntry
                 if i < len(r_p):
                     author = self._users_util.get_user_from_db(
-                        global_id=r_p[i].global_id)
+                        global_id=r_p[i].author_id)
                     if author == None:
                         resp.result_type = \
                             recommend_posts_pb2.PostRecommendationsResponse.ERROR
@@ -80,7 +80,8 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
                     post_obj.is_followed = r_p[i].is_followed
                     post_obj.shares_count = r_p[i].shares_count
                     post_obj.summary = r_p[i].summary
-                    post_obj.tags = r_p[i].tags
+                    tags = self._recommender_util.split_tags(r_p[i].tags)
+                    post_obj.tags.extend(tags)
         resp.result_type = \
             recommend_posts_pb2.PostRecommendationsResponse.OK
         return resp
