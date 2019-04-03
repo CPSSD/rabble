@@ -52,6 +52,33 @@ const feedApiURL = "/c2s/feed";
 const singleArticleApiURL = "/c2s/article/";
 const perUserApiURL = "/c2s/@";
 
+// CleanParsedPost ensures that fields not encoded by the frontend get
+// correct default values.
+//
+// This function modifies the post in place, because of typescript weirdness
+// when you're using returning alias types.
+export function CleanParsedPost(p: IAnyParsedPost) {
+  if (typeof(p.author_display) === "undefined" || p.author_display === "") {
+    p.author_display = p.author;
+  }
+  if (typeof(p.likes_count) === "undefined") {
+    p.likes_count = 0;
+  }
+  if (typeof(p.is_liked) === "undefined") {
+    p.is_liked = false;
+  }
+  if (typeof(p.shares_count) === "undefined") {
+    p.shares_count = 0;
+  }
+  if (typeof(p.is_shared) === "undefined") {
+    p.is_shared = false;
+  }
+  if (typeof(p.bio) === "undefined" || p.bio === "") {
+    p.bio = "Nowadays everybody wanna talk like they got something to say. \
+    But nothing comes out when they move their lips; just a bunch of gibberish.";
+  }
+}
+
 export function IsSharedPost(p: IAnyParsedPost) {
   return (p as IParsedSharedPost).parsed_share_date !== undefined;
 }
@@ -61,13 +88,7 @@ export function ParsePosts(b: IBlogPost[], bodyCssJson?: string, titleCssJson?: 
   b = b as IParsedPost[];
   b.map((e: IParsedPost) => {
     e.parsed_date = new Date(e.published);
-    if (typeof(e.author_display) === "undefined" || e.author_display === "") {
-      e.author_display = e.author;
-    }
-    if (e.bio === undefined || e.bio === "") {
-      e.bio = "Nowadays everybody wanna talk like they got something to say. \
-      But nothing comes out when they move their lips; just a bunch of gibberish.";
-    }
+    CleanParsedPost(e);
     return e;
   });
   return b as IParsedPost[];
@@ -78,10 +99,7 @@ export function ParseSharedPosts(b: ISharedPost[], bodyCssJson?: string, titleCs
   b.map((e: IParsedSharedPost) => {
     e.parsed_date = new Date(e.published);
     e.parsed_share_date = new Date(e.share_datetime);
-    if (e.bio === undefined || e.bio === "") {
-      e.bio = "Nowadays everybody wanna talk like they got something to say. \
-      But nothing comes out when they move their lips; just a bunch of gibberish.";
-    }
+    CleanParsedPost(e);
     return e;
   });
   return b as IParsedSharedPost[];

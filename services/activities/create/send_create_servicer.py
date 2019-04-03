@@ -41,25 +41,14 @@ class SendCreateServicer:
         target = self._activ_util.build_actor(follower.handle, follower.host)
         actor = self._activ_util.build_actor(author.handle, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
+        article = self._activ_util.build_article(
+            ap_id, req.title, timestamp, actor, req.body, req.summary)
         create_activity = {
             "@context":  self._activ_util.rabble_context(),
             "type": "Create",
             "to": [target],
             "actor": actor,
-            "object": {
-                "type": "Article",
-                "name": req.title,
-                "published": timestamp,
-                "attributedTo": actor,
-                "to": [target],
-                "content": req.body,
-                "preview": {
-                    "type": "Note",
-                    "name": "Summary",
-                    "content": req.summary,
-                },
-                "id": ap_id,
-            }
+            "object": article,
         }
         headers = {"Content-Type": "application/ld+json"}
 

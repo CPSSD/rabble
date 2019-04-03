@@ -1,9 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import { GetUsersPosts, IAnyParsedPost, IParsedPost, IParsedSharedPost, IsSharedPost } from "../models/posts";
-import { Post } from "./post";
-import { SharedPost } from "./shared_post";
+import { GetUsersPosts, IAnyParsedPost  } from "../models/posts";
+import { Card } from "./card";
 
 import * as superagent from "superagent";
 import * as config from "../../rabble_config.json";
@@ -106,25 +105,12 @@ export class User extends React.Component<IUserProps, IUserState> {
       );
     }
     return this.state.publicBlog.map((e: IAnyParsedPost, i: number) => {
-      if (IsSharedPost(e)) {
-        return (
-          <SharedPost
-            username={this.props.username}
-            blogPost={e as IParsedSharedPost}
-            preview={false}
-            customCss={true}
-            key={i}
-          />
-        );
-      }
       return (
         <div className="pure-g" key={i}>
-          <Post
+          <Card
             username={this.props.username}
             blogPost={e}
-            preview={false}
             customCss={true}
-            useSummary={true}
           />
         </div>
       );
