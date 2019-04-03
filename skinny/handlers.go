@@ -363,7 +363,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		resp, err := s.follows.SendFollowRequest(ctx, &j)
 		if err != nil {

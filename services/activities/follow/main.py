@@ -14,6 +14,7 @@ from utils.connect import get_future_channel
 from servicer import FollowServicer
 from services.proto import follows_pb2_grpc
 from services.proto import s2s_follow_pb2_grpc
+from services.proto import database_pb2_grpc
 
 
 def get_args():
@@ -28,12 +29,14 @@ def main():
     args = get_args()
     logger = get_logger("s2s_follow_service", args.v)
     users_util = UsersUtil(logger, None)
-    activ_util = ActivitiesUtil(logger, None)
-    with get_future_channel(logger, "FOLLOWS_SERVICE_HOST", 1641) as chan:
-        follows_service = follows_pb2_grpc.FollowsStub(chan)
+    with get_future_channel(logger, "DB_SERVICE_HOST", 1798) as db_chan, \
+            get_future_channel(logger, "FOLLOWS_SERVICE_HOST", 1641) as logger_chan:
+        db_stub = database_pb2_grpc.DatabaseStub(db_chan)
+        activ_util = ActivitiesUtil(logger, db_stub)
+        follows_service = follows_pb2_grpc.FollowsStub(logger_chan)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         s2s_follow_pb2_grpc.add_S2SFollowServicer_to_server(
-            FollowServicer(logger, users_util, activ_util, follows_service),
+            FollowServicer(logger, users_util, activ_util, follows_service, db_stub),
             server
         )
         server.add_insecure_port('0.0.0.0:1922')

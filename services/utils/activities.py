@@ -2,9 +2,12 @@ import json
 import sys
 import time
 import os
+
 from services.proto import database_pb2
 
 import requests
+
+from requests_http_signature import HTTPSignatureHeaderAuth
 
 
 class ActivitiesUtil:
@@ -25,6 +28,9 @@ class ActivitiesUtil:
         Fetch the webfinger document for the user with the given handle on the
         given host.
         """
+        self._logger.debug(
+            'Fetching webfinger doc for user {}@{}'.format(handle,
+                                                           normalised_host))
         # Webfinger users are of the form `bob@example.com`, so remove the
         # protocol from the host if it's there.
         host_no_protocol = self._remove_protocol_from_host(normalised_host)
@@ -33,7 +39,8 @@ class ActivitiesUtil:
         resp = requests.get(url)
         if resp.status_code != 200:
             self._logger.warning(('Non-200 response code ({}) for webfinger ' +
-                                  'lookup for URL: {}').format(resp.status_code, url))
+                                  'lookup for URL: {}').format(resp.status_code,
+                                                               url))
             return None
         return resp.json()
 
@@ -51,17 +58,21 @@ class ActivitiesUtil:
                              'webfinger document.')
         return None
 
-    def _get_activitypub_actor_url(self, host, handle):
+    def _get_activitypub_actor_url(self, normalised_host, handle):
         """
         Fetch the webfinger document for a given user, and return the actor ID
         URL from it.
         """
-        webfinger_doc = self._get_webfinger_document(host, handle)
+        if normalised_host is None or normalised_host == self._normalise_hostname(self._host_name):
+            return self._build_local_actor_url(handle, normalised_host)
+        webfinger_doc = self._get_webfinger_document(normalised_host, handle)
         if webfinger_doc is None:
             return None
         return self._parse_actor_url_from_webfinger(webfinger_doc)
 
     def _normalise_hostname(self, hostname):
+        if hostname is None:
+            return hostname
         if not hostname.startswith('http'):
             old_hostname = hostname
             if hostname != None and "." not in hostname:
@@ -78,6 +89,38 @@ class ActivitiesUtil:
 
     def _build_local_actor_url(self, handle, normalised_host):
         return f'{normalised_host}/ap/@{handle}'
+
+    def _get_user_by_id(self, _id):
+        """
+        Get the user object for the given user global_id. If the user could not
+        be retrieved, return None.
+        """
+        user_resp = self._db.Users(database_pb2.UsersRequest(
+            request_type=database_pb2.UsersRequest.FIND,
+            match=database_pb2.UsersEntry(global_id=_id)))
+        if user_resp.result_type != database_pb2.UsersResponse.OK:
+            self._logger.warning(
+                'Could not find user: {}'.format(user_resp.error))
+            return None
+        if not len(user_resp.results):
+            self._logger.warning('Could not find user.')
+            return None
+        return user_resp.results[0]
+
+    def _get_private_key(self, user_obj):
+        """
+        Return the private key byte array from the given user object.
+        """
+        return user_obj.private_key.encode('utf-8')
+
+    def _get_key_id(self, user_obj):
+        """
+        Return the Key ID for the HTTP Signature from the given user object.
+        """
+        handle = user_obj.handle
+        normalised_host = self._normalise_hostname(self._host_name)
+        return '{}#main-key'.format(self._build_local_actor_url(handle,
+                                                                normalised_host))
 
     def build_actor(self, handle, host):
         """
@@ -125,6 +168,7 @@ class ActivitiesUtil:
     def build_inbox_url(self, handle, host):
         """
         Fetch the inbox URL for the user with the given handle and host.
+        If there is any error, return None.
         """
         normalised_host = self._normalise_hostname(host)
 
@@ -133,6 +177,8 @@ class ActivitiesUtil:
         if actor_url is None:
             self._logger.warning('Actor URL is None.')
             return None
+        if host is None or host == self._host_name:
+            return '{}/inbox'.format(actor_url)
 
         # Mastodon requires the Accept header to be set, otherwise it redirects
         # to the user-facing page for this user.
@@ -144,7 +190,8 @@ class ActivitiesUtil:
         resp = requests.get(actor_url, headers=headers)
         if resp.status_code != 200:
             self._logger.warning(('Non-200 response ({}) when fetching actor ' +
-                                  'document at URL "{}"').format(resp.status_code, actor_url))
+                                  'document at URL "{}"').format(resp.status_code,
+                                                                 actor_url))
             return None
         doc = resp.json()
 
@@ -173,16 +220,30 @@ class ActivitiesUtil:
             },
         }
 
-    def send_activity(self, activity, target_inbox):
+    def send_activity(self, activity, target_inbox, sender_id=None):
         body = json.dumps(activity).encode("utf-8")
         headers = {"Content-Type": "application/ld+json"}
+
+        auth = None
+        if sender_id is not None:
+            user_obj = self._get_user_by_id(sender_id)
+            private_key = self._get_private_key(user_obj)
+            key_id = self._get_key_id(user_obj)
+            headers['keyId'] = key_id
+            auth = HTTPSignatureHeaderAuth(algorithm="rsa-sha256",
+                                           key=private_key,
+                                           key_id=key_id)
+            self._logger.info('Signing activity with key_id {}'.format(key_id))
+
         req = requests.Request('POST', target_inbox,
-                               data=body, headers=headers)
+                               data=body, headers=headers, auth=auth)
         req = req.prepare()
         self._logger.debug('Sending activity to foreign server (%s):\n%s',
                            target_inbox, body)
         try:
             resp = requests.Session().send(req)
+            self._logger.info('Got response: "{}" (status code {})'.format(
+                resp.text, resp.status_code))
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
@@ -255,4 +316,5 @@ class ActivitiesUtil:
 
     def timestamp_to_rfc(self, timestamp):
         # 2006-01-02T15:04:05.000Z
-        return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(timestamp.seconds))
+        return time.strftime("%Y-%m-%dT%H:%M:%S.000Z",
+                             time.gmtime(timestamp.seconds))

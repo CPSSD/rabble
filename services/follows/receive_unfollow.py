@@ -36,7 +36,7 @@ class ReceiveUnfollowServicer:
         if follow_resp.result_type == database_pb2.DbFollowResponse.ERROR:
             self._logger.error('Error deleting follow: %s', follow_resp.error)
             resp.result_type = follows_pb2.FollowResponse.ERROR
-            resp.error = 'Could not delete  requested follow from database'
+            resp.error = 'Could not delete requested follow from database'
             return resp
 
         resp.result_type = follows_pb2.FollowResponse.OK

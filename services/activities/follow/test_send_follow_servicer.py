@@ -10,7 +10,9 @@ class SendFollowServicerTest(unittest.TestCase):
 
     def setUp(self):
         self.activ_util = ActivitiesUtil(Mock(), Mock())
-        self.servicer = SendFollowServicer(Mock(), self.activ_util)
+        self.activ_util._get_activitypub_actor_url = lambda host, handle: (host + '/ap/@' + handle)
+        self.activ_util.build_inbox_url = lambda handle, host: (host + '/ap/@' + handle + '/inbox')
+        self.servicer = SendFollowServicer(Mock(), self.activ_util, Mock())
         self.mock_response = Mock()
         self.mock_response.text = '{"success": true, "error": ""}'
 
