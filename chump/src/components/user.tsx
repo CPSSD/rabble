@@ -27,7 +27,7 @@ export class User extends React.Component<IUserProps, {}> {
       userLinksClassName);
 
     let followButton: JSX.Element | boolean = false;
-    if (this.props.username !== null || this.props.username !== "") {
+    if (this.props.username !== null && this.props.username !== "") {
       followButton = (
         <FollowButton
           follower={this.props.username}

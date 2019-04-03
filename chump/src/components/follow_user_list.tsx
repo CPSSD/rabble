@@ -8,6 +8,7 @@ import { RootComponent } from "./root_component";
 import { User } from "./user";
 
 interface IFollowProps {
+  viewing: string;
   username: string;
 }
 
@@ -16,6 +17,7 @@ export class Followers extends RootComponent<IFollowProps, {}> {
     return (
       <FollowUserList
         username={this.props.username}
+        viewing={this.props.viewing}
         headerText={config.followers}
         queryList={GetFollowers}
       />
@@ -28,6 +30,7 @@ export class Following extends RootComponent<IFollowProps, {}> {
     return (
       <FollowUserList
         username={this.props.username}
+        viewing={this.props.viewing}
         headerText={config.following}
         queryList={GetFollowing}
       />
@@ -37,6 +40,7 @@ export class Following extends RootComponent<IFollowProps, {}> {
 
 interface IFollowListProps {
   username: string;
+  viewing: string;
   // headerText should reflect whether we are reading Following or Followers.
   headerText: string;
   queryList(username: string): Promise<IParsedUser[]>;
@@ -58,7 +62,7 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
 
   public componentDidMount() {
     // Start request for getting followers
-    this.props.queryList(this.props.username)
+    this.props.queryList(this.props.viewing)
       .then((users: IParsedUser[]) => {
         this.setState({
           ready: true,

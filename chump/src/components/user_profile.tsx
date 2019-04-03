@@ -159,9 +159,19 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
       case ViewingTab.FollowRequests:
         return <Pending username={this.props.username} />;
       case ViewingTab.Followers:
-        return <Followers username={this.state.viewingUser} />;
+        return (
+          <Followers
+            viewing={this.state.viewingUser}
+            username={this.props.username}
+          />
+        );
       case ViewingTab.Following:
-        return <Following username={this.state.viewingUser} />;
+        return (
+          <Following
+            viewing={this.state.viewingUser}
+            username={this.props.username}
+          />
+        );
       default:
         return "You have bent the space time continuum to see this message.";
     }
