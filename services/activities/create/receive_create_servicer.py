@@ -1,6 +1,7 @@
 from services.proto import create_pb2
 from services.proto import database_pb2
 from services.proto import article_pb2
+from utils.articles import get_article
 
 
 class ReceiveCreateServicer:
@@ -60,6 +61,12 @@ class ReceiveCreateServicer:
 
     def _add_to_posts_db(self, author_id, req):
         self._logger.debug("Calling article service with new foreign article")
+
+        # check if in posts db
+        article = get_article(self._logger, self._db_stub, ap_id=req.id)
+        if article is not None:
+            return True
+
         # set flag in article service that is foreign (so no need to create service)
         na = article_pb2.NewArticle(
             author_id=author_id,
@@ -84,7 +91,8 @@ class ReceiveCreateServicer:
         resp = create_pb2.CreateResponse()
 
         # get actor ids
-        author_id, follower_id = self._get_actor_ids(req.attributedTo, req.recipient)
+        author_id, follower_id = self._get_actor_ids(
+            req.attributedTo, req.recipient)
         if author_id is None:
             resp.result_type = create_pb2.CreateResponse.ERROR
             return resp
