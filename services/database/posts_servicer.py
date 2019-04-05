@@ -91,13 +91,13 @@ class PostsDatabaseServicer:
 
     def TagPosts(self, request, context):
         resp = database_pb2.PostsResponse()
-        self._logger.info('Reading all posts with tags'.format(n))
+        self._logger.info('Reading all posts with tags')
         try:
             res = self._db.execute('SELECT '
                                    'p.global_id, p.tags '
                                    'FROM posts p LEFT OUTER JOIN users u ON '
-                                   'p.author_id=u.global_id '
-                                   'WHERE p.tags is NULL OR p.tags = "" AND u.private is FALSE'
+                                   'p.author_id = u.global_id '
+                                   'WHERE p.tags is not NULL OR p.tags = "" AND u.private = 0 '
                                    )
             for tup in res:
                 entry = resp.results.add()

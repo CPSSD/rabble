@@ -5,6 +5,7 @@ import util
 from services.proto import database_pb2
 
 DEFAULT_NUM_USERS = 50
+CONVERT_ERROR = "Error converting tuple to UsersEntry: "
 
 
 class UsersDatabaseServicer:
@@ -47,8 +48,7 @@ class UsersDatabaseServicer:
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 12:
             self._logger.warning(
-                "Error converting tuple to UsersEntry: " +
-                "Wrong number of elements " + str(tup))
+                CONVERT_ERROR + "Wrong number of elements " + str(tup))
             return False
         try:
             # Tuple items are in order of columns of Users table in db.
@@ -68,9 +68,7 @@ class UsersDatabaseServicer:
             entry.public_key = tup[10]
             entry.private_key = tup[11]
         except Exception as e:
-            self._logger.warning(
-                "Error converting tuple to UsersEntry: " +
-                str(e))
+            self._logger.warning(CONVERT_ERROR + str(e))
             return False
         return True
 
@@ -117,10 +115,10 @@ class UsersDatabaseServicer:
             user_id = request.user_global_id.value
         self._logger.info('Reading up to {} users for search users'.format(n))
         try:
-            res = self._db.execute(self._select_base +
-                                   'WHERE global_id IN ' +
-                                   '(SELECT rowid FROM users_idx WHERE users_idx ' +
-                                   'MATCH ? LIMIT ?)', user_id, request.query + "*", n)
+            res = self._db.execute(self._select_base
+                                   + 'WHERE global_id IN '
+                                   + '(SELECT rowid FROM users_idx WHERE users_idx '
+                                   + 'MATCH ? LIMIT ?)', user_id, request.query + "*", n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
                     del resp.results[-1]
@@ -137,28 +135,28 @@ class UsersDatabaseServicer:
         resp = database_pb2.PostsResponse()
         try:
             res = self._db.execute(
-                'CREATE VIRTUAL TABLE IF NOT EXISTS users_idx USING ' +
-                'fts5(handle, content=users, content_rowid=global_id)')
+                'CREATE VIRTUAL TABLE IF NOT EXISTS users_idx USING '
+                + 'fts5(handle, content=users, content_rowid=global_id)')
             res = self._db.execute(
                 "insert into users_idx(users_idx) values('rebuild')")
             self._logger.info('Adding Triggers')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS users_ai AFTER INSERT ON users BEGIN\n' +
-                '  INSERT INTO users_idx(rowid, handle) ' +
-                'VALUES (new.global_id, new.handle); \n' +
-                'END;')
+                'CREATE TRIGGER IF NOT EXISTS users_ai AFTER INSERT ON users BEGIN\n'
+                + '  INSERT INTO users_idx(rowid, handle) '
+                + 'VALUES (new.global_id, new.handle); \n'
+                + 'END;')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN\n' +
-                '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
-                "VALUES ('delete', old.global_id, old.handle); \n" +
-                'END;')
+                'CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN\n'
+                + '  INSERT INTO users_idx(users_idx, rowid, handle) '
+                + "VALUES ('delete', old.global_id, old.handle); \n"
+                + 'END;')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN\n' +
-                '  INSERT INTO users_idx(users_idx, rowid, handle) ' +
-                "VALUES ('delete', new.global_id, new.handle);\n" +
-                '  INSERT INTO users_idx(rowid, handle) ' +
-                'VALUES (new.global_id, new.handle);\n' +
-                'END;')
+                'CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN\n'
+                + '  INSERT INTO users_idx(users_idx, rowid, handle) '
+                + "VALUES ('delete', new.global_id, new.handle);\n"
+                + '  INSERT INTO users_idx(rowid, handle) '
+                + 'VALUES (new.global_id, new.handle);\n'
+                + 'END;')
             resp.result_type = database_pb2.PostsResponse.OK
         except sqlite3.Error as e:
             self._logger.info("Error creating users index")
@@ -185,6 +183,43 @@ class UsersDatabaseServicer:
         for tup in db_res:
             if not self._db_tuple_to_entry(tup, response.results.add()):
                 del response.results[-1]
+        return response
+
+    def AllUserLikes(self, request, context):
+        response = database_pb2.UsersResponse()
+        try:
+            db_res = self._db.execute(
+                "SELECT u.global_id, u.host, "
+                "GROUP_CONCAT(l.article_id) "
+                "FROM users u "
+                "LEFT OUTER JOIN likes l ON "
+                "l.user_id = u.global_id GROUP BY u.global_id "
+            )
+        except sqlite3.Error as e:
+            response.result_type = database_pb2.UsersResponse.ERROR
+            response.error = str(e)
+            return response
+        response.result_type = database_pb2.UsersResponse.OK
+        for tup in db_res:
+            entry = resp.results.add()
+            if len(tup) != 3:
+                self._logger.warning(
+                    CONVERT_ERROR + "Wrong number of elements " + str(tup))
+                resp.result_type = database_pb2.UsersResponse.ERROR
+                resp.error = str("Wrong number of elements")
+                break
+            try:
+                entry.global_id = tup[0]
+                if tup[1] is not None:
+                    entry.host = tup[1]
+                else:
+                    entry.host_is_null = True
+                entry.likes = tup[2]
+            except Exception as e:
+                self._logger.warning(CONVERT_ERROR + str(e))
+                resp.result_type = database_pb2.UsersResponse.ERROR
+                resp.error = str(e)
+                break
         return response
 
     def _users_handle_insert(self, req, resp):
@@ -290,8 +325,8 @@ class UsersDatabaseServicer:
             if not filter_clause:
                 res = self._db.execute(self._select_base)
             else:
-                res = self._db.execute(self._select_base +
-                                       'WHERE ' + filter_clause, user_id, *values)
+                res = self._db.execute(self._select_base
+                                       + 'WHERE ' + filter_clause, user_id, *values)
         except sqlite3.Error as e:
             resp.result_type = database_pb2.UsersResponse.ERROR
             resp.error = str(e)
