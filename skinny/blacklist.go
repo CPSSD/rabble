@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -18,28 +19,41 @@ func (b Blacklist) String(m map[string]struct{}) {
 	log.Printf("Blacklisted hosts: %v", strings.Join(keys, ", "))
 }
 
-// Actor takes an actor and returns an error if the Actor is not authorized to
-// communicate with our server.
-//
-// If the error is non nil, you can use HandleForbidden and return in the handler.
-func (b Blacklist) checkActor(actor string) error {
-	log.Println(actor)
-	return nil
+// Actor takes an actor and returns a boolean indicating if the actor is
+// blacklisted.
+func (b Blacklist) actorBlacklisted(actor string) (bool, error) {
+	u, err := url.Parse(actor)
+	if err != nil {
+		return false, err
+	}
+
+	if _, exists := b[u.Host]; exists {
+		return true, nil
+	}
+
+	return false, nil
 }
 
-// Actor takes an actor and returns an error if the Actor is not authorized to
-// communicate with our server.
+// Actor takes an actor from an Activity and returns true if the actor was blacklisted.
 //
-// If the error is non nil, you can use HandleForbidden and return in the handler.
-func (b Blacklist) Actors(actors ...string) error {
+// This function takes place of handling of errors, so no additional
+// status/etc are required.
+func (b Blacklist) Actors(w http.ResponseWriter, actors ...string) bool {
 	for _, a := range actors {
-		if err := b.checkActor(a); err != nil {
-			return err
+		if bad, err := b.checkActor(a); bad || err != nil {
+			b.HandleForbidden(w, err)
+			return true
 		}
 	}
+	return false
 }
 
-func (b Blacklist) HandleForbidden(w http.ResponseWriter) {
+func (b Blacklist) HandleForbidden(w http.ResponseWriter, err error) {
+	if err != nil {
+		log.Printf("Error in blacklist: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusForbidden)
 	return
 }

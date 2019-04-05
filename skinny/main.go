@@ -51,7 +51,7 @@ type serverWrapper struct {
 
 	// blacklist is a set of strings of hosts, that the instance has
 	// blocked.
-	blacklist map[string]struct{}
+	blacklist Blacklist
 
 	followsConn               *grpc.ClientConn
 	follows                   pb.FollowsClient
