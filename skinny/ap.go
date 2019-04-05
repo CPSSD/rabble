@@ -281,6 +281,10 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			summary = t.Object.Preview.Content
 		}
 
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.AttributedTo); bad {
+			return
+		}
+
 		nfa := &pb.NewForeignArticle{
 			AttributedTo: t.Object.AttributedTo,
 			Content:      t.Object.Content,
@@ -307,8 +311,8 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 }
 
 type updateActivity struct {
-	Object    articleObjectStruct `json:"object"`
-	Type      string              `json:"type"`
+	Object articleObjectStruct `json:"object"`
+	Type   string              `json:"type"`
 }
 
 func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
@@ -331,6 +335,10 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 		summary := ""
 		if t.Object.Preview.Type == "Note" && t.Object.Preview.Name == "Summary" {
 			summary = t.Object.Preview.Content
+		}
+
+		if bad := s.blacklist.Actors(w, t.Object.AttributedTo); bad {
+			return
 		}
 
 		ud := &pb.ReceivedUpdateDetails{
@@ -359,8 +367,6 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 	}
 }
 
-
-
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
 	Context   string   `json:"@context"`
@@ -383,6 +389,10 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		if jsonErr != nil {
 			log.Printf("Invalid JSON\nError: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor); bad {
 			return
 		}
 
@@ -425,6 +435,11 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
 		}
+
+		if bad := s.blacklist.Actors(w, t.Object.Actor); bad {
+			return
+		}
+
 		f := &pb.ReceivedFollowDetails{
 			Follower: t.Object.Actor,
 			Followed: t.Object.Object,
@@ -472,6 +487,10 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			log.Printf("Error: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor.Id); bad {
 			return
 		}
 
@@ -549,6 +568,9 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 			return
 		}
 
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.Object); bad {
+			return
+		}
 		ap := &pb.ReceivedApproval{
 			Follow: &pb.ReceivedFollowDetails{
 				Follower: t.Object.Actor,
@@ -653,6 +675,9 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 			return
 		}
 
+		if bad := s.blacklist.Actors(w, t.Object.Actor.Id); bad {
+			return
+		}
 		f := &pb.ReceivedLikeUndoDetails{
 			LikedObjectApId: t.Object.Object,
 			LikingUserApId:  t.Object.Actor.Id,
@@ -723,6 +748,10 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 		ptc, err := parseTimestamp(w, t.Object.Published, true)
 		if err != nil {
 			log.Printf("Unable to read object timestamp: %v", err)
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.AttributedTo); bad {
 			return
 		}
 
