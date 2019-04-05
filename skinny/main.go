@@ -49,8 +49,7 @@ type serverWrapper struct {
 	// database is the RPC client for talking to the database service.
 	database pb.DatabaseClient
 
-	// blacklist is a set of strings of hosts, that the instance has
-	// blocked.
+	// blacklist is a set of strings of hosts, that the instance has blocked.
 	blacklist Blacklist
 
 	followsConn               *grpc.ClientConn
