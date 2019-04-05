@@ -54,6 +54,7 @@ func (b Blacklist) HandleForbidden(w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Println("Received an activity from a blacklisted instance.")
 	w.WriteHeader(http.StatusForbidden)
 	return
 }
