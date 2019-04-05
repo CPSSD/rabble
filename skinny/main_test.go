@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -359,54 +357,5 @@ func TestFeed(t *testing.T) {
 
 	if r[0].Title != fakeTitle {
 		t.Fatalf("Expected faked response, got %v", r[0].Title)
-	}
-}
-
-func TestParseBlacklist(t *testing.T) {
-	tests := []struct {
-		in  string
-		out map[string]struct{}
-	}{
-		{
-			in:  "",
-			out: map[string]struct{}{},
-		},
-		{
-			in: "#yes\nnice\ncool\nouch\n",
-			out: map[string]struct{}{
-				"nice": struct{}{},
-				"cool": struct{}{},
-				"ouch": struct{}{},
-			},
-		},
-		{
-			in: "# YES!! \n owie \n  cool # inline dank \n\n\nouch \n",
-			out: map[string]struct{}{
-				"owie": struct{}{},
-				"cool": struct{}{},
-				"ouch": struct{}{},
-			},
-		},
-	}
-
-	compare := func(out map[string]struct{}, test map[string]struct{}) error {
-		for host_out := range out {
-			if _, exists := test[host_out]; !exists {
-				return fmt.Errorf("%#v not in test set", host_out)
-			}
-		}
-		for host_test := range test {
-			if _, exists := out[host_test]; !exists {
-				return fmt.Errorf("%#v not in output", host_test)
-			}
-		}
-		return nil
-	}
-
-	for _, tcase := range tests {
-		o := parseBlacklist(strings.NewReader(tcase.in))
-		if err := compare(o, tcase.out); err != nil {
-			t.Errorf("tcase: %#v: %v", tcase.in, err)
-		}
 	}
 }
