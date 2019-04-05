@@ -1,11 +1,16 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -45,6 +50,10 @@ type serverWrapper struct {
 	databaseConn *grpc.ClientConn
 	// database is the RPC client for talking to the database service.
 	database pb.DatabaseClient
+
+	// blacklist is a set of strings of hosts, that the instance has
+	// blocked.
+	blacklist map[string]struct{}
 
 	followsConn               *grpc.ClientConn
 	follows                   pb.FollowsClient
@@ -120,6 +129,52 @@ func grpcConn(env string, port string) *grpc.ClientConn {
 		log.Fatalf("Skinny server did not connect to %s: %v", addr, err)
 	}
 	return conn
+}
+
+func loadBlacklistFile() io.Reader {
+	path := os.Getenv("BLACKLIST_FILE")
+	if path == "" {
+		log.Fatalln("BLACKLIST_FILE env var not set for skinny server.")
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatalf("blacklist file: %v", err)
+	}
+
+	return bytes.NewReader(b)
+}
+
+func parseBlacklist(r io.Reader) map[string]struct{} {
+	blacklisted := map[string]struct{}{}
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		l := strings.TrimSpace(scanner.Text())
+
+		// Handle comments.
+		if len(l) == 0 || l[0] == '#' {
+			continue
+		}
+
+		// Handle inline comments.
+		if i := strings.Index(l, "#"); i != -1 {
+			l = strings.TrimSpace(l[0:i])
+		}
+
+		blacklisted[l] = struct{}{}
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("error reading blacklist file: %v", err)
+	}
+	return blacklisted
+}
+
+func printBlacklist(m map[string]struct{}) {
+	keys := []string{}
+	for k := range m {
+		keys = append(keys, k)
+	}
+	log.Printf("Blacklisted hosts: %v", strings.Join(keys, ", "))
 }
 
 func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
@@ -235,6 +290,10 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
+
+	generatedBlacklist := parseBlacklist(loadBlacklistFile())
+	printBlacklist(generatedBlacklist)
+
 	cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
@@ -261,6 +320,7 @@ func buildServerWrapper() *serverWrapper {
 		store:                     cookie_store,
 		shutdownWait:              20 * time.Second,
 		hostname:                  hostname,
+		blacklist:                 generatedBlacklist,
 		databaseConn:              databaseConn,
 		database:                  databaseClient,
 		articleConn:               articleConn,
