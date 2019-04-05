@@ -40,7 +40,7 @@ func (b Blacklist) actorBlacklisted(actor string) (bool, error) {
 // status/etc are required.
 func (b Blacklist) Actors(w http.ResponseWriter, actors ...string) bool {
 	for _, a := range actors {
-		if bad, err := b.checkActor(a); bad || err != nil {
+		if bad, err := b.actorBlacklisted(a); bad || err != nil {
 			b.HandleForbidden(w, err)
 			return true
 		}
