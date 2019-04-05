@@ -395,6 +395,8 @@ service Database {
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
   // Get the N random posts from posts.
   rpc RandomPosts(RandomPostsRequest) returns (PostsResponse);
+  // Get all non private posts with tags.
+  rpc TagPosts(PostsRequest) returns (PostsResponse);
   // Get the N most recent shared posts for a user.
   rpc SharedPosts(SharedPostsRequest) returns (SharesResponse);
   // Get PENDING Follows with handles rather than ids
