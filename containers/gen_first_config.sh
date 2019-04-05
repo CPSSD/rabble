@@ -15,6 +15,7 @@ export RABBLE_NETWORK_NAME="testnetwork"
 export RABBLE_NETWORK_CONFIG="driver: bridge"
 export RABBLE_DBPATH="/repo/rabble.db"
 export RABBLE_EXTERNAL_ADDRESS="skinny_1:1916"
+export RABBLE_INSTANCE_BLACKLIST_FILE="/repo/config/instance_blacklist"
 
 python3 build_out/containers/build_compose.py \
   --template="build_out/containers/docker-compose.tmpl.yml" \
