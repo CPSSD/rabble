@@ -436,10 +436,6 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 			return
 		}
 
-		if bad := s.blacklist.Actors(w, t.Object.Actor); bad {
-			return
-		}
-
 		f := &pb.ReceivedFollowDetails{
 			Follower: t.Object.Actor,
 			Followed: t.Object.Object,
