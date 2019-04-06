@@ -89,7 +89,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
         if (err.response) {
           message = err.response.text;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
       });
   }
 }

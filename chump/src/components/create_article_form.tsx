@@ -221,7 +221,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     promise
       .then((post: any) => {
         if (post === null) {
-          this.alertUser("Could not preview");
+          this.errorToast({ debug: "failed to preview" });
           return;
         }
         post.author_display = this.props.username;
@@ -242,14 +242,14 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         if (err.response) {
           message = err.response.text;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
       });
   }
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (this.state.title === "") {
-      this.alertUser(EMPTY_TITLE_ERROR);
+      this.errorToast({ message: EMPTY_TITLE_ERROR });
       return;
     }
 
@@ -264,7 +264,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         if (res) {
           message = res;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
         this.setState({
           blogText: "",
           showModal,
@@ -278,7 +278,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
         if (err.response) {
           message = err.response.text;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
       });
   }
 }

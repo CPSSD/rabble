@@ -37,7 +37,7 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
   }
 
   public handleGetPostsErr() {
-    this.alertUser("Could not communicate with server :(");
+    this.errorToast({});
   }
 
   public renderPosts() {

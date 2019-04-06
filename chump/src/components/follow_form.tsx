@@ -87,7 +87,7 @@ export class FollowForm extends RootComponent<IFormProps, IFormState> {
       if (res.text) {
         message += res.text;
       }
-      this.alertUser(message);
+      this.errorToast({ debug: message });
       this.setState({
         toFollow: "",
         type: "username",
@@ -100,7 +100,7 @@ export class FollowForm extends RootComponent<IFormProps, IFormState> {
         status = err.response.status;
         message = err.response.text;
       }
-      this.alertUser(message);
+      this.errorToast(message);
     });
   }
 }
