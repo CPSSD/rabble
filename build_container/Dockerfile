@@ -34,6 +34,9 @@ RUN apk add --update openssl
 RUN pip3 install bcrypt
 RUN pip3 install requests
 
+RUN apk add --no-cache --update openssl-dev
+RUN pip3 install requests-http-signature cryptography
+
 RUN apk add --no-cache --update protobuf-dev
 
 # Add PYTHONPATH for when we run tests
