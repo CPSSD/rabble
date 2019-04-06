@@ -41,5 +41,9 @@
   "settings": "Settings",
   "loading": "Loading...",
   "recommended_posts_title": "Recommended Posts",
-  "recommended_posts_text": "Explore"
+  "recommended_posts_text": "Explore",
+  "bad_request": "Bad Request.",
+  "not_found": "Page Not Found.",
+  "im_a_teapot": "I'm a teapot!",
+  "something_went_wrong": "Something went wrong."
 }
