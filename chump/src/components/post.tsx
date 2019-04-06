@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
+import { DeleteButton } from "./delete_button";
 import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
@@ -20,6 +21,7 @@ interface IPostProps {
 
 interface IPostState {
   likesCount: number;
+  isHidden: boolean;
   isLiked: boolean;
 }
 
@@ -29,14 +31,25 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
     this.state = {
+      isHidden: false,
       isLiked: this.props.blogPost.is_liked,
       likesCount: this.props.blogPost.likes_count,
     };
+    this.hide = this.hide.bind(this);
     this.handleLike = this.handleLike.bind(this);
     this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
+  public hide() {
+    this.setState({
+      isHidden: true,
+    });
+  }
+
   public render() {
+    if (this.state.isHidden) {
+      return null;
+    }
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -92,11 +105,19 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
           blogPost={post}
         />
-        <EditButton
-          username={this.props.username}
-          display={this.viewerIsAuthor() && !this.nonInteractivePost()}
-          blogPost={post}
-        />
+        <div className="pure-g">
+          <EditButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+          />
+          <DeleteButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+            hideCallback={this.hide}
+          />
+        </div>
         {tags}
       </div>
     );
