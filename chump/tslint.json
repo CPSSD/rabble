@@ -2,6 +2,7 @@
   "extends": ["tslint:latest", "tslint-react"],
   "rules": {
     "no-implicit-dependencies": [true, "dev"],
-    "max-classes-per-file": [false]
+    "max-classes-per-file": [false],
+    "no-console": [false]
   }
 }
