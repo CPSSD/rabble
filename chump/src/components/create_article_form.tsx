@@ -223,7 +223,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     const promise = CreatePreview(this.state.title, this.state.blogText);
     promise
       .then((res: request.Response) => {
-        if (res.status != 200 || typeof(res.body) === "undefined") {
+        if (res.status !== 200 || typeof(res.body) === "undefined") {
           this.errorToast({ debug: res });
           return;
         }

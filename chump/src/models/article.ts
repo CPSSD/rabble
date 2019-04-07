@@ -1,7 +1,7 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
 
-import { PartialResponse } from './common';
+import { PartialResponse } from "./common";
 
 interface ICreateArticlePostBody {
   body: string;

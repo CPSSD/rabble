@@ -4,9 +4,9 @@ import * as React from "react";
 import * as sinon from "sinon";
 
 import { FollowForm } from "../../src/components/follow_form";
+import { PartialResponse} from "../../src/models/common";
 import * as follow from "../../src/models/follow";
 import { mount } from "./enzyme";
-import { PartialResponse} from "../../src/models/common";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 

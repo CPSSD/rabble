@@ -1,8 +1,8 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
 
+import { PartialResponse } from "./common";
 import { CleanUsers, IParsedUser } from "./search";
-import { PartialResponse } from './common';
 
 interface ICreateFollowPostBody {
   followed: string;

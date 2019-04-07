@@ -76,7 +76,7 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
                                  this.props.followed,
                                  this.props.followed_host);
     promise.then((res: Response) => {
-      if (res.status != 200) {
+      if (res.status !== 200) {
         this.errorToast({ statusCode: res.status });
         return;
       }
@@ -94,7 +94,7 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
                              this.props.followed,
                              this.props.followed_host);
     promise.then((res: Response) => {
-      if (res.status != 200) {
+      if (res.status !== 200) {
         this.errorToast({ statusCode: res.status });
         return;
       }

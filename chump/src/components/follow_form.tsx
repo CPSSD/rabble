@@ -85,7 +85,7 @@ export class FollowForm extends RootComponent<IFormProps, IFormState> {
       : CreateFollow(this.props.username, this.state.toFollow, "");
 
     promise.then((res: request.Response) => {
-      if (res.status != 200) {
+      if (res.status !== 200) {
         this.errorToast({ statusCode: res.status });
       } else {
         this.successToast(config.success_follow_form);

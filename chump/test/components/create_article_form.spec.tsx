@@ -6,8 +6,8 @@ import * as request from "superagent";
 
 import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
-import { mount } from "./enzyme";
 import { PartialResponse} from "../../src/models/common";
+import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -27,14 +27,14 @@ const examplePost = {
 const exampleProps = {
   onSubmit: () =>  new bluebird((r: any, _: any) => { r(); }),
   prefillState: () => { return; },
-  username:  "sips",
   successMessage: "happy farts",
+  username:  "sips",
 };
 
 function genCreateResponse(statusCode: number): PartialResponse {
   return {
-    status: statusCode,
     body: examplePost,
+    status: statusCode,
   };
 }
 
@@ -116,7 +116,7 @@ describe("CreateArticleForm", () => {
       });
     });
 
-  it("and block submissions without a title", (done) => {
+    it("and block submissions without a title", (done) => {
     const alertMessage: string = "A post cannot have an empty title";
     testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     testComponent.find("form").first().simulate("submit");
@@ -124,7 +124,7 @@ describe("CreateArticleForm", () => {
     done();
   });
 
-  it("and handle a non 200 status code", (done) => {
+    it("and handle a non 200 status code", (done) => {
     const response = genCreateResponse(403);
     const promise = new bluebird.Promise((resolve) => {
       resolve(response);
@@ -147,7 +147,7 @@ describe("CreateArticleForm", () => {
     }, 200);
   });
 
-  it("handle an exception", (done) => {
+    it("handle an exception", (done) => {
     const err = new Error("bad stuff");
     const promise = new bluebird.Promise((resolve, reject) => {
       reject(err);
