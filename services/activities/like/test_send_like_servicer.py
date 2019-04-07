@@ -45,6 +45,8 @@ class SendLikeServicerTest(unittest.TestCase):
     def setUp(self):
         self.db = MockDB()
         self.activ_util = ActivitiesUtil(Mock(), self.db)
+        self.activ_util.build_actor = lambda han, host: f'{host}/ap/@{han}'
+        self.activ_util.build_inbox_url = lambda han, host: f'{host}/ap/@{han}/inbox'
         self.users_util = UsersUtil(Mock(), self.db)
         self.servicer = SendLikeServicer(
             Mock(), self.db, self.users_util, self.activ_util, "localhost")

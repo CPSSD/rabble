@@ -7,6 +7,7 @@ from utils.articles import get_article, convert_to_tags_string, md_to_html
 
 HOSTNAME_ENV = 'HOST_NAME'
 
+
 class SendUpdateServicer:
     def __init__(self, logger, db, md, activ_util, users_util, hostname=None):
         self._logger = logger
@@ -57,14 +58,14 @@ class SendUpdateServicer:
 
     def SendUpdateActivity(self, req, ctx):
         self._logger.info("Got request to update article %d from %d",
-            req.article_id, req.user_id)
+                          req.article_id, req.user_id)
         user = self._users_util.get_user_from_db(global_id=req.user_id)
         if user is None:
             return upb.UpdateResponse(
                 result_type=upb.UpdateResponse.ERROR,
                 error="Error retrieving user",
             )
-        article = get_article(self._logger, self._db, req.article_id)
+        article = get_article(self._logger, self._db, global_id=req.article_id)
         if article is None:
             return upb.UpdateResponse(
                 result_type=upb.UpdateResponse.ERROR,
@@ -92,4 +93,3 @@ class SendUpdateServicer:
                 error=err,
             )
         return upb.UpdateResponse(result_type=upb.UpdateResponse.OK)
-
