@@ -7,7 +7,7 @@ import { SendLog } from "../models/log";
 interface IErrorToastArgs {
   message?: string;
   statusCode?: number;
-  debug?: string;
+  debug?: any;
 }
 
 function genMessageFromStatus(code: number) {
@@ -36,7 +36,7 @@ export class RootComponent<T, U> extends React.Component<T, U> {
   // If a debug string is passed it will be logged to console.
   protected errorToast(t: IErrorToastArgs) {
     if (t.debug) {
-      console.log(t.debug);
+      console.log("rabble debug: ", t.debug);
     }
 
     if (t.statusCode) {
@@ -55,5 +55,10 @@ export class RootComponent<T, U> extends React.Component<T, U> {
     if (config.send_logs_to_server) {
       SendLog(this.constructor.name + ": " + t.message);
     }
+  }
+
+  // successToast creates a good toast notification with the given message.
+  protected successToast(message: string) {
+    toast.success(message);
   }
 }

@@ -45,5 +45,6 @@
   "bad_request": "Bad Request.",
   "not_found": "Page Not Found.",
   "im_a_teapot": "I'm a teapot!",
-  "something_went_wrong": "Something went wrong."
+  "something_went_wrong": "Something went wrong.",
+  "article_success": "Created article successfully!"
 }

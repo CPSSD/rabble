@@ -17,29 +17,21 @@ interface IEditArticlePostBody {
   tags: string[];
 }
 
+export type ICreateResponse = Partial<request.Response>;
+
 export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostBody) {
-  return new Promise((resolve, reject) => {
+  return new Promise<ICreateResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(postBody)
       .end((error, res) => {
-
         if (error) {
           return reject(error);
         }
-        const body = res!.body;
-        if (body === null) {
-          return resolve();
-        }
 
-        if (body.error !== undefined && body.error !== "") {
-          return resolve(body.error);
-        } else if (body.message !== undefined && body.message !== "") {
-          return resolve(body.message);
-        }
-        resolve(body);
+        return resolve(res);
       });
   });
 }
