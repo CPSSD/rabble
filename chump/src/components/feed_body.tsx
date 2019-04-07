@@ -22,6 +22,8 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
   constructor(props: IFeedBodyProps) {
     super(props);
     this.state = { publicBlog: [] };
+
+    this.handleGetPostsErr = this.handleGetPostsErr.bind(this);
   }
 
   public componentDidMount() {
@@ -36,8 +38,8 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
       .catch(this.handleGetPostsErr);
   }
 
-  public handleGetPostsErr() {
-    this.errorToast({});
+  public handleGetPostsErr(err: any) {
+    this.errorToast({ debug: err });
   }
 
   public renderPosts() {
