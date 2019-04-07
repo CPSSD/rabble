@@ -46,5 +46,7 @@
   "not_found": "Page Not Found.",
   "im_a_teapot": "I'm a teapot!",
   "something_went_wrong": "Something went wrong.",
-  "article_success": "Created article successfully!"
+  "write_success": "Created article successfully!",
+  "edit_success": "Edited article successfully!",
+  "success_follow_form": "Sent follow"
 }

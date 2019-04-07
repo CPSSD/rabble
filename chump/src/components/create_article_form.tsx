@@ -23,6 +23,7 @@ interface IFormProps {
   username: string;
   prefillState: (updateFunc: (a: string, b: string, c: string[], d: string) => void) => void;
   onSubmit: (t: string, b: string, tags: string[], summary: string) => any;
+  successMessage: string;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
@@ -264,7 +265,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           this.errorToast({ debug: res, statusCode: res.status });
           return;
         }
-        this.successToast(config.article_success);
+        this.successToast(this.props.successMessage);
         this.setState({
           blogText: "",
           showModal,
