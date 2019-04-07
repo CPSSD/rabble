@@ -1,6 +1,8 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
 
+import { PartialResponse } from './common';
+
 interface ICreateArticlePostBody {
   body: string;
   creation_datetime: string;
@@ -17,10 +19,8 @@ interface IEditArticlePostBody {
   tags: string[];
 }
 
-export type ICreateResponse = Partial<request.Response>;
-
 export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostBody) {
-  return new Promise<ICreateResponse>((resolve, reject) => {
+  return new Promise<PartialResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
