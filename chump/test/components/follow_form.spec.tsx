@@ -6,13 +6,21 @@ import * as sinon from "sinon";
 import { FollowForm } from "../../src/components/follow_form";
 import * as follow from "../../src/models/follow";
 import { mount } from "./enzyme";
+import { PartialResponse} from "../../src/models/common";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
+
+function genResponse(statusCode: number): PartialResponse {
+  return {
+    status: statusCode,
+  };
+}
 
 describe("FollowForm", () => {
   let testComponent: any;
   let followStub: any;
-  let alertStub: any;
+  let errorStub: any;
+  let successStub: any;
 
   afterEach(() => {
     sandbox.restore();
@@ -59,73 +67,53 @@ describe("FollowForm", () => {
   });
 
   describe("can call Follow model for create follow", () => {
-
     beforeEach(() => {
       followStub = sandbox.stub(follow, "CreateFollow");
-      alertStub = sandbox.stub(FollowForm.prototype, "alertUser" as any);
+      errorStub = sandbox.stub(FollowForm.prototype, "errorToast" as any);
+      successStub = sandbox.stub(FollowForm.prototype, "successToast" as any);
     });
 
     it("and handle success", (done) => {
-      const responseMessage: string = "{}";
-      const expectedMessage: string = "Posted follow with response: {}";
       testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve) => {
-        resolve({ text: responseMessage });
+        resolve(genResponse(200));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       promise.finally(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(expectedMessage)).to.equal(true);
+        expect(errorStub.notCalled).to.equal(true);
+        expect(successStub.called).to.equal(true);
         done();
       });
     });
 
-    it("and handle a 403: permission denied", (done) => {
-      const alertMessage: string = "403";
+    it("and handle a non 200 status code", (done) => {
       testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
+        resolve(genResponse(400));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
-        done();
-      }, 200);
-    });
-
-    it("and handle a 400: bad request", (done) => {
-      const alertMessage: string = "400";
-      testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
-      const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
-      });
-      followStub.returns(promise);
-      testComponent.find("form").first().simulate("submit");
-      expect(followStub.called).to.equal(true);
-      setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        expect(successStub.notCalled).to.equal(true);
+        expect(errorStub.called).to.equal(true);
         done();
       }, 200);
     });
 
-    it("and handle other error", (done) => {
-      const alertMessage: string = "500";
+    it("and handle exceptions", (done) => {
       testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
+        reject(new Error("BAD!"));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        expect(successStub.notCalled).to.equal(true);
+        expect(errorStub.called).to.equal(true);
         done();
       }, 200);
     });
@@ -134,7 +122,9 @@ describe("FollowForm", () => {
 
     beforeEach(() => {
       followStub = sandbox.stub(follow, "CreateRssFollow");
-      alertStub = sandbox.stub(FollowForm.prototype, "alertUser" as any);
+      errorStub = sandbox.stub(FollowForm.prototype, "errorToast" as any);
+      successStub = sandbox.stub(FollowForm.prototype, "successToast" as any);
+
       testComponent = mount(<FollowForm username={"johannes"} userId={0}/>);
       testComponent.find("[id=\"type\"]")
         .simulate("change", {
@@ -146,62 +136,43 @@ describe("FollowForm", () => {
     });
 
     it("and handle success", (done) => {
-      const responseMessage: string = "{}";
-      const expectedMessage: string = "Posted follow with response: {}";
       const promise = new bluebird.Promise((resolve) => {
-        resolve({ text: responseMessage });
+        resolve(genResponse(200));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       promise.finally(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(expectedMessage)).to.equal(true);
+        expect(errorStub.notCalled).to.equal(true);
+        expect(successStub.called).to.equal(true);
         done();
       });
     });
 
-    it("and handle a 403: permission denied", (done) => {
-      const alertMessage: string = "403";
+    it("and handle a non 200 status code", (done) => {
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
+        reject(new Error("rip cpssd"));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
-        done();
-      }, 200);
-    });
-
-    it("and handle a 400: bad request", (done) => {
-      const alertMessage: string = "400";
-      const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
-      });
-      followStub.returns(promise);
-      testComponent.find("form").first().simulate("submit");
-      expect(followStub.called).to.equal(true);
-      setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        expect(errorStub.called).to.equal(true);
+        expect(successStub.notCalled).to.equal(true);
         done();
       }, 200);
     });
 
-    it("and handle other error", (done) => {
-      const alertMessage: string = "500";
+    it("and handle exeptions", (done) => {
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
+        reject(new Error("owo whats this"));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
       expect(followStub.called).to.equal(true);
       setTimeout(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        expect(errorStub.called).to.equal(true);
+        expect(successStub.notCalled).to.equal(true);
         done();
       }, 200);
     });
