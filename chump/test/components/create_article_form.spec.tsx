@@ -7,6 +7,7 @@ import * as request from "superagent";
 import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
 import { mount } from "./enzyme";
+import { PartialResponse} from "../../src/models/common";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -27,9 +28,10 @@ const exampleProps = {
   onSubmit: () =>  new bluebird((r: any, _: any) => { r(); }),
   prefillState: () => { return; },
   username:  "sips",
+  successMessage: "happy farts",
 };
 
-function genCreateResponse(statusCode: number): article.ICreateResponse {
+function genCreateResponse(statusCode: number): PartialResponse {
   return {
     status: statusCode,
     body: examplePost,
@@ -228,9 +230,8 @@ describe("CreateArticleForm", () => {
 
     it("and handle req error", (done) => {
       testComponent = mount(<CreateArticleForm {...exampleProps}/>);
-      const err = new Error("bad :(");
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(err));
+        reject(new Error("cpssd will last. haha jk"));
       });
       previewStub.returns(promise);
       testComponent.find("[name=\"title\"]").simulate("change", {
