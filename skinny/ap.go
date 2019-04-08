@@ -100,6 +100,7 @@ type ActorObjectStruct struct {
 	Followers         string       `json:followers`
 	Following         string       `json:following`
 	PublicKey         *KeyObject   `json:"publicKey"`
+	Id                string       `json:"id"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -141,6 +142,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
+			Id:                resp.Actor.Id,
 		}
 
 		actor.PublicKey = &KeyObject{
@@ -245,7 +247,6 @@ type articleObjectPreview struct {
 
 type createActivityStruct struct {
 	Actor     string              `json:"actor"`
-	Context   string              `json:"@context"`
 	Object    articleObjectStruct `json:"object"`
 	Recipient []string            `json:"to"`
 	Type      string              `json:"type"`
@@ -281,6 +282,10 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			summary = t.Object.Preview.Content
 		}
 
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.AttributedTo); bad {
+			return
+		}
+
 		nfa := &pb.NewForeignArticle{
 			AttributedTo: t.Object.AttributedTo,
 			Content:      t.Object.Content,
@@ -307,8 +312,8 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 }
 
 type updateActivity struct {
-	Object    articleObjectStruct `json:"object"`
-	Type      string              `json:"type"`
+	Object articleObjectStruct `json:"object"`
+	Type   string              `json:"type"`
 }
 
 func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
@@ -331,6 +336,10 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 		summary := ""
 		if t.Object.Preview.Type == "Note" && t.Object.Preview.Name == "Summary" {
 			summary = t.Object.Preview.Content
+		}
+
+		if bad := s.blacklist.Actors(w, t.Object.AttributedTo); bad {
+			return
 		}
 
 		ud := &pb.ReceivedUpdateDetails{
@@ -359,11 +368,8 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 	}
 }
 
-
-
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
-	Context   string   `json:"@context"`
 	Object    string   `json:"object"`
 	Recipient []string `json:"to"`
 	Type      string   `json:"type"`
@@ -383,6 +389,10 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 		if jsonErr != nil {
 			log.Printf("Invalid JSON\nError: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor); bad {
 			return
 		}
 
@@ -407,9 +417,8 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 }
 
 type followUndoActivity struct {
-	Context string               `json:"@context"`
-	Object  followActivityStruct `json:"object"`
-	Type    string               `json:"type"`
+	Object followActivityStruct `json:"object"`
+	Type   string               `json:"type"`
 }
 
 func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
@@ -425,6 +434,7 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 			fmt.Fprintf(w, "Invalid JSON\n")
 			return
 		}
+
 		f := &pb.ReceivedFollowDetails{
 			Follower: t.Object.Actor,
 			Followed: t.Object.Object,
@@ -451,10 +461,9 @@ type likeActorStruct struct {
 }
 
 type likeActivityStruct struct {
-	Actor   likeActorStruct `json:"actor"`
-	Context string          `json:"@context"`
-	Object  string          `json:"object"`
-	Type    string          `json:"type"`
+	Actor  likeActorStruct `json:"actor"`
+	Object string          `json:"object"`
+	Type   string          `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
@@ -472,6 +481,10 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			log.Printf("Error: %s\n", jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor.Id); bad {
 			return
 		}
 
@@ -510,7 +523,6 @@ type approvalObject struct {
 
 type approvalActivity struct {
 	Actor     string         `json:"actor"`
-	Context   string         `json:"@context"`
 	Object    approvalObject `json:"object"`
 	Recipient []string       `json:"to"`
 	Type      string         `json:"type"`
@@ -549,6 +561,9 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 			return
 		}
 
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.Object); bad {
+			return
+		}
 		ap := &pb.ReceivedApproval{
 			Follow: &pb.ReceivedFollowDetails{
 				Follower: t.Object.Actor,
@@ -579,9 +594,8 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 type undoActivity struct {
-	Context string   `json:"@context"`
-	Object  activity `json:"object"`
-	Type    string   `json:"type"`
+	Object activity `json:"object"`
+	Type   string   `json:"type"`
 }
 
 func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
@@ -630,9 +644,8 @@ func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
 }
 
 type likeUndoActivity struct {
-	Context string             `json:"@context"`
-	Object  likeActivityStruct `json:"object"`
-	Type    string             `json:"type"`
+	Object likeActivityStruct `json:"object"`
+	Type   string             `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
@@ -653,6 +666,9 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 			return
 		}
 
+		if bad := s.blacklist.Actors(w, t.Object.Actor.Id); bad {
+			return
+		}
 		f := &pb.ReceivedLikeUndoDetails{
 			LikedObjectApId: t.Object.Object,
 			LikingUserApId:  t.Object.Actor.Id,
@@ -690,7 +706,6 @@ type announceActivityStruct struct {
 	// TODO(#409): Change the object to simply be a createActivityObject
 	// that's gathered by its id in the original body.
 	Actor     string              `json:"actor"`
-	Context   string              `json:"@context"`
 	Type      string              `json:"type"`
 	Published string              `json:"published"`
 	Object    articleObjectStruct `json:"object"`
@@ -723,6 +738,10 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 		ptc, err := parseTimestamp(w, t.Object.Published, true)
 		if err != nil {
 			log.Printf("Unable to read object timestamp: %v", err)
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor, t.Object.AttributedTo); bad {
 			return
 		}
 

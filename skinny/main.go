@@ -46,6 +46,9 @@ type serverWrapper struct {
 	// database is the RPC client for talking to the database service.
 	database pb.DatabaseClient
 
+	// blacklist is a set of strings of hosts, that the instance has blocked.
+	blacklist Blacklist
+
 	followsConn               *grpc.ClientConn
 	follows                   pb.FollowsClient
 	articleConn               *grpc.ClientConn
@@ -243,6 +246,10 @@ func buildServerWrapper() *serverWrapper {
 		IdleTimeout:  time.Second * 60,
 		Handler:      r,
 	}
+
+	generatedBlacklist := NewBlacklist(loadBlacklistFile())
+	log.Print(generatedBlacklist)
+
 	cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
@@ -270,6 +277,7 @@ func buildServerWrapper() *serverWrapper {
 		store:                     cookie_store,
 		shutdownWait:              20 * time.Second,
 		hostname:                  hostname,
+		blacklist:                 generatedBlacklist,
 		databaseConn:              databaseConn,
 		database:                  databaseClient,
 		articleConn:               articleConn,

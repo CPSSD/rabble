@@ -17,11 +17,11 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
+  deleteSuccessCallback: () => void;
 }
 
 interface IPostState {
   likesCount: number;
-  isHidden: boolean;
   isLiked: boolean;
 }
 
@@ -31,25 +31,14 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
     this.state = {
-      isHidden: false,
       isLiked: this.props.blogPost.is_liked,
       likesCount: this.props.blogPost.likes_count,
     };
-    this.hide = this.hide.bind(this);
     this.handleLike = this.handleLike.bind(this);
     this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
-  public hide() {
-    this.setState({
-      isHidden: true,
-    });
-  }
-
   public render() {
-    if (this.state.isHidden) {
-      return null;
-    }
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -115,7 +104,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             username={this.props.username}
             display={this.viewerIsAuthor() && !this.nonInteractivePost()}
             blogPost={post}
-            hideCallback={this.hide}
+            successCallback={this.props.deleteSuccessCallback}
           />
         </div>
         {tags}
