@@ -24,6 +24,8 @@ message ActorObject {
   string followers = 7;
   int64 global_id = 8;
   PublicKey public_key = 9;
+  /* The public-facing actor URL */
+  string id = 10;
 }
 
 message ActorResponse {
