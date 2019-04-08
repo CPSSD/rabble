@@ -29,7 +29,7 @@ export class RootComponent<T, U> extends React.Component<T, U> {
   //
   // Arguments in an object (IErrorToastArgs) to make for a good API.
   //
-  // If statusCode is passed, it will be prefereably rendered.
+  // If statusCode is passed, it will be preferably rendered.
   // Otherwise, message is rendered. If no message is provided
   // we fall back to "Something went wrong" message.
   //

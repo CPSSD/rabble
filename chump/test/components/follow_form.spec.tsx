@@ -165,7 +165,7 @@ describe("FollowForm", () => {
 
     it("and handle exeptions", (done) => {
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error("owo whats this"));
+        reject(new Error("OwO whats this"));
       });
       followStub.returns(promise);
       testComponent.find("form").first().simulate("submit");
