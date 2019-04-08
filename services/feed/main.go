@@ -192,13 +192,21 @@ func (s *server) PerArticle(ctx context.Context, r *pb.ArticleRequest) (*pb.Feed
 
 	author, err := utils.GetAuthorFromDb(ctx, "", "", false, resp.Results[0].AuthorId, s.db)
 	if err != nil {
-		// TODO(devoxel): Use FeedResponse.Error here and properly handle the error
 		return nil, err
 	}
 
 	if author.Private != nil && author.Private.Value {
-		// TODO(devoxel): Lookup followers here
-		return &pb.FeedResponse{}, nil
+		if r.UserGlobalId == nil {
+			// User not logged in.
+			return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
+		}
+		following, err := s.checkFollowing(r.UserGlobalId.Value, author.GlobalId)
+		if err != nil {
+			return nil, err
+		} else if !following {
+			// User not following this private account.
+			return &pb.FeedResponse{Error: pb.FeedResponse_UNAUTHORIZED}, nil
+		}
 	}
 	fp := &pb.FeedResponse{}
 	fp.Results = utils.ConvertDBToFeed(ctx, resp, s.db)
