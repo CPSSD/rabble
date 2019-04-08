@@ -14,11 +14,28 @@ class CosineRecommender:
         self._logger = logger
         self._db = db_stub
         self._recommender_util = RecommendersUtil(logger, db_stub)
-        self.tag_freq = defaultdict(int)
+
+        # Get user data and create models
+        self.post_tag_freq = defaultdict(int)
+        self.user_tag_freq = defaultdict(int)
         self.posts = self._get_all_posts_and_tags()
         self._logger.info("post-tags: {}".format(self.posts))
         self.user_models = self._get_all_user_models()
         self._logger.info("user_models: {}".format(self.user_models))
+
+        # Calculate Inverse Frequencies
+        self.user_tag_ifs = self._calculate_based_itf(
+            user_tag_freq, len(self.user_models))
+        self.post_tag_ifs = self._calculate_based_itf(
+            post_tag_freq, len(self.posts))
+
+    def _calculate_based_itf(tag_freq, N):
+        itfs = defaultdict(int)
+        for key in tag_freq.keys():
+            occurance = len(tag_freq[key])
+            itf = math.log(N / occurance)
+            itfs[key] = itf
+        return itfs
 
     def _clean_post_entries(self, pes):
         # Create an array with length the same as highest post id to allow
@@ -28,7 +45,7 @@ class CosineRecommender:
         for pe in pes:
             tags = self._recommender_util.split_tags(pe.tags)
             for t in tags:
-                self.tag_freq[t] += 1
+                self.post_tag_freq[t] += 1
             posts[pe.global_id] = {
                 "global_id": pe.global_id,
                 "tags": tags
@@ -46,6 +63,7 @@ class CosineRecommender:
         for u in users:
             for post_id in self._clean_likes(u.likes):
                 for tag in self.posts[post_id]["tags"]:
+                    self.user_tag_freq[tag] += 1
                     user_models[u.global_id][tag] += 1
         return user_models
 
@@ -66,5 +84,26 @@ class CosineRecommender:
 
         return self._create_user_models(find_resp.results)
 
+    def _tf_idf_cosine_similarity(self, user_model, post_tags):
+        sum_user_item_tf = 0
+        sum_user_tf = 0
+        sum_item_tf = 0
+        tag_amount = 0
+        for tag in post_tags:
+            sum_user_item_tf += user_model[tag] * \
+                self.user_tag_ifs[tag] * self.post_tag_ifs[tag]
+            sum_user_tf += (user_model[tag] * self.user_tag_ifs[tag]) ** 2
+            sum_item_tf += self.post_tag_ifs[tag] ** 2
+            tag_amount += 1
+        divisor = (((sum_user_tf) ** 0.5) * ((sum_item_tf) ** 0.5))
+        if divisor == 0:
+            return 0
+        tf_cosine = sum_user_item_tf / divisor
+        return tf_cosine
+
     def get_recommendations(self, user_id, n):
-        return [], None
+        user_model = self.user_models[user_id]
+        if user_model == {}:
+            self._logger.info(
+                'Cosine user_model is empty. id: {}'.format(user_id))
+            return [], None
