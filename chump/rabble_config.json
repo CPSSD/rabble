@@ -41,5 +41,6 @@
   "settings": "Settings",
   "loading": "Loading...",
   "recommended_posts_title": "Recommended Posts",
-  "recommended_posts_text": "Explore"
+  "recommended_posts_text": "Explore",
+  "delete_confirm": "Are you sure you want to delete this article?"
 }

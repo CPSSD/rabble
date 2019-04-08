@@ -22,7 +22,7 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
 
   public render() {
     if (!this.props.display) {
-      return (<div/>);
+      return null;
     }
     return (
       <div onClick={this.handleDelete} className="pure-u-3-24">
@@ -32,7 +32,7 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
   }
 
   private handleDelete() {
-    if (!window.confirm("Are you sure you want to delete this article?")) {
+    if (!window.confirm(config.delete_confirm)) {
       return;
     }
     DeleteArticle(this.props.blogPost.global_id)
