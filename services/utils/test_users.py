@@ -7,8 +7,14 @@ from users import UsersUtil
 class UsersUtilTest(unittest.TestCase):
 
     def setUp(self):
+        def _fake_fetch_actor(actor_url):
+            return {
+                'preferredUsername': 'cianlr'
+            }
+
         self.logger = logging.getLogger(__name__)
         self.util = UsersUtil(self.logger, None)
+        self.util._activ_util.fetch_actor = _fake_fetch_actor
 
     def test_parse_local_username(self):
         a, b = self.util.parse_username('admin')
@@ -31,15 +37,9 @@ class UsersUtilTest(unittest.TestCase):
         self.assertEqual(b, 'neopets.com')
 
     def test_parse_actor(self):
-        a, b = self.util.parse_actor('neopets.com/@cianlr')
-        self.assertEqual(a, 'neopets.com')
+        a, b = self.util.parse_actor('https://neopets.com/@cianlr')
+        self.assertEqual(a, 'https://neopets.com')
         self.assertEqual(b, 'cianlr')
-
-    def test_parse_bad_actor(self):
-        with self.assertLogs(self.logger, level='WARNING'):
-            a, b = self.util.parse_actor('a@b@c')
-            self.assertIsNone(a)
-            self.assertIsNone(b)
 
     def test_parse_bad_username(self):
         with self.assertLogs(self.logger, level='WARNING'):
