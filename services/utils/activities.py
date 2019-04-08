@@ -165,6 +165,27 @@ class ActivitiesUtil:
             "object": obj
         }
 
+    def fetch_actor(self, actor_url):
+        """
+        Fetch the actor document at the given URL, and return the parsed JSON
+        as a dict.
+        """
+        # Mastodon requires the Accept header to be set, otherwise it redirects
+        # to the user-facing page for this user.
+        headers = {
+            'Accept': 'application/activity+json, application/ld+json'
+        }
+
+        # Fetch the actor document.
+        resp = requests.get(actor_url, headers=headers)
+        if resp.status_code != 200:
+            self._logger.warning(('Non-200 response ({}) when fetching actor ' +
+                                  'document at URL "{}"').format(resp.status_code,
+                                                                 actor_url))
+            return None
+        doc = resp.json()
+        return doc
+
     def build_inbox_url(self, handle, host):
         """
         Fetch the inbox URL for the user with the given handle and host.
@@ -180,21 +201,11 @@ class ActivitiesUtil:
         if host is None or host == self._host_name:
             return '{}/inbox'.format(actor_url)
 
-        # Mastodon requires the Accept header to be set, otherwise it redirects
-        # to the user-facing page for this user.
-        headers = {
-            'Accept': 'application/activity+json, application/ld+json'
-        }
-
-        # Fetch the actor document.
-        resp = requests.get(actor_url, headers=headers)
-        if resp.status_code != 200:
-            self._logger.warning(('Non-200 response ({}) when fetching actor ' +
-                                  'document at URL "{}"').format(resp.status_code,
-                                                                 actor_url))
+        doc = self.fetch_actor(actor_url)
+        if doc is None:
+            self._logger.warning(
+                f'No actor document received for url {actor_url}')
             return None
-        doc = resp.json()
-
         inbox_url = doc['inbox']
         self._logger.info('Found inbox URL {} for user {} at host {}'.format(
             inbox_url, handle, host))
