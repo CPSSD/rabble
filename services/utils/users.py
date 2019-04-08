@@ -39,9 +39,7 @@ class UsersUtil:
             self._logger.warning(f'No actor doc found for user {actor_uri}.')
             return None, None
         handle = actor_doc['preferredUsername']
-
-        host = urlparse(actor_uri).netloc
-
+        host = self._activ_util.normalise_hostname(urlparse(actor_uri).netloc)
         return host, handle
 
     def download_profile_pic(self, host, handle, global_id):
@@ -121,7 +119,7 @@ class UsersUtil:
             self._logger.error('Retried query too many times.')
             return None
 
-        host = self._activ_util._normalise_hostname(host) if host else host
+        host = self._activ_util.normalise_hostname(host) if host else host
         user = self.get_user_from_db(handle, host, global_id, host_is_null)
 
         if user is not None:
@@ -158,7 +156,7 @@ class UsersUtil:
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
                            handle, host, global_id, host_is_null)
-        host = self._activ_util._normalise_hostname(host) if host else host
+        host = self._activ_util.normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
