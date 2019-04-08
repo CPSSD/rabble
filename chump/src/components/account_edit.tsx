@@ -53,7 +53,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
     this.handleUserInfo = this.handleUserInfo.bind(this);
     this.handleGetError = this.handleGetError.bind(this);
 
-    GetUserInfo().then(this.handleUserInfo).catch(this.handleGetError);
+    GetUserInfo(props.username).then(this.handleUserInfo).catch(this.handleGetError);
   }
 
   public render() {

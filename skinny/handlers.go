@@ -589,11 +589,11 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 }
 
 type editArticleRequest struct {
-	ArticleID        int64    `json:"article_id"`
-	Body             string   `json:"body"`
-	Title            string   `json:"title"`
-	Tags             []string `json:"tags"`
-	Summary          string   `json:"summary"`
+	ArticleID int64    `json:"article_id"`
+	Body      string   `json:"body"`
+	Title     string   `json:"title"`
+	Tags      []string `json:"tags"`
+	Summary   string   `json:"summary"`
 }
 
 func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
@@ -655,7 +655,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 		}
 
 		log.Printf("User Id: %#v attempted to edit an article with title: %v\n",
-				   globalID, t.Title)
+			globalID, t.Title)
 		w.WriteHeader(http.StatusOK)
 		cResp.Message = "Article edited"
 		enc.Encode(cResp)
@@ -663,7 +663,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 }
 
 type deleteArticleRequest struct {
-	ArticleID        int64    `json:"article_id"`
+	ArticleID int64 `json:"article_id"`
 }
 
 func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
@@ -721,7 +721,7 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 		}
 
 		log.Printf("User Id: %#v attempted to delete an article id: %v\n",
-				   globalID, t.ArticleID)
+			globalID, t.ArticleID)
 		w.WriteHeader(http.StatusOK)
 		cResp.Message = "Article deleted"
 		enc.Encode(cResp)
@@ -1046,10 +1046,10 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 
 func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handle, err := s.getSessionHandle(r)
-		if err != nil {
-			log.Printf("Called user details without logging in: %v", err)
-			w.WriteHeader(http.StatusForbidden)
+		v := mux.Vars(r)
+		handle, ok := v["username"]
+		if !ok || handle == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
 

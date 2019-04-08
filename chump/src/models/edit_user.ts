@@ -18,8 +18,8 @@ export interface IUserDetails {
   display_name: string;
 }
 
-export function GetUserInfo() {
-  const url = "/c2s/details/user";
+export function GetUserInfo(username: string) {
+  const url = "/c2s/@" + username + "/details";
   return new Promise<IUserDetails>((resolve, reject) => {
     superagent
       .post(url)
@@ -34,7 +34,7 @@ export function GetUserInfo() {
 
         const details = res!.body;
         if (details === null) {
-          reject("could not get current user details");
+          reject(new Error("could not get current user details"));
           return;
         }
         resolve(details);
