@@ -13,6 +13,7 @@ interface IErrorToastArgs {
 function genMessageFromStatus(code: number) {
   switch (code) {
     case 400: return config.bad_request;
+    case 403: return config.forbidden_error;
     case 404: return config.not_found;
     case 418: return config.im_a_teapot;
     case 500: return config.something_went_wrong;

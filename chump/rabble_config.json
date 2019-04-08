@@ -49,5 +49,6 @@
   "write_success": "Created article successfully",
   "edit_success": "Edited article successfully",
   "success_follow_form": "Sent follow",
-  "bad_login": "Incorrect login"
+  "bad_login": "Incorrect login",
+  "forbidden_error": "You don't have permission to perform this action."
 }
