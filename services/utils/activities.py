@@ -178,8 +178,8 @@ class ActivitiesUtil:
 
         # Fetch the actor document.
         resp = requests.get(actor_url, headers=headers)
-        if resp.status_code != 200:
-            self._logger.warning(('Non-200 response ({}) when fetching actor ' +
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self._logger.warning(('Non-2xx response ({}) when fetching actor ' +
                                   'document at URL "{}"').format(resp.status_code,
                                                                  actor_url))
             return None
