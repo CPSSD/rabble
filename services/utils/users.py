@@ -1,5 +1,9 @@
+from urllib.parse import urlparse
+
 import requests
+
 from services.proto import database_pb2
+
 from utils.activities import ActivitiesUtil
 
 MAX_FIND_RETRIES = 3
@@ -25,21 +29,18 @@ class UsersUtil:
         self._logger.warning('Couldn\'t parse username %s', username)
         return None, None
 
-    # Parse actor string. This is a the url of the actor object of
-    # a user of a local/foreign instance
     def parse_actor(self, actor_uri):
-        actor_uri = actor_uri.lstrip('/@')
-        # Actor uri like 'rabbleinstance.com/@admin'
-        p = actor_uri.split('/@')
-        if len(p) == 2:
-            # rabble instance
-            if p[0].endswith('/ap'):
-                p[0] = p[0][:-3]
-            # (host, handle)
-            return tuple(p)
-        # Username is incorrect/malicious/etc.
-        self._logger.warning('Couldn\'t parse actor %s', actor_uri)
-        return None, None
+        """
+        Given an actor URI, return the (host, handle) tuple for this
+        actor.
+        """
+        actor_doc = self._activ_util.fetch_actor(actor_uri)
+        if actor_doc is None:
+            self._logger.warning(f'No actor doc found for user {actor_uri}.')
+            return None, None
+        handle = actor_doc['preferredUsername']
+        host = self._activ_util.normalise_hostname(urlparse(actor_uri).netloc)
+        return host, handle
 
     def download_profile_pic(self, host, handle, global_id):
         """
@@ -118,7 +119,7 @@ class UsersUtil:
             self._logger.error('Retried query too many times.')
             return None
 
-        host = self._activ_util._normalise_hostname(host) if host else host
+        host = self._activ_util.normalise_hostname(host) if host else host
         user = self.get_user_from_db(handle, host, global_id, host_is_null)
 
         if user is not None:
@@ -155,7 +156,7 @@ class UsersUtil:
     def get_user_from_db(self, handle=None, host=None, global_id=None, host_is_null=False):
         self._logger.debug('User %s@%s (id %s) host_is_null: %s requested from database',
                            handle, host, global_id, host_is_null)
-        host = self._activ_util._normalise_hostname(host) if host else host
+        host = self._activ_util.normalise_hostname(host) if host else host
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
