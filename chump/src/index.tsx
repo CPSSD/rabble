@@ -1,6 +1,7 @@
 import * as React from "react";
 import {render} from "react-dom";
 import {Link, Route, HashRouter, Switch} from "react-router-dom";
+import { toast } from 'react-toastify';
 
 import * as config from "../rabble_config.json";
 
@@ -25,6 +26,7 @@ import {RecommendedPosts} from "./components/recommended_posts";
 import { SendView } from "./models/view";
 
 require("./styles/site.css"); // tslint:disable-line
+require("react-toastify/dist/ReactToastify.css"); // tslint:disable-line
 
 // IAppState is top level state.
 // Don't put state that might change often here.
@@ -35,6 +37,12 @@ interface IAppState {
 
 const LOCAL_STORAGE_USERNAME : string = "username";
 const LOCAL_STORAGE_USERID : string = "userid";
+
+toast.configure({
+  autoClose: 4000,
+  draggable: false,
+  position: toast.POSITION.BOTTOM_RIGHT,
+});
 
 export class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {

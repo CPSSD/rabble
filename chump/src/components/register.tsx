@@ -39,7 +39,7 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
     event.preventDefault();
     if (this.state.username === "" ||
         this.state.password === "") {
-      this.alertUser("username or password not filled in");
+      this.errorToast({ message: "Username and Password are required" });
       return;
     }
     let displayName = this.state.displayName;
@@ -52,7 +52,7 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
                        this.state.bio)
       .then((response: IRegisterResult) => {
         if (!response.success) {
-          this.alertUser("Error registering: " + response.error);
+          this.errorToast({debug: response.error});
         } else {
           this.props.loginCallback(this.state.username, response.user_id);
           this.setState({
@@ -157,6 +157,6 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
   }
 
   private handleRegisterError() {
-    this.alertUser("Error attempting to register.");
+    this.errorToast({});
   }
 }

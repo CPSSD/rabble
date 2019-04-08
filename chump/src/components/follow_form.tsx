@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import * as request from "superagent";
+
 import * as config from "../../rabble_config.json";
 import { CreateFollow, CreateRssFollow } from "../models/follow";
 import { RootComponent } from "./root_component";
@@ -82,25 +84,20 @@ export class FollowForm extends RootComponent<IFormProps, IFormState> {
       ? CreateRssFollow(this.props.username, this.state.toFollow)
       : CreateFollow(this.props.username, this.state.toFollow, "");
 
-    promise.then((res: any) => {
-      let message = "Posted follow with response: ";
-      if (res.text) {
-        message += res.text;
+    promise.then((res: request.Response) => {
+      if (res.status !== 200) {
+        this.errorToast({ statusCode: res.status });
+      } else {
+        this.successToast(config.success_follow_form);
       }
-      this.alertUser(message);
+
       this.setState({
         toFollow: "",
         type: "username",
       });
     })
-    .catch((err: any) => {
-      let status = err.message;
-      let message = err.message;
-      if (err.response) {
-        status = err.response.status;
-        message = err.response.text;
-      }
-      this.alertUser(message);
+    .catch((err: Error) => {
+      this.errorToast({ debug: err });
     });
   }
 }

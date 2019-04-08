@@ -2,9 +2,11 @@ import * as bluebird from "bluebird";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as request from "superagent";
 
 import { CreateArticleForm } from "../../src/components/create_article_form";
 import * as article from "../../src/models/article";
+import { PartialResponse} from "../../src/models/common";
 import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
@@ -25,14 +27,23 @@ const examplePost = {
 const exampleProps = {
   onSubmit: () =>  new bluebird((r: any, _: any) => { r(); }),
   prefillState: () => { return; },
+  successMessage: "happy farts",
   username:  "sips",
 };
+
+function genCreateResponse(statusCode: number): PartialResponse {
+  return {
+    body: examplePost,
+    status: statusCode,
+  };
+}
 
 describe("CreateArticleForm", () => {
   let testComponent: any;
   let createStub: any;
   let previewStub: any;
   let alertStub: any;
+  let successStub: any;
 
   afterEach(() => {
     sandbox.restore();
@@ -77,16 +88,16 @@ describe("CreateArticleForm", () => {
   });
 
   describe("can call Article model for create article", () => {
-
     beforeEach(() => {
-      alertStub = sandbox.stub(CreateArticleForm.prototype, "alertUser" as any);
+      alertStub = sandbox.stub(CreateArticleForm.prototype, "errorToast" as any);
+      successStub = sandbox.stub(CreateArticleForm.prototype, "successToast" as any);
       createStub = sandbox.stub();
     });
 
     it("and handle success", (done) => {
-      const alertMessage: string = "Request went well";
+      const response = genCreateResponse(200);
       const promise = new bluebird.Promise((resolve) => {
-        resolve(alertMessage);
+        resolve(response);
       });
       createStub.returns(promise);
       testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
@@ -99,8 +110,8 @@ describe("CreateArticleForm", () => {
       testComponent.find("form").first().simulate("submit");
       expect(createStub.called).to.equal(true);
       promise.finally(() => {
-        expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
+        expect(alertStub.notCalled).to.equal(true);
+        expect(successStub.called).to.equal(true);
         done();
       });
     });
@@ -110,16 +121,16 @@ describe("CreateArticleForm", () => {
     testComponent = mount(<CreateArticleForm {...exampleProps}/>);
     testComponent.find("form").first().simulate("submit");
     expect(alertStub.called).to.equal(true);
-    expect(alertStub.calledWith(alertMessage)).to.equal(true);
     done();
   });
 
-    it("and handle a 403: permission denied", (done) => {
-    const alertMessage: string = "403";
-    const promise = new bluebird.Promise((resolve, reject) => {
-      reject(new Error(alertMessage));
+    it("and handle a non 200 status code", (done) => {
+    const response = genCreateResponse(403);
+    const promise = new bluebird.Promise((resolve) => {
+      resolve(response);
     });
     createStub.returns(promise);
+
     testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
     testComponent.find("[name=\"title\"]").simulate("change", {
         target: {
@@ -130,69 +141,50 @@ describe("CreateArticleForm", () => {
     testComponent.find("form").first().simulate("submit");
     expect(createStub.called).to.equal(true);
     setTimeout(() => {
+      expect(successStub.notCalled).to.equal(true);
       expect(alertStub.called).to.equal(true);
-      expect(alertStub.calledWith(alertMessage)).to.equal(true);
       done();
     }, 200);
   });
 
-    it("and handle a 400: bad request", (done) => {
-    const alertMessage: string = "400";
+    it("handle an exception", (done) => {
+    const err = new Error("bad stuff");
     const promise = new bluebird.Promise((resolve, reject) => {
-      reject(new Error(alertMessage));
+      reject(err);
     });
     createStub.returns(promise);
-    testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
-    testComponent.find("[name=\"title\"]").simulate("change", {
-        target: {
-          name: "title",
-          value: "Great Title",
-        },
-      });
-    testComponent.find("form").first().simulate("submit");
-    expect(createStub.called).to.equal(true);
-    setTimeout(() => {
-      expect(alertStub.called).to.equal(true);
-      expect(alertStub.calledWith(alertMessage)).to.equal(true);
-      done();
-    }, 200);
-  });
 
-    it("and handle other error", (done) => {
-    const alertMessage: string = "500";
-    const promise = new bluebird.Promise((resolve, reject) => {
-      reject(new Error(alertMessage));
-    });
-    createStub.returns(promise);
     testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
     testComponent.find("[name=\"title\"]").simulate("change", {
-        target: {
-          name: "title",
-          value: "Great Title",
-        },
-      });
+      target: {
+        name: "title",
+        value: "Great Title",
+      },
+    });
+
     testComponent.find("form").first().simulate("submit");
     expect(createStub.called).to.equal(true);
     setTimeout(() => {
+      expect(successStub.notCalled).to.equal(true);
       expect(alertStub.called).to.equal(true);
-      expect(alertStub.calledWith(alertMessage)).to.equal(true);
       done();
     }, 200);
   });
 });
 
   describe("can handle previewing", () => {
-
     beforeEach(() => {
       previewStub = sandbox.stub(article, "CreatePreview");
-      alertStub = sandbox.stub(CreateArticleForm.prototype, "alertUser" as any);
+      alertStub = sandbox.stub(CreateArticleForm.prototype, "errorToast" as any);
     });
 
     it("successfully get and show preview", (done) => {
+      const response = genCreateResponse(200);
       const promise = new bluebird.Promise((resolve) => {
-        resolve(examplePost);
+        resolve(response);
       });
       previewStub.returns(promise);
+
       testComponent = mount(<CreateArticleForm {...exampleProps} onSubmit={createStub}/>);
       testComponent.find("button").at(0).simulate("click");
       expect(previewStub.called).to.equal(true);
@@ -204,17 +196,20 @@ describe("CreateArticleForm", () => {
     });
 
     it("and successfully post from preview", (done) => {
+
       const submitStub: any = sandbox.stub(CreateArticleForm.prototype, "handleSubmitForm" as any);
-      const alertMessage: string = "Request went well";
+      const response = genCreateResponse(200);
       const promise = new bluebird.Promise((resolve) => {
-        resolve(examplePost);
+        resolve(response);
       });
+      const alertMessage: string = "Request went well";
       const createPromise = new bluebird.Promise((resolve) => {
         resolve(alertMessage);
       });
       testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       previewStub.returns(promise);
       createStub.returns(createPromise);
+
       testComponent.find("[name=\"title\"]").simulate("change", {
           target: {
             name: "title",
@@ -234,10 +229,9 @@ describe("CreateArticleForm", () => {
     });
 
     it("and handle req error", (done) => {
-      const alertMessage: string = "500";
       testComponent = mount(<CreateArticleForm {...exampleProps}/>);
       const promise = new bluebird.Promise((resolve, reject) => {
-        reject(new Error(alertMessage));
+        reject(new Error("cpssd will last. haha jk"));
       });
       previewStub.returns(promise);
       testComponent.find("[name=\"title\"]").simulate("change", {
@@ -250,7 +244,6 @@ describe("CreateArticleForm", () => {
       expect(previewStub.called).to.equal(true);
       setTimeout(() => {
         expect(alertStub.called).to.equal(true);
-        expect(alertStub.calledWith(alertMessage)).to.equal(true);
         done();
       }, 200);
     });

@@ -25,11 +25,11 @@ export class Pending extends RootComponent<IPendingProps, IPendingState> {
   }
 
   public handleGetRequestsErr() {
-    this.alertUser("Could not get follow requests.");
+    this.errorToast({});
   }
 
   public handleAcceptErr() {
-    this.alertUser("Could not accept follow request.");
+    this.errorToast({});
   }
 
   public render() {

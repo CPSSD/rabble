@@ -1,5 +1,7 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
+
+import { PartialResponse } from "./common";
 import { CleanUsers, IParsedUser } from "./search";
 
 interface ICreateFollowPostBody {
@@ -32,7 +34,7 @@ export function CreateFollow(username: string, followedHandle: string, followedH
     followed: followedUser,
     follower: username,
   };
-  return new Promise((resolve, reject) => {
+  return new Promise<PartialResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
@@ -55,7 +57,7 @@ export function Unfollow(username: string, followedHandle: string, followedHost:
     followed: followedUsername,
     follower: username,
   };
-  return new Promise((resolve, reject) => {
+  return new Promise<PartialResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
@@ -78,7 +80,7 @@ export function CreateRssFollow(username: string, rssUrl: string) {
     feed_url: rssUrl,
     follower: username,
   };
-  return new Promise((resolve, reject) => {
+  return new Promise<PartialResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
@@ -171,14 +173,15 @@ function GetFollows(url: string, username: string) {
           reject(error);
           return;
         }
+
         const r = res!.body as IFollowers;
         if (r === null) {
-          reject("Could not parse result");
+          reject(new Error("Could not parse result"));
         }
+
         if (r.rich_results === undefined || r.rich_results === null) {
           resolve([] as IParsedUser[]);
         } else {
-
           const cleanedUsers = CleanUsers(r.rich_results);
           resolve(cleanedUsers as IParsedUser[]);
         }

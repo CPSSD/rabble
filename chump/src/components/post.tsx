@@ -188,7 +188,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       .then((res: any) => {
         const resp = res!.body;
         if (resp === null) {
-          this.alertUser("Error parsing like: " + res);
+          this.errorToast({ debug: "Error parsing like: " + res });
           return;
         }
         // If isLiked is false then change it to true and increment like count
@@ -203,7 +203,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         if (err.response) {
           message = err.response.text;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
       });
   }
 }

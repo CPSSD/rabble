@@ -39,7 +39,7 @@ const evalidBody: posts.IParsedPost[] = [{
 
 describe("Feed", () => {
   it("should call post collecting methods", () => {
-    const getPosts = sinon.spy(FeedBody.prototype, "getPosts");
+    const getPosts = sinon.stub(FeedBody.prototype, "getPosts");
     const render = sinon.spy(FeedBody.prototype, "renderPosts");
 
     const wrapper = mount(<MemoryRouter><Feed {...feedProps} /></MemoryRouter>);

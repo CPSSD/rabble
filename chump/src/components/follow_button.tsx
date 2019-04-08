@@ -76,19 +76,16 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
                                  this.props.followed,
                                  this.props.followed_host);
     promise.then((res: Response) => {
-      // TODO: Check no error.
+      if (res.status !== 200) {
+        this.errorToast({ statusCode: res.status });
+        return;
+      }
       this.setState({
         following: true,
       });
     })
-    .catch((err: any) => {
-      let status = err.message;
-      let message = err.message;
-      if (err.response) {
-        status = err.response.status;
-        message = err.response.text;
-      }
-      this.alertUser(message);
+    .catch((err: Error) => {
+      this.errorToast({ debug: err });
     });
   }
 
@@ -97,19 +94,16 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
                              this.props.followed,
                              this.props.followed_host);
     promise.then((res: Response) => {
-      // TODO: Check no error.
+      if (res.status !== 200) {
+        this.errorToast({ statusCode: res.status });
+        return;
+      }
       this.setState({
         following: false,
       });
     })
-    .catch((err: any) => {
-      let status = err.message;
-      let message = err.message;
-      if (err.response) {
-        status = err.response.status;
-        message = err.response.text;
-      }
-      this.alertUser(message);
+    .catch((err: Error) => {
+      this.errorToast({ debug: err });
     });
   }
 

@@ -89,7 +89,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
   }
 
   public handleGetPostsErr() {
-    this.alertUser("could not communicate with server :(");
+    this.errorToast({});
   }
 
   public renderPosts() {
