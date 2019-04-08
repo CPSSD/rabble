@@ -1,3 +1,4 @@
+from math import log
 from collections import defaultdict
 from heapq import heappush, heappushpop
 
@@ -28,15 +29,14 @@ class CosineRecommender:
 
         # Calculate Inverse Frequencies
         self.user_tag_ifs = self._calculate_based_itf(
-            user_tag_freq, len(self.user_models))
+            self.user_tag_freq, len(self.user_models))
         self.post_tag_ifs = self._calculate_based_itf(
-            post_tag_freq, len(self.posts))
+            self.post_tag_freq, len(self.posts))
 
-    def _calculate_based_itf(tag_freq, N):
+    def _calculate_based_itf(self, tag_freq, N):
         itfs = defaultdict(int)
         for key in tag_freq.keys():
-            occurance = len(tag_freq[key])
-            itf = math.log(N / occurance)
+            itf = log(N / tag_freq[key])
             itfs[key] = itf
         return itfs
 
@@ -44,7 +44,7 @@ class CosineRecommender:
         # Create an array with length the same as highest post id to allow
         # indexing by global_id
         highest_post_id = max(pes, key=lambda x: x.global_id).global_id + 1
-        posts = [{}] * highest_post_id
+        posts = [{"global_id": 0, "tags": []}] * highest_post_id
         for pe in pes:
             tags = self._recommender_util.split_tags(pe.tags)
             for t in tags:
@@ -58,10 +58,13 @@ class CosineRecommender:
     def _clean_user_entries(self, ues):
         # Create an array of with length same as highest user id to allow
         # indexing by global_id
-        highest_user_id = max(pes, key=lambda x: x.global_id).global_id + 1
-        users = [{}] * highest_user_id
+        highest_user_id = max(ues, key=lambda x: x.global_id).global_id + 1
+        users = [{"global_id": 0, "likes": []}] * highest_user_id
         for ue in ues:
             likes = self._clean_likes(ue.likes)
+            if not ue.host_is_null:
+                # Do not generate anything for foreign users.
+                continue
             users[ue.global_id] = {
                 "global_id": ue.global_id,
                 "likes": likes
@@ -77,10 +80,10 @@ class CosineRecommender:
         # model
         user_models = defaultdict(lambda: defaultdict(int))
         for u in users:
-            for post_id in u.likes:
+            for post_id in u["likes"]:
                 for tag in self.posts[post_id]["tags"]:
                     self.user_tag_freq[tag] += 1
-                    user_models[u.global_id][tag] += 1
+                    user_models[u["global_id"]][tag] += 1
         return user_models
 
     def _get_all_posts_and_tags(self):
@@ -111,7 +114,7 @@ class CosineRecommender:
             sum_item_tf += self.post_tag_ifs[tag] ** 2
         divisor = (((sum_user_tf) ** 0.5) * ((sum_item_tf) ** 0.5))
         if divisor == 0:
-            return 0
+            return -1
         tf_cosine = sum_user_item_tf / divisor
         return tf_cosine
 
@@ -139,6 +142,6 @@ class CosineRecommender:
         self._logger.info('Recommended (score, id): {}'.format(sims))
         posts_entries = []
         for result in sims:
-            art = get_article(self._logger, self._db, global_id=results[1])
+            art = get_article(self._logger, self._db, global_id=result[1])
             posts_entries.append(art)
         return posts_entries
