@@ -6,7 +6,7 @@ from utils.users import UsersUtil
 
 
 class RecommendersUtil:
-    def __init__(self, logger, db, default, env_var, recommenders):
+    def __init__(self, logger, db, default=None, env_var=None, recommenders=None):
         self._logger = logger
         self._db_stub = db
         self._users_util = UsersUtil(logger, db)
@@ -58,4 +58,6 @@ class RecommendersUtil:
         return recommenders
 
     def split_tags(self, tags):
+        if tags == "":
+            return []
         return [t.replace("%7G", "|") for t in tags.split("|")]
