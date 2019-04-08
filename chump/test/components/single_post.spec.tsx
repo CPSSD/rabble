@@ -12,6 +12,9 @@ import { mount, shallow } from "./enzyme";
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 
 const postProps = {
+  history: {
+    goBack: () => { return; },
+  },
   match: {
     params: {
       article_id: "test_id",
