@@ -58,7 +58,7 @@ class CosineRecommender:
         return posts
 
     def _clean_user_entries(self, ues):
-        # Create an array of with length same as highest user id to allow
+        # Create an array with the same length as the highest user id to allow
         # indexing by global_id
         highest_user_id = max(ues, key=lambda x: x.global_id).global_id + 1
         users = [{"global_id": 0, "likes": []}] * highest_user_id
