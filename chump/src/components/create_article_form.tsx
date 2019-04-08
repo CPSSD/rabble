@@ -82,6 +82,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   }
 
   public renderModal() {
+    const empty = () => { return; };
     return (
       <div>
         <RModal
@@ -114,6 +115,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
                 blogPost={this.state.post}
                 preview={true}
                 customCss={true}
+                deleteSuccessCallback={empty}
               />
             </HashRouter>
           </div>

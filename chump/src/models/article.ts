@@ -75,6 +75,31 @@ export function EditArticle(articleId: number, title: string, blogText: string,
   });
 }
 
+interface IDeleteArticlePostBody {
+  article_id: number;
+}
+
+export function DeleteArticle(articleId: number) {
+    const endpoint: string = "/c2s/delete_article";
+    const postBody: IDeleteArticlePostBody = {
+      article_id: articleId,
+    };
+    return new Promise((resolve, reject) => {
+      request
+        .post(endpoint)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send(postBody)
+        .end((error, res) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(res);
+        });
+  });
+}
+
 export function CreatePreview(title: string, blogText: string) {
   const endpoint: string = "/c2s/preview_article";
   const createdTime: string = new Date().toISOString();

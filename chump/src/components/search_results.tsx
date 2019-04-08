@@ -103,6 +103,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
         </div>
       );
     }
+    const empty = () => { return; };
     return this.state.foundPosts.map((e: IParsedPost, i: number) => {
       return (
         <div className="pure-g pure-u-1" key={i}>
@@ -111,6 +112,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
             blogPost={e}
             preview={false}
             customCss={false}
+            deleteSuccessCallback={empty}
           />
         </div>
       );

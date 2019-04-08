@@ -35,8 +35,8 @@ export class EditButton extends RootComponent<IEditProps, IEditState> {
       return (<Redirect to={{ pathname: url }}/>);
     }
     return (
-      <div onClick={this.handleEdit} className="pure-u-5-24">
-        <Edit color="white" className="edit-icon"/>
+      <div onClick={this.handleEdit} className="pure-u-3-24">
+        <Edit className="sub-post-icon"/>
       </div>
     );
   }
