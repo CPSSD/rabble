@@ -37,7 +37,7 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
     GetLoginPromise(this.state.username, this.state.password)
       .then((response: ILoginResult) => {
         if (!response.success) {
-          this.alertUser("Incorrect login!");
+          this.errorToast({ message: config.bad_login });
         } else {
           this.props.loginCallback(this.state.username, response.user_id);
           this.setState({
@@ -106,6 +106,6 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
   }
 
   private handleLoginError() {
-    this.alertUser("Error attempting to login.");
+    this.errorToast({});
   }
 }

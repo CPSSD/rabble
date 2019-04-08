@@ -41,7 +41,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
   }
 
   public handleGetPostErr() {
-    this.alertUser("Could not communicate with server :(");
+    this.errorToast({});
   }
 
   public renderPost() {

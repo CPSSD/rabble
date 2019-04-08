@@ -1,6 +1,7 @@
 import * as React from "react";
 import { RouteProps } from "react-router-dom";
 
+import * as config from "../../rabble_config.json";
 import { EditArticle } from "../models/article";
 import { GetSinglePost, IParsedPost } from "../models/posts";
 import { CreateArticleForm } from "./create_article_form";
@@ -43,6 +44,7 @@ export const Edit: React.StatelessComponent<IEditProps> = (props) => {
            username={props.username}
            prefillState={fillArticle}
            onSubmit={onSubmit}
+           successMessage={config.edit_success}
          />
       </div>
       <div className="pure-u-1-5"/>

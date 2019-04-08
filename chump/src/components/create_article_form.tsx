@@ -2,6 +2,8 @@ import * as React from "react";
 import * as RModal from "react-modal";
 import { HashRouter } from "react-router-dom";
 import * as TagsInput from "react-tagsinput";
+import * as request from "superagent";
+
 import * as config from "../../rabble_config.json";
 import { CreatePreview } from "../models/article";
 import { IParsedPost } from "../models/posts";
@@ -21,6 +23,7 @@ interface IFormProps {
   username: string;
   prefillState: (updateFunc: (a: string, b: string, c: string[], d: string) => void) => void;
   onSubmit: (t: string, b: string, tags: string[], summary: string) => any;
+  successMessage: string;
 }
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
@@ -221,11 +224,12 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     event.preventDefault();
     const promise = CreatePreview(this.state.title, this.state.blogText);
     promise
-      .then((post: any) => {
-        if (post === null) {
-          this.alertUser("Could not preview");
+      .then((res: request.Response) => {
+        if (res.status !== 200 || typeof(res.body) === "undefined") {
+          this.errorToast({ debug: res });
           return;
         }
+        const post = res.body as IParsedPost;
         post.author_display = this.props.username;
         post.author = this.props.username;
         post.parsed_date = new Date();
@@ -239,19 +243,15 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           showModal: true,
         });
       })
-      .catch((err: any) => {
-        let message = err.message;
-        if (err.response) {
-          message = err.response.text;
-        }
-        this.alertUser(message);
+      .catch((err: Error) => {
+        this.errorToast({ debug: err });
       });
   }
 
   private handleSubmitForm(event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (this.state.title === "") {
-      this.alertUser(EMPTY_TITLE_ERROR);
+      this.errorToast({ message: EMPTY_TITLE_ERROR });
       return;
     }
 
@@ -260,13 +260,14 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     if (event.type === "click" || event.nativeEvent instanceof MouseEvent) {
       showModal = false;
     }
+
     this.props.onSubmit(this.state.title, this.state.blogText, this.state.tags, this.state.summary)
-      .then((res: any) => {
-        let message = "Error creating article";
-        if (res) {
-          message = res;
+      .then((res: request.Response) => {
+        if (res.status !== 200) {
+          this.errorToast({ debug: res, statusCode: res.status });
+          return;
         }
-        this.alertUser(message);
+        this.successToast(this.props.successMessage);
         this.setState({
           blogText: "",
           showModal,
@@ -275,12 +276,8 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
           title: "",
         });
       })
-      .catch((err: any) => {
-        let message = err.message;
-        if (err.response) {
-          message = err.response.text;
-        }
-        this.alertUser(message);
+      .catch((err: Error) => {
+          this.errorToast({ debug: err });
       });
   }
 }
