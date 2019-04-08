@@ -1,4 +1,4 @@
-# This file is read by Rabble and any incoming activities from a listed host is
+# This file is read by Rabble and any incoming activities from a listed host are
 # blocked.
 
 # This is an example blocked host.
