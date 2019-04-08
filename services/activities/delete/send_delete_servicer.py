@@ -19,7 +19,56 @@ class SendDeleteServicer:
             self._logger.error("Hostname for SendDeleteServicer not set")
             sys.exit(1)
 
+    def _delete_locally(self, article):
+        resp = self._db.Posts(dbpb.PostsRequest(
+            request_type=dbpb.PostsRequest.DELETE,
+            match=dbpb.PostsEntry(
+                global_id=article.global_id,
+            ),
+        ))
+        if resp.result_type != dbpb.PostsResponse.OK:
+            self._logger.error("Error deleting from DB: %s", resp.error)
+            return False
+        return True
+
+    def _build_delete(self, user, article):
+        return {"test": "test"}
+
     def SendDeleteActivity(self, req, ctx):
         self._logger.info("Got request to delete article %d from %d",
                           req.article_id, req.user_id)
+        user = self._users_util.get_user_from_db(global_id=req.user_id)
+        if user is None:
+            return dpb.DeleteResponse(
+                result_type=dpb.DeleteResponse.ERROR,
+                error="Could not retrieve user",
+            )
+        article = get_article(self._logger, self._db, global_id=req.article_id)
+        if article is None:
+            return dbp.DeleteResponse(
+                result_type=dpb.DeleteResponse.ERROR,
+                error="Could not retrieve article",
+            )
+        if article.author_id != req.user_id:
+            self._logger.error("User requesting article deletion isn't author")
+            return dbp.DeleteResponse(
+                result_type=dpb.DeleteResponse.DENIED,
+                error="User is not the author of this article",
+            )
+        if not self._delete_locally(article):
+            return dpb.DeleteResponse(
+                result_type=dpb.DeleteResponse.ERROR,
+                error="Could not delete article locally",
+            )
+        delete_obj = self._build_delete(user, article)
+        self._logger.info("Activity: %s", str(delete_obj))
+        err = self._activ_util.forward_activity_to_followers(
+            req.user_id, delete_obj)
+        if err is not None:
+            return dpb.DeleteResponse(
+                result_type=dpb.DeleteResponse.ERROR,
+                error=err,
+            )
+        self._logger.info("Article %d successfully deleted", req.article_id)
         return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
+
