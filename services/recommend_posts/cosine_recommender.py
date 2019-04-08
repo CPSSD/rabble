@@ -6,7 +6,7 @@ from utils.recommenders import RecommendersUtil
 
 class CosineRecommender:
     '''
-    Calculate similarity based on TF-IDF Cosine-based Similarity method
+    Calculate similarity based on TF-IDF cosine-based similarity method
     described in Content-based Recommendation in Social Tagging Systems (4.3)
     '''
 
