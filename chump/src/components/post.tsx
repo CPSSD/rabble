@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
+import { DeleteButton } from "./delete_button";
 import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
@@ -16,6 +17,7 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
+  deleteSuccessCallback: () => void;
 }
 
 interface IPostState {
@@ -92,11 +94,19 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
           blogPost={post}
         />
-        <EditButton
-          username={this.props.username}
-          display={this.viewerIsAuthor() && !this.nonInteractivePost()}
-          blogPost={post}
-        />
+        <div className="pure-g">
+          <EditButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+          />
+          <DeleteButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+            successCallback={this.props.deleteSuccessCallback}
+          />
+        </div>
         {tags}
       </div>
     );
