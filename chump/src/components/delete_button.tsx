@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Trash2 } from "react-feather";
 import * as RModal from "react-modal";
+import * as request from "superagent";
 
 import * as config from "../../rabble_config.json";
 import { DeleteArticle } from "../models/article";
@@ -36,11 +37,11 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
       return;
     }
     DeleteArticle(this.props.blogPost.global_id)
-      .then((res: any) => {
+      .then((res: request.Response) => {
         this.props.successCallback();
       })
-      .catch((err: any) => {
-        this.alertUser(err);
+      .catch((err: Error) => {
+        this.alertUser(err.message);
       });
   }
 }
