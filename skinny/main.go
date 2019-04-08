@@ -67,6 +67,8 @@ type serverWrapper struct {
 	s2sLike                   pb.S2SLikeClient
 	s2sUpdateConn             *grpc.ClientConn
 	s2sUpdate                 pb.S2SUpdateClient
+	s2sDeleteConn             *grpc.ClientConn
+	s2sDelete                 pb.S2SDeleteClient
 	announceConn              *grpc.ClientConn
 	announce                  pb.AnnounceClient
 	approverConn              *grpc.ClientConn
@@ -100,6 +102,7 @@ func (s *serverWrapper) shutdown() {
 	s.usersConn.Close()
 	s.s2sUndoConn.Close()
 	s.s2sUpdateConn.Close()
+	s.s2sDeleteConn.Close()
 	s.s2sFollowConn.Close()
 	s.s2sLikeConn.Close()
 	s.rssConn.Close()
@@ -180,6 +183,11 @@ func createS2SUpdateClient() (*grpc.ClientConn, pb.S2SUpdateClient) {
 	return conn, pb.NewS2SUpdateClient(conn)
 }
 
+func createS2SDeleteClient() (*grpc.ClientConn, pb.S2SDeleteClient) {
+	conn := grpcConn("DELETE_SERVICE_HOST", "1997")
+	return conn, pb.NewS2SDeleteClient(conn)
+}
+
 func createRSSClient() (*grpc.ClientConn, pb.RSSClient) {
 	conn := grpcConn("RSS_SERVICE_HOST", "1973")
 	return conn, pb.NewRSSClient(conn)
@@ -253,6 +261,7 @@ func buildServerWrapper() *serverWrapper {
 	ldNormConn, ldNormClient := createLDNormClient()
 	s2sUndoConn, s2sUndoClient := createS2SUndoClient()
 	s2sUpdateConn, s2sUpdateClient := createS2SUpdateClient()
+	s2sDeleteConn, s2sDeleteClient := createS2SDeleteClient()
 	s2sFollowConn, s2sFollowClient := createS2SFollowClient()
 	s2sLikeConn, s2sLikeClient := createS2SLikeClient()
 	approverConn, approverClient := createApproverClient()
@@ -285,6 +294,8 @@ func buildServerWrapper() *serverWrapper {
 		s2sUndo:                   s2sUndoClient,
 		s2sUpdateConn:             s2sUpdateConn,
 		s2sUpdate:                 s2sUpdateClient,
+		s2sDeleteConn:             s2sDeleteConn,
+		s2sDelete:                 s2sDeleteClient,
 		s2sFollowConn:             s2sFollowConn,
 		s2sFollow:                 s2sFollowClient,
 		s2sLikeConn:               s2sLikeConn,
