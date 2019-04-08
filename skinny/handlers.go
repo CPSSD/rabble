@@ -685,7 +685,7 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 
 		globalID, gIErr := s.getSessionGlobalId(r)
 		if gIErr != nil {
-			log.Printf("Edit article call from user not logged in")
+			log.Printf("Delete article call from user not logged in")
 			w.WriteHeader(http.StatusUnauthorized)
 			cResp.Error = "Login Required"
 			enc.Encode(cResp)

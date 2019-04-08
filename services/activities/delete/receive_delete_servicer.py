@@ -18,6 +18,6 @@ class ReceiveDeleteServicer:
             sys.exit(1)
 
     def ReceiveDeleteActivity(self, req, ctx):
-        self._logger.info("Received edit for article '%s'", req.title)
+        self._logger.info("Received delete for article '%s'", req.title)
         return dpb.DeleteResponse(result_type=upb.UpdateResponse.OK)
 
