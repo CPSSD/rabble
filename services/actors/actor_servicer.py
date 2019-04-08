@@ -56,6 +56,7 @@ class ActorsServicer:
         public_key = self._get_public_key(username)
         return actors_pb2.ActorObject(
             type='Person',
+            id=actor_url,
             preferredUsername=handle,
             name=user.display_name,
             inbox=inbox_url,
