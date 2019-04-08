@@ -92,7 +92,7 @@ message UsersEntry {
   bool host_is_null = 11;
   string private_key = 12;
   string public_key = 13;
-  // comma separated string containing global_ids of likes movies
+  // comma separated string containing global_ids of liked posts
   string likes = 14;
 }
 
@@ -398,7 +398,7 @@ service Database {
   // Get the N random posts from posts.
   rpc RandomPosts(RandomPostsRequest) returns (PostsResponse);
   // Get all non private posts with tags.
-  rpc TagPosts(PostsRequest) returns (PostsResponse);
+  rpc TaggedPosts(PostsRequest) returns (PostsResponse);
   // Get the N most recent shared posts for a user.
   rpc SharedPosts(SharedPostsRequest) returns (SharesResponse);
   // Get PENDING Follows with handles rather than ids

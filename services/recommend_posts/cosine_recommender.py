@@ -21,7 +21,7 @@ class CosineRecommender:
         self._logger.info("user_models: {}".format(self.user_models))
 
     def _clean_post_entries(self, pes):
-        # Create an array of with length same as highest post id to allow
+        # Create an array with length the same as highest post id to allow
         # indexing by global_id
         highest_post_id = max(pes, key=lambda x: x.global_id).global_id + 1
         posts = [{}] * highest_post_id
@@ -50,10 +50,10 @@ class CosineRecommender:
         return user_models
 
     def _get_all_posts_and_tags(self):
-        find_resp = self._db.TagPosts(database_pb2.PostsRequest())
+        find_resp = self._db.TaggedPosts(database_pb2.PostsRequest())
         if find_resp.result_type == database_pb2.PostsResponse.ERROR:
             self._logger.error(
-                'Error getting TagPosts for Cosine: {}'.format(find_resp.error))
+                'Error getting TaggedPosts for Cosine: {}'.format(find_resp.error))
             return []
         return self._clean_post_entries(find_resp.results)
 

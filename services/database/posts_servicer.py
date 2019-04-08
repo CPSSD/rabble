@@ -89,7 +89,7 @@ class PostsDatabaseServicer:
             return resp
         return resp
 
-    def TagPosts(self, request, context):
+    def TaggedPosts(self, request, context):
         resp = database_pb2.PostsResponse()
         self._logger.info('Reading all posts with tags')
         try:
