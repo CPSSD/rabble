@@ -1,5 +1,9 @@
+from urllib.parse import urlparse
+
 import requests
+
 from services.proto import database_pb2
+
 from utils.activities import ActivitiesUtil
 
 MAX_FIND_RETRIES = 3
@@ -25,21 +29,20 @@ class UsersUtil:
         self._logger.warning('Couldn\'t parse username %s', username)
         return None, None
 
-    # Parse actor string. This is a the url of the actor object of
-    # a user of a local/foreign instance
     def parse_actor(self, actor_uri):
-        actor_uri = actor_uri.lstrip('/@')
-        # Actor uri like 'rabbleinstance.com/@admin'
-        p = actor_uri.split('/@')
-        if len(p) == 2:
-            # rabble instance
-            if p[0].endswith('/ap'):
-                p[0] = p[0][:-3]
-            # (host, handle)
-            return tuple(p)
-        # Username is incorrect/malicious/etc.
-        self._logger.warning('Couldn\'t parse actor %s', actor_uri)
-        return None, None
+        """
+        Given an actor URI, return the (host, handle) tuple for this
+        actor.
+        """
+        actor_doc = self._activ_util.fetch_actor(actor_uri)
+        if actor_doc is None:
+            self._logger.warning(f'No actor doc found for user {actor_uri}.')
+            return None, None
+        handle = actor_doc['preferredUsername']
+
+        host = urlparse(actor_uri).netloc
+
+        return host, handle
 
     def download_profile_pic(self, host, handle, global_id):
         """
