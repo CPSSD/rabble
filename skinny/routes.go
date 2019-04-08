@@ -44,6 +44,7 @@ func (s *serverWrapper) setupRoutes() {
 	// c2s routes
 	r.HandleFunc("/c2s/create_article", s.handleCreateArticle())
 	r.HandleFunc("/c2s/edit_article", s.handleEditArticle())
+	r.HandleFunc("/c2s/delete_article", s.handleDeleteArticle())
 	r.HandleFunc("/c2s/preview_article", s.handlePreviewArticle())
 	r.HandleFunc("/c2s/feed", s.handleFeed())
 	r.HandleFunc("/c2s/feed/{userId}", s.handleFeed())
