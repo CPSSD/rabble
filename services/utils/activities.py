@@ -63,14 +63,14 @@ class ActivitiesUtil:
         Fetch the webfinger document for a given user, and return the actor ID
         URL from it.
         """
-        if normalised_host is None or normalised_host == self._normalise_hostname(self._host_name):
+        if normalised_host is None or normalised_host == self.normalise_hostname(self._host_name):
             return self._build_local_actor_url(handle, normalised_host)
         webfinger_doc = self._get_webfinger_document(normalised_host, handle)
         if webfinger_doc is None:
             return None
         return self._parse_actor_url_from_webfinger(webfinger_doc)
 
-    def _normalise_hostname(self, hostname):
+    def normalise_hostname(self, hostname):
         if hostname is None:
             return hostname
         if not hostname.startswith('http'):
@@ -118,7 +118,7 @@ class ActivitiesUtil:
         Return the Key ID for the HTTP Signature from the given user object.
         """
         handle = user_obj.handle
-        normalised_host = self._normalise_hostname(self._host_name)
+        normalised_host = self.normalise_hostname(self._host_name)
         return '{}#main-key'.format(self._build_local_actor_url(handle,
                                                                 normalised_host))
 
@@ -132,7 +132,7 @@ class ActivitiesUtil:
           extract the actor URL from it.
         To use this function, the `HOST_NAME` env var should be set.
         """
-        normalised_host = self._normalise_hostname(host)
+        normalised_host = self.normalise_hostname(host)
         if host == self._host_name or host is None:
             self._logger.info('Building actor for local user')
             return self._build_local_actor_url(handle, normalised_host)
@@ -155,7 +155,7 @@ class ActivitiesUtil:
         if article.ap_id:
             return article.ap_id
         # Local article, build ID manually
-        normalised_host = self._normalise_hostname(author.host)
+        normalised_host = self.normalise_hostname(author.host)
         return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
 
     def build_undo(self, obj):
@@ -191,7 +191,7 @@ class ActivitiesUtil:
         Fetch the inbox URL for the user with the given handle and host.
         If there is any error, return None.
         """
-        normalised_host = self._normalise_hostname(host)
+        normalised_host = self.normalise_hostname(host)
 
         # Get the URL of this user's actor document.
         actor_url = self._get_activitypub_actor_url(normalised_host, handle)
