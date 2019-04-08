@@ -38,10 +38,15 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
     }
     DeleteArticle(this.props.blogPost.global_id)
       .then((res: request.Response) => {
+        if (res.status < 200 || res.status >= 300) {
+          this.errorToast({ statusCode: res.status, debug: res });
+          return;
+        }
+
         this.props.successCallback();
       })
       .catch((err: Error) => {
-        this.alertUser(err.message);
+        this.errorToast({ debug: err });
       });
   }
 }
