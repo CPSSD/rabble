@@ -306,8 +306,8 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 }
 
 type updateActivity struct {
-	Object    articleObjectStruct `json:"object"`
-	Type      string              `json:"type"`
+	Object articleObjectStruct `json:"object"`
+	Type   string              `json:"type"`
 }
 
 func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
@@ -358,8 +358,6 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 	}
 }
 
-
-
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
 	Object    string   `json:"object"`
@@ -405,8 +403,8 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 }
 
 type followUndoActivity struct {
-	Object  followActivityStruct `json:"object"`
-	Type    string               `json:"type"`
+	Object followActivityStruct `json:"object"`
+	Type   string               `json:"type"`
 }
 
 func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
@@ -448,9 +446,9 @@ type likeActorStruct struct {
 }
 
 type likeActivityStruct struct {
-	Actor   likeActorStruct `json:"actor"`
-	Object  string          `json:"object"`
-	Type    string          `json:"type"`
+	Actor  likeActorStruct `json:"actor"`
+	Object string          `json:"object"`
+	Type   string          `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
@@ -574,8 +572,8 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 type undoActivity struct {
-	Object  activity `json:"object"`
-	Type    string   `json:"type"`
+	Object activity `json:"object"`
+	Type   string   `json:"type"`
 }
 
 func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
@@ -624,8 +622,8 @@ func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
 }
 
 type likeUndoActivity struct {
-	Object  likeActivityStruct `json:"object"`
-	Type    string             `json:"type"`
+	Object likeActivityStruct `json:"object"`
+	Type   string             `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
