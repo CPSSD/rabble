@@ -53,6 +53,7 @@ export RABBLE_POSTS_SERVICE_LOCATION
 # The current working directory is the root of the repo.
 # Write your output to the `build_out` directory
 cp -R services/activities/create build_out/activities/
+cp -R services/activities/delete build_out/activities/
 cp -R services/activities/undo build_out/activities/
 cp -R services/activities/update build_out/activities/
 cp -R services/activities/follow build_out/activities/
