@@ -16,6 +16,9 @@ interface ISinglePostProps extends RouteProps {
       user: string,
     },
   };
+  history: {
+    goBack: () => void;
+  }
   username: string;
 }
 
@@ -60,6 +63,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
           blogPost={this.state.posts[0]}
           preview={false}
           customCss={true}
+          goBack={this.props.history.goBack}
         />
       </div>
     );
