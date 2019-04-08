@@ -3,11 +3,15 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 message DeleteDetails {
+  // ID of the user requesting the delete.
   int64 user_id = 1;
+
+  // ID of the article being deleted.
   int64 article_id = 2;
 }
 
 message ReceivedDeleteDetails {
+  // The ActivityPub ID (URI) of the article being deleted.
   string ap_id = 1;
 }
 
