@@ -32,7 +32,12 @@ class SendDeleteServicer:
         return True
 
     def _build_delete(self, user, article):
-        return {"test": "test"}
+        return {
+            "@context": self._activ_util.rabble_context(),
+            "type": "Delete",
+            "object": self._activ_util.build_article_url(user, article),
+            "actor": self._activ_util.build_actor(user.handle, self._hostname),
+        }
 
     def SendDeleteActivity(self, req, ctx):
         self._logger.info("Got request to delete article %d from %d",
