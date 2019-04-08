@@ -112,7 +112,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
                 blogPost={this.state.post}
                 preview={true}
                 customCss={true}
-                goBack={empty}
+                deleteSuccessCallback={empty}
               />
             </HashRouter>
           </div>

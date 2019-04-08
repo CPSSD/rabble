@@ -8,7 +8,7 @@ import { IParsedPost } from "../models/posts";
 import { RootComponent } from "./root_component";
 
 interface IDeleteProps {
-  goBack: () => void;
+  successCallback: () => void;
   username: string;
   display: boolean;
   blogPost: IParsedPost;
@@ -37,7 +37,7 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
     }
     DeleteArticle(this.props.blogPost.global_id)
       .then((res: any) => {
-        this.props.goBack();
+        this.props.successCallback();
       })
       .catch((err: any) => {
         this.alertUser(err);

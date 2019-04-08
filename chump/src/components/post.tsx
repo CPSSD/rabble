@@ -17,7 +17,7 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
-  goBack: () => void;
+  deleteSuccessCallback: () => void;
 }
 
 interface IPostState {
@@ -104,7 +104,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             username={this.props.username}
             display={this.viewerIsAuthor() && !this.nonInteractivePost()}
             blogPost={post}
-            goBack={this.props.goBack}
+            successCallback={this.props.deleteSuccessCallback}
           />
         </div>
         {tags}
