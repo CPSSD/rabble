@@ -36,7 +36,7 @@ export class EditButton extends RootComponent<IEditProps, IEditState> {
     }
     return (
       <div onClick={this.handleEdit} className="pure-u-3-24">
-        <Edit color="white" className="edit-icon"/>
+        <Edit className="sub-post-icon"/>
       </div>
     );
   }

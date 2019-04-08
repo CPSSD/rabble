@@ -285,8 +285,8 @@ button.follow-button svg {
   padding: 4px 4px 4px 4px;
 }
 
-.edit-icon {
-  color: var(--primary-light-color);
+.sub-post-icon {
+  color: var(--primary-dark-color);
   background-color: var(--primary-bg-color);
   padding: 4px 4px 4px 4px;
 }
