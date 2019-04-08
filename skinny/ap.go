@@ -100,7 +100,7 @@ type ActorObjectStruct struct {
 	Followers         string       `json:followers`
 	Following         string       `json:following`
 	PublicKey         *KeyObject   `json:"publicKey"`
-	Id		  string       `json:"id"`
+	Id                string       `json:"id"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -142,7 +142,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
-			Id:		   resp.Actor.Id,
+			Id:                resp.Actor.Id,
 		}
 
 		actor.PublicKey = &KeyObject{
@@ -309,8 +309,8 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 }
 
 type updateActivity struct {
-	Object    articleObjectStruct `json:"object"`
-	Type      string              `json:"type"`
+	Object articleObjectStruct `json:"object"`
+	Type   string              `json:"type"`
 }
 
 func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
@@ -360,8 +360,6 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 		fmt.Fprintf(w, "Update successful\n")
 	}
 }
-
-
 
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
