@@ -58,4 +58,6 @@ class RecommendersUtil:
         return recommenders
 
     def split_tags(self, tags):
+        if tags == "":
+            return []
         return [t.replace("%7G", "|") for t in tags.split("|")]

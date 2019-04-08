@@ -186,7 +186,7 @@ class UsersDatabaseServicer:
         return response
 
     def AllUserLikes(self, request, context):
-        response = database_pb2.UsersResponse()
+        resp = database_pb2.UsersResponse()
         try:
             db_res = self._db.execute(
                 "SELECT u.global_id, u.host, "
@@ -196,10 +196,10 @@ class UsersDatabaseServicer:
                 "l.user_id = u.global_id GROUP BY u.global_id "
             )
         except sqlite3.Error as e:
-            response.result_type = database_pb2.UsersResponse.ERROR
-            response.error = str(e)
-            return response
-        response.result_type = database_pb2.UsersResponse.OK
+            resp.result_type = database_pb2.UsersResponse.ERROR
+            resp.error = str(e)
+            return resp
+        resp.result_type = database_pb2.UsersResponse.OK
         for tup in db_res:
             entry = resp.results.add()
             if len(tup) != 3:
@@ -214,13 +214,14 @@ class UsersDatabaseServicer:
                     entry.host = tup[1]
                 else:
                     entry.host_is_null = True
-                entry.likes = tup[2]
+                if tup[2] is not None:
+                    entry.likes = tup[2]
             except Exception as e:
                 self._logger.warning(CONVERT_ERROR + str(e))
                 resp.result_type = database_pb2.UsersResponse.ERROR
                 resp.error = str(e)
                 break
-        return response
+        return resp
 
     def _users_handle_insert(self, req, resp):
         self._logger.info('Inserting new user into Users database.')
