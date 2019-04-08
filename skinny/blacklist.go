@@ -2,12 +2,29 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
+
+func loadBlacklistFile() io.Reader {
+	path := os.Getenv("BLACKLIST_FILE")
+	if path == "" {
+		log.Fatalln("BLACKLIST_FILE env var not set for skinny server.")
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatalf("blacklist file: %v", err)
+	}
+
+	return bytes.NewReader(b)
+}
 
 type Blacklist map[string]struct{}
 

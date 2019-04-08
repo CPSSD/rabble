@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -126,20 +123,6 @@ func grpcConn(env string, port string) *grpc.ClientConn {
 		log.Fatalf("Skinny server did not connect to %s: %v", addr, err)
 	}
 	return conn
-}
-
-func loadBlacklistFile() io.Reader {
-	path := os.Getenv("BLACKLIST_FILE")
-	if path == "" {
-		log.Fatalln("BLACKLIST_FILE env var not set for skinny server.")
-	}
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatalf("blacklist file: %v", err)
-	}
-
-	return bytes.NewReader(b)
 }
 
 func createArticleClient() (*grpc.ClientConn, pb.ArticleClient) {
