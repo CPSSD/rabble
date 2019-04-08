@@ -34,7 +34,7 @@ func (b Blacklist) actorBlacklisted(actor string) (bool, error) {
 	return false, nil
 }
 
-// Actor takes an actor from an Activity and returns true if the actor was blacklisted.
+// Actors takes an actor from an Activity and returns true if the actor was blacklisted.
 //
 // This function takes place of handling of errors, so no additional
 // status/etc are required.
