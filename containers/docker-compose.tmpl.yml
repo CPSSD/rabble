@@ -39,6 +39,7 @@ services:
       - POST_RECOMMENDATIONS_SERVICE_HOST=recommend_posts_service_[[INSTANCE_ID]]
       - POST_RECOMMENDATIONS_NO_OP=[[POSTS_SERVICE_LOCATION]]
       - FOLLOW_RECOMMENDATIONS_NO_OP=[[FOLLOWS_SERVICE_LOCATION]]
+      - BLACKLIST_FILE=[[INSTANCE_BLACKLIST_FILE]]
   feed_service_[[INSTANCE_ID]]:
     build:
       context: ./services/feed
