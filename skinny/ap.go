@@ -247,7 +247,6 @@ type articleObjectPreview struct {
 
 type createActivityStruct struct {
 	Actor     string              `json:"actor"`
-	Context   string              `json:"@context"`
 	Object    articleObjectStruct `json:"object"`
 	Recipient []string            `json:"to"`
 	Type      string              `json:"type"`
@@ -363,7 +362,6 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 
 type followActivityStruct struct {
 	Actor     string   `json:"actor"`
-	Context   string   `json:"@context"`
 	Object    string   `json:"object"`
 	Recipient []string `json:"to"`
 	Type      string   `json:"type"`
@@ -407,9 +405,8 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 }
 
 type followUndoActivity struct {
-	Context string               `json:"@context"`
-	Object  followActivityStruct `json:"object"`
-	Type    string               `json:"type"`
+	Object followActivityStruct `json:"object"`
+	Type   string               `json:"type"`
 }
 
 func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
@@ -451,10 +448,9 @@ type likeActorStruct struct {
 }
 
 type likeActivityStruct struct {
-	Actor   likeActorStruct `json:"actor"`
-	Context string          `json:"@context"`
-	Object  string          `json:"object"`
-	Type    string          `json:"type"`
+	Actor  likeActorStruct `json:"actor"`
+	Object string          `json:"object"`
+	Type   string          `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
@@ -510,7 +506,6 @@ type approvalObject struct {
 
 type approvalActivity struct {
 	Actor     string         `json:"actor"`
-	Context   string         `json:"@context"`
 	Object    approvalObject `json:"object"`
 	Recipient []string       `json:"to"`
 	Type      string         `json:"type"`
@@ -579,9 +574,8 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 }
 
 type undoActivity struct {
-	Context string   `json:"@context"`
-	Object  activity `json:"object"`
-	Type    string   `json:"type"`
+	Object activity `json:"object"`
+	Type   string   `json:"type"`
 }
 
 func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
@@ -630,9 +624,8 @@ func (s *serverWrapper) handleUndoActivity() http.HandlerFunc {
 }
 
 type likeUndoActivity struct {
-	Context string             `json:"@context"`
-	Object  likeActivityStruct `json:"object"`
-	Type    string             `json:"type"`
+	Object likeActivityStruct `json:"object"`
+	Type   string             `json:"type"`
 }
 
 func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
@@ -690,7 +683,6 @@ type announceActivityStruct struct {
 	// TODO(#409): Change the object to simply be a createActivityObject
 	// that's gathered by its id in the original body.
 	Actor     string              `json:"actor"`
-	Context   string              `json:"@context"`
 	Type      string              `json:"type"`
 	Published string              `json:"published"`
 	Object    articleObjectStruct `json:"object"`
