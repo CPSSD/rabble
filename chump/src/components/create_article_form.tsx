@@ -79,7 +79,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
   }
 
   public renderModal() {
-    const empty = () => { return; }
+    const empty = () => { return; };
     return (
       <div>
         <RModal

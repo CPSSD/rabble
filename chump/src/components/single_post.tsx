@@ -18,7 +18,7 @@ interface ISinglePostProps extends RouteProps {
   };
   history: {
     goBack: () => void;
-  }
+  };
   username: string;
 }
 
