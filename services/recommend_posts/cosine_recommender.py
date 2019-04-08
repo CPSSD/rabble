@@ -44,13 +44,15 @@ class CosineRecommender:
         # Create an array with length the same as highest post id to allow
         # indexing by global_id
         highest_post_id = max(pes, key=lambda x: x.global_id).global_id + 1
-        posts = [{"global_id": 0, "tags": []}] * highest_post_id
+        posts = [{"global_id": 0, "tags": [], "author_id": 0}] * \
+            highest_post_id
         for pe in pes:
             tags = self._recommender_util.split_tags(pe.tags)
             for t in tags:
                 self.post_tag_freq[t] += 1
             posts[pe.global_id] = {
                 "global_id": pe.global_id,
+                "author_id": pe.author_id,
                 "tags": tags
             }
         return posts
@@ -128,8 +130,8 @@ class CosineRecommender:
         # Calculate similarities
         sims = []
         for p in self.posts:
-            # do not recommend liked posts
-            if p["global_id"] in self.users[user_id]["likes"]:
+            # do not recommend liked posts or dummy posts
+            if p["global_id"] in self.users[user_id]["likes"] or p["global_id"] == 0 or p["author_id"] == user_id:
                 continue
             sim = self._tf_idf_cosine_similarity(u_m, p["tags"])
             if len(sims) < n:
@@ -144,4 +146,4 @@ class CosineRecommender:
         for result in sims:
             art = get_article(self._logger, self._db, global_id=result[1])
             posts_entries.append(art)
-        return posts_entries
+        return posts_entries, None

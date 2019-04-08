@@ -94,14 +94,14 @@ class PostsDatabaseServicer:
         self._logger.info('Reading all posts with tags')
         try:
             res = self._db.execute('SELECT '
-                                   'p.global_id, p.tags '
+                                   'p.global_id, p.author_id, p.tags '
                                    'FROM posts p LEFT OUTER JOIN users u ON '
                                    'p.author_id = u.global_id '
                                    'WHERE p.tags is not NULL OR p.tags = "" AND u.private = 0 '
                                    )
             for tup in res:
                 entry = resp.results.add()
-                if len(tup) != 2:
+                if len(tup) != 3:
                     self._logger.warning(
                         CONVERT_ERROR
                         + "Wrong number of elements " + str(tup))
@@ -110,7 +110,8 @@ class PostsDatabaseServicer:
                     break
                 try:
                     entry.global_id = tup[0]
-                    entry.tags = tup[1]
+                    entry.author_id = tup[1]
+                    entry.tags = tup[2]
                 except Exception as e:
                     self._logger.warning(CONVERT_ERROR + str(e))
                     resp.result_type = database_pb2.PostsResponse.ERROR
