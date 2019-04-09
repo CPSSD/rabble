@@ -1,8 +1,8 @@
 import os
 import sys
 
-from services.proto import database_pb2 as dbpb
 from services.proto import delete_pb2 as dpb
+from utils.articles import delete_article
 
 HOSTNAME_ENV = 'HOST_NAME'
 
@@ -18,6 +18,13 @@ class ReceiveDeleteServicer:
             sys.exit(1)
 
     def ReceiveDeleteActivity(self, req, ctx):
-        self._logger.info("Received delete for article '%s'", req.title)
-        return dpb.DeleteResponse(result_type=upb.UpdateResponse.OK)
+        self._logger.info("Received delete for article '%s'", req.ap_id)
+        # TODO(CianLR): Check for people who announced the article and send
+        # Announce Undos to their followers.
+        if not delete_article(self._logger, self._db, ap_id=req.ap_id):
+            return dpb.DeleteResponse(
+                result_type=dpb.DeleteResponse.ERROR,
+                error="Could not delete article",
+            )
+        return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
 

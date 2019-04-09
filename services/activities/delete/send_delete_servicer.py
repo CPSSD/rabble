@@ -53,6 +53,8 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.ERROR,
                 error="Could not delete article locally",
             )
+        # TODO(CianLR): Check for people who announced the article and send
+        # Announce Undos to their followers.
         delete_obj = self._build_delete(user, article)
         self._logger.info("Activity: %s", str(delete_obj))
         err = self._activ_util.forward_activity_to_followers(
