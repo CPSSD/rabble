@@ -380,6 +380,16 @@ message AddShareResponse {
   string error = 2;
 }
 
+message PostSharers {
+  enum ResultType {
+    OK = 0;
+    ERROR = 1;
+  }
+  ResultType result_type = 1;
+  string error = 2;
+  repeated int64 sharer_ids = 3;
+}
+
 service Database {
   rpc Posts(PostsRequest) returns (PostsResponse);
   rpc Users(UsersRequest) returns (UsersResponse);
@@ -426,4 +436,8 @@ service Database {
 
   // Get all users this instance knows about and their likes.
   rpc AllUserLikes(AllUsersRequest) returns (UsersResponse);
+
+  // Get a list of IDs of all the users who have shared a particular post.
+  // Posts may only be filtered by global_id.
+  rpc GetSharersOfPost(SharesEntry) returns (PostSharers);
 }
