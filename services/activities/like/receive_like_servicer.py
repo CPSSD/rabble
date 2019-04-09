@@ -7,7 +7,7 @@ from like_util import build_like_activity
 
 
 class ReceiveLikeServicer:
-    def __init__(self, logger, db, user_util, activ_util, hostname=None, post_recommendation_stub):
+    def __init__(self, logger, db, user_util, activ_util, post_recommendation_stub=None, hostname=None):
         self._logger = logger
         self._db = db
         self._user_util = user_util
@@ -83,7 +83,7 @@ class ReceiveLikeServicer:
                 build_like_activity(req.liker_id, req.liked_object))
 
             # If post_recommender is on, send like to post_recommender
-            if post_recommendation_stub != None:
+            if self._post_recommendation_stub != None:
                 self._add_like_to_user_model(user_id, article.global_id)
 
         return like_pb2.LikeResponse(

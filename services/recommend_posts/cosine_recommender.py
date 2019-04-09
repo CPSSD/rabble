@@ -142,6 +142,10 @@ class CosineRecommender:
         return posts_entries, None
 
     def update_model(self, user_id, article_id):
+        # If the user has liked the article previously do not update
+        if article_id in self.users[user_id]["likes"]:
+            return None
+
         art = get_article(self._logger, self._db, global_id=article_id)
         tags = self._recommender_util.split_tags(art.tags)
         # update post (in case of new post/edit)
