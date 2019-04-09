@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { SearchResults } from "../../src/components/search_results";
 import { IParsedPost } from "../../src/models/posts";
 import * as Search from "../../src/models/search";
+import { IParsedUser } from "../../src/models/user";
 import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
@@ -39,17 +40,18 @@ const validParsedPost: IParsedPost[] = [{
   title: "how to write a plugin",
 }];
 
-const validUser: Search.IParsedUser = {
+const validUser: IParsedUser = {
   bio: "bio",
+  custom_css: "",
   display_name: "the.aaron",
   global_id: 4,
   handle: "aaron",
   host: "google.com",
-  image: "test",
   is_followed: true,
+  private: {},
 };
 
-const validUserArray: Search.IParsedUser[] = [validUser];
+const validUserArray: IParsedUser[] = [validUser];
 
 const validBody: Search.ISearchResponse = {
   posts: validParsedPost,
