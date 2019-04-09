@@ -1,6 +1,7 @@
 import os
 
 from random_recommender import RandomRecommender
+from cosine_recommender import CosineRecommender
 
 from services.proto import database_pb2
 from services.proto import recommend_posts_pb2_grpc
@@ -13,6 +14,7 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
 
     RECOMMENDERS = {
         'random': RandomRecommender,
+        'cosine': CosineRecommender,
     }
     DEFAULT_RECOMMENDER = 'random'
     ENV_VAR = 'POSTS_RECOMMENDER_METHOD'

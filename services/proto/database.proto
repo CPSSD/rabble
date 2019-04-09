@@ -92,6 +92,8 @@ message UsersEntry {
   bool host_is_null = 11;
   string private_key = 12;
   string public_key = 13;
+  // comma separated string containing global_ids of liked posts
+  string likes = 14;
 }
 
 message UsersRequest {
@@ -395,6 +397,8 @@ service Database {
   rpc InstanceFeed(InstanceFeedRequest) returns (PostsResponse);
   // Get the N random posts from posts.
   rpc RandomPosts(RandomPostsRequest) returns (PostsResponse);
+  // Get all non private posts with tags.
+  rpc TaggedPosts(PostsRequest) returns (PostsResponse);
   // Get the N most recent shared posts for a user.
   rpc SharedPosts(SharedPostsRequest) returns (SharesResponse);
   // Get PENDING Follows with handles rather than ids
@@ -419,4 +423,7 @@ service Database {
 
   // Remove a post as well as any corresponding likes and shares.
   rpc SafeRemovePost(PostsEntry) returns (PostsResponse);
+
+  // Get all users this instance knows about and their likes.
+  rpc AllUserLikes(AllUsersRequest) returns (UsersResponse);
 }

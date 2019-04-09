@@ -22,6 +22,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.CreatePostsIndex = posts_servicer.CreatePostsIndex
         self.RandomPosts = posts_servicer.RandomPosts
         self.SafeRemovePost = posts_servicer.SafeRemovePost
+        self.TaggedPosts = posts_servicer.TaggedPosts
         users_servicer = UsersDatabaseServicer(db, logger)
         self.Users = users_servicer.Users
         self.SearchUsers = users_servicer.SearchUsers
@@ -38,6 +39,7 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         log_servicer = LogDatabaseServicer(db, logger)
         self.AddLog = log_servicer.AddLog
         self.AllUsers = users_servicer.AllUsers
+        self.AllUserLikes = users_servicer.AllUserLikes
         share_servicer = ShareDatabaseServicer(db, logger)
         self.AddShare = share_servicer.AddShare
         self.FindShare = share_servicer.FindShare
