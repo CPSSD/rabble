@@ -1,10 +1,10 @@
 import * as React from "react";
 
 import * as config from "../../rabble_config.json";
-import { GetUserInfo, IUserDetails } from "../models/user"
 import {
-  EditUserProfilePicPromise, EditUserPromise, IEditUserResult
+  EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
 } from "../models/edit_user";
+import { GetUserInfo, IParsedUser } from "../models/user";
 
 import { RootComponent } from "./root_component";
 
@@ -105,7 +105,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
     }
   }
 
-  public handleUserInfo(details: IUserDetails) {
+  public handleUserInfo(details: IParsedUser) {
     let isPrivate = false;
     if ("value" in details.private) {
       isPrivate = details.private.value!;

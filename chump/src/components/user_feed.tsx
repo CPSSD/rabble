@@ -20,7 +20,7 @@ interface IUserProps {
   userId: number;
 }
 
-export class User extends React.Component<IUserProps, IUserState> {
+export class UserFeed extends React.Component<IUserProps, IUserState> {
   constructor(props: IUserProps) {
     super(props);
     this.state = {

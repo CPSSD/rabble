@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Link, RouteProps } from "react-router-dom";
 
-import { GetRecommendedFollows, IParsedUser, IRecommendedFollowsResponse } from "../models/recommended_follows";
+import { GetRecommendedFollows, IRecommendedFollowsResponse } from "../models/recommended_follows";
+import { IParsedUser } from "../models/user";
 import { User } from "./user";
 
 interface IRecommendedFollowsProps extends RouteProps {

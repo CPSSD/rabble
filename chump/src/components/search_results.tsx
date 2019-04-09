@@ -4,10 +4,10 @@ import { Link, RouteProps } from "react-router-dom";
 
 import { IParsedPost } from "../models/posts";
 import { ISearchResponse, SearchRequest } from "../models/search";
+import { IParsedUser } from "../models/user";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
 import { User } from "./user";
-import { IParsedUser } from "../models/user";
 
 interface ISearchResultsProps extends RouteProps {
   match: {

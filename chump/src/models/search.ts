@@ -3,7 +3,7 @@ import * as request from "superagent";
 
 import { IParsedPost, ParsePosts } from "./posts";
 
-import { CleanUsers, IParsedUser } from './user';
+import { CleanUsers, IParsedUser } from "./user";
 
 export interface ISearchResponse {
   posts: IParsedPost[];

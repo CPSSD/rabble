@@ -68,6 +68,6 @@ export class User extends React.Component<IUserProps, {}> {
 
   private handleNoProfilePic(event: any) {
     event.target.onerror = null;
-    event.target.src = this.props.blogUser.image;
+    event.target.src = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
   }
 }

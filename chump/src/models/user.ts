@@ -1,24 +1,17 @@
 import * as Promise from "bluebird";
 import * as superagent from "superagent";
 
-export interface IUser {
+export interface IParsedUser {
   global_id: number;
   handle: string;
   host: string;
   bio: string;
   display_name: string;
-}
-
-export interface IUserDetails extends IUser {
+  is_followed: boolean;
   private: {
     value?: boolean;
   };
   custom_css: string;
-}
-
-export interface IParsedUser extends IUser {
-  image: string;
-  is_followed: boolean;
 }
 
 export function CleanUsers(u: IParsedUser[]) {
@@ -37,7 +30,7 @@ export function CleanUsers(u: IParsedUser[]) {
 
 export function GetUserInfo(username: string) {
   const url = "/c2s/@" + username + "/details";
-  return new Promise<IUserDetails>((resolve, reject) => {
+  return new Promise<IParsedUser>((resolve, reject) => {
     superagent
       .post(url)
       .set("Content-Type", "application/json")

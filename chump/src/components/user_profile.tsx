@@ -2,17 +2,16 @@ import * as React from "react";
 
 import { RouteProps } from "react-router-dom";
 import * as config from "../../rabble_config.json";
+import { GetUserInfo, IParsedUser } from "../models/user";
 import { AccountEdit } from "./account_edit";
 import { Followers, Following } from "./follow_user_list";
 import { Pending } from "./pending";
-import { User } from "./user_feed";
 import { RootComponent } from "./root_component";
-import { GetUserInfo, IUserDetails } from "../models/user"
+import { UserFeed } from "./user_feed";
 
 import {
   EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
 } from "../models/edit_user";
-
 
 /*
  * The profile page is where somebody lands if they click on a specific user.
@@ -47,7 +46,9 @@ const ViewingTabLookup = [
 interface IUserProfileState {
   viewing: ViewingTab;
   viewable: ViewingTab[];
+
   viewingUser: string;
+  currentUser?: IParsedUser;
 }
 
 interface IUserProfileProps extends RouteProps {
@@ -89,6 +90,19 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
   }
 
   public render() {
+    if (!this.state.currentUser) {
+      return (
+        <div>
+          <div className="pure-g">
+            <div className="pure-u-5-24"/>
+            <div className="pure-u-14-24">
+              Loading...
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const page = this.getCurrentPage();
     return (
       <div>
@@ -108,17 +122,27 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
   }
 
   public componentDidMount() {
-    this.getUserDetails();
+    GetUserInfo(this.props.match.params.user)
+    .then((details: IParsedUser) => {
+      this.setState({
+        currentUser: details,
+      });
+    })
+    .catch(this.handleGetError);
   }
 
   public componentDidUpdate(prevProps: IUserProfileProps) {
     if (this.props.match.params.user !== this.state.viewingUser) {
-      this.getUserDetails();
-      this.setState({
-        viewable: this.getViewable(),
-        viewing: ViewingTab.Posts,
-        viewingUser: this.props.match.params.user,
-      });
+      GetUserInfo(this.props.match.params.user)
+      .then((details: IParsedUser) => {
+        this.setState({
+          currentUser: details,
+          viewable: this.getViewable(),
+          viewing: ViewingTab.Posts,
+          viewingUser: this.props.match.params.user,
+        });
+      })
+      .catch(this.handleGetError);
     }
   }
 
@@ -155,7 +179,7 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
     switch (this.state.viewing) {
       case ViewingTab.Posts:
         return (
-          <User
+          <UserFeed
             username={this.props.username}
             viewing={this.state.viewingUser}
             userId={this.props.userId}
@@ -195,14 +219,6 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
     // Ensure the user isn't viewing a page of a foriegn user.
     const noHost = !this.props.match.params.user.includes("@");
     return userMatch && validUsername && noHost;
-  }
-
-  private getUserDetails() { GetUserInfo(this.props.match.params.user) .then(this.handleUserInfo)
-    .catch(this.handleGetError);
-  }
-
-  private handleUserInfo(details: IUserDetails) {
-    console.log("GOT USER DETAILS !!! ", details);
   }
 
   private handleGetError(err: Error) {
