@@ -341,6 +341,7 @@ class PostsDatabaseServicer:
             self._db.execute(shares_sql, match_val, commit=False)
             self._db.execute(posts_sql, match_val)
         except sqlite3.Error as e:
+            self._db.discard_cursor()
             return database_pb2.PostsResponse(
                 result_type=database_pb2.PostsResponse.ERROR,
                 error=str(e),
