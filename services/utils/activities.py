@@ -165,6 +165,19 @@ class ActivitiesUtil:
             "object": obj
         }
 
+    def build_delete(self, user, article):
+        """
+        Build a delete activity.
+        user is a UsersEntry proto.
+        article is a PostsEntry proto.
+        """
+        return {
+            "@context": self.rabble_context(),
+            "type": "Delete",
+            "object": self.build_article_url(user, article),
+            "actor": self.build_actor(user.handle, self._hostname),
+        }
+
     def fetch_actor(self, actor_url):
         """
         Fetch the actor document at the given URL, and return the parsed JSON

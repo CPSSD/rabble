@@ -19,14 +19,6 @@ class SendDeleteServicer:
             self._logger.error("Hostname for SendDeleteServicer not set")
             sys.exit(1)
 
-    def _build_delete(self, user, article):
-        return {
-            "@context": self._activ_util.rabble_context(),
-            "type": "Delete",
-            "object": self._activ_util.build_article_url(user, article),
-            "actor": self._activ_util.build_actor(user.handle, self._hostname),
-        }
-
     def SendDeleteActivity(self, req, ctx):
         self._logger.info("Got request to delete article %d from %d",
                           req.article_id, req.user_id)
@@ -55,7 +47,7 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.ERROR,
                 error="Could not delete article locally",
             )
-        delete_obj = self._build_delete(user, article)
+        delete_obj = self._activ_util.build_delete(user, article)
         self._logger.info("Activity: %s", str(delete_obj))
         err = self._activ_util.forward_activity_to_followers(
             req.user_id, delete_obj)
