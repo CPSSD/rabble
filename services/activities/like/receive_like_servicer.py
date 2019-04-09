@@ -2,15 +2,17 @@ import os
 
 from services.proto import database_pb2 as db_pb
 from services.proto import like_pb2
+from services.proto import recommend_posts_pb2
 from like_util import build_like_activity
 
 
 class ReceiveLikeServicer:
-    def __init__(self, logger, db, user_util, activ_util, hostname=None):
+    def __init__(self, logger, db, user_util, activ_util, hostname=None, post_recommendation_stub):
         self._logger = logger
         self._db = db
         self._user_util = user_util
         self._activ_util = activ_util
+        self._post_recommendation_stub = post_recommendation_stub
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
         if not self._hostname:
@@ -34,6 +36,16 @@ class ReceiveLikeServicer:
         if resp.result_type != db_pb.DBLikeResponse.OK:
             return resp.error
         return None
+
+    def _add_like_to_user_model(self, user_id, article_id):
+        req = db_pb.LikeEntry(
+            user_id=user_id,
+            article_id=article_id,
+        )
+        resp = self._post_recommendation_stub.UpdateModel(req)
+        if resp.result_type != recommend_posts_pb2.PostRecommendationsResponse.OK:
+            self._logger.error(
+                "UpdateModel for post recommendation failed: %s", resp.message)
 
     def ReceiveLikeActivity(self, req, context):
         self._logger.debug("Got like for %s from %s",
@@ -69,6 +81,11 @@ class ReceiveLikeServicer:
             self._activ_util.forward_activity_to_followers(
                 article.author_id,
                 build_like_activity(req.liker_id, req.liked_object))
+
+            # If post_recommender is on, send like to post_recommender
+            if post_recommendation_stub != None:
+                self._add_like_to_user_model(user_id, article.global_id)
+
         return like_pb2.LikeResponse(
             result_type=like_pb2.LikeResponse.OK
         )
