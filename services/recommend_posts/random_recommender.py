@@ -25,3 +25,7 @@ class RandomRecommender:
     def update_model(self, user_id, article_id):
         # Random recommendations do not depend on a model and so don't need to be updated
         return None
+
+    def add_post(self, post_entry):
+        # Random recommendations do not depend on a model and so don't need to be updated
+        return None

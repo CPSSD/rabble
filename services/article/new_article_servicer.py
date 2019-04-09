@@ -2,6 +2,7 @@ from services.proto import article_pb2
 from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
+from services.proto import recommend_posts_pb2
 from services.proto import search_pb2
 from utils.articles import convert_to_tags_string, md_to_html
 

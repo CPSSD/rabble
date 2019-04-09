@@ -203,6 +203,8 @@ services:
       - CREATE_SERVICE_HOST=create_service_[[INSTANCE_ID]]
       - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
       - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_SERVICE_HOST=recommend_posts_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_NO_OP=[[POSTS_SERVICE_LOCATION]]
   create_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/create

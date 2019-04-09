@@ -148,11 +148,6 @@ class CosineRecommender:
 
         art = get_article(self._logger, self._db, global_id=article_id)
         tags = self._recommender_util.split_tags(art.tags)
-        # update post (in case of new post/edit)
-        self.posts[article_id] = {
-            "author_id": art.author_id,
-            "tags": tags
-        }
 
         # update user likes
         self.users[user_id]["likes"].append(article_id)
@@ -161,4 +156,22 @@ class CosineRecommender:
         for t in tags:
             self.user_tag_freq[tag] += 1
             self.user_models[user_id][tag] += 1
+
+        self.user_tag_ifs = self._calculate_based_itf(
+            self.user_tag_freq, len(self.user_models))
+        return None
+
+    def add_post(self, post_entry):
+        tags = self._recommender_util.split_tags(post_entry.tags)
+        # update post (in case of new post/edit)
+        self.posts[post_entry.global_id] = {
+            "author_id": post_entry.author_id,
+            "tags": tags
+        }
+        # update post tag frequency with new tags
+        for t in tags:
+            self.post_tag_freq[t] += 1
+
+        self.post_tag_ifs = self._calculate_based_itf(
+            self.post_tag_freq, len(self.posts))
         return None
