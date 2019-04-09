@@ -19,7 +19,6 @@ message User {
   string bio = 4;
   // True if the user in the request is following the author of this post (and this follow is accepted and not pending).
   bool is_followed = 5;
-  string image = 6;
   string display_name = 7;
   google.protobuf.BoolValue private = 8;
   string custom_css = 9;
