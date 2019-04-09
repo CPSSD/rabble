@@ -34,3 +34,19 @@ def get_article(logger, db, global_id=None, ap_id=None):
         logger.error("Could not find article")
         return None
     return resp.results[0]
+
+def delete_article(logger, db, global_id=None, ap_id=None):
+    """
+    Deletes and article from the database safely (removing all references).
+    Returns True on success and False on error.
+    """
+    logger.info("Deleting post global_id: %s, ap_id: %s", global_id, ap_id)
+    resp = db.SafeRemovePost(database_pb2.PostsEntry(
+        global_id=global_id,
+        ap_id=ap_id,
+    ))
+    if resp.result_type != database_pb2.PostsResponse.OK:
+        logger.error("Error deleting from DB: %s", resp.error)
+        return False
+    return True
+

@@ -416,4 +416,7 @@ service Database {
 
   // Get all users this instance knows about.
   rpc AllUsers(AllUsersRequest) returns (UsersResponse);
+
+  // Remove a post as well as any corresponding likes and shares.
+  rpc SafeRemovePost(PostsEntry) returns (PostsResponse);
 }

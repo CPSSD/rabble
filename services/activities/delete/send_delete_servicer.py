@@ -3,7 +3,7 @@ import sys
 
 from services.proto import database_pb2 as dbpb
 from services.proto import delete_pb2 as dpb
-from utils.articles import get_article
+from utils.articles import get_article, delete_article
 
 HOSTNAME_ENV = 'HOST_NAME'
 
@@ -18,18 +18,6 @@ class SendDeleteServicer:
         if not self._hostname:
             self._logger.error("Hostname for SendDeleteServicer not set")
             sys.exit(1)
-
-    def _delete_locally(self, article):
-        resp = self._db.Posts(dbpb.PostsRequest(
-            request_type=dbpb.PostsRequest.DELETE,
-            match=dbpb.PostsEntry(
-                global_id=article.global_id,
-            ),
-        ))
-        if resp.result_type != dbpb.PostsResponse.OK:
-            self._logger.error("Error deleting from DB: %s", resp.error)
-            return False
-        return True
 
     def _build_delete(self, user, article):
         return {
@@ -60,7 +48,7 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.DENIED,
                 error="User is not the author of this article",
             )
-        if not self._delete_locally(article):
+        if not delete_article(self._logger, self._db, global_id=article.global_id):
             return dpb.DeleteResponse(
                 result_type=dpb.DeleteResponse.ERROR,
                 error="Could not delete article locally",

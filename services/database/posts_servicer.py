@@ -277,3 +277,44 @@ class PostsDatabaseServicer:
             resp.error = str(e)
             return
         resp.result_type = database_pb2.PostsResponse.OK
+
+    def SafeRemovePost(self, req, ctx):
+        if not req.global_id and not req.ap_id:
+            return database_pb2.PostsResponse(
+                result_type=database_pb2.PostsResponse.ERROR,
+                error="Must delete by global_id or ap_id",
+            )
+        match_sql = ''
+        match_val = None
+        if req.ap_id:
+            match_sql = 'posts.ap_id = ?'
+            match_val = req.ap_id
+        else:
+            match_sql = 'posts.global_id = ?'
+            match_val = req.global_id
+        likes_sql = (
+            'DELETE FROM likes WHERE EXISTS (' +
+            'SELECT * FROM posts WHERE ' +
+            'likes.article_id = posts.global_id AND ' +
+            match_sql + ')'
+        )
+        shares_sql = (
+            'DELETE FROM shares WHERE EXISTS (' +
+            'SELECT * FROM posts WHERE ' +
+            'shares.article_id = posts.global_id AND ' +
+            match_sql + ')'
+        )
+        posts_sql = 'DELETE FROM posts WHERE ' + match_sql
+        try:
+            self._db.execute(likes_sql, match_val, commit=False)
+            self._db.execute(shares_sql, match_val, commit=False)
+            self._db.execute(posts_sql, match_val)
+        except sqlite3.Error as e:
+            return database_pb2.PostsResponse(
+                result_type=database_pb2.PostsResponse.ERROR,
+                error=str(e),
+            )
+        return database_pb2.PostsResponse(
+            result_type=database_pb2.PostsResponse.OK,
+        )
+
