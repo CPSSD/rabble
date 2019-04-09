@@ -140,3 +140,21 @@ class CosineRecommender:
             art = get_article(self._logger, self._db, global_id=result[1])
             posts_entries.append(art)
         return posts_entries, None
+
+    def update_model(self, user_id, article_id):
+        art = get_article(self._logger, self._db, global_id=article_id)
+        tags = self._recommender_util.split_tags(art.tags)
+        # update post (in case of new post/edit)
+        self.posts[article_id] = {
+            "author_id": art.author_id,
+            "tags": tags
+        }
+
+        # update user likes
+        self.users[user_id]["likes"].append(article_id)
+
+        # update user model with post tags
+        for t in tags:
+            self.user_tag_freq[tag] += 1
+            self.user_models[user_id][tag] += 1
+        return None

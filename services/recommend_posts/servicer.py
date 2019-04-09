@@ -87,3 +87,21 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
         resp.result_type = \
             recommend_posts_pb2.PostRecommendationsResponse.OK
         return resp
+
+    def UpdateModel(self, request, context):
+        self._logger.debug('UpdateModel PostRecommendations, user_id = %s',
+                           request.user_id)
+
+        resp = recommend_posts_pb2.PostRecommendationsResponse()
+
+        for r in self.active_recommenders:
+            error = r.update_model(request.user_id, request.article_id)
+            if error:
+                resp.result_type = \
+                    recommend_posts_pb2.PostRecommendationsResponse.ERROR
+                resp.message = error
+                return resp
+
+        resp.result_type = \
+            recommend_posts_pb2.PostRecommendationsResponse.OK
+        return resp
