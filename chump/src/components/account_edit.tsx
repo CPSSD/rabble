@@ -1,10 +1,11 @@
 import * as React from "react";
 
 import * as config from "../../rabble_config.json";
+import { GetUserInfo, IUserDetails } from "../models/user"
 import {
-  EditUserProfilePicPromise, EditUserPromise,
-  GetUserInfo, IEditUserResult, IUserDetails,
+  EditUserProfilePicPromise, EditUserPromise, IEditUserResult
 } from "../models/edit_user";
+
 import { RootComponent } from "./root_component";
 
 interface IAccountEditState {

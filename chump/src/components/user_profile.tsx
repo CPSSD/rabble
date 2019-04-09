@@ -6,6 +6,13 @@ import { AccountEdit } from "./account_edit";
 import { Followers, Following } from "./follow_user_list";
 import { Pending } from "./pending";
 import { User } from "./user_feed";
+import { RootComponent } from "./root_component";
+import { GetUserInfo, IUserDetails } from "../models/user"
+
+import {
+  EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
+} from "../models/edit_user";
+
 
 /*
  * The profile page is where somebody lands if they click on a specific user.
@@ -53,7 +60,7 @@ interface IUserProfileProps extends RouteProps {
   username: string;
 }
 
-export class UserProfile extends React.Component<IUserProfileProps, IUserProfileState> {
+export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileState> {
   constructor(props: IUserProfileProps) {
     super(props);
 
@@ -100,8 +107,13 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     );
   }
 
+  public componentDidMount() {
+    this.getUserDetails();
+  }
+
   public componentDidUpdate(prevProps: IUserProfileProps) {
     if (this.props.match.params.user !== this.state.viewingUser) {
+      this.getUserDetails();
       this.setState({
         viewable: this.getViewable(),
         viewing: ViewingTab.Posts,
@@ -185,4 +197,15 @@ export class UserProfile extends React.Component<IUserProfileProps, IUserProfile
     return userMatch && validUsername && noHost;
   }
 
+  private getUserDetails() { GetUserInfo(this.props.match.params.user) .then(this.handleUserInfo)
+    .catch(this.handleGetError);
+  }
+
+  private handleUserInfo(details: IUserDetails) {
+    console.log("GOT USER DETAILS !!! ", details);
+  }
+
+  private handleGetError(err: Error) {
+    this.errorToast({debug: err});
+  }
 }

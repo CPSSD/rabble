@@ -3,10 +3,11 @@ import { ChevronDown, ChevronUp, Search } from "react-feather";
 import { Link, RouteProps } from "react-router-dom";
 
 import { IParsedPost } from "../models/posts";
-import { IParsedUser, ISearchResponse, SearchRequest } from "../models/search";
+import { ISearchResponse, SearchRequest } from "../models/search";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
 import { User } from "./user";
+import { IParsedUser } from "../models/user";
 
 interface ISearchResultsProps extends RouteProps {
   match: {

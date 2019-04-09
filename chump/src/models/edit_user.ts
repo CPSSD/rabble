@@ -6,42 +6,6 @@ export interface IEditUserResult {
   success: boolean;
 }
 
-export interface IUserDetails {
-  custom_css: string;
-  handle: string;
-  host: string;
-  global_id: number;
-  bio: string;
-  private: {
-    value?: boolean;
-  };
-  display_name: string;
-}
-
-export function GetUserInfo(username: string) {
-  const url = "/c2s/@" + username + "/details";
-  return new Promise<IUserDetails>((resolve, reject) => {
-    superagent
-      .post(url)
-      .set("Content-Type", "application/json")
-      .set("Accept", "application/json")
-      .retry(2)
-      .end((error, res) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        const details = res!.body;
-        if (details === null) {
-          reject(new Error("could not get current user details"));
-          return;
-        }
-        resolve(details);
-      });
-  });
-}
-
 export function EditUserPromise(
   bio: string, displayName: string,
   currentPassword: string,  newPassword: string,
