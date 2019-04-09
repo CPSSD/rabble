@@ -41,17 +41,12 @@ class CosineRecommender:
         return itfs
 
     def _clean_post_entries(self, pes):
-        # Create an array with length the same as highest post id to allow
-        # indexing by global_id
-        highest_post_id = max(pes, key=lambda x: x.global_id).global_id + 1
-        posts = [{"global_id": 0, "tags": [], "author_id": 0}] * \
-            highest_post_id
+        posts = defaultdict(lambda: {"tags": [], "author_id": 0})
         for pe in pes:
             tags = self._recommender_util.split_tags(pe.tags)
             for t in tags:
                 self.post_tag_freq[t] += 1
             posts[pe.global_id] = {
-                "global_id": pe.global_id,
                 "author_id": pe.author_id,
                 "tags": tags
             }
@@ -60,15 +55,13 @@ class CosineRecommender:
     def _clean_user_entries(self, ues):
         # Create an array with the same length as the highest user id to allow
         # indexing by global_id
-        highest_user_id = max(ues, key=lambda x: x.global_id).global_id + 1
-        users = [{"global_id": 0, "likes": []}] * highest_user_id
+        users = defaultdict(lambda: {"likes": []})
         for ue in ues:
             likes = self._clean_likes(ue.likes)
             if not ue.host_is_null:
                 # Do not generate anything for foreign users.
                 continue
             users[ue.global_id] = {
-                "global_id": ue.global_id,
                 "likes": likes
             }
         return users
@@ -81,11 +74,11 @@ class CosineRecommender:
         # Iterate over every user like and add all tags of that post to the user
         # model
         user_models = defaultdict(lambda: defaultdict(int))
-        for u in users:
-            for post_id in u["likes"]:
+        for u_k in users.keys():
+            for post_id in users[u_k]["likes"]:
                 for tag in self.posts[post_id]["tags"]:
                     self.user_tag_freq[tag] += 1
-                    user_models[u["global_id"]][tag] += 1
+                    user_models[u_k][tag] += 1
         return user_models
 
     def _get_all_posts_and_tags(self):
@@ -129,15 +122,15 @@ class CosineRecommender:
 
         # Calculate similarities
         sims = []
-        for p in self.posts:
+        for p_k in self.posts.keys():
             # do not recommend liked posts or dummy posts
-            if p["global_id"] in self.users[user_id]["likes"] or p["global_id"] == 0 or p["author_id"] == user_id:
+            if p_k in self.users[user_id]["likes"] or p_k == 0 or self.posts[p_k]["author_id"] == user_id:
                 continue
-            sim = self._tf_idf_cosine_similarity(u_m, p["tags"])
+            sim = self._tf_idf_cosine_similarity(u_m, self.posts[p_k]["tags"])
             if len(sims) < n:
-                heappush(sims, (sim, p["global_id"]))
+                heappush(sims, (sim, p_k))
             else:
-                heappushpop(sims, (sim, p["global_id"]))
+                heappushpop(sims, (sim, p_k))
 
         # get top n results
         sims = sorted(sims, reverse=True)
