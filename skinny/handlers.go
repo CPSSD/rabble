@@ -1046,6 +1046,7 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 
 func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		v := mux.Vars(r)
 		handle, ok := v["username"]
 		if !ok || handle == "" {
@@ -1059,6 +1060,11 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 				Handle:     handle,
 				HostIsNull: true,
 			},
+		}
+
+		// uid = 0 if no user is logged in.
+		if uid, _ := s.getSessionGlobalId(r); uid != 0 {
+			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
