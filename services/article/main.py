@@ -9,6 +9,7 @@ import sys
 from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
+from utils.recommenders import RecommendersUtil
 from servicer import ArticleServicer
 from services.proto import article_pb2_grpc
 from services.proto import database_pb2_grpc
@@ -23,6 +24,7 @@ def get_args():
         '-v', default='WARNING', action='store_const', const='DEBUG',
         help='Log more verbosely.')
     return parser.parse_args()
+
 
 def main():
     args = get_args()
@@ -43,10 +45,13 @@ def main():
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     users_util = UsersUtil(logger, db_stub)
+    recommender_util = RecommendersUtil(logger, db_stub)
+    post_recommendation_stub = recommender_util.get_post_recommendation_stub()
     article_pb2_grpc.add_ArticleServicer_to_server(
-        ArticleServicer(create_stub, db_stub, mdc_stub, search_stub, logger, users_util),
+        ArticleServicer(create_stub, db_stub, mdc_stub,
+                        search_stub, logger, users_util, post_recommendation_stub),
         server
-        )
+    )
     server.add_insecure_port('0.0.0.0:1601')
     logger.info("Starting article server on port 1601")
     server.start()
@@ -57,6 +62,7 @@ def main():
         db_channel.close()
         create_channel.close()
         pass
+
 
 if __name__ == '__main__':
     main()

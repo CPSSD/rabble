@@ -24,4 +24,5 @@ message PostRecommendationsResponse {
 service PostRecommendations {
   rpc Get(PostRecommendationsRequest) returns (PostRecommendationsResponse);
   rpc UpdateModel(LikeEntry) returns (PostRecommendationsResponse);
+  rpc AddPost(PostEntry) returns (PostRecommendationsResponse);
 }

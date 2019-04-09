@@ -2,7 +2,9 @@ import os
 import json
 import time
 from services.proto import database_pb2
+from services.proto import recommend_posts_pb2_grpc
 from utils.users import UsersUtil
+from utils.connect import get_service_channel
 
 
 class RecommendersUtil:
@@ -61,3 +63,17 @@ class RecommendersUtil:
         if tags == "":
             return []
         return [t.replace("%7G", "|") for t in tags.split("|")]
+
+    def get_post_recommendation_stub(self):
+        post_recommender_location = os.environ.get(
+            "POST_RECOMMENDATIONS_NO_OP")
+        if not post_recommender_location:
+            self._logger.error(
+                "Environment variable POST_RECOMMENDATIONS_NO_OP not set.")
+            return None
+        if post_recommender_location != "./services/noop":
+            chan = get_service_channel(
+                self._logger, "POST_RECOMMENDATIONS_SERVICE_HOST", 1814)
+            return recommend_posts_pb2_grpc.PostRecommendationsStub(chan)
+        self._logger.info("Recommender service is NO-OP.")
+        return None
