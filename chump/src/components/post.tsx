@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as config from "../../rabble_config.json";
 import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
+import { DeleteButton } from "./delete_button";
 import { EditButton } from "./edit_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
@@ -16,6 +17,7 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
+  deleteSuccessCallback: () => void;
 }
 
 interface IPostState {
@@ -92,11 +94,19 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
           blogPost={post}
         />
-        <EditButton
-          username={this.props.username}
-          display={this.viewerIsAuthor() && !this.nonInteractivePost()}
-          blogPost={post}
-        />
+        <div className="pure-g">
+          <EditButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+          />
+          <DeleteButton
+            username={this.props.username}
+            display={this.viewerIsAuthor() && !this.nonInteractivePost()}
+            blogPost={post}
+            successCallback={this.props.deleteSuccessCallback}
+          />
+        </div>
         {tags}
       </div>
     );
@@ -178,7 +188,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       .then((res: any) => {
         const resp = res!.body;
         if (resp === null) {
-          this.alertUser("Error parsing like: " + res);
+          this.errorToast({ debug: "Error parsing like: " + res });
           return;
         }
         // If isLiked is false then change it to true and increment like count
@@ -193,7 +203,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
         if (err.response) {
           message = err.response.text;
         }
-        this.alertUser(message);
+        this.errorToast({ debug: message });
       });
   }
 }

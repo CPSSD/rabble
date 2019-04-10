@@ -16,6 +16,9 @@ interface ISinglePostProps extends RouteProps {
       user: string,
     },
   };
+  history: {
+    goBack: () => void;
+  };
   username: string;
 }
 
@@ -38,7 +41,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
   }
 
   public handleGetPostErr() {
-    this.alertUser("Could not communicate with server :(");
+    this.errorToast({});
   }
 
   public renderPost() {
@@ -60,6 +63,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
           blogPost={this.state.posts[0]}
           preview={false}
           customCss={true}
+          deleteSuccessCallback={this.props.history.goBack}
         />
       </div>
     );

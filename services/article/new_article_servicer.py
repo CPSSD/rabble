@@ -5,6 +5,7 @@ from services.proto import mdc_pb2
 from services.proto import search_pb2
 from utils.articles import convert_to_tags_string, md_to_html
 
+
 class NewArticleServicer:
 
     def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util):
@@ -35,7 +36,8 @@ class NewArticleServicer:
         global_id = req.author_id
         author = self._users_util.get_user_from_db(global_id=global_id)
         if author is None:
-            self._logger.error('Could not find user id in db: ' + str(global_id))
+            self._logger.error(
+                'Could not find user id in db: ' + str(global_id))
             return database_pb2.PostsResponse.error, None
         global_id = author.global_id
 
@@ -57,7 +59,8 @@ class NewArticleServicer:
         )
         posts_resp = self._db_stub.Posts(pr)
         if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
-            self._logger.error('Could not insert into db: %s', posts_resp.error)
+            self._logger.error(
+                'Could not insert into db: %s', posts_resp.error)
 
         pe.global_id = posts_resp.global_id
         self.index(pe)

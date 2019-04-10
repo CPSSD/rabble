@@ -10,13 +10,15 @@
     "lib": ["es5", "es6", "dom"],
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
   "include": [
     "./src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "types"
   ]
 }

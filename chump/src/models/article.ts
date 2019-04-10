@@ -1,6 +1,8 @@
 import * as Promise from "bluebird";
 import * as request from "superagent";
 
+import { PartialResponse } from "./common";
+
 interface ICreateArticlePostBody {
   body: string;
   creation_datetime: string;
@@ -18,28 +20,18 @@ interface IEditArticlePostBody {
 }
 
 export function CreateAPIPromise(endpoint: string, postBody: ICreateArticlePostBody) {
-  return new Promise((resolve, reject) => {
+  return new Promise<PartialResponse>((resolve, reject) => {
     request
       .post(endpoint)
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(postBody)
       .end((error, res) => {
-
         if (error) {
           return reject(error);
         }
-        const body = res!.body;
-        if (body === null) {
-          return resolve();
-        }
 
-        if (body.error !== undefined && body.error !== "") {
-          return resolve(body.error);
-        } else if (body.message !== undefined && body.message !== "") {
-          return resolve(body.message);
-        }
-        resolve(body);
+        return resolve(res);
       });
   });
 }
@@ -66,6 +58,31 @@ export function EditArticle(articleId: number, title: string, blogText: string,
       summary,
       tags,
       title,
+    };
+    return new Promise((resolve, reject) => {
+      request
+        .post(endpoint)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send(postBody)
+        .end((error, res) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(res);
+        });
+  });
+}
+
+interface IDeleteArticlePostBody {
+  article_id: number;
+}
+
+export function DeleteArticle(articleId: number) {
+    const endpoint: string = "/c2s/delete_article";
+    const postBody: IDeleteArticlePostBody = {
+      article_id: articleId,
     };
     return new Promise((resolve, reject) => {
       request

@@ -8,6 +8,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 
 
 DEFAULT_NUM_POSTS = 50
+CONVERT_ERROR = "Error converting tuple to PostsEntry: "
 
 
 class PostsDatabaseServicer:
@@ -88,6 +89,39 @@ class PostsDatabaseServicer:
             return resp
         return resp
 
+    def TaggedPosts(self, request, context):
+        resp = database_pb2.PostsResponse()
+        self._logger.info('Reading all posts with tags')
+        try:
+            res = self._db.execute('SELECT '
+                                   'p.global_id, p.tags '
+                                   'FROM posts p LEFT OUTER JOIN users u ON '
+                                   'p.author_id = u.global_id '
+                                   'WHERE p.tags is not NULL OR p.tags = "" AND u.private = 0 '
+                                   )
+            for tup in res:
+                entry = resp.results.add()
+                if len(tup) != 2:
+                    self._logger.warning(
+                        CONVERT_ERROR
+                        + "Wrong number of elements " + str(tup))
+                    resp.result_type = database_pb2.PostsResponse.ERROR
+                    resp.error = str("Wrong number of elements")
+                    break
+                try:
+                    entry.global_id = tup[0]
+                    entry.tags = tup[1]
+                except Exception as e:
+                    self._logger.warning(CONVERT_ERROR + str(e))
+                    resp.result_type = database_pb2.PostsResponse.ERROR
+                    resp.error = str(e)
+                    break
+        except sqlite3.Error as e:
+            resp.result_type = database_pb2.PostsResponse.ERROR
+            resp.error = str(e)
+            return resp
+        return resp
+
     def SearchArticles(self, request, context):
         self._logger.info('Search query' + request.query)
         resp = database_pb2.PostsResponse()
@@ -100,9 +134,9 @@ class PostsDatabaseServicer:
         self._logger.info(
             'Reading up to {} posts for search articles'.format(n))
         try:
-            res = self._db.execute(self._select_base
-                                   + 'WHERE global_id IN '
-                                   + '(SELECT rowid FROM posts_idx WHERE posts_idx '
+            res = self._db.execute(self._select_base +
+                                   'WHERE global_id IN ' +
+                                   '(SELECT rowid FROM posts_idx WHERE posts_idx '
                                    "MATCH ? LIMIT ?)", user_id, user_id, user_id, request.query + "*", n)
             for tup in res:
                 if not self._db_tuple_to_entry(tup, resp.results.add()):
@@ -120,28 +154,28 @@ class PostsDatabaseServicer:
         resp = database_pb2.PostsResponse()
         try:
             res = self._db.execute(
-                'CREATE VIRTUAL TABLE IF NOT EXISTS posts_idx USING '
-                + 'fts5(title, body, content=posts, content_rowid=global_id)')
+                'CREATE VIRTUAL TABLE IF NOT EXISTS posts_idx USING ' +
+                'fts5(title, body, content=posts, content_rowid=global_id)')
             res = self._db.execute(
                 "insert into posts_idx(posts_idx) values('rebuild')")
             self._logger.info('Adding Triggers')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN\n'
-                + '  INSERT INTO posts_idx(rowid, title, body) '
-                + 'VALUES (new.global_id, new.title, new.body); \n'
-                + 'END;')
+                'CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(rowid, title, body) ' +
+                'VALUES (new.global_id, new.title, new.body); \n' +
+                'END;')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN\n'
-                + '  INSERT INTO posts_idx(posts_idx, rowid, title, body) '
-                + "VALUES ('delete', old.global_id, old.title, old.body); \n"
-                + 'END;')
+                'CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
+                "VALUES ('delete', old.global_id, old.title, old.body); \n" +
+                'END;')
             res = self._db.execute(
-                'CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN\n'
-                + '  INSERT INTO posts_idx(posts_idx, rowid, title, body) '
-                + "VALUES ('delete', new.global_id, new.title, new.body);\n"
-                + '  INSERT INTO posts_idx(rowid, title, body) '
-                + 'VALUES (new.global_id, new.title, new.body);\n'
-                + 'END;')
+                'CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN\n' +
+                '  INSERT INTO posts_idx(posts_idx, rowid, title, body) ' +
+                "VALUES ('delete', new.global_id, new.title, new.body);\n" +
+                '  INSERT INTO posts_idx(rowid, title, body) ' +
+                'VALUES (new.global_id, new.title, new.body);\n' +
+                'END;')
             resp.result_type = database_pb2.PostsResponse.OK
         except sqlite3.Error as e:
             self._logger.info("Error creating posts index")
@@ -188,8 +222,7 @@ class PostsDatabaseServicer:
     def _db_tuple_to_entry(self, tup, entry):
         if len(tup) != 14:
             self._logger.warning(
-                "Error converting tuple to PostsEntry: "
-                + "Wrong number of elements " + str(tup))
+                CONVERT_ERROR + "Wrong number of elements " + str(tup))
             return False
         try:
             # You'd think there'd be a better way.
@@ -208,9 +241,7 @@ class PostsDatabaseServicer:
             entry.tags = tup[12]
             entry.summary = tup[13]
         except Exception as e:
-            self._logger.warning(
-                "Error converting tuple to PostsEntry: "
-                + str(e))
+            self._logger.warning(CONVERT_ERROR + str(e))
             return False
         return True
 
@@ -225,9 +256,9 @@ class PostsDatabaseServicer:
                     self._select_base, user_id, user_id, user_id)
             else:
                 res = self._db.execute(
-                    self._select_base
-                    + "WHERE " + filter_clause
-                    + " ORDER BY p.global_id DESC",
+                    self._select_base +
+                    "WHERE " + filter_clause +
+                    " ORDER BY p.global_id DESC",
                     *([user_id, user_id, user_id] + values))
         except sqlite3.Error as e:
             resp.result_type = database_pb2.PostsResponse.ERROR

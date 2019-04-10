@@ -84,7 +84,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
       this.state.customCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
-        this.alertUser("Error editing: " + response.error);
+        this.errorToast({ debug: response.error });
       } else {
         this.setState({ redirect: true });
       }
@@ -96,7 +96,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
         this.state.profilePic,
       ).then((response: IEditUserResult) => {
         if (!response.success) {
-          this.alertUser("Error editing: " + response.error);
+          this.errorToast({ debug: response.error });
         } else {
           this.setState({ redirect: true });
         }
@@ -291,10 +291,10 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
   }
 
   private handleUpdateError(e: any) {
-    this.alertUser("Error attempting to update: " + e.toString());
+    this.errorToast({ debug: e.toString() });
   }
 
   private handleGetError(e: any) {
-    this.alertUser("Error getting user details: " + e.toString());
+    this.errorToast({ debug: e.toString() });
   }
 }

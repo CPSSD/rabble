@@ -110,6 +110,6 @@ class FollowUserList extends RootComponent<IFollowListProps, IFollowListState> {
   }
 
   private handleQueryErr() {
-    this.alertUser("Failed to fetch " + this.props.headerText);
+    this.errorToast({ debug: "Failed to fetch " + this.props.headerText });
   }
 }

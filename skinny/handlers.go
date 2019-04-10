@@ -662,6 +662,72 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 	}
 }
 
+type deleteArticleRequest struct {
+	ArticleID        int64    `json:"article_id"`
+}
+
+func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var t deleteArticleRequest
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			cResp.Error = "Invalid JSON"
+			enc.Encode(cResp)
+			return
+		}
+
+		globalID, gIErr := s.getSessionGlobalId(r)
+		if gIErr != nil {
+			log.Printf("Delete article call from user not logged in")
+			w.WriteHeader(http.StatusUnauthorized)
+			cResp.Error = "Login Required"
+			enc.Encode(cResp)
+			return
+		}
+
+		delpb := &pb.DeleteDetails{
+			UserId:    globalID,
+			ArticleId: t.ArticleID,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sDelete.SendDeleteActivity(ctx, delpb)
+		if err != nil {
+			log.Printf("Could not delete article: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with deleting article"
+			enc.Encode(cResp)
+			return
+		} else if resp.ResultType == pb.DeleteResponse_ERROR {
+			log.Printf("Could not delete article: %v", resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			cResp.Error = "Issue with deleting article"
+			enc.Encode(cResp)
+			return
+		} else if resp.ResultType == pb.DeleteResponse_DENIED {
+			log.Printf("Deletion of article denied")
+			w.WriteHeader(http.StatusForbidden)
+			cResp.Error = "Deletion of article is denied"
+			enc.Encode(cResp)
+			return
+		}
+
+		log.Printf("User Id: %#v attempted to delete an article id: %v\n",
+				   globalID, t.ArticleID)
+		w.WriteHeader(http.StatusOK)
+		cResp.Message = "Article deleted"
+		enc.Encode(cResp)
+	}
+}
+
 func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)

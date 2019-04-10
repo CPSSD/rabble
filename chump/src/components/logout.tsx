@@ -52,7 +52,7 @@ export class Logout extends RootComponent<ILogoutProps, ILogoutState> {
     GetLogoutPromise()
       .then((response: ILogoutResult) => {
         if (!response.success) {
-          this.alertUser("Error logging out");
+          this.errorToast({});
           return;
         }
         this.props.logoutCallback();
@@ -79,7 +79,6 @@ export class Logout extends RootComponent<ILogoutProps, ILogoutState> {
   }
 
   private handleLogoutError(error: any) {
-    this.alertUser("Error attempting to logout.");
-    this.alertUser(error);
+    this.errorToast({ debug: error.toString() });
   }
 }
