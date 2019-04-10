@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	invalidJSONError          = "Invalid JSON"
-	invalidJSONErrorWithPrint = "Invalid JSON, error: %v\n"
-	couldNotLoadProfilePic    = "Could not load profile pic from request"
+	couldNotLoadProfilePic = "Could not load profile pic from request"
 )
 
 type loginStruct struct {
@@ -262,7 +260,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json")
 
-		userID, err := s.getSessionGlobalId(r)
+		userID, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Call to update user by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)

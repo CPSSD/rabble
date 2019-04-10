@@ -256,6 +256,9 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		recipient := v["username"]
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
 
 		log.Printf("User %v received a create activity\n", recipient)
 
@@ -271,9 +274,10 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published, false)
+		protoTimestamp, parseErr := parseTimestamp(w, t.Object.Published, &cResp)
 		if parseErr != nil {
 			log.Println(parseErr)
+			enc.Encode(cResp)
 			return
 		}
 
@@ -717,6 +721,9 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 		v := mux.Vars(r)
 		recipient := v["username"]
 		log.Printf("User %v received an announce activity.\n", recipient)
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
 
 		decoder := json.NewDecoder(r.Body)
 		var t announceActivityStruct
@@ -729,15 +736,19 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			return
 		}
 
-		ats, err := parseTimestamp(w, t.Published, false)
+		ats, err := parseTimestamp(w, t.Published, &cResp)
 		if err != nil {
 			log.Printf("Unable to read announce timestamp: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			enc.Encode(cResp)
 			return
 		}
 
-		ptc, err := parseTimestamp(w, t.Object.Published, true)
+		ptc, err := parseTimestamp(w, t.Object.Published, &cResp)
 		if err != nil {
 			log.Printf("Unable to read object timestamp: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			enc.Encode(cResp)
 			return
 		}
 
