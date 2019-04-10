@@ -75,17 +75,23 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	}
 }
 
+// ImageObject holds the type of the image e.g. ".png" and the url
+// where the image can be found
 type ImageObject struct {
 	Type string `json:"type"`
-	Url  string `json:"url"`
+	URL  string `json:"url"`
 }
 
+// KeyObject holds information about the public key of a user such as the
+// key id, the owner of the key and the publickey in string format
 type KeyObject struct {
-	Id           string `json:"id"`
+	ID           string `json:"id"`
 	Owner        string `json:"owner"`
 	PublicKeyPem string `json:"publicKeyPem"`
 }
 
+// ActorObjectStruct holds all fields that a ActivityPub actor should hold.
+// see spec here: https://www.w3.org/TR/activitypub/#actor-objects
 type ActorObjectStruct struct {
 	// The @context in the output JSON-LD
 	Context []string `json:"@context"`
@@ -100,7 +106,7 @@ type ActorObjectStruct struct {
 	Followers         string       `json:followers`
 	Following         string       `json:following`
 	PublicKey         *KeyObject   `json:"publicKey"`
-	Id                string       `json:"id"`
+	ID                string       `json:"id"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -142,11 +148,11 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
-			Id:                resp.Actor.Id,
+			ID:                resp.Actor.Id,
 		}
 
 		actor.PublicKey = &KeyObject{
-			Id:           resp.Actor.PublicKey.Id,
+			ID:           resp.Actor.PublicKey.Id,
 			Owner:        resp.Actor.PublicKey.Owner,
 			PublicKeyPem: resp.Actor.PublicKey.PublicKeyPem,
 		}
@@ -156,7 +162,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			// Profile pic exists
 			actor.Icon = &ImageObject{
 				Type: "Image",
-				Url: fmt.Sprintf(
+				URL: fmt.Sprintf(
 					"http://%s/assets/user_%d",
 					s.hostname, resp.Actor.GlobalId),
 			}
@@ -234,7 +240,7 @@ type articleObjectStruct struct {
 	Published    string               `json:"published"`
 	AttributedTo string               `json:"attributedTo"`
 	Type         string               `json:"type"`
-	Id           string               `json:"id"`
+	ID           string               `json:"id"`
 	URL          string               `json:"url"`
 	Preview      articleObjectPreview `json:"preview"`
 }
@@ -296,7 +302,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			Published:    protoTimestamp,
 			Recipient:    recipient,
 			Title:        t.Object.Name,
-			Id:           t.Object.Id,
+			Id:           t.Object.ID,
 			Summary:      summary,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -347,7 +353,7 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 		}
 
 		ud := &pb.ReceivedUpdateDetails{
-			ApId:    t.Object.Id,
+			ApId:    t.Object.ID,
 			Body:    t.Object.Content,
 			Title:   t.Object.Name,
 			Summary: summary,
@@ -460,7 +466,7 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 }
 
 type likeActorStruct struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -488,13 +494,13 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			return
 		}
 
-		if bad := s.blacklist.Actors(w, t.Actor.Id); bad {
+		if bad := s.blacklist.Actors(w, t.Actor.ID); bad {
 			return
 		}
 
 		f := &pb.ReceivedLikeDetails{
 			LikedObject: t.Object,
-			LikerId:     t.Actor.Id,
+			LikerId:     t.Actor.ID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -728,12 +734,12 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 			return
 		}
 
-		if bad := s.blacklist.Actors(w, t.Object.Actor.Id); bad {
+		if bad := s.blacklist.Actors(w, t.Object.Actor.ID); bad {
 			return
 		}
 		f := &pb.ReceivedLikeUndoDetails{
 			LikedObjectApId: t.Object.Object,
-			LikingUserApId:  t.Object.Actor.Id,
+			LikingUserApId:  t.Object.Actor.ID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -760,7 +766,7 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 
 // TODO(sailslick): Properly fill in announce structs
 type announceActor struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -815,7 +821,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 		}
 
 		f := &pb.ReceivedAnnounceDetails{
-			AnnouncedObject: t.Object.Id,
+			AnnouncedObject: t.Object.ID,
 			AnnouncerId:     t.Actor,
 			AnnounceTime:    ats,
 			Body:            t.Object.Content,
