@@ -330,8 +330,9 @@ func TestHandleCreateArticleBadCreationDatetime(t *testing.T) {
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("Expected 400, got %#v", res.Code)
 	}
-	if res.Body.String() != "Invalid creation time\n" {
-		t.Errorf("Expected 'Invalid creation time' body, got %#v", res.Body.String())
+	expectedBody := "{\"error\":\"Invalid creation time\\n\",\"message\":\"\"}\n"
+	if res.Body.String() != expectedBody {
+		t.Errorf("Expected %s body, got %#v", expectedBody, res.Body.String())
 	}
 }
 
