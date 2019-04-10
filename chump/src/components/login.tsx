@@ -37,7 +37,11 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
     GetLoginPromise(this.state.username, this.state.password)
       .then((response: ILoginResult) => {
         if (!response.success) {
-          this.errorToast({ message: config.bad_login });
+          if (response.statusCode === 401) {
+            this.errorToast({ message: config.bad_login });
+          } else {
+            this.errorToast({ statusCode: response.statusCode });
+          }
         } else {
           this.props.loginCallback(this.state.username, response.user_id);
           this.setState({

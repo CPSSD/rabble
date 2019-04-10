@@ -3,6 +3,7 @@ import * as superagent from "superagent";
 
 export interface IEditUserResult {
   error: string;
+  statusCode: number;
   success: boolean;
 }
 
@@ -71,6 +72,7 @@ export function EditUserPromise(
           reject(error);
           return;
         }
+
         let succ = res!.body;
         if (succ === null) {
           succ = {
@@ -78,6 +80,7 @@ export function EditUserPromise(
             success: false,
           };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });
@@ -96,6 +99,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
           reject(error);
           return;
         }
+
         let succ = res!.body;
         if (succ === null) {
           succ = {
@@ -103,6 +107,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
             success: false,
           };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });
