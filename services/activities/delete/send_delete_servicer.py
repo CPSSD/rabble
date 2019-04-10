@@ -47,7 +47,8 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.ERROR,
                 error="Could not delete article locally",
             )
-        delete_obj = self._activ_util.build_delete(user, article)
+        delete_obj = self._activ_util.build_delete(
+            user, article, self._hostname)
         self._logger.info("Activity: %s", str(delete_obj))
         err = self._activ_util.forward_activity_to_followers(
             req.user_id, delete_obj)

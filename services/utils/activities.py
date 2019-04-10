@@ -165,7 +165,7 @@ class ActivitiesUtil:
             "object": obj
         }
 
-    def build_delete(self, user, article):
+    def build_delete(self, user, article, hostname):
         """
         Build a delete activity.
         user is a UsersEntry proto.
@@ -175,7 +175,7 @@ class ActivitiesUtil:
             "@context": self.rabble_context(),
             "type": "Delete",
             "object": self.build_article_url(user, article),
-            "actor": self.build_actor(user.handle, self._hostname),
+            "actor": self.build_actor(user.handle, hostname),
         }
 
     def fetch_actor(self, actor_url):

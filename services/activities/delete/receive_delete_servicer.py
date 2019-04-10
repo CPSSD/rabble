@@ -39,7 +39,8 @@ class ReceiveDeleteServicer:
                 error="Could not delete article",
             )
         # Forward the delete to the announcers.
-        delete_obj = self._activ_util.build_delete(author, article)
+        delete_obj = self._activ_util.build_delete(
+            author, article, self._hostname)
         for user_id in sharer_ids:
             err = self._activ_util.forward_activity_to_followers(
                 user_id, delete_obj)
