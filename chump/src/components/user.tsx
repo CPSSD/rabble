@@ -10,6 +10,7 @@ interface IUserProps {
   username: string;
   blogUser: IParsedUser;
   display: string;
+  under?: JSX.Element;
 }
 
 const userLinksClassName = "pure-u-1-3 username-holder";
@@ -51,13 +52,22 @@ export class User extends React.Component<IUserProps, {}> {
           </div>
           <div className="pure-u-1-24"/>
           <div className="pure-u-18-24">
-            {userLink}
-            <div className="pure-u-1-3"/>
-            <div className="pure-u-1-3 follow-holder">
-              {followButton}
+            <div className="pure-g">
+              {userLink}
+              <div className="pure-u-1-3"/>
+              <div className="pure-u-1-3 follow-holder">
+                {followButton}
+              </div>
             </div>
-            <div className="pure-u-1">
-                <p className="author-bio">{this.props.blogUser.bio}</p>
+            <div className="pure-g">
+              <div className="pure-u-1">
+                  <p className="author-bio">{this.props.blogUser.bio}</p>
+              </div>
+            </div>
+            <div className="pure-g">
+              <div className="pure-u-1">
+                {this.props.under}
+              </div>
             </div>
           </div>
         </div>

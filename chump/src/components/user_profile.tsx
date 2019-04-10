@@ -6,6 +6,7 @@ import { AccountEdit } from "./account_edit";
 import { Followers, Following } from "./follow_user_list";
 import { Pending } from "./pending";
 import { RootComponent } from "./root_component";
+import { User } from "./user";
 import { UserFeed } from "./user_feed";
 
 import {
@@ -107,14 +108,12 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
     return (
       <div>
         <div className="pure-g">
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-14-24">
-            <div className="pure-menu pure-menu-horizontal">
-                <ul className="profile-list pure-menu-list">
-                  {this.state.viewable.map(this.renderTab)}
-                </ul>
-            </div>
-          </div>
+          <User
+            username={this.props.username}
+            blogUser={this.state.currentUser}
+            display="inherit"
+            under={this.renderPageSelection()}
+          />
         </div>
         {page}
       </div>
@@ -146,8 +145,19 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
     }
   }
 
+  private renderPageSelection() {
+    return (
+      <div className="pure-menu pure-menu-horizontal">
+        <ul className="profile-list pure-menu-list">
+          {this.state.viewable.map(this.renderTab)}
+        </ul>
+      </div>
+    );
+  }
+
   private resetViewing() {
-    this.setState({viewing: ViewingTab.Posts});
+    // Doing a hard refresh forces picture recaching.
+    location.reload(true);
   }
 
   private setViewing(e: ViewingTab) {
@@ -211,7 +221,7 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
       default:
         return "You have bent the space time continuum to see this message.";
     }
-  }
+ }
 
   private isViewingOwnPage() {
     const userMatch = this.props.match.params.user  === this.props.username;

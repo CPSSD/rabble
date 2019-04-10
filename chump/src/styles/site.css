@@ -16,8 +16,7 @@ html {
   --dark-color-one: #AAA;
   --dark-color-two: #888;
   --dark-color-three: #666;
-
-  /* This color is generally used for disabled items in the UI */
+/* This color is generally used for disabled items in the UI */
   --dark-color-disabled: #938d8b;
 
   /* This color is used for higlighting */
@@ -147,9 +146,9 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .author-bio {
-  word-break: break-word;
   color: var(--dark-color-three);
   font-size: 0.88em;
+  text-align: justify;
 }
 
 .author-handle:hover {
