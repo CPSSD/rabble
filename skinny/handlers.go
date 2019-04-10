@@ -735,7 +735,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		if gIErr != nil {
 			log.Printf("Preview Article call from user not logged in")
 			w.WriteHeader(http.StatusForbidden)
-			clientResp.Error = loginRequired
+			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
 		}
@@ -753,7 +753,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not create preview. Err: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			clientResp.Error = "Issue with creating preview\n"
+			cResp.Error = "Issue with creating preview\n"
 			enc.Encode(cResp)
 			return
 		}
@@ -918,7 +918,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 		} else {
 			// Send an unlike (undo)
 			del := &pb.LikeUndoDetails{
-				ArticleId:   t.ArticleId,
+				ArticleId:   t.ArticleID,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -1184,6 +1184,8 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 	}
 }
 
+// FollowGetter is a wrapper around get follows so the handler can
+// get following or followers without duplication of code
 type FollowGetter func(context.Context, *pb.GetFollowsRequest,
 	...grpc.CallOption) (*pb.GetFollowsResponse, error)
 

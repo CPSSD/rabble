@@ -26,6 +26,8 @@ func loadBlacklistFile() io.Reader {
 	return bytes.NewReader(b)
 }
 
+// Blacklist type defines the format of the Rabble blacklist
+// URIs are mapped to empty structs
 type Blacklist map[string]struct{}
 
 func (b Blacklist) String(m map[string]struct{}) {
@@ -65,6 +67,8 @@ func (b Blacklist) Actors(w http.ResponseWriter, actors ...string) bool {
 	return false
 }
 
+// HandleForbidden will return the correct status code based on whether
+// there was an error or access was denied
 func (b Blacklist) HandleForbidden(w http.ResponseWriter, err error) {
 	if err != nil {
 		log.Printf("Error in blacklist: %v", err)
@@ -76,6 +80,7 @@ func (b Blacklist) HandleForbidden(w http.ResponseWriter, err error) {
 	return
 }
 
+// NewBlacklist reads in the config blacklist
 func NewBlacklist(r io.Reader) Blacklist {
 	blacklisted := map[string]struct{}{}
 	scanner := bufio.NewScanner(r)
