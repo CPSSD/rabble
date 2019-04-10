@@ -203,7 +203,7 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to update user by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			resp.Error = invalidJSONError
 			enc.Encode(resp)
 			return
@@ -263,7 +263,7 @@ func (s *serverWrapper) handleUserUpdateProfilePic() http.HandlerFunc {
 		userID, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Call to update user by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			resp.Error = invalidJSONError
 			enc.Encode(resp)
 			return

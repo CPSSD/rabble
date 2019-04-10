@@ -352,7 +352,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = loginRequired
 			enc.Encode(errResp)
 			return
@@ -405,7 +405,7 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to unfollow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = loginRequired
 			enc.Encode(errResp)
 			return
@@ -458,7 +458,7 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow rss by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = invalidJSONError
 			enc.Encode(errResp)
 			return
@@ -526,7 +526,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -594,7 +594,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Edit article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -663,7 +663,7 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Delete article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -731,7 +731,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Preview Article call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, loginRequired)
 			return
 		}
@@ -772,7 +772,7 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
@@ -814,7 +814,7 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		_, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
@@ -879,7 +879,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 		handle, err := s.getSessionHandle(req)
 		if err != nil {
 			log.Printf("Like call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			r.Success = false
 			r.ErrorStr = loginRequired
 			enc.Encode(r)
@@ -1091,7 +1091,7 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalID(r)
+		uid, _ := s.getSessionGlobalID(r)
 
 		v.User = uid
 
@@ -1120,7 +1120,7 @@ func (s *serverWrapper) handleAddLog() http.HandlerFunc {
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalID(r)
+		uid, _ := s.getSessionGlobalID(r)
 
 		v.User = uid
 
