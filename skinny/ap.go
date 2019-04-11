@@ -526,7 +526,7 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 		recipient := v["username"]
 		log.Printf("User %v received a delete activity.\n", recipient)
 
-		// TODO(iandioch, sailslick, CianLR): Parse JSON-LD in other shapes.
+		// TODO(iandioch, sailslick, CianLR, devoxel): Parse JSON-LD in other shapes.
 		decoder := json.NewDecoder(r.Body)
 		var t deleteActivity
 		jsonErr := decoder.Decode(&t)
