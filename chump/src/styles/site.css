@@ -100,6 +100,12 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   color: var(--primary-light-color);
 }
 
+.about-image-subtitle {
+  text-align: center;
+  font-style: italic;
+  margin-top: 0em;
+}
+
 .article-body {
   padding-bottom: 1em;
   word-break: break-all;
