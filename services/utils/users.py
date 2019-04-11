@@ -55,7 +55,7 @@ class UsersUtil:
             actor_url = "{}/ap/@{}".format(host, handle)
             self._logger.info("Getting actor URL '%s'", actor_url)
             actor_resp = requests.get(actor_url)
-            if actor_resp.status_code != 200:
+            if actor_resp.status_code < 200 or actor_resp.status_code >= 300:
                 self._logger.warning(
                     "Couldn't get foreign actor: error %d",
                     actor_resp.status_code)
@@ -66,7 +66,7 @@ class UsersUtil:
             pic_url = actor["icon"]["url"]
             self._logger.info("Getting profile pic URL '%s'", pic_url)
             image_resp = requests.get(pic_url)
-            if image_resp.status_code != 200:
+            if image_resp.status_code < 200 or image_resp.status_code >= 300:
                 self._logger.warning(
                     "Could not get profile pic: error %d",
                     image_resp.status_code)
