@@ -68,7 +68,7 @@ class NewArticleServicer:
         self.index(pe)
 
         # If post_recommender is on, send new post to post_recommender
-        if self._post_recommendation_stub != None:
+        if self._post_recommendation_stub is not None:
             self._add_post_to_recommender(pe)
 
         return posts_resp.result_type, posts_resp.global_id
