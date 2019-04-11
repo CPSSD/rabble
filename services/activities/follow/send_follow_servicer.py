@@ -59,7 +59,7 @@ class SendFollowServicer:
         if err is not None:
             return err
         elif resp.status_code < 200 or resp.status_code >= 300:
-            return "Got http error {}".format(resp.status_code)
+            return "Got non-2xx HTTP status: {}".format(resp.status_code)
         return None
 
     def SendFollowActivity(self, req, context):
