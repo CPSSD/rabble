@@ -3,7 +3,7 @@ import sys
 
 from services.proto import database_pb2 as dbpb
 from services.proto import delete_pb2 as dpb
-from utils.articles import get_article, delete_article
+from utils.articles import get_article, delete_article, get_sharers_of_article
 
 HOSTNAME_ENV = 'HOST_NAME'
 
@@ -18,14 +18,6 @@ class SendDeleteServicer:
         if not self._hostname:
             self._logger.error("Hostname for SendDeleteServicer not set")
             sys.exit(1)
-
-    def _build_delete(self, user, article):
-        return {
-            "@context": self._activ_util.rabble_context(),
-            "type": "Delete",
-            "object": self._activ_util.build_article_url(user, article),
-            "actor": self._activ_util.build_actor(user.handle, self._hostname),
-        }
 
     def SendDeleteActivity(self, req, ctx):
         self._logger.info("Got request to delete article %d from %d",
@@ -48,12 +40,15 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.DENIED,
                 error="User is not the author of this article",
             )
+        sharer_ids = get_sharers_of_article(
+            self._logger, self._db, article.global_id)
         if not delete_article(self._logger, self._db, global_id=article.global_id):
             return dpb.DeleteResponse(
                 result_type=dpb.DeleteResponse.ERROR,
                 error="Could not delete article locally",
             )
-        delete_obj = self._build_delete(user, article)
+        delete_obj = self._activ_util.build_delete(
+            user, article, self._hostname)
         self._logger.info("Activity: %s", str(delete_obj))
         err = self._activ_util.forward_activity_to_followers(
             req.user_id, delete_obj)
@@ -62,6 +57,18 @@ class SendDeleteServicer:
                 result_type=dpb.DeleteResponse.ERROR,
                 error=err,
             )
+        # Send deletes of the article to the followers of people who
+        # announced the article. There may be some duplicate Deletes
+        # sent but this is acceptable.
+        # This roughly the same pattern Mastodon follows:
+        # https://github.com/tootsuite/mastodon/issues/5761#issuecomment-345875480
+        for user_id in sharer_ids:
+            err = self._activ_util.forward_activity_to_followers(
+                user_id, delete_obj)
+            if err is not None:
+                # Warn but do not quit on error sending to announcer followers.
+                self._logger.warning(
+                    "Sending activity to followers of user %d failed", user_id)
         self._logger.info("Article %d successfully deleted", req.article_id)
         return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
 

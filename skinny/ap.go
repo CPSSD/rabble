@@ -519,6 +519,64 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 	}
 }
 
+type deleteActivity struct {
+	Object string `json:"object"`
+	Actor  string `json:"actor"`
+}
+
+func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		recipient := v["username"]
+		log.Printf("User %v received a delete activity.\n", recipient)
+
+		// TODO(iandioch, sailslick, CianLR, devoxel): Parse JSON-LD in other shapes.
+		decoder := json.NewDecoder(r.Body)
+		var t deleteActivity
+		jsonErr := decoder.Decode(&t)
+		if jsonErr != nil {
+			log.Printf("Invalid JSON\n")
+			log.Printf("Error: %s\n", jsonErr)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid JSON\n")
+			return
+		}
+
+		if bad := s.blacklist.Actors(w, t.Actor); bad {
+			return
+		}
+
+		f := &pb.ReceivedDeleteDetails{
+			ApId: t.Object,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.s2sDelete.ReceiveDeleteActivity(ctx, f)
+		if err != nil {
+			log.Printf("Could not receive delete activity. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving delete activity.\n")
+			return
+		} else if resp.ResultType == pb.DeleteResponse_ERROR {
+			log.Printf("Could not receive delete activity. Error: %v",
+				resp.Error)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Issue with receiving delete activity.\n")
+			return
+		} else if resp.ResultType == pb.DeleteResponse_DENIED {
+			log.Printf("Delete activity is denied")
+			w.WriteHeader(http.StatusUnauthorized)
+			fmt.Fprintf(w, "Delete activity is denied")
+			return
+		}
+
+		log.Println("Delete activity received successfully.")
+		fmt.Fprintf(w, "Delete activity received successfully.")
+	}
+}
+
 type approvalObject struct {
 	Actor  string `json:"actor"`
 	Object string `json:"object"`

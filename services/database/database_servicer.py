@@ -44,3 +44,4 @@ class DatabaseServicer(database_pb2_grpc.DatabaseServicer):
         self.AddShare = share_servicer.AddShare
         self.FindShare = share_servicer.FindShare
         self.SharedPosts = share_servicer.SharedPosts
+        self.GetSharersOfPost = share_servicer.GetSharersOfPost
