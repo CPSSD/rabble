@@ -83,7 +83,7 @@ class ReceiveLikeServicer:
                 build_like_activity(req.liker_id, req.liked_object))
 
             # If post_recommender is on, send like to post_recommender
-            if self._post_recommendation_stub != None:
+            if self._post_recommendation_stub is not None:
                 self._add_like_to_user_model(user_id, article.global_id)
 
         return like_pb2.LikeResponse(
