@@ -37,7 +37,7 @@ def get_article(logger, db, global_id=None, ap_id=None):
 
 def delete_article(logger, db, global_id=None, ap_id=None):
     """
-    Deletes and article from the database safely (removing all references).
+    Deletes an article from the database safely (removing all references).
     Returns True on success and False on error.
     """
     logger.info("Deleting post global_id: %s, ap_id: %s", global_id, ap_id)
