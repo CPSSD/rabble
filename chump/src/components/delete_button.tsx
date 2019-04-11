@@ -42,7 +42,7 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
           this.errorToast({ statusCode: res.status, debug: res });
           return;
         }
-
+        this.successToast("Article deleted successfully");
         this.props.successCallback();
       })
       .catch((err: Error) => {
