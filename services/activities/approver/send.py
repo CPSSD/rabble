@@ -38,7 +38,7 @@ class SendApprovalServicer:
                                                req.follow.follower.host)
         activity = self._build_activity(req)
 
-        sender_id = self._get_local_user_id(req.followed.handle)
+        sender_id = self._get_local_user_id(req.follow.followed.handle)
         _, err = self._activ_util.send_activity(activity,
                                                 url,
                                                 sender_id=sender_id)
