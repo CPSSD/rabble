@@ -58,7 +58,7 @@ class UsersUtil:
             pic_url = actor["icon"]["url"]
             self._logger.info("Getting profile pic URL '%s'", pic_url)
             image_resp = requests.get(pic_url)
-            if image_resp.status_code != 200:
+            if image_resp.status_code < 200 or image_resp.status_code >= 300:
                 self._logger.warning(
                     "Could not get profile pic: error %d",
                     image_resp.status_code)

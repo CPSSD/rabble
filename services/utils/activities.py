@@ -37,8 +37,8 @@ class ActivitiesUtil:
         username = '{}@{}'.format(handle, host_no_protocol)
         url = f'{normalised_host}/.well-known/webfinger?resource=acct:{username}'
         resp = requests.get(url)
-        if resp.status_code != 200:
-            self._logger.warning(('Non-200 response code ({}) for webfinger ' +
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self._logger.warning(('Non-2xx response code ({}) for webfinger ' +
                                   'lookup for URL: {}').format(resp.status_code,
                                                                url))
             return None
