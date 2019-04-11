@@ -1,9 +1,9 @@
 import * as React from "react";
 import { toast } from "react-toastify";
+import { ResponseError } from "superagent";
 
 import * as config from "../../rabble_config.json";
 import { SendLog } from "../models/log";
-import { ResponseError } from "superagent";
 
 interface IErrorToastArgs {
   message?: string;
