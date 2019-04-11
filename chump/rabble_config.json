@@ -51,5 +51,7 @@
   "success_follow_form": "Sent follow",
   "bad_login": "Incorrect login",
   "forbidden_error": "You don't have permission to perform this action.",
-  "delete_confirm": "Are you sure you want to delete this article?"
+  "delete_confirm": "Are you sure you want to delete this article?",
+  "accepted_follow": "Follow accepted",
+  "denied_follow": "Follow denied"
 }

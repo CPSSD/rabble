@@ -24,14 +24,6 @@ export class Pending extends RootComponent<IPendingProps, IPendingState> {
     this.getFollows();
   }
 
-  public handleGetRequestsErr() {
-    this.errorToast({});
-  }
-
-  public handleAcceptErr() {
-    this.errorToast({});
-  }
-
   public render() {
     return (
       <div>
@@ -94,8 +86,13 @@ export class Pending extends RootComponent<IPendingProps, IPendingState> {
         this.setState({
           pending: { followers },
         });
+        if (isAccepted) {
+          this.successToast(config.accepted_follow);
+        } else {
+          this.successToast(config.denied_follow);
+        }
       })
-      .catch(this.handleAcceptErr);
+      .catch(this.handleGeneralErr);
   }
 
   private getFollows() {
@@ -107,6 +104,6 @@ export class Pending extends RootComponent<IPendingProps, IPendingState> {
         }
         this.setState({ pending: follows });
       })
-      .catch(this.handleGetRequestsErr);
+      .catch(this.handleGeneralErr);
   }
 }

@@ -37,11 +37,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
           posts,
         });
       })
-      .catch(this.handleGetPostErr);
-  }
-
-  public handleGetPostErr() {
-    this.errorToast({});
+      .catch(this.handleGeneralErr);
   }
 
   public renderPost() {

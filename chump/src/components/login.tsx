@@ -49,7 +49,7 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
           });
         }
       })
-      .catch(this.handleLoginError);
+      .catch(this.handleGeneralErr);
   }
 
   public render() {
@@ -107,9 +107,5 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
     this.setState({
       password: target.value,
     });
-  }
-
-  private handleLoginError() {
-    this.errorToast({});
   }
 }

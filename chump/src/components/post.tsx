@@ -187,8 +187,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     SendLike(this.props.blogPost.global_id, !this.state.isLiked)
       .then((res: any) => {
         const resp = res!.body;
-        if (resp === null) {
-          this.errorToast({ debug: "Error parsing like: " + res });
+        if (res.status !== 200) {
+          this.errorToast({ debug: "Error parsing like: " + res, statusCode: res.status });
           return;
         }
         // If isLiked is false then change it to true and increment like count

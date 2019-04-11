@@ -60,7 +60,7 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
           });
         }
       })
-      .catch(this.handleRegisterError);
+      .catch(this.handleGeneralErr);
   }
 
   public render() {
@@ -154,9 +154,5 @@ export class Register extends RootComponent<IRegisterProps, IRegisterState> {
     this.setState({
       displayName: target.value,
     });
-  }
-
-  private handleRegisterError() {
-    this.errorToast({});
   }
 }

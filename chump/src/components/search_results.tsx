@@ -86,11 +86,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
           query,
         });
       })
-      .catch(this.handleGetPostsErr);
-  }
-
-  public handleGetPostsErr() {
-    this.errorToast({});
+      .catch(this.handleGeneralErr);
   }
 
   public renderPosts() {

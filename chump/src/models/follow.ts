@@ -104,6 +104,7 @@ export interface IPendingFollow {
 
 export interface IPendingFollows {
   followers?: IPendingFollow[];
+  statusCode?: number;
 }
 
 export function GetPendingFollows() {
@@ -122,6 +123,7 @@ export function GetPendingFollows() {
         if (succ === null) {
           reject("could not parse result");
         }
+        succ.statusCode = res.status;
         resolve(succ as IPendingFollows);
       });
   });

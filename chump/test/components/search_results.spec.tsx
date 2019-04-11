@@ -76,7 +76,7 @@ describe("SearchResults", () => {
       resolve(validBody);
     });
     searchRequestStub.returns(searchRequestPromise);
-    alertStub = sandbox.stub(SearchResults.prototype, "handleGetPostsErr" as any);
+    alertStub = sandbox.stub(SearchResults.prototype, "handleGeneralErr" as any);
   });
 
   afterEach(() => {

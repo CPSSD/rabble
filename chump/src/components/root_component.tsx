@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 
 import * as config from "../../rabble_config.json";
 import { SendLog } from "../models/log";
+import { ResponseError } from "superagent";
 
 interface IErrorToastArgs {
   message?: string;
@@ -24,6 +25,14 @@ function genMessageFromStatus(code: number) {
 export class RootComponent<T, U> extends React.Component<T, U> {
   constructor(props: T) {
     super(props);
+  }
+
+  protected handleGeneralErr(error: ResponseError) {
+    if (error.status) {
+      this.errorToast({ statusCode: error.status });
+    } else {
+      this.errorToast({});
+    }
   }
 
   // errorToast creates a toast notification with the given arguments.
