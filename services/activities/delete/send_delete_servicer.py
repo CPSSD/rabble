@@ -68,7 +68,7 @@ class SendDeleteServicer:
             if err is not None:
                 # Warn but do not quit on error sending to announcer followers.
                 self._logger.warning(
-                    "Sending activity to %d followers failed", user_id)
+                    "Sending activity to followers of user %d failed", user_id)
         self._logger.info("Article %d successfully deleted", req.article_id)
         return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
 

@@ -22,6 +22,10 @@ class ReceiveDeleteServicer:
         article = get_article(self._logger, self._db, ap_id=req.ap_id)
         if article is None:
             # Don't have the article, our work here is done.
+            # This can happen for natural reasons, dublicate deletes,
+            # deletes of articles that were created before a follower
+            # followed the creator, etc.
+            self._logger.info("Don't have article %s, exiting", req.ap_id)
             return dpb.DeleteResponse(result_type=dpb.DeleteResponse.OK)
         author = self._users_util.get_user_from_db(global_id=article.author_id)
         if author is None:
