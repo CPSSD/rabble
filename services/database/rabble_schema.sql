@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-  global_id         integer PRIMARY KEY,
+  global_id         integer PRIMARY KEY AUTOINCREMENT,
   handle            text    NOT NULL,
   /* host should be null if user is local */
   host              text,
