@@ -4,7 +4,9 @@ html {
 
 :root {
   --primary-bg-color: #0097a7;
-  --secondary-bg-color: #009fad;
+
+  --primary-bg-dark: #00535c;
+  --primary-bg-light: #009fad;
 
   /* These two colors are by default white and black, and represent everyday
    * elements like text and the white page background. */
@@ -44,7 +46,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .topnav {
   padding-top: 0.2em;
-  background-color: var(--primary-bg-color);
+  background-color: var(--primary-bg-dark);
   color: var(--primary-dark-color);
 }
 
@@ -54,12 +56,29 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .subnav {
   padding-bottom: 0.2em;
-  background-color: var(--secondary-bg-color);
+  background-color: var(--primary-bg-light);
   color: var(--primary-dark-color);
 }
 
 .nav-feed-selected {
   border-bottom: 1px solid var(--primary-dark-color);
+}
+
+.nav-feed-selected:focus {
+  background-color: inherit;
+}
+
+.nav-feed-selected:hover {
+  background-color: inherit;
+  color: inherit;
+}
+
+.nav-feed-item {
+  margin: 0em .3em;
+}
+
+.nav-action {
+  margin: .3em .5em. 2em;
 }
 
 .topnav p {

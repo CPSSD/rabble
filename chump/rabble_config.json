@@ -54,5 +54,6 @@
   "delete_confirm": "Are you sure you want to delete this article?",
   "feed_nav": "FEED",
   "all_nav": "ALL",
-  "explore_nav": "EXPLORE"
+  "explore_nav": "EXPLORE",
+  "about": "About"
 }

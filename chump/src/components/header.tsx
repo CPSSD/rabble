@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Search } from "react-feather";
-import { Link, Redirect, RouteComponentProps } from "react-router-dom";
+import { Plus, Search, UserPlus } from "react-feather";
 import { withRouter } from "react-router";
+import { Link, Redirect, RouteComponentProps } from "react-router-dom";
 
 import * as config from "../../rabble_config.json";
 
@@ -12,33 +12,34 @@ interface ILinkMap {
 type IHeaderProps = RouteComponentProps & {
   username: string;
   userId: number;
-  // navLinks is a list of tuples corresponding to the links to render
-  // The tuple itself is: [Link Path, Link Name]
-  navLinks: [string, string][];
-}
+};
 
 interface IHeaderState {
   display: string;
   query: string;
 
-  navLinks: [string, string][];
   linkMap: ILinkMap;
 }
+
+const navLinks: [string, string][] = [
+  ["/feed", config.feed_nav],
+  ["/", config.all_nav],
+  ["/recommended_posts", config.explore_nav],
+]
 
 class Header extends React.Component<IHeaderProps, IHeaderState> {
   constructor(props: IHeaderProps) {
     super(props);
 
-    const linkMap: ILinkMap = {}
-    for (let i = 0; i < props.navLinks.length; i++) {
-      linkMap[props.navLinks[i][0]] = props.navLinks[i][1];
+    const linkMap: ILinkMap = {};
+    for (const link of navLinks) {
+      linkMap[link[0]] = link[1];
     }
 
     this.state = {
       display: "none",
+      linkMap,
       query: "",
-      navLinks: props.navLinks,
-      linkMap: linkMap,
     };
 
     this.toggleDropdown = this.toggleDropdown.bind(this);
@@ -49,28 +50,7 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
   }
 
   public render() {
-    const Login = (
-      <li className="pure-menu-item">
-        <Link to="/login" className="pure-menu-link">{config.login_text}</Link>
-      </li>
-    );
-
-    const RegisterOrLogout = (
-      <li className="pure-menu-item">
-        <Link to="/register" className="pure-menu-link">{config.register_text}</Link>
-      </li>
-    );
-
-    let Menu = (
-      <ul className="pure-menu-list home-menu">
-        {Login}
-        {RegisterOrLogout}
-      </ul>
-    );
-
-    if (this.props.username !== "") {
-      Menu = this.renderMenu();
-    }
+    const Menu = this.renderMenu();
 
     return (
       <div className="topnav">
@@ -88,7 +68,10 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
             >
               <Search />
             </label>
-            <form className="pure-form search-form" onSubmit={this.handleSearchSubmit}>
+            <form
+              className="pure-form search-form"
+              onSubmit={this.handleSearchSubmit}
+            >
               <input
                 id="header-search-bar"
                 type="text"
@@ -101,7 +84,7 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
               />
             </form>
           </div>
-          <div className="pure-u-4-24"/>
+          <div className="pure-u-3-24"/>
           <div className="pure-u-4-24">
             <div className="pure-menu pure-menu-horizontal">
               {Menu}
@@ -114,41 +97,80 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
   }
 
   private renderUnderNav() {
-    if (this.props.username === "") {
-      return <div className="subnav-spacer"/>;
+    let links: JSX.Element | boolean = false;
+    if (this.props.username !== "") {
+      links = (
+        <div className="pure-menu pure-menu-horizontal">
+          <ul className="pure-menu-list">
+            {this.renderNavLinks()}
+          </ul>
+        </div>
+      );
     }
 
     return (
       <div className="pure-g subnav subnav-spacer">
         <div className="pure-u-1-24"/>
-        <div className="pure-u-16-24">
-          <div className="pure-menu pure-menu-horizontal">
-              <ul className="pure-menu-list">
-                {this.renderNavLinks()}
-              </ul>
-          </div>
+        <div className="pure-u-6-24">
+          {links}
         </div>
+        <div className="pure-u-10-24"/>
         <div className="pure-u-6-24">
           <div className="pure-menu pure-menu-horizontal">
-            <ul className="pure-menu-list">
-              <li className="pure-menu-item">
-                <Link to="/write" className="pure-menu-link">
-                  {config.write_text}
-                </Link>
-              </li>
-              <li className="pure-menu-item">
-                <Link to="/follow" className="pure-menu-link">
-                  {config.follow_text}
-                </Link>
-              </li>
-            </ul>
+            {this.renderActions()}
           </div>
         </div>
       </div>
     );
   }
 
+  private renderActions() {
+    if (this.props.username === "") {
+      return (
+      <ul className="pure-menu-list">
+        <li className="pure-menu-item">
+          <Link to="/about" className="pure-menu-link nav-action">
+            {config.about}
+          </Link>
+        </li>
+      </ul>
+      );
+    }
+
+    return (
+      <ul className="pure-menu-list">
+        <li className="pure-menu-item">
+          <Link to="/write" className="pure-menu-link nav-action">
+            <Plus size="1em"/> {config.write_text}
+          </Link>
+        </li>
+        <li className="pure-menu-item">
+          <Link to="/follow" className="pure-menu-link nav-action">
+            <UserPlus size="1em"/> {config.follow_text}
+          </Link>
+        </li>
+      </ul>
+    );
+  }
+
   private renderMenu() {
+    if (this.props.username === "") {
+      return (
+        <ul className="pure-menu-list">
+          <li className="pure-menu-item">
+            <Link to="/login" className="pure-menu-link nav-action">
+              {config.login_text}
+            </Link>
+          </li>
+          <li className="pure-menu-item">
+            <Link to="/register" className="pure-menu-link nav-action">
+              {config.register_text}
+            </Link>
+          </li>
+        </ul>
+      );
+    }
+
     const UserMenu = (
       <li className="pure-menu-item pure-menu-has-children">
         <button onClick={this.toggleDropdown} className="button-link pure-menu-link">
@@ -177,12 +199,12 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
   }
 
   private renderNavLinks() {
-    var selected = "";
+    let selected = "";
     if (this.state.linkMap.hasOwnProperty(this.props.location.pathname)) {
       selected = this.props.location.pathname;
     }
 
-    return this.state.navLinks.map((navLink: [string, string], i: number) => {
+    return navLinks.map((navLink: [string, string], i: number) => {
       const link = navLink[0];
       const name = navLink[1];
 
@@ -192,9 +214,9 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
       }
 
       return (
-        <li className="pure-menu-item" key={i}>
+        <li className="pure-menu-item nav-feed-item" key={i}>
           <Link to={link} className={classname}>
-            { name }
+            {name}
           </Link>
         </li>
       );

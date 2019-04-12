@@ -119,11 +119,6 @@ export class App extends React.Component<{}, IAppState> {
           <HeaderWithRouter
             username={this.state.username}
             userId={this.state.userId}
-            navLinks={[
-              ["/feed", config.feed_nav],
-              ["/", config.all_nav],
-              ["/recommended_posts", config.explore_nav],
-            ]}
           />
           <Switch>
             <Route
