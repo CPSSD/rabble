@@ -44,23 +44,14 @@ class UsersUtil:
 
     def download_profile_pic(self, host, handle, global_id):
         """
-        TODO(CianLR): This is a contender for worst hack in Rabble. Fix it.
-
         If a user being added is from a foreign host then get their actor
         and from that download their profile picture to the static assets
-        directory. This should all really be a webfinger thing but we don't
-        have that option at the time of writing.
+        directory.
         """
         try:
-            actor_url = "{}/ap/@{}".format(host, handle)
-            self._logger.info("Getting actor URL '%s'", actor_url)
-            actor_resp = requests.get(actor_url)
-            if actor_resp.status_code < 200 or actor_resp.status_code >= 300:
-                self._logger.warning(
-                    "Couldn't get foreign actor: error %d",
-                    actor_resp.status_code)
-                return
-            actor = actor_resp.json()
+            actor_url = self._activ_util.build_actor(handle, host)
+            actor = self._activ_util.fetch_actor(actor_url)
+
             if "icon" not in actor:
                 return  # No profile pic
             pic_url = actor["icon"]["url"]
