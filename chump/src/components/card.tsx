@@ -57,8 +57,7 @@ export class Card extends RootComponent<ICardProps, {}> {
           <div className="pure-u-5-24"/>
           <div className="pure-u-10-24">
             <p className="reblog-line">
-              Reblogged by {reblogger} &nbsp;
-              {post.parsed_share_date.toLocaleString()}
+              {`Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`}
             </p>
           </div>
         </div>
@@ -94,8 +93,7 @@ export class Card extends RootComponent<ICardProps, {}> {
       <div className="pure-u-10-24">
         {customStyle}
         <p className="article-byline">
-          {config.published} &nbsp;
-          {post.parsed_date.toLocaleString()}
+          {`${config.published} ${post.parsed_date.toLocaleString()}`}
         </p>
         <Link
           to={`/@${post.author}/${post.global_id}`}
