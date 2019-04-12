@@ -73,8 +73,7 @@ export class Post extends RootComponent<IPostProps, IPostState> {
       <div className="pure-u-10-24">
         {customStyle}
         <p className="article-byline">
-          {config.published} &nbsp;
-          {post.parsed_date.toLocaleString()}
+          {`${config.published} ${post.parsed_date.toLocaleString()}`}
         </p>
         <Link
           to={`/@${post.author}/${post.global_id}`}
