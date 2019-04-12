@@ -64,6 +64,9 @@ export function CleanParsedPost(p: IAnyParsedPost) {
   if (typeof(p.likes_count) === "undefined") {
     p.likes_count = 0;
   }
+  if (typeof(p.author_host) === "undefined") {
+    p.author_host = "";
+  }
   if (typeof(p.is_liked) === "undefined") {
     p.is_liked = false;
   }
