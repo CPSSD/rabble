@@ -2,18 +2,21 @@ from services.proto import article_pb2
 from services.proto import database_pb2
 from services.proto import create_pb2
 from services.proto import mdc_pb2
+from services.proto import recommend_posts_pb2
 from services.proto import search_pb2
 from utils.articles import convert_to_tags_string, md_to_html
 
+
 class NewArticleServicer:
 
-    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util):
+    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util, post_recommendation_stub=None):
         self._create_stub = create_stub
         self._db_stub = db_stub
         self._md_stub = md_stub
         self._search_stub = search_stub
         self._logger = logger
         self._users_util = users_util
+        self._post_recommendation_stub = post_recommendation_stub
 
     def index(self, post_entry):
         """
@@ -35,7 +38,8 @@ class NewArticleServicer:
         global_id = req.author_id
         author = self._users_util.get_user_from_db(global_id=global_id)
         if author is None:
-            self._logger.error('Could not find user id in db: ' + str(global_id))
+            self._logger.error(
+                'Could not find user id in db: ' + str(global_id))
             return database_pb2.PostsResponse.error, None
         global_id = author.global_id
 
@@ -57,10 +61,15 @@ class NewArticleServicer:
         )
         posts_resp = self._db_stub.Posts(pr)
         if posts_resp.result_type == database_pb2.PostsResponse.ERROR:
-            self._logger.error('Could not insert into db: %s', posts_resp.error)
+            self._logger.error(
+                'Could not insert into db: %s', posts_resp.error)
 
         pe.global_id = posts_resp.global_id
         self.index(pe)
+
+        # If post_recommender is on, send new post to post_recommender
+        if self._post_recommendation_stub is not None:
+            self._add_post_to_recommender(pe)
 
         return posts_resp.result_type, posts_resp.global_id
 
@@ -78,6 +87,12 @@ class NewArticleServicer:
         create_resp = self._create_stub.SendCreate(ad)
 
         return create_resp.result_type
+
+    def _add_post_to_recommender(self, post_entry):
+        resp = self._post_recommendation_stub.AddPost(post_entry)
+        if resp.result_type != recommend_posts_pb2.PostRecommendationsResponse.OK:
+            self._logger.error(
+                "AddPost for post recommendation failed: %s", resp.message)
 
     def CreateNewArticle(self, req, context):
         self._logger.info('Recieved a new article.')

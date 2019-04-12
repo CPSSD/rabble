@@ -34,3 +34,29 @@ def get_article(logger, db, global_id=None, ap_id=None):
         logger.error("Could not find article")
         return None
     return resp.results[0]
+
+def delete_article(logger, db, global_id=None, ap_id=None):
+    """
+    Deletes an article from the database safely (removing all references).
+    Returns True on success and False on error.
+    """
+    logger.info("Deleting post global_id: %s, ap_id: %s", global_id, ap_id)
+    resp = db.SafeRemovePost(database_pb2.PostsEntry(
+        global_id=global_id,
+        ap_id=ap_id,
+    ))
+    if resp.result_type != database_pb2.PostsResponse.OK:
+        logger.error("Error deleting from DB: %s", resp.error)
+        return False
+    return True
+
+def get_sharers_of_article(logger, db, global_id):
+    logger.info("Getting sharers of article %d", global_id)
+    resp = db.GetSharersOfPost(database_pb2.SharesEntry(
+        global_id=global_id,
+    ))
+    if resp.result_type != database_pb2.SharesResponse.OK:
+        logger.error("Error getting sharers: %s", resp.error)
+        return None
+    return list(e.sharer_id for e in resp.results)
+

@@ -133,7 +133,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 // It takes an optional username argument, if it exists it sends the request to
 // GetUserFeed, otherwise it returns all articles on the instance.
 func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, error) {
-	log.Printf("UserId: %s\n", r.UserId)
+	log.Printf("UserId: %v.\n", r.UserId)
 	if r.UserId != 0 {
 		return s.GetUserFeed(ctx, r)
 	}

@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "services/proto";
 
 import "services/proto/feed.proto";
+import "services/proto/database.proto";
 
 // Request a feed for the given user.
 message PostRecommendationsRequest {
@@ -22,4 +23,6 @@ message PostRecommendationsResponse {
 
 service PostRecommendations {
   rpc Get(PostRecommendationsRequest) returns (PostRecommendationsResponse);
+  rpc UpdateModel(LikeEntry) returns (PostRecommendationsResponse);
+  rpc AddPost(PostsEntry) returns (PostRecommendationsResponse);
 }

@@ -85,7 +85,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
       this.state.customCss,
     ).then((response: IEditUserResult) => {
       if (!response.success) {
-        this.errorToast({ debug: response.error });
+        this.errorToast({ debug: response.error, statusCode: response.statusCode });
       } else {
         this.setState({ redirect: true });
       }
@@ -97,7 +97,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
         this.state.profilePic,
       ).then((response: IEditUserResult) => {
         if (!response.success) {
-          this.errorToast({ debug: response.error });
+          this.errorToast({ debug: response.error, statusCode: response.statusCode });
         } else {
           this.setState({ redirect: true });
         }

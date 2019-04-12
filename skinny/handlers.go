@@ -23,10 +23,13 @@ import (
 )
 
 const (
-	staticAssets         = "/repo/build_out/chump_dist"
-	timeParseFormat      = "2006-01-02T15:04:05.000Z"
-	protoTimeParseFormat = "2006-01-02T15:04:05.000000000Z"
-	timeoutDuration      = time.Minute * 5
+	staticAssets              = "/repo/build_out/chump_dist"
+	timeParseFormat           = "2006-01-02T15:04:05.000Z"
+	protoTimeParseFormat      = "2006-01-02T15:04:05.000000000Z"
+	timeoutDuration           = time.Minute * 5
+	invalidJSONError          = "Invalid JSON"
+	invalidJSONErrorWithPrint = "Invalid JSON, error: %v\n"
+	loginRequired             = "Login Required"
 )
 
 type clientResp struct {
@@ -34,7 +37,7 @@ type clientResp struct {
 	Message string `json:"message"`
 }
 
-func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Timestamp, error) {
+func parseTimestamp(w http.ResponseWriter, published string, resp *clientResp) (*tspb.Timestamp, error) {
 	invalidCreationTimeMessage := "Invalid creation time\n"
 	parseFormat := timeParseFormat
 	if len(published) == 30 {
@@ -44,7 +47,7 @@ func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Ti
 	if timeErr != nil {
 		log.Printf("Error: %s\n", timeErr)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, invalidCreationTimeMessage)
+		resp.Error = invalidCreationTimeMessage
 		return nil, fmt.Errorf(invalidCreationTimeMessage)
 	}
 
@@ -52,7 +55,7 @@ func parseTimestamp(w http.ResponseWriter, published string, old bool) (*tspb.Ti
 	if protoTimeErr != nil {
 		log.Printf("Error: %s\n", protoTimeErr)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, invalidCreationTimeMessage)
+		resp.Error = invalidCreationTimeMessage
 		return nil, fmt.Errorf(invalidCreationTimeMessage)
 	}
 
@@ -71,7 +74,7 @@ func (s *serverWrapper) getSessionHandle(r *http.Request) (string, error) {
 	return session.Values["handle"].(string), nil
 }
 
-func (s *serverWrapper) getSessionGlobalId(r *http.Request) (int64, error) {
+func (s *serverWrapper) getSessionGlobalID(r *http.Request) (int64, error) {
 	session, err := s.store.Get(r, "rabble-session")
 	if err != nil {
 		log.Printf("Error getting session: %v", err)
@@ -102,9 +105,9 @@ func (s *serverWrapper) handleFeed() http.HandlerFunc {
 		}
 
 		fr := &pb.FeedRequest{UserId: userID}
-		if global_id, err := s.getSessionGlobalId(r); err == nil {
+		if globalID, err := s.getSessionGlobalID(r); err == nil {
 			// If the user is logged in then propagate their global ID.
-			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: globalID}
 		}
 		resp, err := s.feed.Get(ctx, fr)
 		if err != nil {
@@ -143,9 +146,9 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		}
 
 		fr := &pb.FeedRequest{Username: username}
-		if global_id, err := s.getSessionGlobalId(r); err == nil {
+		if globalID, err := s.getSessionGlobalID(r); err == nil {
 			// If the user is logged in then propagate their global ID.
-			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: globalID}
 		}
 		resp, err := s.feed.PerUser(ctx, fr)
 		if err != nil {
@@ -207,12 +210,11 @@ func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/rss+xml")
-		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, resp.Feed)
 	}
 }
 
-func (s *serverWrapper) handleUserCss() http.HandlerFunc {
+func (s *serverWrapper) handleUserCSS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		strUserID, ok := v["userId"]
@@ -269,9 +271,9 @@ func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 		}
 
 		fr := &pb.ArticleRequest{ArticleId: articleID}
-		if global_id, err := s.getSessionGlobalId(r); err == nil {
+		if globalID, err := s.getSessionGlobalID(r); err == nil {
 			// If the user is logged in then propagate their global ID.
-			fr.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+			fr.UserGlobalId = &wrapperpb.Int64Value{Value: globalID}
 		}
 		resp, err := s.feed.PerArticle(ctx, fr)
 		if err != nil {
@@ -299,7 +301,8 @@ func (s *serverWrapper) handleNotImplemented() http.HandlerFunc {
 		http.Error(
 			w,
 			http.StatusText(http.StatusNotImplemented),
-			http.StatusNotImplemented)
+			http.StatusNotImplemented,
+		)
 	}
 }
 
@@ -334,14 +337,15 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		var j pb.LocalToAnyFollow
 		err := decoder.Decode(&j)
 		enc := json.NewEncoder(w)
+
+		errResp := &pb.FollowResponse{
+			ResultType: pb.FollowResponse_ERROR,
+		}
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -349,11 +353,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Login required",
-			}
-			enc.Encode(e)
+			errResp.Error = loginRequired
+			enc.Encode(errResp)
 			return
 		}
 		// Even if the request was sent with a different follower, use the
@@ -369,11 +370,8 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not send follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -381,11 +379,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not marshal follow result: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			enc.Encode(errResp)
 		}
 	}
 }
@@ -396,14 +390,15 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		var j pb.LocalToAnyFollow
 		err := decoder.Decode(&j)
 		enc := json.NewEncoder(w)
+
+		errResp := &pb.FollowResponse{
+			ResultType: pb.FollowResponse_ERROR,
+		}
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -411,11 +406,8 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Call to unfollow by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Login required",
-			}
-			enc.Encode(e)
+			errResp.Error = loginRequired
+			enc.Encode(errResp)
 			return
 		}
 		// Even if the request was sent with a different follower, use the
@@ -431,11 +423,8 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not send unfollow: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -443,11 +432,7 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not marshal unfollow result: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			enc.Encode(errResp)
 		}
 	}
 }
@@ -458,14 +443,15 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		var j pb.LocalToRss
 		err := decoder.Decode(&j)
 		enc := json.NewEncoder(w)
+
+		errResp := &pb.FollowResponse{
+			ResultType: pb.FollowResponse_ERROR,
+		}
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -473,11 +459,8 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Call to follow rss by not logged in user")
 			w.WriteHeader(http.StatusBadRequest)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Login required",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -491,11 +474,8 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not send rss follow request: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			errResp.Error = invalidJSONError
+			enc.Encode(errResp)
 			return
 		}
 
@@ -503,11 +483,8 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not marshal rss follow result: %#v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			e := &pb.FollowResponse{
-				ResultType: pb.FollowResponse_ERROR,
-				Error:      "Invalid JSON",
-			}
-			enc.Encode(e)
+			enc.Encode(errResp)
+			return
 		}
 	}
 }
@@ -531,24 +508,26 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
+			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			cResp.Error = "Invalid JSON"
+			cResp.Error = invalidJSONError
 			enc.Encode(cResp)
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, false)
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, &cResp)
 		if parseErr != nil {
 			log.Println(parseErr)
+			w.WriteHeader(http.StatusBadRequest)
+			enc.Encode(cResp)
 			return
 		}
 
-		globalID, gIErr := s.getSessionGlobalId(r)
+		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
 			w.WriteHeader(http.StatusUnauthorized)
-			cResp.Error = "Login Required"
+			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
 		}
@@ -582,7 +561,6 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		}
 
 		log.Printf("User Id: %#v attempted to create a post with title: %v\n", globalID, t.Title)
-		w.WriteHeader(http.StatusOK)
 		cResp.Message = "Article created"
 		enc.Encode(cResp)
 	}
@@ -606,18 +584,18 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
+			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			cResp.Error = "Invalid JSON"
+			cResp.Error = invalidJSONError
 			enc.Encode(cResp)
 			return
 		}
 
-		globalID, gIErr := s.getSessionGlobalId(r)
+		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Edit article call from user not logged in")
 			w.WriteHeader(http.StatusUnauthorized)
-			cResp.Error = "Login Required"
+			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
 		}
@@ -656,7 +634,6 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 
 		log.Printf("User Id: %#v attempted to edit an article with title: %v\n",
 			globalID, t.Title)
-		w.WriteHeader(http.StatusOK)
 		cResp.Message = "Article edited"
 		enc.Encode(cResp)
 	}
@@ -676,18 +653,18 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON, Error: %s\n", jsonErr)
+			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			cResp.Error = "Invalid JSON"
+			cResp.Error = invalidJSONError
 			enc.Encode(cResp)
 			return
 		}
 
-		globalID, gIErr := s.getSessionGlobalId(r)
+		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Delete article call from user not logged in")
 			w.WriteHeader(http.StatusUnauthorized)
-			cResp.Error = "Login Required"
+			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
 		}
@@ -722,7 +699,6 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 
 		log.Printf("User Id: %#v attempted to delete an article id: %v\n",
 			globalID, t.ArticleID)
-		w.WriteHeader(http.StatusOK)
 		cResp.Message = "Article deleted"
 		enc.Encode(cResp)
 	}
@@ -732,26 +708,31 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var t createArticleStruct
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
+
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON\n")
+			fmt.Fprintf(w, invalidJSONError)
 			return
 		}
 
-		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, false)
+		protoTimestamp, parseErr := parseTimestamp(w, t.CreationDatetime, &cResp)
 		if parseErr != nil {
 			log.Println(parseErr)
+			w.WriteHeader(http.StatusBadRequest)
+			enc.Encode(cResp)
 			return
 		}
 
-		globalID, gIErr := s.getSessionGlobalId(r)
+		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Preview Article call from user not logged in")
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Login Required")
+			fmt.Fprintf(w, loginRequired)
 			return
 		}
 
@@ -775,7 +756,6 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		log.Printf("User Id: %#v attempted to create preview with title: %v\n", globalID, t.Title)
 		w.Header().Set("Content-Type", "application/json")
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
-		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		err = enc.Encode(resp.Preview)
 		if err != nil {
@@ -842,9 +822,9 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		var af pb.AcceptFollowRequest
 		err = decoder.Decode(&af)
 		if err != nil {
-			log.Printf("Invalid JSON: %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Invalid JSON.\n")
+			fmt.Fprintf(w, invalidJSONError)
 			return
 		}
 
@@ -888,8 +868,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
-			log.Printf("Invalid JSON\n")
-			log.Printf("Error: %s\n", jsonErr)
+			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
 			r.Success = false
 			r.ErrorStr = jsonErr.Error()
@@ -902,7 +881,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			log.Printf("Like call from user not logged in")
 			w.WriteHeader(http.StatusBadRequest)
 			r.Success = false
-			r.ErrorStr = "Login Required"
+			r.ErrorStr = loginRequired
 			enc.Encode(r)
 			return
 		}
@@ -1022,9 +1001,9 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 
 		sq := &pb.SearchQuery{QueryText: query}
 		req := &pb.SearchRequest{Query: sq}
-		if global_id, gIErr := s.getSessionGlobalId(r); gIErr == nil {
+		if globalID, gIErr := s.getSessionGlobalID(r); gIErr == nil {
 			// If the user is logged in then propagate their global ID.
-			req.UserGlobalId = &wrapperpb.Int64Value{Value: global_id}
+			req.UserGlobalId = &wrapperpb.Int64Value{Value: globalID}
 		}
 		resp, err := s.search.Search(ctx, req)
 		if err != nil {
@@ -1063,7 +1042,7 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		}
 
 		// uid = 0 if no user is logged in.
-		if uid, _ := s.getSessionGlobalId(r); uid != 0 {
+		if uid, _ := s.getSessionGlobalID(r); uid != 0 {
 			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
 
@@ -1098,13 +1077,13 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		var v pb.View
 		err := decoder.Decode(&v)
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalId(r)
+		uid, err := s.getSessionGlobalID(r)
 
 		v.User = uid
 
@@ -1127,13 +1106,13 @@ func (s *serverWrapper) handleAddLog() http.HandlerFunc {
 		var v pb.ClientLog
 		err := decoder.Decode(&v)
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalId(r)
+		uid, err := s.getSessionGlobalID(r)
 
 		v.User = uid
 
@@ -1160,14 +1139,14 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		var v pb.AnnounceDetails
 		err := decoder.Decode(&v)
 		if err != nil {
-			log.Printf("Invalid JSON. Err = %#v", err)
+			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		// We use their logged in GlobalID, since the client shouldn't
 		// need to care about that detail.
-		uid, err := s.getSessionGlobalId(r)
+		uid, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Access denied in handleAnnounce: %v", err)
 			w.WriteHeader(http.StatusForbidden)
@@ -1190,8 +1169,6 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -1213,7 +1190,7 @@ func (s *serverWrapper) handleGetFollows(f FollowGetter) http.HandlerFunc {
 			Username: username,
 		}
 
-		if uid, err := s.getSessionGlobalId(r); err == nil {
+		if uid, err := s.getSessionGlobalID(r); err == nil {
 			fq.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
 
@@ -1249,7 +1226,7 @@ func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		uid, err := s.getSessionGlobalId(r)
+		uid, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Access denied in handlePostRecommendations: %v", err)
 			w.WriteHeader(http.StatusForbidden)
@@ -1291,7 +1268,7 @@ type NoOpReplyStruct struct {
 // container skinny will route all calls to those services to this handler.
 func (s *serverWrapper) handleNoOp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := s.getSessionGlobalId(r)
+		_, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Access denied in handleNoOp: %v", err)
 			w.WriteHeader(http.StatusForbidden)

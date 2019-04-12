@@ -130,3 +130,25 @@ class ShareDatabaseServicer:
             resp.error = str(e)
             return
         return resp
+
+    def GetSharersOfPost(self, req, context):
+        self._logger.debug("Finding sharers of post %d", req.global_id)
+        if not req.global_id:
+            return db_pb.SharesResponse(
+                result_type=db_pb.SharesResponse.ERROR,
+                error="Sharers must be requested by article global_id",
+            )
+        sql = "SELECT user_id FROM shares WHERE article_id = ?"
+        try:
+            res = self._db.execute(sql, req.global_id)
+        except sqlite3.Error as e:
+            self._logger.error("GetSharersOfPost error: %s", str(e))
+            return db_pb.SharesResponse(
+                result_type=db_pb.SharesResponse.ERROR,
+                error=str(e),
+            )
+        return db_pb.SharesResponse(
+            result_type=db_pb.SharesResponse.OK,
+            results=[db_pb.SharesEntry(sharer_id=s[0]) for s in res],
+        )
+

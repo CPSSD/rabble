@@ -55,6 +55,7 @@ export function GetUserInfo(username: string) {
 export interface IEditUserResult {
   error: string;
   success: boolean;
+  statusCode: number;
 }
 
 export function EditUserPromise(
@@ -86,6 +87,7 @@ export function EditUserPromise(
           reject(error);
           return;
         }
+
         let succ = res!.body;
         if (succ === null) {
           succ = {
@@ -93,6 +95,7 @@ export function EditUserPromise(
             success: false,
           };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });
@@ -111,6 +114,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
           reject(error);
           return;
         }
+
         let succ = res!.body;
         if (succ === null) {
           succ = {
@@ -118,6 +122,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
             success: false,
           };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });
@@ -126,6 +131,7 @@ export function EditUserProfilePicPromise(profilePic: File) {
 export interface ILoginResult {
   success: boolean;
   user_id: number;
+  statusCode: number;
 }
 
 export function GetLoginPromise(handle: string, password: string) {
@@ -147,6 +153,7 @@ export function GetLoginPromise(handle: string, password: string) {
         if (succ === null) {
           succ = { success: false };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });
@@ -154,6 +161,7 @@ export function GetLoginPromise(handle: string, password: string) {
 
 export interface ILogoutResult {
   success: boolean;
+  statusCode: number;
 }
 
 export function GetLogoutPromise() {
@@ -171,6 +179,7 @@ export function GetLogoutPromise() {
         if (succ === null) {
             succ = { success: false };
         }
+        succ.statusCode = res.status;
         resolve(succ);
       });
   });

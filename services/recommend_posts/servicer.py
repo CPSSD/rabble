@@ -1,6 +1,7 @@
 import os
 
 from random_recommender import RandomRecommender
+from cosine_recommender import CosineRecommender
 
 from services.proto import database_pb2
 from services.proto import recommend_posts_pb2_grpc
@@ -13,6 +14,7 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
 
     RECOMMENDERS = {
         'random': RandomRecommender,
+        'cosine': CosineRecommender,
     }
     DEFAULT_RECOMMENDER = 'random'
     ENV_VAR = 'POSTS_RECOMMENDER_METHOD'
@@ -82,6 +84,42 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
                     post_obj.summary = r_p[i].summary
                     tags = self._recommender_util.split_tags(r_p[i].tags)
                     post_obj.tags.extend(tags)
+        resp.result_type = \
+            recommend_posts_pb2.PostRecommendationsResponse.OK
+        return resp
+
+    def UpdateModel(self, request, context):
+        self._logger.debug('UpdateModel PostRecommendations, user_id = %s',
+                           request.user_id)
+
+        resp = recommend_posts_pb2.PostRecommendationsResponse()
+
+        for r in self.active_recommenders:
+            error = r.update_model(request.user_id, request.article_id)
+            if error:
+                resp.result_type = \
+                    recommend_posts_pb2.PostRecommendationsResponse.ERROR
+                resp.message = error
+                return resp
+
+        resp.result_type = \
+            recommend_posts_pb2.PostRecommendationsResponse.OK
+        return resp
+
+    def AddPost(self, request, context):
+        self._logger.debug('UpdateModel PostRecommendations, user_id = %s',
+                           request.author_id)
+
+        resp = recommend_posts_pb2.PostRecommendationsResponse()
+
+        for r in self.active_recommenders:
+            error = r.add_post(request)
+            if error:
+                resp.result_type = \
+                    recommend_posts_pb2.PostRecommendationsResponse.ERROR
+                resp.message = error
+                return resp
+
         resp.result_type = \
             recommend_posts_pb2.PostRecommendationsResponse.OK
         return resp

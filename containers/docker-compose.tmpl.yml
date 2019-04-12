@@ -81,6 +81,8 @@ services:
       - LOGGER_SERVICE_HOST=logger_service_[[INSTANCE_ID]]
       - DB_SERVICE_HOST=database_service_[[INSTANCE_ID]]
       - HOST_NAME=[[EXTERNAL_ADDRESS]]
+      - POST_RECOMMENDATIONS_SERVICE_HOST=recommend_posts_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_NO_OP=[[POSTS_SERVICE_LOCATION]]
   undo_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/undo
@@ -201,6 +203,8 @@ services:
       - CREATE_SERVICE_HOST=create_service_[[INSTANCE_ID]]
       - MDC_SERVICE_HOST=markdown_service_[[INSTANCE_ID]]
       - SEARCH_SERVICE_HOST=search_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_SERVICE_HOST=recommend_posts_service_[[INSTANCE_ID]]
+      - POST_RECOMMENDATIONS_NO_OP=[[POSTS_SERVICE_LOCATION]]
   create_service_[[INSTANCE_ID]]:
     build:
       context: ./services/activities/create

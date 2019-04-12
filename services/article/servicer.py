@@ -6,7 +6,7 @@ from services.proto import article_pb2_grpc
 
 class ArticleServicer(article_pb2_grpc.ArticleServicer):
 
-    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util):
+    def __init__(self, create_stub, db_stub, md_stub, search_stub, logger, users_util, post_recommendation_stub=None):
         self._logger = logger
         self._create_stub = create_stub
         self._db_stub = db_stub
@@ -16,7 +16,8 @@ class ArticleServicer(article_pb2_grpc.ArticleServicer):
 
         new_article_servicer = NewArticleServicer(create_stub, db_stub,
                                                   md_stub, search_stub,
-                                                  logger, users_util)
+                                                  logger, users_util,
+                                                  post_recommendation_stub)
         self.CreateNewArticle = new_article_servicer.CreateNewArticle
         preview_servicer = PreviewServicer(md_stub, logger)
         self.PreviewArticle = preview_servicer.PreviewArticle

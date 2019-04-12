@@ -37,8 +37,8 @@ class ActivitiesUtil:
         username = '{}@{}'.format(handle, host_no_protocol)
         url = f'{normalised_host}/.well-known/webfinger?resource=acct:{username}'
         resp = requests.get(url)
-        if resp.status_code != 200:
-            self._logger.warning(('Non-200 response code ({}) for webfinger ' +
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self._logger.warning(('Non-2xx response code ({}) for webfinger ' +
                                   'lookup for URL: {}').format(resp.status_code,
                                                                url))
             return None
@@ -163,6 +163,19 @@ class ActivitiesUtil:
             "@context": self.rabble_context(),
             "type": "Undo",
             "object": obj
+        }
+
+    def build_delete(self, user, article, hostname):
+        """
+        Build a delete activity.
+        user is a UsersEntry proto.
+        article is a PostsEntry proto.
+        """
+        return {
+            "@context": self.rabble_context(),
+            "type": "Delete",
+            "object": self.build_article_url(user, article),
+            "actor": self.build_actor(user.handle, hostname),
         }
 
     def fetch_actor(self, actor_url):

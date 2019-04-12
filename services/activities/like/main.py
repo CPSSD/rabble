@@ -12,6 +12,7 @@ from utils.activities import ActivitiesUtil
 from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
+from utils.recommenders import RecommendersUtil
 
 from servicer import S2SLikeServicer
 
@@ -35,9 +36,12 @@ def main():
     db_stub = get_db_stub(logger)
     user_util = UsersUtil(logger, db_stub)
     activ_util = ActivitiesUtil(logger, db_stub)
+    recommender_util = RecommendersUtil(logger, db_stub)
+    post_recommendation_stub = recommender_util.get_post_recommendation_stub()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     like_pb2_grpc.add_S2SLikeServicer_to_server(
-        S2SLikeServicer(logger, db_stub, user_util, activ_util),
+        S2SLikeServicer(logger, db_stub, user_util,
+                        activ_util, post_recommendation_stub),
         server
     )
     server.add_insecure_port("0.0.0.0:1848")
