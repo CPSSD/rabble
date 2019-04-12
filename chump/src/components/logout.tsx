@@ -4,29 +4,7 @@ import {Redirect, RouteProps} from "react-router-dom";
 import * as superagent from "superagent";
 import { RootComponent } from "./root_component";
 
-interface ILogoutResult {
-  success: boolean;
-}
-
-function GetLogoutPromise() {
-  const url = "/c2s/logout";
-  return new Promise<ILogoutResult>((resolve, reject) => {
-    superagent
-      .get(url)
-      .set("Accept", "application/json")
-      .end((error, res) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        let succ = res!.body;
-        if (succ === null) {
-            succ = { success: false };
-        }
-        resolve(succ);
-      });
-  });
-}
+import { GetLogoutPromise, ILogoutResult } from "../models/user";
 
 interface ILogoutProps extends RouteProps {
   logoutCallback(): void;

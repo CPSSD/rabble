@@ -122,3 +122,56 @@ export function EditUserProfilePicPromise(profilePic: File) {
       });
   });
 }
+
+export interface ILoginResult {
+  success: boolean;
+  user_id: number;
+}
+
+export function GetLoginPromise(handle: string, password: string) {
+  const url = "/c2s/login";
+  const postBody = { handle, password };
+  return new Promise<ILoginResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .send(postBody)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+          succ = { success: false };
+        }
+        resolve(succ);
+      });
+  });
+}
+
+export interface ILogoutResult {
+  success: boolean;
+}
+
+export function GetLogoutPromise() {
+  const url = "/c2s/logout";
+  return new Promise<ILogoutResult>((resolve, reject) => {
+    superagent
+      .get(url)
+      .set("Accept", "application/json")
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+            succ = { success: false };
+        }
+        resolve(succ);
+      });
+  });
+}
