@@ -46,8 +46,7 @@ class UsersUtil:
         """
         If a user being added is from a foreign host then get their actor
         and from that download their profile picture to the static assets
-        directory. This should all really be a webfinger thing but we don't
-        have that option at the time of writing.
+        directory.
         """
         try:
             actor_url = self._activ_util.build_actor(handle, host)
