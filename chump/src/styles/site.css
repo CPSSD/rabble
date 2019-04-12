@@ -4,6 +4,7 @@ html {
 
 :root {
   --primary-bg-color: #0097a7;
+  --secondary-bg-color: #009fad;
 
   /* These two colors are by default white and black, and represent everyday
    * elements like text and the white page background. */
@@ -43,10 +44,22 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .topnav {
   padding-top: 0.2em;
-  padding-bottom: 0.2em;
-  margin-bottom: 1em;
   background-color: var(--primary-bg-color);
   color: var(--primary-dark-color);
+}
+
+.subnav-spacer {
+  margin-bottom: 1em;
+}
+
+.subnav {
+  padding-bottom: 0.2em;
+  background-color: var(--secondary-bg-color);
+  color: var(--primary-dark-color);
+}
+
+.nav-feed-selected {
+  border-bottom: 1px solid var(--primary-dark-color);
 }
 
 .topnav p {
@@ -189,14 +202,15 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   font-size: medium;
 }
 
+.pure-form .search-bar[name="query"] {
+  color: var(--primary-bg-color);
+  padding: .1em 0.5em 0em 40px;
+}
+
 .pure-form .search-rounded[name="query"] {
   color: var(--primary-bg-color);
   border-radius: 2em;
   padding: .1em 0.5em;
-}
-
-.search-form {
-  float: right;
 }
 
 .search-button {
@@ -204,6 +218,13 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   background-color: var(--primary-dark-color);
   border-radius: 1em;
   padding: .2em 0.2em;
+}
+
+.search-bar-icon {
+  color: var(--primary-bg-color);
+  position: absolute;
+  margin-left: 10px;
+  margin-top: 5px;
 }
 
 .primary-button {
