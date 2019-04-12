@@ -50,28 +50,21 @@ class SendCreateServicer:
             "actor": actor,
             "object": article,
         }
-        headers = {"Content-Type": "application/ld+json"}
 
         # s2s inbox for user. Format banana.com/ap/@banana/inbox
         target_inbox = self._activ_util.build_inbox_url(
             follower.handle, follower.host)
-        encoded_body = json.dumps(create_activity).encode("utf-8")
-        self._logger.info(target_inbox)
 
-        try:
-            r = self._client.request(
-                "POST",
-                target_inbox,
-                body=encoded_body,
-                retries=2,
-                headers=headers
-            )
-            self._logger.debug(
-                "Create activity sent. Response status: %s", r.status)
-        except Exception as e:
+        if target_inbox == None:
+            self._logger.info("Target inbox is none, skipping.")
+            return
+
+        self._logger.info("Sending create activity to foreign server")
+        resp, err = self._activ_util.send_activity(
+            create_activity, target_inbox, sender_id=author.global_id)
+        if err is not None:
             self._logger.error(
-                "Create activity for follower: %s failed", target)
-            self._logger.error(e)
+                "Send Create to %s error: %s", target_inbox, err)
 
     def SendCreate(self, req, context):
         self._logger.debug("Recieved a new create action.")
