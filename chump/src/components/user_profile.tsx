@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { RouteProps } from "react-router-dom";
 import * as config from "../../rabble_config.json";
-import { GetUserInfo, IParsedUser } from "../models/user";
 import { AccountEdit } from "./account_edit";
 import { Followers, Following } from "./follow_user_list";
 import { Pending } from "./pending";
@@ -10,7 +9,8 @@ import { RootComponent } from "./root_component";
 import { UserFeed } from "./user_feed";
 
 import {
-  EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
+  EditUserProfilePicPromise, EditUserPromise, GetUserInfo,
+  IEditUserResult, IParsedUser,
 } from "../models/user";
 
 /*

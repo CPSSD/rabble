@@ -2,8 +2,8 @@ import * as React from "react";
 
 import * as config from "../../rabble_config.json";
 import {
-  EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
-  GetUserInfo, IParsedUser,
+  EditUserProfilePicPromise, EditUserPromise, GetUserInfo,
+  IEditUserResult, IParsedUser,
 } from "../models/user";
 
 import { RootComponent } from "./root_component";
