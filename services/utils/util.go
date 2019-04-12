@@ -207,7 +207,6 @@ func StripUser(p *pb.UsersEntry) *pb.User {
 		GlobalId:    p.GlobalId,
 		Bio:         p.Bio,
 		IsFollowed:  p.IsFollowed,
-		Image:       defaultImage,
 		DisplayName: p.DisplayName,
 		Private:     p.Private,
 		CustomCss:   p.CustomCss,

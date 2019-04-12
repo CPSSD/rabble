@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import * as config from "../../rabble_config.json";
-import {GetLoginPromise, ILoginResult} from "../models/login";
+import {GetLoginPromise, ILoginResult} from "../models/user";
 import {RootComponent} from "./root_component";
 
 interface ILoginProps extends RouteProps {

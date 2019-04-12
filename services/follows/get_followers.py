@@ -3,8 +3,6 @@ from enum import Enum
 from services.proto import database_pb2
 from services.proto import follows_pb2
 
-DEFAULT_IMAGE = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
-
 class GetFollowsReceiver:
 
     def __init__(self, logger, util, users_util, database_stub):
@@ -21,7 +19,6 @@ class GetFollowsReceiver:
         u.global_id = user.global_id
         u.bio = user.bio
         u.is_followed = user.is_followed
-        u.image = DEFAULT_IMAGE
         u.display_name = user.display_name
         u.private.CopyFrom(user.private)
         u.custom_css = user.custom_css

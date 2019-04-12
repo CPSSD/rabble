@@ -4,7 +4,8 @@ import * as sinon from "sinon";
 import * as superagent from "superagent";
 
 import { IParsedPost } from "../../src/models/posts";
-import { IParsedUser, ISearchResponse, SearchRequest } from "../../src/models/search";
+import { ISearchResponse, SearchRequest } from "../../src/models/search";
+import { IParsedUser } from "../../src/models/user";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 const now: Date = new Date();
@@ -43,12 +44,13 @@ const validParsedPost: IParsedPost[] = [{
 
 const validUser: IParsedUser[] = [{
   bio: "bio",
+  custom_css: "",
   display_name: "the.aaron",
   global_id: 4,
   handle: "aaron",
   host: "google.com",
-  image: "test",
   is_followed: true,
+  private: {},
 }];
 
 const validBody: ISearchResponse = {

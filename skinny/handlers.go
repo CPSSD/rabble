@@ -1025,10 +1025,18 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 
 func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handle, err := s.getSessionHandle(r)
+
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		handle, host, err := util.ParseUsername(username)
 		if err != nil {
-			log.Printf("Called user details without logging in: %v", err)
-			w.WriteHeader(http.StatusForbidden)
+			log.Printf("got bad username: %s", username)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
@@ -1036,8 +1044,14 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			RequestType: pb.UsersRequest_FIND,
 			Match: &pb.UsersEntry{
 				Handle:     handle,
-				HostIsNull: true,
+				Host:       host,
+				HostIsNull: host == "",
 			},
+		}
+
+		// uid = 0 if no user is logged in.
+		if uid, _ := s.getSessionGlobalID(r); uid != 0 {
+			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
