@@ -24,8 +24,8 @@ class ActorsServicer:
             request_type=database_pb2.UsersRequest.FIND
         )
         resp = self._db_stub.Users(req)
-        if (resp.result_type != database_pb2.UsersResponse.OK or 
-            len(resp.results) == 0):
+        if (resp.result_type != database_pb2.UsersResponse.OK
+                or len(resp.results) == 0):
             self._logger.error('No user found in database')
             return None
         return resp.results[0].public_key
@@ -72,3 +72,41 @@ class ActorsServicer:
         self._logger.debug('Actor requested for {}'.format(request.username))
         actor = self._create_actor(request.username)
         return actors_pb2.ActorResponse(actor=actor)
+
+    def GetArticle(self, req, context):
+        self._logger.debug(
+            'Article object requested for id: {} by user: {}'.format(
+                req.article_id, req.username))
+        user = self._users_util.get_user_from_db(handle=req.username,
+                                                 host_is_null=True)
+        if user is None:
+            self._logger.warning('Could not find user in database.')
+            return actors_pb2.ArticleResponse()
+
+        actor_url = self._activities_util.build_actor(
+            user.handle, self._host_name)
+        articleEntry = database_pb2.PostsEntry(
+            global_id=req.article_id
+        )
+        article_id = self._activities_util.build_article_url(
+            user, articleEntry)
+        article, err = self._activities_util.get_article_by_ap_id(
+            article_id)
+        if err is not None:
+            self._logger.warning(
+                'Could not find article in database: {}'.format(err))
+            self._logger.warning(
+                'ArticleId: {}'.format(article_id))
+            return actors_pb2.ArticleResponse()
+
+        publish_time = self._activities_util.timestamp_to_rfc(
+            article.creation_datetime)
+
+        return actors_pb2.ArticleResponse(
+            actor=actor_url,
+            content=article.body,
+            published=publish_time,
+            summary=article.summary,
+            title=article.title,
+            ap_id=article_id
+        )

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -231,6 +232,128 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, resp.Collection)
+		log.Printf("Created following collection successfully.")
+	}
+}
+
+type ArticlePreviewStruct struct {
+	Type    string `json:"type"`
+	Content string `json:"content"`
+	Name    string `json:"name"`
+}
+
+type ArticleContentStruct struct {
+	// The @context in the output JSON-LD
+	Context      []string              `json:"@context"`
+	Type         string                `json:"type"`
+	ID           string                `json:"id"`
+	URL          string                `json:"url"`
+	Content      string                `json:"content"`
+	Name         string                `json:"name"`
+	Published    string                `json:"published"`
+	To           []string              `json:"to"`
+	AttributedTo string                `json:"attributedTo"`
+	Preview      *ArticlePreviewStruct `json:"preview"`
+}
+
+type ArticleObjectStruct struct {
+	// The @context in the output JSON-LD
+	Context   []string              `json:"@context"`
+	Type      string                `json:"type"`
+	Actor     string                `json:"actor"`
+	Object    *ArticleContentStruct `json:"object"`
+	Published string                `json:"published"`
+	ID        string                `json:"id"`
+	To        []string              `json:"to"`
+}
+
+func (s *serverWrapper) handleApArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		strArticleID, aOk := v["article_id"]
+		if !aOk || strArticleID == "" {
+			log.Println("Per Article Ap passed bad articleId value")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
+		if string2IntErr != nil {
+			log.Println("ArticleAp ID could not be converted to int")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		req := &pb.ArticleApRequest{
+			ArticleId: articleID,
+			Username:  u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.GetArticle(ctx, req)
+		if err != nil {
+			log.Printf("Could not create article object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+		if resp.Actor == "" {
+			log.Printf("Actors service GetArticle returned empty string\n")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+
+		context := []string{
+			"https://www.w3.org/ns/activitystreams",
+		}
+
+		to := []string{
+			"https://www.w3.org/ns/activitystreams#Public",
+		}
+
+		summaryContent := &ArticlePreviewStruct{
+			Content: resp.Summary,
+			Type:    "Note",
+			Name:    "Summary",
+		}
+
+		articleContent := &ArticleContentStruct{
+			Context:      context,
+			Type:         "Create",
+			ID:           resp.ApId,
+			URL:          resp.ApId,
+			Content:      resp.Content,
+			Name:         resp.Title,
+			Published:    resp.Published,
+			To:           to,
+			AttributedTo: resp.Actor,
+			Preview:      summaryContent,
+		}
+
+		article := &ArticleObjectStruct{
+			Context:   context,
+			Type:      "Create",
+			Actor:     resp.Actor,
+			To:        to,
+			ID:        resp.ApId,
+			Published: resp.Published,
+			Object:    articleContent,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		err = enc.Encode(article)
+		if err != nil {
+			log.Printf("Could not marshal Article object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+		log.Printf("Created article successfully.")
 	}
 }
 
