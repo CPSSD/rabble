@@ -51,3 +51,74 @@ export function GetUserInfo(username: string) {
       });
   });
 }
+
+export interface IEditUserResult {
+  error: string;
+  success: boolean;
+}
+
+export function EditUserPromise(
+  bio: string, displayName: string,
+  currentPassword: string,  newPassword: string,
+  privateAccount: boolean,
+  customCss: string,
+) {
+  const url = "/c2s/update/user";
+  const postBody = {
+    bio,
+    current_password: currentPassword,
+    custom_css: customCss,
+    display_name: displayName,
+    new_password: newPassword,
+    private: {
+      value: privateAccount,
+    },
+  };
+  return new Promise<IEditUserResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .send(postBody)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+          succ = {
+            error: "Error parsing response",
+            success: false,
+          };
+        }
+        resolve(succ);
+      });
+  });
+}
+
+export function EditUserProfilePicPromise(profilePic: File) {
+  const url = "/c2s/update/user_pic";
+  return new Promise<IEditUserResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Accept", "application/json")
+      .attach("profile_pic", profilePic)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+          succ = {
+            error: "Error parsing response",
+            success: false,
+          };
+        }
+        resolve(succ);
+      });
+  });
+}

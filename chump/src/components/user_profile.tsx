@@ -11,7 +11,7 @@ import { UserFeed } from "./user_feed";
 
 import {
   EditUserProfilePicPromise, EditUserPromise, IEditUserResult,
-} from "../models/edit_user";
+} from "../models/user";
 
 /*
  * The profile page is where somebody lands if they click on a specific user.
