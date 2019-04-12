@@ -20,7 +20,7 @@ describe("Header", () => {
     const wrapper = render(
       <MemoryRouter>
         <HeaderWithRouter username={"x0x"} userId={0}/>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(wrapper.find("a").text()).to.contain("Rabble");
     expect(wrapper.find(".pure-menu-link").text()).to.contain("Write");

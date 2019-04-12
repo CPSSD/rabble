@@ -21,11 +21,11 @@ interface IHeaderState {
   linkMap: ILinkMap;
 }
 
-const navLinks: [string, string][] = [
+const navLinks: Array<[string, string]> = [
   ["/feed", config.feed_nav],
   ["/", config.all_nav],
   ["/recommended_posts", config.explore_nav],
-]
+];
 
 class Header extends React.Component<IHeaderProps, IHeaderState> {
   constructor(props: IHeaderProps) {
