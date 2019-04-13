@@ -237,12 +237,14 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 	}
 }
 
+// ArticlePreviewStruct contatins details about the summary of the article
 type ArticlePreviewStruct struct {
 	Type    string `json:"type"`
 	Content string `json:"content"`
 	Name    string `json:"name"`
 }
 
+// ArticleContentStruct contains the article content and metadata
 type ArticleContentStruct struct {
 	// The @context in the output JSON-LD
 	Context      []string              `json:"@context"`
@@ -257,6 +259,7 @@ type ArticleContentStruct struct {
 	Preview      *ArticlePreviewStruct `json:"preview"`
 }
 
+// ArticleObjectStruct contains activitypub formatted articles
 type ArticleObjectStruct struct {
 	// The @context in the output JSON-LD
 	Context   []string              `json:"@context"`
@@ -268,20 +271,20 @@ type ArticleObjectStruct struct {
 	To        []string              `json:"to"`
 }
 
-func (s *serverWrapper) handleApArticle() http.HandlerFunc {
+func (s *serverWrapper) handleAPArticle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		u := v["username"]
 		strArticleID, aOk := v["article_id"]
 		if !aOk || strArticleID == "" {
-			log.Println("Per Article Ap passed bad articleId value")
+			log.Println("Per Article AP passed bad articleId value")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
 		if string2IntErr != nil {
-			log.Println("ArticleAp ID could not be converted to int")
+			log.Println("ArticleAP ID could not be converted to int")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

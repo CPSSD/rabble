@@ -101,7 +101,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/@{username}", s.handleActor())
 	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 	r.HandleFunc("/ap/@{username}/followers", s.handleFollowersCollection())
-	r.HandleFunc("/ap/@{username}/{article_id}", s.handleApArticle())
+	r.HandleFunc("/ap/@{username}/{article_id}", s.handleAPArticle())
 
 	r.HandleFunc(webfinger.WebFingerPath, s.newWebfingerHandler())
 }

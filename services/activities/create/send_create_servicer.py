@@ -51,7 +51,6 @@ class SendCreateServicer:
             "object": article,
         }
 
-        # s2s inbox for user. Format banana.com/ap/@banana/inbox
         target_inbox = self._activ_util.build_inbox_url(
             follower.handle, follower.host)
 
