@@ -147,7 +147,7 @@ class ActivitiesUtil:
             return None
         return host
 
-    def build_article_url(self, author, article):
+    def build_article_ap_id(self, author, article):
         """
         author must be a UserEntry proto.
         article must be a PostEntry proto.
@@ -159,6 +159,15 @@ class ActivitiesUtil:
         if normalised_host is None or author.host == "":
             normalised_host = self.normalise_hostname(self._host_name)
         return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
+
+    def build_article_url(self, article):
+        """
+        author must be a UserEntry proto.
+        article must be a PostEntry proto.
+        """
+        # Local article, build ID manually
+        normalised_host = self.normalise_hostname(self._host_name)
+        return f'{normalised_host}/article/{article.global_id}'
 
     def build_undo(self, obj):
         return {
@@ -176,7 +185,7 @@ class ActivitiesUtil:
         return {
             "@context": self.rabble_context(),
             "type": "Delete",
-            "object": self.build_article_url(user, article),
+            "object": self.build_article_ap_id(user, article),
             "actor": self.build_actor(user.handle, hostname),
         }
 
@@ -226,11 +235,13 @@ class ActivitiesUtil:
             inbox_url, handle, host))
         return inbox_url
 
-    def build_article(self, ap_id, title, timestamp, author, content, summary):
+    def build_article(self, ap_id, title, timestamp, author, content, summary, article_url=None):
         """
         Builds an ActivityPub article object.
         The timestamp must be in json format, not protobuf.
         """
+        if article_url is None:
+            article_url = ap_id
         return {
             "@context": self.rabble_context(),
             "type": "Article",
@@ -244,6 +255,7 @@ class ActivitiesUtil:
                 "name": "Summary",
                 "content": summary,
             },
+            "url": article_url,
         }
 
     def send_activity(self, activity, target_inbox, sender_id=None):

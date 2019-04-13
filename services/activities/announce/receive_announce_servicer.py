@@ -14,14 +14,17 @@ class ReceiveAnnounceServicer:
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get('HOST_NAME')
-        self._announce_util = AnnounceUtil(logger, db, activ_util, self._hostname)
+        self._announce_util = AnnounceUtil(
+            logger, db, activ_util, self._hostname)
         self._article_stub = article_stub
         if not self._hostname:
-            self._logger.error("'HOST_NAME' env var is not set and no hostname is passed in")
+            self._logger.error(
+                "'HOST_NAME' env var is not set and no hostname is passed in")
             sys.exit(1)
 
     def get_user_by_ap_id(self, actor_tuple):
-        host = self._activ_util.get_host_name_param(actor_tuple[0], self._hostname)
+        host = self._activ_util.get_host_name_param(
+            actor_tuple[0], self._hostname)
         if host is None:
             user = self._users_util.get_user_from_db(
                 handle=actor_tuple[1], host_is_null=True)
@@ -75,7 +78,8 @@ class ReceiveAnnounceServicer:
                 article_resp.error
             )
             return None
-        article, err = self._activ_util.get_article_by_ap_id(req.announced_object)
+        article, err = self._activ_util.get_article_by_ap_id(
+            req.announced_object)
         if err is not None:
             self._logger.error(
                 "Could not find new article ap_id: % after creation: %s",
@@ -130,13 +134,15 @@ class ReceiveAnnounceServicer:
         # TODO(sailslick) check if author is actual author/post exists irl
         # https://github.com/CPSSD/rabble/issues/409
         if author is None:
-            self._logger.debug("Author does not exist on this server, creating")
+            self._logger.debug(
+                "Author does not exist on this server, creating")
             # Author is foreign and doesn't exist.
             # Check if announcer exists
             announcer = self.get_user_by_ap_id(announcer_tuple)
             if announcer is None:
                 # If announcer & author doesn't exist, announce is error
-                self._logger.error("Received announce without knowing author or announcer")
+                self._logger.error(
+                    "Received announce without knowing author or announcer")
                 return announce_pb2.AnnounceResponse(
                     result_type=announce_pb2.AnnounceResponse.ERROR,
                     error="Received announce without knowing author or announcer",
@@ -149,7 +155,8 @@ class ReceiveAnnounceServicer:
             # Create post
             article = self.create_post(author, req)
             if article is None:
-                self._logger.debug("Issue creating new article from unknown author")
+                self._logger.debug(
+                    "Issue creating new article from unknown author")
                 return announce_pb2.AnnounceResponse(
                     result_type=announce_pb2.AnnounceResponse.ERROR,
                     error="Could not create local version of article id: {}".format(
@@ -165,7 +172,8 @@ class ReceiveAnnounceServicer:
                     handle=announcer_tuple[1], host=announcer_tuple[0])
 
             # Check if article exists
-            article, err = self._activ_util.get_article_by_ap_id(req.announced_object)
+            article, err = self._activ_util.get_article_by_ap_id(
+                req.announced_object)
             if err is not None and (author.host_is_null or not author.host):
                 # Author is local but the post doesn't exist.
                 # This is a bad request.
@@ -196,20 +204,29 @@ class ReceiveAnnounceServicer:
                 # author and article local, check if author is target.
                 # if not target, send success as author will receive share
                 if req.target_id != req.author_ap_id:
-                    self._logger.debug("Target is local but not author, returning success")
+                    self._logger.debug(
+                        "Target is local but not author, returning success")
                     return response
                 # if target, add to shares db, update share count, send to followers
-                err_resp = self.add_share_update_count(announcer, article, req.announce_time)
+                err_resp = self.add_share_update_count(
+                    announcer, article, req.announce_time)
                 if err_resp is not None:
                     return err_resp
-                article_obj = self._announce_util.build_article_object(
-                    article, req.announced_object, req.author_ap_id)
+                article_url = self._activ_util.build_article_url(article)
+                timestamp = self._activ_util.timestamp_to_rfc(
+                    article.creation_datetime)
+                article_obj = self._activ_util.build_article(
+                    req.announced_object, article.title, timestamp,
+                    req.author_ap_id, article.md_body, article.summary,
+                    article_url=article_url,
+                )
                 return self.send_to_followers(author, req.announce_time,
                                               req.announcer_id,
                                               article_obj, response)
 
         # At this point, author, announcer and article all exist.
-        err_resp = self.add_share_update_count(announcer, article, req.announce_time)
+        err_resp = self.add_share_update_count(
+            announcer, article, req.announce_time)
         if err_resp is not None:
             return err_resp
         return response

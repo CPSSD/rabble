@@ -36,13 +36,12 @@ class SendCreateServicer:
         return None
 
     # follower is (host, handle)
-    def _post_create_req(self, follower, req, ap_id, author):
-        # Target & actor format is host/@handle e.g. banana.com/@banana
+    def _post_create_req(self, follower, req, ap_id, author, article_url):
         target = self._activ_util.build_actor(follower.handle, follower.host)
         actor = self._activ_util.build_actor(author.handle, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         article = self._activ_util.build_article(
-            ap_id, req.title, timestamp, actor, req.body, req.summary)
+            ap_id, req.title, timestamp, actor, req.body, req.summary article_url=article_url)
         create_activity = {
             "@context":  self._activ_util.rabble_context(),
             "type": "Create",
@@ -71,9 +70,11 @@ class SendCreateServicer:
         author = self._users_util.get_user_from_db(global_id=req.author_id)
         # Insert ActivityPub ID into database.
         # build author entry from scratch to add host into call
-        ap_id = self._activ_util.build_article_url(
+        ap_id = self._activ_util.build_article_ap_id(
             database_pb2.UsersEntry(
                 handle=author.handle, host=self._host_name),
+            database_pb2.PostsEntry(global_id=req.global_id))
+        article_url = self._activ_util.build_article_url(
             database_pb2.PostsEntry(global_id=req.global_id))
         err = self._add_ap_id(req.global_id, ap_id)
         if err is not None:
@@ -87,7 +88,7 @@ class SendCreateServicer:
         # go through follow send create activity
         # TODO (sailslick) make async/ parallel in the future
         for follower in foreign_follows:
-            self._post_create_req(follower, req, ap_id, author)
+            self._post_create_req(follower, req, ap_id, author, article_url)
 
         resp = create_pb2.CreateResponse()
         resp.result_type = create_pb2.CreateResponse.OK

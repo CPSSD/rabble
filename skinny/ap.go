@@ -284,7 +284,7 @@ func (s *serverWrapper) handleAPArticle() http.HandlerFunc {
 
 		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
 		if string2IntErr != nil {
-			log.Println("ArticleAP ID could not be converted to int")
+			log.Println("ID in handleAPArticle could not be converted to int")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -328,7 +328,7 @@ func (s *serverWrapper) handleAPArticle() http.HandlerFunc {
 			Context:      context,
 			Type:         "Create",
 			ID:           resp.ApId,
-			URL:          resp.ApId,
+			URL:          resp.ArticleUrl,
 			Content:      resp.Content,
 			Name:         resp.Title,
 			Published:    resp.Published,

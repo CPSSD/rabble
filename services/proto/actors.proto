@@ -49,6 +49,7 @@ message ArticleResponse {
   string summary = 4;
   string title = 5;
   string ap_id = 6;
+  string article_url = 7;
 }
 
 service Actors {

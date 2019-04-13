@@ -88,8 +88,9 @@ class ActorsServicer:
         articleEntry = database_pb2.PostsEntry(
             global_id=req.article_id
         )
-        article_id = self._activities_util.build_article_url(
+        article_id = self._activities_util.build_article_ap_id(
             user, articleEntry)
+        article_url = self._activities_util.build_article_url(articleEntry)
         article, err = self._activities_util.get_article_by_ap_id(
             article_id)
         if err is not None:
@@ -108,5 +109,6 @@ class ActorsServicer:
             published=publish_time,
             summary=article.summary,
             title=article.title,
-            ap_id=article_id
+            ap_id=article_id,
+            article_url=article_url
         )
