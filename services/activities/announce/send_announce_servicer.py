@@ -75,7 +75,8 @@ class SendAnnounceServicer:
         # check if author is local, if they are build local article url
         if not author.host:
             host = self._hostname
-            article_url = self._activ_util.build_article_url(article)
+            article_url = self._activ_util.build_local_article_url(
+                author, article)
         author_actor = self._activ_util.build_actor(author.handle, host)
 
         # Create Announce activity

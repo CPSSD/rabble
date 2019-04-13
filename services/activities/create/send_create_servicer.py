@@ -41,7 +41,8 @@ class SendCreateServicer:
         actor = self._activ_util.build_actor(author.handle, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         article = self._activ_util.build_article(
-            ap_id, req.title, timestamp, actor, req.body, req.summary article_url=article_url)
+            ap_id, req.title, timestamp, actor, req.body,
+            req.summary, article_url=article_url)
         create_activity = {
             "@context":  self._activ_util.rabble_context(),
             "type": "Create",
@@ -70,12 +71,11 @@ class SendCreateServicer:
         author = self._users_util.get_user_from_db(global_id=req.author_id)
         # Insert ActivityPub ID into database.
         # build author entry from scratch to add host into call
-        ap_id = self._activ_util.build_article_ap_id(
-            database_pb2.UsersEntry(
-                handle=author.handle, host=self._host_name),
-            database_pb2.PostsEntry(global_id=req.global_id))
-        article_url = self._activ_util.build_article_url(
-            database_pb2.PostsEntry(global_id=req.global_id))
+        ue = database_pb2.UsersEntry(
+            handle=author.handle, host=self._host_name)
+        pe = database_pb2.PostsEntry(global_id=req.global_id)
+        ap_id = self._activ_util.build_article_ap_id(ue, pe)
+        article_url = self._activ_util.build_local_article_url(ue, pe)
         err = self._add_ap_id(req.global_id, ap_id)
         if err is not None:
             self._logger.error("Continuing through error: %s", err)

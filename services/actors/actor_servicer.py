@@ -24,8 +24,8 @@ class ActorsServicer:
             request_type=database_pb2.UsersRequest.FIND
         )
         resp = self._db_stub.Users(req)
-        if (resp.result_type != database_pb2.UsersResponse.OK
-                or len(resp.results) == 0):
+        if (resp.result_type != database_pb2.UsersResponse.OK or
+                len(resp.results) == 0):
             self._logger.error('No user found in database')
             return None
         return resp.results[0].public_key
@@ -90,7 +90,8 @@ class ActorsServicer:
         )
         article_id = self._activities_util.build_article_ap_id(
             user, articleEntry)
-        article_url = self._activities_util.build_article_url(articleEntry)
+        article_url = self._activities_util.build_local_article_url(
+            user, articleEntry)
         article, err = self._activities_util.get_article_by_ap_id(
             article_id)
         if err is not None:

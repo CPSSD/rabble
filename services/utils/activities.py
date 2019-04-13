@@ -160,14 +160,14 @@ class ActivitiesUtil:
             normalised_host = self.normalise_hostname(self._host_name)
         return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
 
-    def build_article_url(self, article):
+    def build_local_article_url(self, author, article):
         """
         author must be a UserEntry proto.
         article must be a PostEntry proto.
         """
         # Local article, build ID manually
         normalised_host = self.normalise_hostname(self._host_name)
-        return f'{normalised_host}/article/{article.global_id}'
+        return f'{normalised_host}/#/@{author.handle}/{article.global_id}'
 
     def build_undo(self, obj):
         return {

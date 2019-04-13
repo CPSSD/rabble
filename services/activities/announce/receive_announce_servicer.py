@@ -212,7 +212,8 @@ class ReceiveAnnounceServicer:
                     announcer, article, req.announce_time)
                 if err_resp is not None:
                     return err_resp
-                article_url = self._activ_util.build_article_url(article)
+                article_url = self._activ_util.build_local_article_url(
+                    author, article)
                 timestamp = self._activ_util.timestamp_to_rfc(
                     article.creation_datetime)
                 article_obj = self._activ_util.build_article(
