@@ -174,7 +174,8 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   }
 
   private viewerIsAuthor() {
-    return this.props.username === this.props.blogPost.author;
+    return this.props.username === this.props.blogPost.author &&
+      this.props.blogPost.author_host === "";
   }
 
   private nonInteractivePost() {
