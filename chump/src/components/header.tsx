@@ -17,8 +17,6 @@ type IHeaderProps = RouteComponentProps & {
 interface IHeaderState {
   display: string;
   query: string;
-
-  linkMap: ILinkMap;
 }
 
 const navLinks: Array<[string, string]> = [
@@ -27,18 +25,17 @@ const navLinks: Array<[string, string]> = [
   ["/recommended_posts", config.explore_nav],
 ];
 
+const linkMap: ILinkMap = {};
+for (const link of navLinks) {
+  linkMap[link[0]] = link[1];
+}
+
 class Header extends React.Component<IHeaderProps, IHeaderState> {
   constructor(props: IHeaderProps) {
     super(props);
 
-    const linkMap: ILinkMap = {};
-    for (const link of navLinks) {
-      linkMap[link[0]] = link[1];
-    }
-
     this.state = {
       display: "none",
-      linkMap,
       query: "",
     };
 
@@ -200,7 +197,7 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
 
   private renderNavLinks() {
     let selected = "";
-    if (this.state.linkMap.hasOwnProperty(this.props.location.pathname)) {
+    if (linkMap.hasOwnProperty(this.props.location.pathname)) {
       selected = this.props.location.pathname;
     }
 
