@@ -20,8 +20,8 @@ interface IHeaderState {
 }
 
 const navLinks: Array<[string, string]> = [
-  ["/feed", config.feed_nav],
   ["/", config.all_nav],
+  ["/feed", config.feed_nav],
   ["/recommended_posts", config.explore_nav],
 ];
 
@@ -94,16 +94,13 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
   }
 
   private renderUnderNav() {
-    let links: JSX.Element | boolean = false;
-    if (this.props.username !== "") {
-      links = (
-        <div className="pure-menu pure-menu-horizontal">
-          <ul className="pure-menu-list">
-            {this.renderNavLinks()}
-          </ul>
-        </div>
-      );
-    }
+    const links = (
+      <div className="pure-menu pure-menu-horizontal">
+        <ul className="pure-menu-list">
+          {this.renderNavLinks()}
+        </ul>
+      </div>
+    );
 
     return (
       <div className="pure-g subnav subnav-spacer">
@@ -196,12 +193,18 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
   }
 
   private renderNavLinks() {
+    let useLinks = navLinks;
+    if (this.props.username === "") {
+      useLinks = useLinks.slice(0, 1);
+    }
+
     let selected = "";
+
     if (linkMap.hasOwnProperty(this.props.location.pathname)) {
       selected = this.props.location.pathname;
     }
 
-    return navLinks.map((navLink: [string, string], i: number) => {
+    return useLinks.map((navLink: [string, string], i: number) => {
       const link = navLink[0];
       const name = navLink[1];
 
