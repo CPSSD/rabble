@@ -5,8 +5,8 @@ import * as config from "../../rabble_config.json";
 import { IParsedPost } from "../models/posts";
 import { DeleteButton } from "./delete_button";
 import { EditButton } from "./edit_button";
-import { LikeButton } from "./like_button";
 import { FollowButton} from "./follow_button";
+import { LikeButton } from "./like_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
 import { Tags } from "./tags";
@@ -21,11 +21,9 @@ interface IPostProps {
   deleteSuccessCallback: () => void;
 }
 
-interface IPostState {}
-
 const userLinksClassName = "username-holder";
 
-export class Post extends RootComponent<IPostProps, IPostState> {
+export class Post extends RootComponent<IPostProps, {}> {
   constructor(props: IPostProps) {
     super(props);
     this.state = {};

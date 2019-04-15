@@ -1,9 +1,9 @@
 import * as React from "react";
-import { ThumbsUp, ThumbsDown } from "react-feather";
+import { ThumbsDown, ThumbsUp } from "react-feather";
 
 import * as config from "../../rabble_config.json";
-import { IParsedPost } from "../models/posts";
 import { SendLike } from "../models/like";
+import { IParsedPost } from "../models/posts";
 import { RootComponent } from "./root_component";
 
 interface ILikeButtonProps {
@@ -30,6 +30,18 @@ export class LikeButton extends RootComponent<ILikeButtonProps, ILikeButtonState
     this.handleClick = this.handleClick.bind(this);
     this.renderLikeButton = this.renderLikeButton.bind(this);
     this.renderUnlikeButton = this.renderUnlikeButton.bind(this);
+  }
+
+  public render() {
+    if (!this.props.display) {
+      return null;
+    }
+    const button = this.state.isLiked ? this.renderUnlikeButton() : this.renderLikeButton();
+    return (
+      <div className="pure-u-5-24">
+        {button}
+      </div>
+    );
   }
 
   private renderLikeButton() {
@@ -76,17 +88,5 @@ export class LikeButton extends RootComponent<ILikeButtonProps, ILikeButtonState
         }
         this.errorToast({ debug: message });
       });
-  }
-
-  public render() {
-    if (!this.props.display) {
-      return null;
-    }
-    const button = this.state.isLiked ? this.renderUnlikeButton() : this.renderLikeButton();
-    return (
-      <div className="pure-u-5-24">
-        {button}
-      </div>
-    );
   }
 }
