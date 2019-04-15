@@ -422,15 +422,32 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		nfa := &pb.NewForeignArticle{
-			AttributedTo: t.Object.AttributedTo,
-			Content:      t.Object.Content,
-			Published:    protoTimestamp,
-			Recipient:    recipient,
-			Title:        t.Object.Name,
-			Id:           t.Object.ID,
-			Summary:      summary,
+		var nfa *pb.NewForeignArticle
+
+		if t.Object.Type == "Note" {
+			src := "Source: " + t.Object.URL
+
+			nfa = &pb.NewForeignArticle{
+				AttributedTo: t.Object.AttributedTo,
+				Content:      t.Object.Content + "\n\n" + src,
+				Published:    protoTimestamp,
+				Recipient:    recipient,
+				Title:        "Received A Note",
+				Id:           t.Object.ID,
+				Summary:      src,
+			}
+		} else {
+			nfa = &pb.NewForeignArticle{
+				AttributedTo: t.Object.AttributedTo,
+				Content:      t.Object.Content,
+				Published:    protoTimestamp,
+				Recipient:    recipient,
+				Title:        t.Object.Name,
+				Id:           t.Object.ID,
+				Summary:      summary,
+			}
 		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
