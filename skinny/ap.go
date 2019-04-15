@@ -424,9 +424,9 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 
 		var nfa *pb.NewForeignArticle
 
-		if t.Object.Type == "Note" {
+		switch strings.ToLower(t.Object.Type) {
+		case "note":
 			src := "Source: " + t.Object.URL
-
 			nfa = &pb.NewForeignArticle{
 				AttributedTo: t.Object.AttributedTo,
 				Content:      t.Object.Content + "\n\n" + src,
@@ -436,7 +436,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 				Id:           t.Object.ID,
 				Summary:      src,
 			}
-		} else {
+		case "article":
 			nfa = &pb.NewForeignArticle{
 				AttributedTo: t.Object.AttributedTo,
 				Content:      t.Object.Content,
@@ -446,6 +446,12 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 				Id:           t.Object.ID,
 				Summary:      summary,
 			}
+		default:
+			log.Printf("Received unknown ActivityPub type: %s: %#v",
+				t.Object.Type, t)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Cannot handle Create %s activity\n", t.Object.Type)
+			return
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
