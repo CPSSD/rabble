@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Lora|Raleway');
+
 html {
   font-family: sans;
 }
@@ -23,7 +25,7 @@ html {
 }
 
 html, button, input, select, textarea, .pure-g [class *="pure-u"] {
-  font-family: Georgia, Times, "Times New Roman", serif;
+  font-family: 'Lora', serif;
   font-size: 21px;
   line-height: 1.5;
 }
@@ -61,7 +63,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .brand {
   color: var(--primary-dark-color);
-  font-size: 1.2em;
+  font-size: 1.25em;
   font-weight: bold;
   text-decoration: none;
 }
@@ -89,7 +91,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .article-title {
-  font-family: Lato;
+  font-family: 'Lora', serif;
   margin-top: 0;
   margin-bottom: 0;
   padding-top: 0;
@@ -100,13 +102,23 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   color: var(--primary-light-color);
 }
 
+.about-image-subtitle {
+  text-align: center;
+  font-style: italic;
+  margin-top: 0em;
+}
+
 .article-body {
   padding-bottom: 1em;
-  word-break: break-all;
+  word-break: break-word;
+  font-family: 'Raleway', sans-serif;
+  color: rgba(0,0,0,.84);
+  font-size: 18px;
 }
 
 .author-about {
   color: var(--dark-color-three);
+  font-family: 'Raleway', sans-serif;
   font-size: 0.75em;
   margin-top: 1em;
 }
@@ -135,7 +147,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 }
 
 .author-bio {
-  word-break: break-all;
+  word-break: break-word;
   color: var(--dark-color-three);
   font-size: 0.88em;
 }
