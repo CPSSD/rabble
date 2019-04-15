@@ -38,8 +38,8 @@ class ActivitiesUtil:
         url = f'{normalised_host}/.well-known/webfinger?resource=acct:{username}'
         resp = requests.get(url)
         if resp.status_code < 200 or resp.status_code >= 300:
-            self._logger.warning(('Non-2xx response code ({}) for webfinger ' +
-                                  'lookup for URL: {}').format(resp.status_code,
+            self._logger.warning(('Non-2xx response code ({}) for webfinger '
+                                  + 'lookup for URL: {}').format(resp.status_code,
                                                                url))
             return None
         return resp.json()
@@ -147,7 +147,7 @@ class ActivitiesUtil:
             return None
         return host
 
-    def build_article_url(self, author, article):
+    def build_article_ap_id(self, author, article):
         """
         author must be a UserEntry proto.
         article must be a PostEntry proto.
@@ -156,7 +156,18 @@ class ActivitiesUtil:
             return article.ap_id
         # Local article, build ID manually
         normalised_host = self.normalise_hostname(author.host)
+        if normalised_host is None or author.host == "":
+            normalised_host = self.normalise_hostname(self._host_name)
         return f'{normalised_host}/ap/@{author.handle}/{article.global_id}'
+
+    def build_local_article_url(self, author, article):
+        """
+        author must be a UserEntry proto.
+        article must be a PostEntry proto.
+        """
+        # Local article, build ID manually
+        normalised_host = self.normalise_hostname(self._host_name)
+        return f'{normalised_host}/#/@{author.handle}/{article.global_id}'
 
     def build_undo(self, obj):
         return {
@@ -174,7 +185,7 @@ class ActivitiesUtil:
         return {
             "@context": self.rabble_context(),
             "type": "Delete",
-            "object": self.build_article_url(user, article),
+            "object": self.build_article_ap_id(user, article),
             "actor": self.build_actor(user.handle, hostname),
         }
 
@@ -192,8 +203,8 @@ class ActivitiesUtil:
         # Fetch the actor document.
         resp = requests.get(actor_url, headers=headers)
         if resp.status_code < 200 or resp.status_code >= 300:
-            self._logger.warning(('Non-2xx response ({}) when fetching actor ' +
-                                  'document at URL "{}"').format(resp.status_code,
+            self._logger.warning(('Non-2xx response ({}) when fetching actor '
+                                  + 'document at URL "{}"').format(resp.status_code,
                                                                  actor_url))
             return None
         doc = resp.json()
@@ -224,11 +235,13 @@ class ActivitiesUtil:
             inbox_url, handle, host))
         return inbox_url
 
-    def build_article(self, ap_id, title, timestamp, author, content, summary):
+    def build_article(self, ap_id, title, timestamp, author, content, summary, article_url=None):
         """
         Builds an ActivityPub article object.
         The timestamp must be in json format, not protobuf.
         """
+        if article_url is None:
+            article_url = ap_id
         return {
             "@context": self.rabble_context(),
             "type": "Article",
@@ -242,6 +255,7 @@ class ActivitiesUtil:
                 "name": "Summary",
                 "content": summary,
             },
+            "url": article_url,
         }
 
     def send_activity(self, activity, target_inbox, sender_id=None):

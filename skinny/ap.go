@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -75,17 +76,23 @@ func (s *serverWrapper) handleActorInbox() http.HandlerFunc {
 	}
 }
 
+// ImageObject holds the type of the image e.g. ".png" and the url
+// where the image can be found
 type ImageObject struct {
 	Type string `json:"type"`
-	Url  string `json:"url"`
+	URL  string `json:"url"`
 }
 
+// KeyObject holds information about the public key of a user such as the
+// key id, the owner of the key and the publickey in string format
 type KeyObject struct {
-	Id           string `json:"id"`
+	ID           string `json:"id"`
 	Owner        string `json:"owner"`
 	PublicKeyPem string `json:"publicKeyPem"`
 }
 
+// ActorObjectStruct holds all fields that a ActivityPub actor should hold.
+// see spec here: https://www.w3.org/TR/activitypub/#actor-objects
 type ActorObjectStruct struct {
 	// The @context in the output JSON-LD
 	Context []string `json:"@context"`
@@ -100,7 +107,7 @@ type ActorObjectStruct struct {
 	Followers         string       `json:followers`
 	Following         string       `json:following`
 	PublicKey         *KeyObject   `json:"publicKey"`
-	Id                string       `json:"id"`
+	ID                string       `json:"id"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -142,11 +149,11 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			PreferredUsername: resp.Actor.PreferredUsername,
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
-			Id:                resp.Actor.Id,
+			ID:                resp.Actor.Id,
 		}
 
 		actor.PublicKey = &KeyObject{
-			Id:           resp.Actor.PublicKey.Id,
+			ID:           resp.Actor.PublicKey.Id,
 			Owner:        resp.Actor.PublicKey.Owner,
 			PublicKeyPem: resp.Actor.PublicKey.PublicKeyPem,
 		}
@@ -156,7 +163,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			// Profile pic exists
 			actor.Icon = &ImageObject{
 				Type: "Image",
-				Url: fmt.Sprintf(
+				URL: fmt.Sprintf(
 					"http://%s/assets/user_%d",
 					s.hostname, resp.Actor.GlobalId),
 			}
@@ -225,6 +232,131 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, resp.Collection)
+		log.Printf("Created following collection successfully.")
+	}
+}
+
+// ArticlePreviewStruct contatins details about the summary of the article
+type ArticlePreviewStruct struct {
+	Type    string `json:"type"`
+	Content string `json:"content"`
+	Name    string `json:"name"`
+}
+
+// ArticleContentStruct contains the article content and metadata
+type ArticleContentStruct struct {
+	// The @context in the output JSON-LD
+	Context      []string              `json:"@context"`
+	Type         string                `json:"type"`
+	ID           string                `json:"id"`
+	URL          string                `json:"url"`
+	Content      string                `json:"content"`
+	Name         string                `json:"name"`
+	Published    string                `json:"published"`
+	To           []string              `json:"to"`
+	AttributedTo string                `json:"attributedTo"`
+	Preview      *ArticlePreviewStruct `json:"preview"`
+}
+
+// ArticleObjectStruct contains activitypub formatted articles
+type ArticleObjectStruct struct {
+	// The @context in the output JSON-LD
+	Context   []string              `json:"@context"`
+	Type      string                `json:"type"`
+	Actor     string                `json:"actor"`
+	Object    *ArticleContentStruct `json:"object"`
+	Published string                `json:"published"`
+	ID        string                `json:"id"`
+	To        []string              `json:"to"`
+}
+
+func (s *serverWrapper) handleAPArticle() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := mux.Vars(r)
+		u := v["username"]
+		strArticleID, aOk := v["article_id"]
+		if !aOk || strArticleID == "" {
+			log.Println("Per Article AP passed bad articleId value")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		articleID, string2IntErr := strconv.ParseInt(strArticleID, 10, 64)
+		if string2IntErr != nil {
+			log.Println("ID in handleAPArticle could not be converted to int")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		req := &pb.ArticleApRequest{
+			ArticleId: articleID,
+			Username:  u,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := s.actors.GetArticle(ctx, req)
+		if err != nil {
+			log.Printf("Could not create article object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+		if resp.Actor == "" {
+			log.Printf("Actors service GetArticle returned empty string\n")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+
+		context := []string{
+			"https://www.w3.org/ns/activitystreams",
+		}
+
+		to := []string{
+			"https://www.w3.org/ns/activitystreams#Public",
+		}
+
+		summaryContent := &ArticlePreviewStruct{
+			Content: resp.Summary,
+			Type:    "Note",
+			Name:    "Summary",
+		}
+
+		articleContent := &ArticleContentStruct{
+			Context:      context,
+			Type:         "Create",
+			ID:           resp.ApId,
+			URL:          resp.ArticleUrl,
+			Content:      resp.Content,
+			Name:         resp.Title,
+			Published:    resp.Published,
+			To:           to,
+			AttributedTo: resp.Actor,
+			Preview:      summaryContent,
+		}
+
+		article := &ArticleObjectStruct{
+			Context:   context,
+			Type:      "Create",
+			Actor:     resp.Actor,
+			To:        to,
+			ID:        resp.ApId,
+			Published: resp.Published,
+			Object:    articleContent,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		err = enc.Encode(article)
+		if err != nil {
+			log.Printf("Could not marshal Article object. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not create article object.\n")
+			return
+		}
+		log.Printf("Created article successfully.")
 	}
 }
 
@@ -234,7 +366,7 @@ type articleObjectStruct struct {
 	Published    string               `json:"published"`
 	AttributedTo string               `json:"attributedTo"`
 	Type         string               `json:"type"`
-	Id           string               `json:"id"`
+	ID           string               `json:"id"`
 	URL          string               `json:"url"`
 	Preview      articleObjectPreview `json:"preview"`
 }
@@ -296,7 +428,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			Published:    protoTimestamp,
 			Recipient:    recipient,
 			Title:        t.Object.Name,
-			Id:           t.Object.Id,
+			Id:           t.Object.ID,
 			Summary:      summary,
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -347,7 +479,7 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 		}
 
 		ud := &pb.ReceivedUpdateDetails{
-			ApId:    t.Object.Id,
+			ApId:    t.Object.ID,
 			Body:    t.Object.Content,
 			Title:   t.Object.Name,
 			Summary: summary,
@@ -460,7 +592,7 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 }
 
 type likeActorStruct struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -488,13 +620,13 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			return
 		}
 
-		if bad := s.blacklist.Actors(w, t.Actor.Id); bad {
+		if bad := s.blacklist.Actors(w, t.Actor.ID); bad {
 			return
 		}
 
 		f := &pb.ReceivedLikeDetails{
 			LikedObject: t.Object,
-			LikerId:     t.Actor.Id,
+			LikerId:     t.Actor.ID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -728,12 +860,12 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 			return
 		}
 
-		if bad := s.blacklist.Actors(w, t.Object.Actor.Id); bad {
+		if bad := s.blacklist.Actors(w, t.Object.Actor.ID); bad {
 			return
 		}
 		f := &pb.ReceivedLikeUndoDetails{
 			LikedObjectApId: t.Object.Object,
-			LikingUserApId:  t.Object.Actor.Id,
+			LikingUserApId:  t.Object.Actor.ID,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -760,7 +892,7 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 
 // TODO(sailslick): Properly fill in announce structs
 type announceActor struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -815,7 +947,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 		}
 
 		f := &pb.ReceivedAnnounceDetails{
-			AnnouncedObject: t.Object.Id,
+			AnnouncedObject: t.Object.ID,
 			AnnouncerId:     t.Actor,
 			AnnounceTime:    ats,
 			Body:            t.Object.Content,

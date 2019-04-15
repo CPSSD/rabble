@@ -41,6 +41,7 @@ class SendUpdateServicer:
 
     def _build_update(self, user, article, req):
         actor = self._activ_util.build_actor(user.handle, self._hostname)
+        article_url = self._activ_util.build_local_article_url(user, article)
         timestamp = article.creation_datetime.ToJsonString()
         ap_article = self._activ_util.build_article(
             article.ap_id,
@@ -49,6 +50,7 @@ class SendUpdateServicer:
             actor,
             req.body,
             req.summary,
+            article_url=article_url,
         )
         return {
             "@context": self._activ_util.rabble_context(),

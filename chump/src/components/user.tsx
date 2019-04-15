@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import * as config from "../../rabble_config.json";
-import { IParsedUser } from "../models/search";
+import { IParsedUser } from "../models/user";
 import { FollowButton} from "./follow_button";
 import { GenerateUserLinks } from "./util";
 
@@ -68,6 +68,6 @@ export class User extends React.Component<IUserProps, {}> {
 
   private handleNoProfilePic(event: any) {
     event.target.onerror = null;
-    event.target.src = this.props.blogUser.image;
+    event.target.src = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
   }
 }

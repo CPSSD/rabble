@@ -36,13 +36,13 @@ class SendCreateServicer:
         return None
 
     # follower is (host, handle)
-    def _post_create_req(self, follower, req, ap_id, author):
-        # Target & actor format is host/@handle e.g. banana.com/@banana
+    def _post_create_req(self, follower, req, ap_id, author, article_url):
         target = self._activ_util.build_actor(follower.handle, follower.host)
         actor = self._activ_util.build_actor(author.handle, self._host_name)
         timestamp = req.creation_datetime.ToJsonString()
         article = self._activ_util.build_article(
-            ap_id, req.title, timestamp, actor, req.body, req.summary)
+            ap_id, req.title, timestamp, actor, req.body,
+            req.summary, article_url=article_url)
         create_activity = {
             "@context":  self._activ_util.rabble_context(),
             "type": "Create",
@@ -50,28 +50,20 @@ class SendCreateServicer:
             "actor": actor,
             "object": article,
         }
-        headers = {"Content-Type": "application/ld+json"}
 
-        # s2s inbox for user. Format banana.com/ap/@banana/inbox
         target_inbox = self._activ_util.build_inbox_url(
             follower.handle, follower.host)
-        encoded_body = json.dumps(create_activity).encode("utf-8")
-        self._logger.info(target_inbox)
 
-        try:
-            r = self._client.request(
-                "POST",
-                target_inbox,
-                body=encoded_body,
-                retries=2,
-                headers=headers
-            )
-            self._logger.debug(
-                "Create activity sent. Response status: %s", r.status)
-        except Exception as e:
+        if target_inbox is None:
+            self._logger.info("Target inbox is none, skipping.")
+            return
+
+        self._logger.info("Sending create activity to foreign server")
+        resp, err = self._activ_util.send_activity(
+            create_activity, target_inbox, sender_id=author.global_id)
+        if err is not None:
             self._logger.error(
-                "Create activity for follower: %s failed", target)
-            self._logger.error(e)
+                "Send Create to %s error: %s", target_inbox, err)
 
     def SendCreate(self, req, context):
         self._logger.debug("Recieved a new create action.")
@@ -79,10 +71,11 @@ class SendCreateServicer:
         author = self._users_util.get_user_from_db(global_id=req.author_id)
         # Insert ActivityPub ID into database.
         # build author entry from scratch to add host into call
-        ap_id = self._activ_util.build_article_url(
-            database_pb2.UsersEntry(
-                handle=author.handle, host=self._host_name),
-            database_pb2.PostsEntry(global_id=req.global_id))
+        ue = database_pb2.UsersEntry(
+            handle=author.handle, host=self._host_name)
+        pe = database_pb2.PostsEntry(global_id=req.global_id)
+        ap_id = self._activ_util.build_article_ap_id(ue, pe)
+        article_url = self._activ_util.build_local_article_url(ue, pe)
         err = self._add_ap_id(req.global_id, ap_id)
         if err is not None:
             self._logger.error("Continuing through error: %s", err)
@@ -95,7 +88,7 @@ class SendCreateServicer:
         # go through follow send create activity
         # TODO (sailslick) make async/ parallel in the future
         for follower in foreign_follows:
-            self._post_create_req(follower, req, ap_id, author)
+            self._post_create_req(follower, req, ap_id, author, article_url)
 
         resp = create_pb2.CreateResponse()
         resp.result_type = create_pb2.CreateResponse.OK

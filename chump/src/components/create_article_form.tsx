@@ -226,7 +226,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
     promise
       .then((res: request.Response) => {
         if (res.status !== 200 || typeof(res.body) === "undefined") {
-          this.errorToast({ debug: res });
+          this.errorToast({ debug: res, statusCode: res.status });
           return;
         }
         const post = res.body as IParsedPost;

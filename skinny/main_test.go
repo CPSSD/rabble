@@ -188,8 +188,8 @@ func TestHandleFollowNotLoggedIn(t *testing.T) {
 	srv := newTestServerWrapper()
 
 	srv.handleFollow()(res, req)
-	if res.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	if res.Code != http.StatusForbidden {
+		t.Errorf("Expected 403 Forbidden, got %#v", res.Code)
 	}
 	var r pb.FollowResponse
 	json.Unmarshal([]byte(res.Body.String()), &r)
@@ -247,8 +247,8 @@ func TestHandleRssFollowNotLoggedIn(t *testing.T) {
 	srv := newTestServerWrapper()
 
 	srv.handleRssFollow()(res, req)
-	if res.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 Bad Request, got %#v", res.Code)
+	if res.Code != http.StatusForbidden {
+		t.Errorf("Expected 403 Forbidden, got %#v", res.Code)
 	}
 	var r pb.FollowResponse
 	json.Unmarshal([]byte(res.Body.String()), &r)
@@ -289,8 +289,8 @@ func TestHandleCreateArticleNotLoggedIn(t *testing.T) {
 	res := httptest.NewRecorder()
 	srv := newTestServerWrapper()
 	srv.handleCreateArticle()(res, req)
-	if res.Code != http.StatusUnauthorized {
-		t.Errorf("Expected 401 Unauthorized, got %#v", res.Code)
+	if res.Code != http.StatusForbidden {
+		t.Errorf("Expected 403 Forbidden, got %#v", res.Code)
 	}
 }
 

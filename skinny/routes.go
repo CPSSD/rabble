@@ -54,6 +54,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/article/{article_id}", s.handlePerArticlePage())
 	r.HandleFunc("/c2s/@{username}/followers", s.handleGetFollowers())
 	r.HandleFunc("/c2s/@{username}/following", s.handleGetFollowing())
+	r.HandleFunc("/c2s/@{username}/details", s.handleUserDetails())
 
 	// TODO(sailslick): move these below after user_id change comes in
 	// That change will stop perArticle from catching all urls
@@ -73,7 +74,6 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/c2s/like", s.handleLike())
 	r.HandleFunc("/c2s/update/user", s.handleUserUpdate())
 	r.HandleFunc("/c2s/update/user_pic", s.handleUserUpdateProfilePic())
-	r.HandleFunc("/c2s/details/user", s.handleUserDetails())
 	r.HandleFunc("/c2s/follows/pending", s.handlePendingFollows())
 	r.HandleFunc("/c2s/follows/accept", s.handleAcceptFollow())
 	r.HandleFunc("/c2s/track_view", s.handleTrackView())
@@ -101,6 +101,7 @@ func (s *serverWrapper) setupRoutes() {
 	r.HandleFunc("/ap/@{username}", s.handleActor())
 	r.HandleFunc("/ap/@{username}/following", s.handleFollowingCollection())
 	r.HandleFunc("/ap/@{username}/followers", s.handleFollowersCollection())
+	r.HandleFunc("/ap/@{username}/{article_id}", s.handleAPArticle())
 
 	r.HandleFunc(webfinger.WebFingerPath, s.newWebfingerHandler())
 }

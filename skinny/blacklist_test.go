@@ -34,14 +34,14 @@ func TestParseBlacklist(t *testing.T) {
 	}
 
 	compare := func(out Blacklist, test Blacklist) error {
-		for host_out := range out {
-			if _, exists := test[host_out]; !exists {
-				return fmt.Errorf("%#v not in test set", host_out)
+		for hostOut := range out {
+			if _, exists := test[hostOut]; !exists {
+				return fmt.Errorf("%#v not in test set", hostOut)
 			}
 		}
-		for host_test := range test {
-			if _, exists := out[host_test]; !exists {
-				return fmt.Errorf("%#v not in output", host_test)
+		for hostTest := range test {
+			if _, exists := out[hostTest]; !exists {
+				return fmt.Errorf("%#v not in output", hostTest)
 			}
 		}
 		return nil

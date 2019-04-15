@@ -227,15 +227,15 @@ func createPostRecommendationsClient() (*grpc.ClientConn, pb.PostRecommendations
 // wrapper, and returns one that is ready to run.
 func buildServerWrapper() *serverWrapper {
 	r := mux.NewRouter()
-	host_env := "HOST_NAME"
-	hostname := os.Getenv(host_env)
+	hostEnv := "HOST_NAME"
+	hostname := os.Getenv(hostEnv)
 	if hostname == "" {
-		log.Fatalf("%s env var not set for skinny server", host_env)
+		log.Fatalf("%s env var not set for skinny server", hostEnv)
 	}
-	port_env := "SKINNY_SERVER_PORT"
-	port := os.Getenv(port_env)
+	portEnv := "SKINNY_SERVER_PORT"
+	port := os.Getenv(portEnv)
 	if port == "" {
-		log.Fatalf("%s env var not set for skinny server", port_env)
+		log.Fatalf("%s env var not set for skinny server", portEnv)
 	}
 	addr := "0.0.0.0:" + port
 	srv := &http.Server{
@@ -250,7 +250,7 @@ func buildServerWrapper() *serverWrapper {
 	generatedBlacklist := NewBlacklist(loadBlacklistFile())
 	log.Print(generatedBlacklist)
 
-	cookie_store := sessions.NewCookieStore([]byte("rabble_key"))
+	cookieStore := sessions.NewCookieStore([]byte("rabble_key"))
 	databaseConn, databaseClient := createDatabaseClient()
 	followsConn, followsClient := createFollowsClient()
 	articleConn, articleClient := createArticleClient()
@@ -274,7 +274,7 @@ func buildServerWrapper() *serverWrapper {
 	s := &serverWrapper{
 		router:                    r,
 		server:                    srv,
-		store:                     cookie_store,
+		store:                     cookieStore,
 		shutdownWait:              20 * time.Second,
 		hostname:                  hostname,
 		blacklist:                 generatedBlacklist,

@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Redirect, RouteProps} from "react-router-dom";
 import * as config from "../../rabble_config.json";
-import {GetLoginPromise, ILoginResult} from "../models/login";
+import {GetLoginPromise, ILoginResult} from "../models/user";
 import {RootComponent} from "./root_component";
 
 interface ILoginProps extends RouteProps {
@@ -49,7 +49,7 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
           });
         }
       })
-      .catch(this.handleLoginError);
+      .catch(this.handleGeneralErr);
   }
 
   public render() {
@@ -107,9 +107,5 @@ export class Login extends RootComponent<ILoginProps, ILoginState> {
     this.setState({
       password: target.value,
     });
-  }
-
-  private handleLoginError() {
-    this.errorToast({});
   }
 }

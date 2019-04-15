@@ -1,27 +1,36 @@
 import * as Promise from "bluebird";
 import * as superagent from "superagent";
 
-export interface IEditUserResult {
-  error: string;
-  statusCode: number;
-  success: boolean;
-}
-
-export interface IUserDetails {
-  custom_css: string;
+export interface IParsedUser {
+  global_id: number;
   handle: string;
   host: string;
-  global_id: number;
   bio: string;
+  display_name: string;
+  is_followed: boolean;
   private: {
     value?: boolean;
   };
-  display_name: string;
+  custom_css: string;
 }
 
-export function GetUserInfo() {
-  const url = "/c2s/details/user";
-  return new Promise<IUserDetails>((resolve, reject) => {
+export function CleanUsers(u: IParsedUser[]) {
+  u.map((e: IParsedUser) => {
+    if (e.display_name === undefined || e.display_name === "") {
+      e.display_name = e.handle;
+    }
+    if (e.bio === undefined || e.bio === "") {
+      e.bio = "Nowadays everybody wanna talk like they got something to say. \
+      But nothing comes out when they move their lips; just a bunch of gibberish.";
+    }
+    return e;
+  });
+  return u;
+}
+
+export function GetUserInfo(username: string) {
+  const url = "/c2s/@" + username + "/details";
+  return new Promise<IParsedUser>((resolve, reject) => {
     superagent
       .post(url)
       .set("Content-Type", "application/json")
@@ -35,12 +44,18 @@ export function GetUserInfo() {
 
         const details = res!.body;
         if (details === null) {
-          reject("could not get current user details");
+          reject(new Error("could not get current user details"));
           return;
         }
         resolve(details);
       });
   });
+}
+
+export interface IEditUserResult {
+  error: string;
+  success: boolean;
+  statusCode: number;
 }
 
 export function EditUserPromise(
@@ -106,6 +121,63 @@ export function EditUserProfilePicPromise(profilePic: File) {
             error: "Error parsing response",
             success: false,
           };
+        }
+        succ.statusCode = res.status;
+        resolve(succ);
+      });
+  });
+}
+
+export interface ILoginResult {
+  success: boolean;
+  user_id: number;
+  statusCode: number;
+}
+
+export function GetLoginPromise(handle: string, password: string) {
+  const url = "/c2s/login";
+  const postBody = { handle, password };
+  return new Promise<ILoginResult>((resolve, reject) => {
+    superagent
+      .post(url)
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json")
+      .send(postBody)
+      .retry(2)
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+          succ = { success: false };
+        }
+        succ.statusCode = res.status;
+        resolve(succ);
+      });
+  });
+}
+
+export interface ILogoutResult {
+  success: boolean;
+  statusCode: number;
+}
+
+export function GetLogoutPromise() {
+  const url = "/c2s/logout";
+  return new Promise<ILogoutResult>((resolve, reject) => {
+    superagent
+      .get(url)
+      .set("Accept", "application/json")
+      .end((error, res) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let succ = res!.body;
+        if (succ === null) {
+            succ = { success: false };
         }
         succ.statusCode = res.status;
         resolve(succ);

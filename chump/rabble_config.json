@@ -55,5 +55,7 @@
   "feed_nav": "FEED",
   "all_nav": "ALL",
   "explore_nav": "EXPLORE",
-  "about": "About"
+  "about": "About",
+  "accepted_follow": "Follow accepted",
+  "denied_follow": "Follow denied"
 }

@@ -5,14 +5,14 @@ import * as ReactDOM from "react-dom";
 import { MemoryRouter } from "react-router";
 import * as sinon from "sinon";
 
-import { User } from "../../src/components/user_feed";
+import { UserFeed } from "../../src/components/user_feed";
 import { IParsedPost } from "../../src/models/posts";
 import { mount, shallow } from "./enzyme";
 
 describe("User", () => {
   it("should call post collecting methods", () => {
-    const getPosts = sinon.spy(User.prototype, "getPosts");
-    const render = sinon.spy(User.prototype, "renderPosts");
+    const getPosts = sinon.spy(UserFeed.prototype, "getPosts");
+    const render = sinon.spy(UserFeed.prototype, "renderPosts");
 
     const userProps = {
       userId: 0,
@@ -21,7 +21,7 @@ describe("User", () => {
     };
     const wrapper = mount(
       <MemoryRouter>
-        <User {...userProps} />
+        <UserFeed {...userProps} />
       </MemoryRouter>,
     );
 
@@ -39,7 +39,7 @@ describe("User", () => {
       username: "",
       viewing: "sips",
     };
-    const wrapper = shallow(<User {...userProps} />);
+    const wrapper = shallow(<UserFeed {...userProps} />);
     expect(wrapper.find("div")).to.have.lengthOf(4);
     expect(wrapper.find("Card")).to.have.lengthOf(0);
 

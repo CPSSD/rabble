@@ -3,7 +3,8 @@ import { ChevronDown, ChevronUp, Search } from "react-feather";
 import { Link, RouteProps } from "react-router-dom";
 
 import { IParsedPost } from "../models/posts";
-import { IParsedUser, ISearchResponse, SearchRequest } from "../models/search";
+import { ISearchResponse, SearchRequest } from "../models/search";
+import { IParsedUser } from "../models/user";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
 import { User } from "./user";
@@ -85,11 +86,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
           query,
         });
       })
-      .catch(this.handleGetPostsErr);
-  }
-
-  public handleGetPostsErr() {
-    this.errorToast({});
+      .catch(this.handleGeneralErr);
   }
 
   public renderPosts() {

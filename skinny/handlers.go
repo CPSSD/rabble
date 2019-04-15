@@ -30,6 +30,8 @@ const (
 	invalidJSONError          = "Invalid JSON"
 	invalidJSONErrorWithPrint = "Invalid JSON, error: %v\n"
 	loginRequired             = "Login Required"
+	pendingFollowsNotFound    = "Issue with finding pending follows.\n"
+	modifyFollowFailed        = "Could not modify follow"
 )
 
 type clientResp struct {
@@ -352,7 +354,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = loginRequired
 			enc.Encode(errResp)
 			return
@@ -405,7 +407,7 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to unfollow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = loginRequired
 			enc.Encode(errResp)
 			return
@@ -458,7 +460,7 @@ func (s *serverWrapper) handleRssFollow() http.HandlerFunc {
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow rss by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			errResp.Error = invalidJSONError
 			enc.Encode(errResp)
 			return
@@ -526,7 +528,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Create Article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -594,7 +596,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Edit article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -663,7 +665,7 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Delete article call from user not logged in")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			cResp.Error = loginRequired
 			enc.Encode(cResp)
 			return
@@ -716,7 +718,8 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		if jsonErr != nil {
 			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, invalidJSONError)
+			cResp.Error = invalidJSONError
+			enc.Encode(cResp)
 			return
 		}
 
@@ -731,8 +734,9 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		globalID, gIErr := s.getSessionGlobalID(r)
 		if gIErr != nil {
 			log.Printf("Preview Article call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, loginRequired)
+			w.WriteHeader(http.StatusForbidden)
+			cResp.Error = loginRequired
+			enc.Encode(cResp)
 			return
 		}
 
@@ -749,12 +753,12 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not create preview. Err: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with creating preview\n")
+			cResp.Error = "Issue with creating preview\n"
+			enc.Encode(cResp)
 			return
 		}
 
 		log.Printf("User Id: %#v attempted to create preview with title: %v\n", globalID, t.Title)
-		w.Header().Set("Content-Type", "application/json")
 		// TODO(devoxel): Remove SetEscapeHTML and properly handle that client side
 		enc.SetEscapeHTML(false)
 		err = enc.Encode(resp.Preview)
@@ -768,11 +772,14 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 
 func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
 
 		handle, err := s.getSessionHandle(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
@@ -786,20 +793,20 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		if err != nil {
 			log.Printf("Could not get pending follows. Err: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with finding pending follows.\n")
+			cResp.Error = pendingFollowsNotFound
+			enc.Encode(cResp)
 			return
 		}
 
 		if resp.ResultType != pb.PendingFollowResponse_OK {
 			log.Printf("Could not get pending follows. Err: %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Issue with finding pending follows.\n")
+			cResp.Error = pendingFollowsNotFound
+			enc.Encode(cResp)
 			return
 		}
 
 		log.Print(resp)
-		w.Header().Set("Content-Type", "application/json")
-		enc := json.NewEncoder(w)
 		err = enc.Encode(resp)
 		if err != nil {
 			log.Printf("could not marshal pending response: %v", err)
@@ -811,12 +818,15 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 
 func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := s.getSessionHandle(r)
+		_, err := s.getSessionGlobalID(r)
 		if err != nil {
 			log.Printf("Call to follow by not logged in user")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		var cResp clientResp
 
 		decoder := json.NewDecoder(r.Body)
 		var af pb.AcceptFollowRequest
@@ -824,7 +834,8 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		if err != nil {
 			log.Printf(invalidJSONErrorWithPrint, err)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, invalidJSONError)
+			cResp.Error = invalidJSONError
+			enc.Encode(cResp)
 			return
 		}
 
@@ -832,16 +843,18 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 		defer cancel()
 		resp, err := s.follows.AcceptFollow(ctx, &af)
 		if err != nil {
-			log.Printf("Could not modify follow: %v", err)
+			log.Printf(modifyFollowFailed+": %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not modify follow.\n")
+			cResp.Error = modifyFollowFailed
+			enc.Encode(cResp)
 			return
 		}
 
 		if resp.ResultType != pb.FollowResponse_OK {
-			log.Printf("Could not modify follow: %v", resp.Error)
+			log.Printf(modifyFollowFailed+": %v", resp.Error)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not modify follow.\n")
+			cResp.Error = modifyFollowFailed
+			enc.Encode(cResp)
 			return
 		}
 
@@ -850,46 +863,40 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 }
 
 type likeStruct struct {
-	ArticleId int64 `json:"article_id"`
+	ArticleID int64 `json:"article_id"`
 	IsLiked   bool  `json:"is_liked"`
-}
-
-type likeResponse struct {
-	Success  bool   `json:"success"`
-	ErrorStr string `json:"error_str"`
 }
 
 func (s *serverWrapper) handleLike() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		decoder := json.NewDecoder(req.Body)
 		var t likeStruct
-		var r likeResponse
+		var cResp clientResp
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json")
+
 		jsonErr := decoder.Decode(&t)
 		if jsonErr != nil {
 			log.Printf(invalidJSONErrorWithPrint, jsonErr)
 			w.WriteHeader(http.StatusBadRequest)
-			r.Success = false
-			r.ErrorStr = jsonErr.Error()
-			enc.Encode(r)
+			cResp.Error = jsonErr.Error()
+			enc.Encode(cResp)
 			return
 		}
 
 		handle, err := s.getSessionHandle(req)
 		if err != nil {
 			log.Printf("Like call from user not logged in")
-			w.WriteHeader(http.StatusBadRequest)
-			r.Success = false
-			r.ErrorStr = loginRequired
-			enc.Encode(r)
+			w.WriteHeader(http.StatusForbidden)
+			cResp.Error = loginRequired
+			enc.Encode(cResp)
 			return
 		}
 
 		if t.IsLiked {
 			// Send a like
 			like := &pb.LikeDetails{
-				ArticleId:   t.ArticleId,
+				ArticleId:   t.ArticleID,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -898,22 +905,20 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			if err != nil {
 				log.Printf("Could not send like: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
-				r.Success = false
-				r.ErrorStr = "Issue with sending like"
-				enc.Encode(r)
+				cResp.Error = "Issue with sending like"
+				enc.Encode(cResp)
 				return
 			} else if resp.ResultType != pb.LikeResponse_OK {
 				log.Printf("Could not send like: %v", resp.Error)
 				w.WriteHeader(http.StatusInternalServerError)
-				r.Success = false
-				r.ErrorStr = "Issue with sending like"
-				enc.Encode(r)
+				cResp.Error = "Issue with sending like"
+				enc.Encode(cResp)
 				return
 			}
 		} else {
 			// Send an unlike (undo)
 			del := &pb.LikeUndoDetails{
-				ArticleId:   t.ArticleId,
+				ArticleId:   t.ArticleID,
 				LikerHandle: handle,
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -922,21 +927,19 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 			if err != nil {
 				log.Printf("Could not send undo: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
-				r.Success = false
-				r.ErrorStr = "Issue with unliking"
-				enc.Encode(r)
+				cResp.Error = "Issue with unliking"
+				enc.Encode(cResp)
 				return
 			} else if resp.ResultType != pb.UndoResponse_OK {
 				log.Printf("Could not send undo: %v", resp.Error)
 				w.WriteHeader(http.StatusInternalServerError)
-				r.Success = false
-				r.ErrorStr = "Issue with unliking"
-				enc.Encode(r)
+				cResp.Error = "Issue with unliking"
+				enc.Encode(cResp)
 				return
 			}
 		}
-		r.Success = true
-		enc.Encode(r)
+		cResp.Message = "Success"
+		enc.Encode(cResp)
 	}
 }
 
@@ -977,6 +980,7 @@ func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 	}
 }
 
+// SearchResult holds the posts and users from a search
 type SearchResult struct {
 	Posts []*pb.Post `json:"posts"`
 	Users []*pb.User `json:"users"`
@@ -1025,10 +1029,18 @@ func (s *serverWrapper) handleSearch() http.HandlerFunc {
 
 func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handle, err := s.getSessionHandle(r)
+
+		v := mux.Vars(r)
+		username, ok := v["username"]
+		if !ok || username == "" {
+			w.WriteHeader(http.StatusBadRequest) // Bad Request.
+			return
+		}
+
+		handle, host, err := util.ParseUsername(username)
 		if err != nil {
-			log.Printf("Called user details without logging in: %v", err)
-			w.WriteHeader(http.StatusForbidden)
+			log.Printf("got bad username: %s", username)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
@@ -1036,8 +1048,14 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			RequestType: pb.UsersRequest_FIND,
 			Match: &pb.UsersEntry{
 				Handle:     handle,
-				HostIsNull: true,
+				Host:       host,
+				HostIsNull: host == "",
 			},
+		}
+
+		// uid = 0 if no user is logged in.
+		if uid, _ := s.getSessionGlobalID(r); uid != 0 {
+			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -1077,7 +1095,7 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalID(r)
+		uid, _ := s.getSessionGlobalID(r)
 
 		v.User = uid
 
@@ -1106,7 +1124,7 @@ func (s *serverWrapper) handleAddLog() http.HandlerFunc {
 		}
 
 		// uid = 0 if no user is logged in.
-		uid, err := s.getSessionGlobalID(r)
+		uid, _ := s.getSessionGlobalID(r)
 
 		v.User = uid
 
@@ -1166,6 +1184,8 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 	}
 }
 
+// FollowGetter is a wrapper around get follows so the handler can
+// get following or followers without duplication of code
 type FollowGetter func(context.Context, *pb.GetFollowsRequest,
 	...grpc.CallOption) (*pb.GetFollowsResponse, error)
 
@@ -1251,11 +1271,6 @@ func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
 	}
 }
 
-// NoOpReplyStruct Reply structure for a noop request
-type NoOpReplyStruct struct {
-	Message string `json:"message"`
-}
-
 // handleNoOp is the handler for any service that is not running on this
 // instance. The services that are configurable provide their docker routes as
 // env vars to the skinny server. If those routes are equal to the no-op
@@ -1272,7 +1287,7 @@ func (s *serverWrapper) handleNoOp() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
 
-		reply := NoOpReplyStruct{
+		reply := clientResp{
 			Message: "This option has been turned off on this rabble instance",
 		}
 		w.WriteHeader(http.StatusNotImplemented)

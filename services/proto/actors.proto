@@ -36,8 +36,25 @@ message CollectionResponse {
   string collection = 1;
 }
 
+message ArticleApRequest {
+  // Required.
+  string username = 1;
+  int64 article_id = 2;
+}
+
+message ArticleResponse {
+  string actor = 1;
+  string content = 2;
+  string published = 3;
+  string summary = 4;
+  string title = 5;
+  string ap_id = 6;
+  string article_url = 7;
+}
+
 service Actors {
   rpc Get(ActorRequest) returns (ActorResponse);
   rpc GetFollowing(ActorRequest) returns (CollectionResponse);
   rpc GetFollowers(ActorRequest) returns (CollectionResponse);
+  rpc GetArticle(ArticleApRequest) returns (ArticleResponse);
 }
