@@ -29,23 +29,16 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
     };
 
     this.handleReblog = this.handleReblog.bind(this);
+    this.reblogInner = this.reblogInner.bind(this);
+    this.isRebloggedInner = this.isRebloggedInner.bind(this);
     this.renderButton = this.renderButton.bind(this);
   }
 
   public render() {
-    let button = (<div/>);
-    if (this.props.display) {
-      button = this.renderButton();
+    if (!this.props.display) {
+      return null;
     }
-
-    return (
-      <div>
-        <div className="pure-u-5-24">
-            <p className="shares-count"> Shares: {this.state.sharesCount} </p>
-        </div>
-        {button}
-      </div>
-    );
+    return this.renderButton();
   }
 
   public renderButton() {
@@ -66,13 +59,24 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
 
   private reblogInner() {
     return (
-      <Repeat color="white" className="reblog-icon"/>
+      <button
+        type="submit"
+        className="pure-button pure-button-primary primary-button"
+      >
+        {this.state.sharesCount} <Repeat size="1em"/> | Reblog
+      </button>
     );
   }
 
   private isRebloggedInner() {
     return (
-      <Repeat color="white" className="reblog-icon-reblogged"/>
+      <button
+        type="submit"
+        className="pure-button pure-button-primary primary-button"
+        disabled={true}
+      >
+        {this.state.sharesCount} <Repeat size="1em"/> | Reblogged
+      </button>
     );
   }
 

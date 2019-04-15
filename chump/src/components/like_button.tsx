@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ThumbsUp, ThumbsDown } from "react-feather";
 
 import * as config from "../../rabble_config.json";
 import { IParsedPost } from "../models/posts";
@@ -37,7 +38,7 @@ export class LikeButton extends RootComponent<ILikeButtonProps, ILikeButtonState
         className="pure-button pure-input-1-3 pure-button-primary primary-button"
         onClick={this.handleClick}
       >
-        {this.state.likesCount} Like
+        {this.state.likesCount} <ThumbsUp/> | Like
       </button>
     );
   }
@@ -48,7 +49,7 @@ export class LikeButton extends RootComponent<ILikeButtonProps, ILikeButtonState
         className="pure-button pure-input-1-3 pure-button-primary primary-button"
         onClick={this.handleClick}
       >
-        {this.state.likesCount} Unlike
+        {this.state.likesCount} <ThumbsUp/> | Unlike
       </button>
     );
   }
@@ -79,13 +80,13 @@ export class LikeButton extends RootComponent<ILikeButtonProps, ILikeButtonState
 
   public render() {
     if (!this.props.display) {
-      return null
+      return null;
     }
-    if (this.state.isLiked) {
-      return this.renderUnlikeButton();
-    } else {
-      return this.renderLikeButton();
-    }
+    const button = this.state.isLiked ? this.renderUnlikeButton() : this.renderLikeButton();
+    return (
+      <div className="pure-u-5-24">
+        {button}
+      </div>
+    );
   }
-
 }

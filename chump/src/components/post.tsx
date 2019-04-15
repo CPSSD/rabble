@@ -80,13 +80,6 @@ export class Post extends RootComponent<IPostProps, IPostState> {
           dangerouslySetInnerHTML={{ __html: post.body }}
         />
 
-        <Reblog
-          username={this.props.username}
-          initReblogged={post.is_shared}
-          sharesCount={post.shares_count}
-          display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
-          blogPost={post}
-        />
         <div className="pure-g">
           <EditButton
             username={this.props.username}
@@ -104,6 +97,13 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             display={!this.nonInteractivePost()}
             likesCount={this.props.blogPost.likes_count}
             postId={this.props.blogPost.global_id}
+          />
+          <Reblog
+            username={this.props.username}
+            initReblogged={post.is_shared}
+            sharesCount={post.shares_count}
+            display={(!this.nonInteractivePost()) && !this.viewerIsAuthor()}
+            blogPost={post}
           />
         </div>
         {tags}
