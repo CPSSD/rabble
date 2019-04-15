@@ -17,6 +17,7 @@ interface IPostProps {
   username: string;
   preview: boolean;
   customCss: boolean;
+  showBio: boolean;
   deleteSuccessCallback: () => void;
 }
 
@@ -112,6 +113,9 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   }
 
   private renderBio() {
+    if (!this.props.showBio) {
+      return null;
+    }
     let LikeButton: JSX.Element | boolean = (
       <button
         className="pure-button pure-input-1-3 pure-button-primary primary-button"
