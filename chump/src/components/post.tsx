@@ -2,10 +2,10 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import * as config from "../../rabble_config.json";
-import { SendLike } from "../models/like";
 import { IParsedPost } from "../models/posts";
 import { DeleteButton } from "./delete_button";
 import { EditButton } from "./edit_button";
+import { LikeButton } from "./like_button";
 import { FollowButton} from "./follow_button";
 import { Reblog } from "./reblog_button";
 import { RootComponent } from "./root_component";
@@ -21,21 +21,14 @@ interface IPostProps {
   deleteSuccessCallback: () => void;
 }
 
-interface IPostState {
-  likesCount: number;
-  isLiked: boolean;
-}
+interface IPostState {}
 
 const userLinksClassName = "username-holder";
 
 export class Post extends RootComponent<IPostProps, IPostState> {
   constructor(props: IPostProps) {
     super(props);
-    this.state = {
-      isLiked: this.props.blogPost.is_liked,
-      likesCount: this.props.blogPost.likes_count,
-    };
-    this.handleLike = this.handleLike.bind(this);
+    this.state = {};
     this.handleNoProfilePic = this.handleNoProfilePic.bind(this);
   }
 
@@ -106,6 +99,12 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             blogPost={post}
             successCallback={this.props.deleteSuccessCallback}
           />
+          <LikeButton
+            initiallyLiked={this.props.blogPost.is_liked}
+            display={!this.nonInteractivePost()}
+            likesCount={this.props.blogPost.likes_count}
+            postId={this.props.blogPost.global_id}
+          />
         </div>
         {tags}
       </div>
@@ -115,18 +114,6 @@ export class Post extends RootComponent<IPostProps, IPostState> {
   private renderBio() {
     if (!this.props.showBio) {
       return null;
-    }
-    let LikeButton: JSX.Element | boolean = (
-      <button
-        className="pure-button pure-input-1-3 pure-button-primary primary-button"
-        onClick={this.handleLike}
-      >
-      {this.state.isLiked ? "Unlike" : "Like"}
-      </button>
-    );
-
-    if (this.nonInteractivePost()) {
-      LikeButton = false;
     }
 
     const userLink = GenerateUserLinks(this.props.blogPost.author,
@@ -157,14 +144,6 @@ export class Post extends RootComponent<IPostProps, IPostState> {
             <p className="author-bio" style={{float: "left"}}>
               {this.props.blogPost.bio}
             </p>
-            <div style={{clear: "both", width: "100%"}}>
-                <div style={{float: "left"}}>
-                    <p> Likes: {this.state.likesCount} </p>
-                </div>
-                <div style={{float: "right"}}>
-                    {LikeButton}
-                </div>
-            </div>
           </div>
         </div>
       </div>
@@ -185,29 +164,5 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     return this.props.username === "" ||
         typeof this.props.username === "undefined" ||
         this.props.preview === true;
-  }
-
-  private handleLike(event: React.MouseEvent<HTMLButtonElement>) {
-    SendLike(this.props.blogPost.global_id, !this.state.isLiked)
-      .then((res: any) => {
-        const resp = res!.body;
-        if (res.status !== 200) {
-          this.errorToast({ debug: "Error parsing like: " + res, statusCode: res.status });
-          return;
-        }
-        // If isLiked is false then change it to true and increment like count
-        // or vice versa.
-        this.setState({
-          isLiked: !this.state.isLiked,
-          likesCount: this.state.likesCount + (this.state.isLiked ? -1 : 1),
-        });
-      })
-      .catch((err: any) => {
-        let message = err.message;
-        if (err.response) {
-          message = err.response.text;
-        }
-        this.errorToast({ debug: message });
-      });
   }
 }
