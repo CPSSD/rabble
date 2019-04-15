@@ -112,8 +112,16 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
             username={this.props.username}
             blogUser={this.state.currentUser}
             display="inherit"
-            under={this.renderPageSelection()}
           />
+        </div>
+        <div className="pure-g">
+          <div className="pure-u-5-24"/>
+          <div className="pure-u-14-24">
+              <div className="pure-u-6-24"/>
+              <div className="pure-u-18-24">
+                {this.renderPageSelection()}
+              </div>
+          </div>
         </div>
         {page}
       </div>
