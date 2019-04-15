@@ -54,7 +54,7 @@ class SendCreateServicer:
         target_inbox = self._activ_util.build_inbox_url(
             follower.handle, follower.host)
 
-        if target_inbox == None:
+        if target_inbox is None:
             self._logger.info("Target inbox is none, skipping.")
             return
 
