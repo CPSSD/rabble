@@ -3,24 +3,24 @@ import * as React from "react";
 import { HashRouter } from "react-router-dom";
 import * as sinon from "sinon";
 
-import { Header } from "../../src/components/header";
+import { HeaderWithRouter } from "../../src/components/header";
 import { mount } from "./enzyme";
 
 const sandbox: sinon.SinonSandbox = sinon.createSandbox();
 
 let testComponent: any;
 
-function mountHeader() {
+function mountHeaderWithRouter() {
   testComponent = mount(
     <HashRouter>
       <div>
-        <Header username={"ross"} userId={1}/>
+        <HeaderWithRouter username={"ross"} userId={1}/>
       </div>
     </HashRouter>,
   );
 }
 
-describe("Header", () => {
+describe("HeaderWithRouter", () => {
 
   afterEach(() => {
     sandbox.restore();
@@ -28,7 +28,7 @@ describe("Header", () => {
   });
 
   it("can mount logged in", (done) => {
-    mountHeader();
+    mountHeaderWithRouter();
     expect(testComponent.exists(".search-form")).to.equal(true);
     expect(testComponent.exists(".pure-menu-has-children")).to.equal(true);
     done();
@@ -38,7 +38,7 @@ describe("Header", () => {
     testComponent = mount(
       <HashRouter>
         <div>
-          <Header username={""} userId={0}/>
+          <HeaderWithRouter username={""} userId={0}/>
         </div>
       </HashRouter>,
     );
@@ -48,7 +48,7 @@ describe("Header", () => {
   });
 
   it("can handle query input", (done) => {
-    mountHeader();
+    mountHeaderWithRouter();
     testComponent.find("[name=\"query\"]")
       .simulate("change", {
         target: {
@@ -60,24 +60,16 @@ describe("Header", () => {
     done();
   });
 
-  it("can submit query form", (done) => {
-    const submitStub: any = sandbox.stub(Header.prototype, "handleSearchSubmit" as any);
-    mountHeader();
-    testComponent.find(".search-button").first().simulate("click");
-    expect(submitStub.called).to.equal(true);
-    done();
-  });
-
   describe ("dropdown menu", () => {
     it("can be displayed", (done) => {
-      mountHeader();
+      mountHeaderWithRouter();
       testComponent.find(".button-link").first().simulate("click");
       expect(testComponent.find("Header").state()).to.have.property("display", "inherit");
       done();
     });
 
     it("can be hidden", (done) => {
-      mountHeader();
+      mountHeaderWithRouter();
       testComponent.find("Header").setState({ display: "inherit" });
       testComponent.find(".button-link").first().simulate("click");
       expect(testComponent.find("Header").state()).to.have.property("display", "none");
@@ -85,7 +77,7 @@ describe("Header", () => {
     });
 
     it("can be hidden by clicking other menu option", (done) => {
-      mountHeader();
+      mountHeaderWithRouter();
       testComponent.find("Header").setState({ display: "inherit" });
       testComponent.find(".brand").first().simulate("click");
       expect(testComponent.find("Header").state()).to.have.property("display", "none");

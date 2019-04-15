@@ -9,7 +9,7 @@ import {PrivateRoute} from "./proute";
 import {About} from "./components/about";
 import {AccountEdit} from "./components/account_edit";
 import {Edit} from "./components/edit";
-import {Header} from "./components/header";
+import {HeaderWithRouter} from "./components/header";
 import {Pending} from "./components/pending";
 import {Feed} from "./components/feed";
 import {Register} from "./components/register";
@@ -116,7 +116,10 @@ export class App extends React.Component<{}, IAppState> {
     return (
       <HashRouter>
         <div>
-          <Header username={this.state.username} userId={this.state.userId} />
+          <HeaderWithRouter
+            username={this.state.username}
+            userId={this.state.userId}
+          />
           <Switch>
             <Route
               exact={true}
