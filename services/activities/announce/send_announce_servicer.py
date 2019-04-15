@@ -16,7 +16,8 @@ class SendAnnounceServicer:
         self._activ_util = activ_util
         # Use the hostname passed in or get it manually
         self._hostname = hostname if hostname else os.environ.get("HOST_NAME")
-        self._announce_util = AnnounceUtil(logger, db, activ_util, self._hostname)
+        self._announce_util = AnnounceUtil(
+            logger, db, activ_util, self._hostname)
         if not self._hostname:
             self._logger.error("'HOST_NAME' env var is not set")
             sys.exit(1)
@@ -45,7 +46,8 @@ class SendAnnounceServicer:
         response = announce_pb2.AnnounceResponse(
             result_type=announce_pb2.AnnounceResponse.OK)
 
-        announcer = self._users_util.get_user_from_db(global_id=req.announcer_id)
+        announcer = self._users_util.get_user_from_db(
+            global_id=req.announcer_id)
         if announcer is None:
             response.result_type = announce_pb2.AnnounceResponse.ERROR
             response.error = "Announcer does not exist"
@@ -79,7 +81,8 @@ class SendAnnounceServicer:
         article_obj = self._announce_util.build_article_object(
             article, article_url, author_actor)
         actor = self._activ_util.build_actor(announcer.handle, self._hostname)
-        creation_datetime = self._activ_util.timestamp_to_rfc(req.announce_time)
+        creation_datetime = self._activ_util.timestamp_to_rfc(
+            req.announce_time)
 
         announce_activity = self._announce_util.build_announce_activity(
             actor, article_obj, creation_datetime)
@@ -99,6 +102,7 @@ class SendAnnounceServicer:
 
         # Send activity to all followers
         response = self._announce_util.send_announce_activity(
-            foreign_follows, announce_activity, response)
+            foreign_follows, announce_activity,
+            response, sender_id=req.announcer_id)
 
         return response
