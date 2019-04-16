@@ -1060,7 +1060,7 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			RequestType: pb.UsersRequest_FIND,
 			Match: &pb.UsersEntry{
 				Handle:     handle,
-				Host:       host,
+				Host:       util.NormaliseHost(host),
 				HostIsNull: host == "",
 			},
 		}
@@ -1069,6 +1069,8 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		if uid, _ := s.getSessionGlobalID(r); uid != 0 {
 			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
+
+		log.Printf("Sending request for user: @%s@%s", ur.Match.Handle, ur.Match.Host)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
