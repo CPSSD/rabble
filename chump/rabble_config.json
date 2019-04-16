@@ -58,5 +58,6 @@
   "about": "About",
   "accepted_follow": "Follow accepted",
   "denied_follow": "Follow denied",
-  "reblog_success": "Post reblogged"
+  "reblog_success": "Post reblogged",
+  "incorrect_credentials": "Incorrect credentials"
 }
