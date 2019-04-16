@@ -57,5 +57,6 @@
   "explore_nav": "EXPLORE",
   "about": "About",
   "accepted_follow": "Follow accepted",
-  "denied_follow": "Follow denied"
+  "denied_follow": "Follow denied",
+  "reblog_success": "Post reblogged"
 }

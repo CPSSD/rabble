@@ -280,8 +280,8 @@ class ActivitiesUtil:
                            target_inbox, body)
         try:
             resp = requests.Session().send(req)
-            self._logger.info('Got response: "{}" (status code {})'.format(
-                resp.text, resp.status_code))
+            self._logger.info('Got response from: {} (status code {})'.format(
+                target_inbox, resp.status_code))
         except Exception as e:
             self._logger.error('Error trying to send activity:' + str(e))
             return None, str(e)
