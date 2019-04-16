@@ -14,8 +14,8 @@ class ReceiveFollowServicer:
 
     def _s2s_req_to_follows_req(self, req):
         a = follows_pb2.ForeignToLocalFollow()
-        _, a.followed = self._users_util.parse_actor(req.followed)
-        a.follower_host, a.follower_handle = \
+        _, a.followed, _ = self._users_util.parse_actor(req.followed)
+        a.follower_host, a.follower_handle, _ = \
             self._users_util.parse_actor(req.follower)
         return a
 

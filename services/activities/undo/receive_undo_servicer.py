@@ -7,6 +7,7 @@ from services.proto import undo_pb2 as upb
 
 HOSTNAME_ENV = 'HOST_NAME'
 
+
 class ReceiveLikeUndoServicer:
     def __init__(self, logger, db, activ_util, users_util, hostname=None):
         self._logger = logger
@@ -25,7 +26,7 @@ class ReceiveLikeUndoServicer:
         )
 
     def get_user(self, user_ap):
-        host, handle = self._users_util.parse_actor(user_ap)
+        host, handle, _ = self._users_util.parse_actor(user_ap)
         host = self._activ_util.get_host_name_param(host, self._hostname)
         if handle is None:
             self._logger.error("Could not parse user: " + user_ap)
@@ -54,14 +55,14 @@ class ReceiveLikeUndoServicer:
         self._logger.debug("Got undo for like object")
         user = self.get_user(req.liking_user_ap_id)
         if user is None:
-            return self.gen_error("Couldn't get user: " +
-                                  req.liking_user_ap_id)
+            return self.gen_error("Couldn't get user: "
+                                  + req.liking_user_ap_id)
         article, err = self._activ_util.get_article_by_ap_id(
             req.liked_object_ap_id)
         if err is not None:
             self._logger.error("Error getting article: %s", err)
-            return self.gen_error("Could not get article: " +
-                                  req.liked_object_ap_id)
+            return self.gen_error("Could not get article: "
+                                  + req.liked_object_ap_id)
         if not self.remove_like_from_db(user.global_id, article.global_id):
             return self.gen_error("Error removing like from DB")
         # TODO(CianLR): If this is the author's local server then federate
@@ -72,8 +73,8 @@ class ReceiveLikeUndoServicer:
                 req.liking_user_ap_id,
                 req.liked_object_ap_id))
             # Forward it to the followers
-            self._activ_util.forward_activity_to_followers(article.author_id, a)
+            self._activ_util.forward_activity_to_followers(
+                article.author_id, a)
         return upb.UndoResponse(
             result_type=upb.UndoResponse.OK,
         )
-

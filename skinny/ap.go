@@ -107,6 +107,7 @@ type ActorObjectStruct struct {
 	Following         string       `json:following`
 	PublicKey         *KeyObject   `json:"publicKey"`
 	ID                string       `json:"id"`
+	Summary           string       `json:"summary"`
 }
 
 func (s *serverWrapper) handleActor() http.HandlerFunc {
@@ -149,6 +150,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 			Followers:         resp.Actor.Followers,
 			Following:         resp.Actor.Following,
 			ID:                resp.Actor.Id,
+			Summary:           resp.Actor.Summary,
 		}
 
 		actor.PublicKey = &KeyObject{

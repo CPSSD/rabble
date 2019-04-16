@@ -9,7 +9,8 @@ class UsersUtilTest(unittest.TestCase):
     def setUp(self):
         def _fake_fetch_actor(actor_url):
             return {
-                'preferredUsername': 'cianlr'
+                'preferredUsername': 'cianlr',
+                'summary': 'cianlr is here'
             }
 
         self.logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class UsersUtilTest(unittest.TestCase):
         self.assertEqual(b, 'neopets.com')
 
     def test_parse_actor(self):
-        a, b = self.util.parse_actor('https://neopets.com/@cianlr')
+        a, b, _ = self.util.parse_actor('https://neopets.com/@cianlr')
         self.assertEqual(a, 'https://neopets.com')
         self.assertEqual(b, 'cianlr')
 
@@ -48,7 +49,8 @@ class UsersUtilTest(unittest.TestCase):
             self.assertIsNone(b)
 
     def test_get_or_create_user_from_db_too_many_attempts(self):
-        resp = self.util.get_or_create_user_from_db(None, None, attempt_number=100)
+        resp = self.util.get_or_create_user_from_db(
+            None, None, attempt_number=100)
         self.assertIsNone(resp)
 
 

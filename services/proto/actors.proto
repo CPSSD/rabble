@@ -26,6 +26,7 @@ message ActorObject {
   PublicKey public_key = 9;
   /* The public-facing actor URL */
   string id = 10;
+  string summary = 11;
 }
 
 message ActorResponse {

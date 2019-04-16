@@ -20,11 +20,11 @@ class ReceiveLikeServicer:
             sys.exit(1)
 
     def _get_liking_user(self, liker_id):
-        host, handle = self._user_util.parse_actor(liker_id)
+        host, handle, bio = self._user_util.parse_actor(liker_id)
         # Sets the host to None if the user is local.
         host = self._activ_util.get_host_name_param(host, self._hostname)
         user = self._user_util.get_or_create_user_from_db(
-            handle=handle, host=host, host_is_null=(host is None))
+            handle=handle, host=host, host_is_null=(host is None), bio=bio)
         return user.global_id if user else None
 
     def _add_like_to_db(self, user_id, article_id):

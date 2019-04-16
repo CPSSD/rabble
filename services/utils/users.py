@@ -37,10 +37,11 @@ class UsersUtil:
         actor_doc = self._activ_util.fetch_actor(actor_uri)
         if actor_doc is None:
             self._logger.warning(f'No actor doc found for user {actor_uri}.')
-            return None, None
+            return None, None, None
         handle = actor_doc['preferredUsername']
+        summary = actor_doc['summary']
         host = self._activ_util.normalise_hostname(urlparse(actor_uri).netloc)
-        return host, handle
+        return host, handle, summary
 
     def download_profile_pic(self, host, handle, global_id):
         """
@@ -68,7 +69,8 @@ class UsersUtil:
             with open(profile_pic_path, "wb") as f:
                 f.write(image_bytes)
         except Exception as e:
-            self._logger.error("Error when downloading profile pic: %s", str(e))
+            self._logger.error(
+                "Error when downloading profile pic: %s", str(e))
             # Just pretend that didn't happen
 
     def _create_user_in_db(self, entry):
@@ -99,13 +101,13 @@ class UsersUtil:
             return False
         return True
 
-
     def get_or_create_user_from_db(self,
                                    handle=None,
                                    host=None,
                                    global_id=None,
                                    host_is_null=False,
-                                   attempt_number=0):
+                                   attempt_number=0,
+                                   bio=None):
         if attempt_number > MAX_FIND_RETRIES:
             self._logger.error('Retried query too many times.')
             return None
@@ -124,6 +126,7 @@ class UsersUtil:
         user_entry = database_pb2.UsersEntry(
             handle=handle,
             host=host,
+            bio=bio,
             host_is_null=host_is_null
         )
         new_global_id = self._create_user_in_db(user_entry)
@@ -168,8 +171,8 @@ class UsersUtil:
                                handle, host, global_id)
             return find_resp.results[0]
         else:
-            self._logger.error('> 1 user found in database for %s@%s (id %s)' +
-                               ', returning first one.',
+            self._logger.error('> 1 user found in database for %s@%s (id %s)'
+                               + ', returning first one.',
                                handle, host, global_id)
             return find_resp.results[0]
 
@@ -199,7 +202,8 @@ class UsersUtil:
                 global_id=follow.follower
             )
             if follower_entry is None:
-                self._logger.error("Could not find follower in db. Id: %s", follow.follower)
+                self._logger.error(
+                    "Could not find follower in db. Id: %s", follow.follower)
                 continue
             if follower_entry.host:
                 foreign_followers.append(follower_entry)

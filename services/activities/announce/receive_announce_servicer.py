@@ -151,7 +151,7 @@ class ReceiveAnnounceServicer:
             # Follower of announcer
             # Create author.
             author = self._users_util.get_or_create_user_from_db(
-                handle=author_tuple[1], host=author_tuple[0])
+                handle=author_tuple[1], host=author_tuple[0], bio=author_tuple[2])
             # Create post
             article = self.create_post(author, req)
             if article is None:
@@ -169,7 +169,7 @@ class ReceiveAnnounceServicer:
                 # If announcer doesn't exist, target is follower of author
                 # Add announcer
                 announcer = self._users_util.get_or_create_user_from_db(
-                    handle=announcer_tuple[1], host=announcer_tuple[0])
+                    handle=announcer_tuple[1], host=announcer_tuple[0], bio=announcer_tuple[2])
 
             # Check if article exists
             article, err = self._activ_util.get_article_by_ap_id(

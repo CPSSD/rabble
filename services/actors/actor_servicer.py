@@ -65,7 +65,8 @@ class ActorsServicer:
             following=following_url,
             followers=followers_url,
             global_id=user.global_id,
-            public_key=public_key
+            public_key=public_key,
+            summary=user.bio
         )
 
     def Get(self, request, context):
