@@ -28,7 +28,7 @@ interface IFormProps {
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
 But nothing comes out when they move their lips; just a bunch of gibberish.";
-const defaultImage = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
+const defaultImage = "http://clipart-library.com/images/8iGbjxgjT.jpg";
 const EMPTY_TITLE_ERROR = "A post cannot have an empty title";
 
 export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
