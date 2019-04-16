@@ -74,16 +74,20 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     const customStyle = GetCustomCSS(post.author_id, this.props.customCss);
 
-    let reblogLine = "";
+    let reblogLine: JSX.Element | boolean = false;
     if (IsSharedPost(this.props.blogPost)) {
       const post = this.props.blogPost as IParsedSharedPost;
-      let reblogger = post.sharer;
+      let reblogger = "@" + post.sharer;
       const host = post.sharer_host;
 
       if (host !== null && host !== "" && typeof host !== "undefined") {
         reblogger = "@" + post.sharer + "@" + RemoveProtocol(post.sharer_host);
       }
-      reblogLine = `<br/>Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`;
+      reblogLine = (
+        <div>
+          {`Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`}
+        </div>
+      );
     }
 
     let tags;

@@ -204,6 +204,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .blog-post-holder {
   width: 100%;
+  margin-top: 15px;
 }
 
 .edit-wrapper {

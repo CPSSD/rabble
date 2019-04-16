@@ -56,15 +56,14 @@ export class Post extends RootComponent<IPostProps, IPostState> {
     let tags;
     if (typeof(post.tags) !== "undefined" && post.tags.length !== 0) {
       tags = (
-        <div className="pure-g">
-          <div className="pure-u-3-24" key={-1}>
-            <p>Tags:</p>
-          </div>
-          <Tags
-            tags={post.tags}
-            tagHolderClass="pure-u-3-24 post-tag-holder"
-            tagClass="post-tag"
-          />
+        <div className="article-tags" key={-1}>
+          <p>Tags:
+            <Tags
+              tags={post.tags}
+              tagHolderClass="post-tag-holder"
+              tagClass="post-tag"
+            />
+          </p>
         </div>
       );
     }
