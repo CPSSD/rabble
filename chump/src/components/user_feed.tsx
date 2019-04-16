@@ -111,7 +111,7 @@ export class UserFeed extends React.Component<IUserProps, IUserState> {
             username={this.props.username}
             blogPost={e}
             customCss={true}
-	    showDivider={i > 0}
+            showDivider={i > 0}
           />
         </div>
       );

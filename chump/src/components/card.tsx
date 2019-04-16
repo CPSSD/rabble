@@ -25,46 +25,12 @@ export class Card extends RootComponent<ICardProps, {}> {
   }
 
   public render() {
-    if (IsSharedPost(this.props.blogPost)) {
-      //return this.renderSharedCard();
-    }
-    return this.renderFull();
-  }
-
-  private renderFull() {
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
         {this.renderCard()}
         <div className="pure-u-1-24"/>
         {this.renderBio()}
-      </div>
-    );
-  }
-
-  private renderSharedCard() {
-    const post = this.props.blogPost as IParsedSharedPost;
-
-    let reblogger = post.sharer;
-    const host = post.sharer_host;
-
-    if (host !== null && host !== "" && typeof host !== "undefined") {
-      reblogger = post.sharer + "@" + RemoveProtocol(post.sharer_host);
-    }
-
-    return (
-      <div className="reblog-holder">
-        <div className="pure-g">
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-10-24">
-            <p className="reblog-line">
-              {`Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`}
-            </p>
-          </div>
-        </div>
-        <div className="pure-g">
-          {this.renderFull()}
-        </div>
       </div>
     );
   }
@@ -76,16 +42,16 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     let reblogLine: JSX.Element | boolean = false;
     if (IsSharedPost(this.props.blogPost)) {
-      const post = this.props.blogPost as IParsedSharedPost;
-      let reblogger = "@" + post.sharer;
+      const rebloggedPost = post as IParsedSharedPost;
+      let reblogger = "@" + rebloggedPost.sharer;
       const host = post.sharer_host;
 
       if (host !== null && host !== "" && typeof host !== "undefined") {
-        reblogger = "@" + post.sharer + "@" + RemoveProtocol(post.sharer_host);
+        reblogger = "@" + rebloggedPost.sharer + "@" + RemoveProtocol(rebloggedPost.sharer_host);
       }
       reblogLine = (
         <div>
-          {`Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`}
+          {`Reblogged by ${reblogger} at ${rebloggedPost.parsed_share_date.toLocaleString()}`}
         </div>
       );
     }
@@ -100,14 +66,14 @@ export class Card extends RootComponent<ICardProps, {}> {
               tagHolderClass="post-tag-holder"
               tagClass="post-tag"
             />
-	  </p>
+          </p>
         </div>
       );
     }
 
     return (
       <div className="pure-u-10-24">
-	{this.props.showDivider ? <div className="article-divider" /> : null }
+        {this.props.showDivider ? <div className="article-divider" /> : null}
         {customStyle}
         <Link
           to={`/@${post.author}/${post.global_id}`}
@@ -117,7 +83,7 @@ export class Card extends RootComponent<ICardProps, {}> {
         </Link>
         <p className="article-byline">
           {`${config.published} ${post.parsed_date.toLocaleString()}`}
-	  {reblogLine}
+          {reblogLine}
         </p>
         <p className="article-body">{post.summary}</p>
         <Link
@@ -125,7 +91,7 @@ export class Card extends RootComponent<ICardProps, {}> {
           className="article-read-more"
         >
           {config.read_more_text}
-	</Link>
+        </Link>
         {tags}
       </div>
     );
@@ -138,7 +104,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-3-24">
-	{this.props.showDivider ? <div className="article-divider" /> : null }
+        {this.props.showDivider ? <div className="article-divider" /> : null}
         <div className="author-about">
           <img
             src={`/assets/user_${this.props.blogPost.author_id}`}
