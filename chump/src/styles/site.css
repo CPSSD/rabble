@@ -103,13 +103,22 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   float: right;
 }
 
+.article-divider {
+  height: 3px;
+  background-color: var(--primary-bg-light);
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
 .article-byline {
-  margin-top: 1em;
+  padding-top: 0.2rem;
+  margin-top: 0;
   margin-bottom: 0;
   padding-bottom: 0;
-  font-size: 0.8em;
+  font-size: 0.9rem;
   text-align: left;
-  color: var(--dark-color-three);
+  color: var(--dark-color-one);
+  font-family: 'Raleway', sans-serif;
 }
 
 .reblog-line {
@@ -123,12 +132,12 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .article-title {
   font-family: 'Lora', serif;
-  margin-top: 0;
+  margin-top: 10px;
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
-  font-size: 2.6em;
-  line-height: 1.1em;
+  font-size: 1.5rem;
+  line-height: 1.2;
   text-decoration: none;
   color: var(--primary-light-color);
 }
@@ -136,22 +145,25 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 .about-image-subtitle {
   text-align: center;
   font-style: italic;
-  margin-top: 0em;
+  margin-top: 0;
 }
 
 .article-body {
-  padding-bottom: 1em;
+  padding-bottom: 0rem;
+  padding-top: 0rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
   word-break: break-word;
   font-family: 'Raleway', sans-serif;
   color: rgba(0,0,0,.84);
-  font-size: 18px;
+  font-size: 0.9rem;
 }
 
 .author-about {
   color: var(--dark-color-three);
   font-family: 'Raleway', sans-serif;
-  font-size: 0.75em;
-  margin-top: 1em;
+  font-size: 0.8rem;
+  margin-top: 1rem;
 }
 
 .author-thumbnail {
@@ -161,9 +173,9 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .author-displayname {
   margin: 0;
-  margin-right: 10px;
+  margin-right: 0px;
   font-weight: bold;
-  font-size: 1.15em;
+  font-size: 1rem;
   color: var(--dark-color-three);
   text-decoration: none;
 }
@@ -175,12 +187,15 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 .author-handle {
   font-style: italic;
   color: var(--dark-color-two);
+  font-size: 0.8rem;
 }
 
 .author-bio {
+  margin-top: 0.2rem;
+  text-align: left;
+  font-size: 0.9rem;
   color: var(--dark-color-three);
-  font-size: 0.88em;
-  text-align: justify;
+  font-family: 'Raleway', sans-serif;
 }
 
 .author-handle:hover {
@@ -189,6 +204,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .blog-post-holder {
   width: 100%;
+  margin-top: 15px;
 }
 
 .edit-wrapper {
@@ -352,13 +368,15 @@ button.follow-button svg {
   border: none;
 }
 
-.post-tag {
-  color: var(--primary-bg-color);
-  border: 1px solid var(--primary-bg-color);
-}
-
 .post-tag-holder {
-  text-align: center;
+  background-color: var(--primary-bg-light);
+  color: white;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin: 3px;
+  display: inline-block;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
 }
 
 .profile-item {
@@ -370,11 +388,14 @@ button.follow-button svg {
 }
 
 .profile-list {
- border-bottom-width: 2px;
- border-bottom-color: var(--primary-bg-color);
- border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: var(--primary-bg-color);
+  border-bottom-style: solid;
 }
 
-.reblog-holder {
+.article-read-more {
+  text-align: center;
   width: 100%;
+  display: block;
+  color: var(--dark-color-one);
 }

@@ -16,9 +16,9 @@ export class Tags extends RootComponent<ITagProps, {}> {
   public render() {
     return this.props.tags.map((e: string, i: number) => {
         return (
-          <div className={this.props.tagHolderClass} key={i}>
-            <p className={this.props.tagClass}>{e}</p>
-          </div>
+          <span className={this.props.tagHolderClass} key={i}>
+            {e}
+          </span>
         );
     });
   }

@@ -50,6 +50,7 @@ export class FeedBody extends RootComponent<IFeedBodyProps, IFeedBodyState> {
             username={this.props.username}
             blogPost={e}
             customCss={false}
+            showDivider={i > 0}
           />
         </div>
       );

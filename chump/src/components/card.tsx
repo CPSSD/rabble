@@ -12,6 +12,7 @@ interface ICardProps {
   blogPost: IAnyParsedPost;
   username: string;
   customCss: boolean;
+  showDivider: boolean;
 }
 
 const userLinksClassName = "username-holder";
@@ -24,13 +25,6 @@ export class Card extends RootComponent<ICardProps, {}> {
   }
 
   public render() {
-    if (IsSharedPost(this.props.blogPost)) {
-      return this.renderSharedCard();
-    }
-    return this.renderFull();
-  }
-
-  private renderFull() {
     return (
       <div className="blog-post-holder">
         <div className="pure-u-5-24"/>
@@ -41,67 +35,63 @@ export class Card extends RootComponent<ICardProps, {}> {
     );
   }
 
-  private renderSharedCard() {
-    const post = this.props.blogPost as IParsedSharedPost;
-
-    let reblogger = post.sharer;
-    const host = post.sharer_host;
-
-    if (host !== null && host !== "" && typeof host !== "undefined") {
-      reblogger = post.sharer + "@" + RemoveProtocol(post.sharer_host);
-    }
-
-    return (
-      <div className="reblog-holder">
-        <div className="pure-g">
-          <div className="pure-u-5-24"/>
-          <div className="pure-u-10-24">
-            <p className="reblog-line">
-              {`Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`}
-            </p>
-          </div>
-        </div>
-        <div className="pure-g">
-          {this.renderFull()}
-        </div>
-      </div>
-    );
-  }
-
   private renderCard() {
     const post = this.props.blogPost;
 
     const customStyle = GetCustomCSS(post.author_id, this.props.customCss);
 
+    let reblogLine: JSX.Element | boolean = false;
+    if (IsSharedPost(this.props.blogPost)) {
+      const rebloggedPost = post as IParsedSharedPost;
+      let reblogger = "@" + rebloggedPost.sharer;
+      const host = rebloggedPost.sharer_host;
+
+      if (host !== null && host !== "" && typeof host !== "undefined") {
+        reblogger = "@" + rebloggedPost.sharer + "@" + RemoveProtocol(rebloggedPost.sharer_host);
+      }
+      reblogLine = (
+        <div>
+          {`Reblogged by ${reblogger} at ${rebloggedPost.parsed_share_date.toLocaleString()}`}
+        </div>
+      );
+    }
+
     let tags;
     if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
       tags = (
-        <div className="pure-g">
-          <div className="pure-u-3-24" key={-1}>
-            <p>Tags:</p>
-          </div>
-          <Tags
-            tags={post.tags}
-            tagHolderClass="pure-u-3-24 post-tag-holder"
-            tagClass="post-tag"
-          />
+        <div className="article-tags">
+          <p>Tags:
+            <Tags
+              tags={post.tags}
+              tagHolderClass="post-tag-holder"
+              tagClass="post-tag"
+            />
+          </p>
         </div>
       );
     }
 
     return (
       <div className="pure-u-10-24">
+        {this.props.showDivider ? <div className="article-divider" /> : null}
         {customStyle}
-        <p className="article-byline">
-          {`${config.published} ${post.parsed_date.toLocaleString()}`}
-        </p>
         <Link
           to={`/@${post.author}/${post.global_id}`}
           className="article-title"
         >
           {post.title}
         </Link>
+        <p className="article-byline">
+          {`${config.published} ${post.parsed_date.toLocaleString()}`}
+          {reblogLine}
+        </p>
         <p className="article-body">{post.summary}</p>
+        <Link
+          to={`/@${post.author}/${post.global_id}`}
+          className="article-read-more"
+        >
+          {config.read_more_text}
+        </Link>
         {tags}
       </div>
     );
@@ -114,6 +104,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-3-24">
+        {this.props.showDivider ? <div className="article-divider" /> : null}
         <div className="author-about">
           <img
             src={`/assets/user_${this.props.blogPost.author_id}`}
@@ -122,20 +113,6 @@ export class Card extends RootComponent<ICardProps, {}> {
           />
           <div style={{width: "100%"}}>
             {userLink}
-            <div style={{float: "right"}} >
-                <FollowButton
-                    follower={this.props.username}
-                    followed={this.props.blogPost.author}
-                    followed_host={this.props.blogPost.author_host}
-                    following={this.props.blogPost.is_followed}
-                />
-            </div>
-          </div>
-
-          <div style={{clear: "both"}}>
-            <p className="author-bio" style={{float: "left"}}>
-              {this.props.blogPost.bio}
-            </p>
           </div>
         </div>
       </div>
