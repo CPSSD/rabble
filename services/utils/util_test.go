@@ -10,6 +10,11 @@ func TestParseUsername(t *testing.T) {
 		err      bool
 	}{
 		{
+			fqu:      "foo@http://r.dev",
+			username: "foo",
+			host:     "r.dev",
+		},
+		{
 			fqu:      "foo",
 			username: "foo",
 		},
@@ -28,7 +33,20 @@ func TestParseUsername(t *testing.T) {
 			host:     "bar",
 		},
 		{
+			fqu:      "@foo@http://r.dev",
+			username: "foo",
+			host:     "r.dev",
+		},
+		{
+			fqu: "@foo@http://",
+			err: true,
+		},
+		{
 			fqu: "foo@bar@ton",
+			err: true,
+		},
+		{
+			fqu: "@foo@",
 			err: true,
 		},
 	}

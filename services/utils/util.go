@@ -31,23 +31,59 @@ var (
 // Invalid urls return a non-nil error.
 //
 // For example:
+//   "admin@http://r.dev" returns ("admin", "r.dev", nil)
 //   "admin@rabble.dev" returns ("admin", "rabble.dev", nil)
 //   "@admin" returns ("admin", "", nil)
 //   "admin@foo@bar" returns ("", "", error)
 func ParseUsername(fqu string) (string, string, error) {
+	handleError := func() error {
+		e := fmt.Sprintf("Couldn't parse username %s", fqu)
+		log.Println(e)
+		return errors.New(e)
+	}
+
 	fqu = strings.TrimLeft(fqu, "@")
 	split := strings.Split(fqu, "@")
+
 	if len(split) == 1 {
+		if split[0] == "" {
+			return "", "", handleError()
+		}
+
 		// Local user
 		return split[0], "", nil
 	}
-	if len(split) == 2 {
-		return split[0], split[1], nil
+
+	if len(split) != 2 {
+		return "", "", handleError()
 	}
 
-	e := fmt.Sprintf("Couldn't parse username %s", fqu)
-	log.Println(e)
-	return "", "", errors.New(e)
+	host := split[1]
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimPrefix(host, "https://")
+
+	if split[0] == "" || host == "" {
+		return "", "", handleError()
+	}
+
+	return split[0], host, nil
+}
+
+// NormaliseHost takes a hostname like "jim@jimjim.dev" and it returns
+// https://jim@jimjim.dev.
+//
+// If the host is a development host, like skinny_1:1916, it returns http://skinny_1:1916
+func NormaliseHost(host string) string {
+	if host == "" {
+		return ""
+	}
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		return host
+	}
+	if !strings.Contains(host, ".") {
+		return "http://" + host
+	}
+	return "https://" + host
 }
 
 // ConvertPbTimestamp converts a timestamp into a format readable by the frontend
