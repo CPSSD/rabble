@@ -62,7 +62,7 @@ describe("SinglePost", () => {
       },
     ]});
 
-    expect(wrapper.find("div")).to.have.lengthOf(2);
+    expect(wrapper.find("div")).to.have.lengthOf(5);
     expect(wrapper.find("Post")).to.have.lengthOf(1);
   });
 });
