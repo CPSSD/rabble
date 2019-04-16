@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultImage     = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+	defaultImage     = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 	MaxItemsReturned = 50
 	timeParseFormat  = "2006-01-02T15:04:05.000Z"
 )
