@@ -61,3 +61,5 @@ __pycache__/
 # research force save artefacts
 research/.ipynb_checkpoints/*
 research/datasets/ml-latest-small*
+# gengraph output
+script/gengraph/graph_output*
