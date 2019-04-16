@@ -367,17 +367,14 @@ button.follow-button svg {
   border: none;
 }
 
-.post-tag {
-  color: var(--primary-bg-color);
-}
-
 .post-tag-holder {
-  text-align: center;
-  border: 1px solid var(--primary-bg-color);
-  margin-right: 3px;
-  border-radius: 2px;
-  padding-right: 2px;
-  padding-left: 2px;
+  background-color: var(--primary-bg-light);
+  color: white;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin: 3px;
+  display: inline-block;
+  font-family: 'Raleway', sans-serif
 }
 
 .profile-item {
