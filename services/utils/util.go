@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultImage     = "http://clipart-library.com/images/8iGbjxgjT.jpg"
+	defaultImage     = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 	MaxItemsReturned = 50
 	timeParseFormat  = "2006-01-02T15:04:05.000Z"
 )

@@ -72,6 +72,6 @@ export class User extends React.Component<IUserProps, {}> {
 
   private handleNoProfilePic(event: any) {
     event.target.onerror = null;
-    event.target.src = "http://clipart-library.com/images/8iGbjxgjT.jpg";
+    event.target.src = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
   }
 }
