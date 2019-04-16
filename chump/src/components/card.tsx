@@ -76,15 +76,14 @@ export class Card extends RootComponent<ICardProps, {}> {
     let tags;
     if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
       tags = (
-        <div className="pure-g article-tags">
-          <div className="pure-u-3-24" key={-1}>
-            <p>Tags:</p>
-          </div>
-          <Tags
-            tags={post.tags}
-            tagHolderClass="pure-u-3-24 post-tag-holder"
-            tagClass="post-tag"
-          />
+        <div className="article-tags">
+          <p>Tags:
+            <Tags
+              tags={post.tags}
+              tagHolderClass="post-tag-holder"
+              tagClass="post-tag"
+            />
+	  </p>
         </div>
       );
     }
@@ -124,20 +123,6 @@ export class Card extends RootComponent<ICardProps, {}> {
           />
           <div style={{width: "100%"}}>
             {userLink}
-            <div style={{float: "right"}} >
-                <FollowButton
-                    follower={this.props.username}
-                    followed={this.props.blogPost.author}
-                    followed_host={this.props.blogPost.author_host}
-                    following={this.props.blogPost.is_followed}
-                />
-            </div>
-          </div>
-
-          <div style={{clear: "both"}}>
-            <p className="author-bio" style={{float: "left"}}>
-              {this.props.blogPost.bio}
-            </p>
           </div>
         </div>
       </div>

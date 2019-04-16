@@ -107,6 +107,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   height: 3px;
   background-color: var(--primary-bg-light);
   margin-bottom: 5px;
+  margin-top: 10px;
 }
 
 .article-byline {
@@ -131,7 +132,7 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .article-title {
   font-family: 'Lora', serif;
-  margin-top: 0;
+  margin-top: 10px;
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
@@ -156,15 +157,6 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   font-family: 'Raleway', sans-serif;
   color: rgba(0,0,0,.84);
   font-size: 0.9rem;
-}
-
-.article-tags p {
-  padding-bottom: 0;
-  padding-top: 0;
-  margin-bottom:0 ;
-  margin-top: 0.3rem;
-  color: var(--dark-color-three);
-  font-family: 'Raleway', sans-serif;
 }
 
 .author-about {
@@ -377,11 +369,15 @@ button.follow-button svg {
 
 .post-tag {
   color: var(--primary-bg-color);
-  border: 1px solid var(--primary-bg-color);
 }
 
 .post-tag-holder {
   text-align: center;
+  border: 1px solid var(--primary-bg-color);
+  margin-right: 3px;
+  border-radius: 2px;
+  padding-right: 2px;
+  padding-left: 2px;
 }
 
 .profile-item {
