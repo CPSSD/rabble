@@ -103,13 +103,21 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   float: right;
 }
 
+.article-divider {
+  height: 3px;
+  background-color: var(--primary-bg-light);
+  margin-bottom: 5px;
+}
+
 .article-byline {
-  margin-top: 1em;
+  padding-top: 0.2rem;
+  margin-top: 0;
   margin-bottom: 0;
   padding-bottom: 0;
-  font-size: 0.8em;
+  font-size: 0.9rem;
   text-align: left;
-  color: var(--dark-color-three);
+  color: var(--dark-color-one);
+  font-family: 'Raleway', sans-serif;
 }
 
 .reblog-line {
@@ -127,8 +135,8 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
-  font-size: 2.6em;
-  line-height: 1.1em;
+  font-size: 1.5rem;
+  line-height: 1.2;
   text-decoration: none;
   color: var(--primary-light-color);
 }
@@ -136,22 +144,34 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 .about-image-subtitle {
   text-align: center;
   font-style: italic;
-  margin-top: 0em;
+  margin-top: 0;
 }
 
 .article-body {
-  padding-bottom: 1em;
+  padding-bottom: 0rem;
+  padding-top: 0rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
   word-break: break-word;
   font-family: 'Raleway', sans-serif;
   color: rgba(0,0,0,.84);
-  font-size: 18px;
+  font-size: 0.9rem;
+}
+
+.article-tags p {
+  padding-bottom: 0;
+  padding-top: 0;
+  margin-bottom:0 ;
+  margin-top: 0.3rem;
+  color: var(--dark-color-three);
+  font-family: 'Raleway', sans-serif;
 }
 
 .author-about {
   color: var(--dark-color-three);
   font-family: 'Raleway', sans-serif;
-  font-size: 0.75em;
-  margin-top: 1em;
+  font-size: 0.8rem;
+  margin-top: 1rem;
 }
 
 .author-thumbnail {
@@ -161,9 +181,9 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 
 .author-displayname {
   margin: 0;
-  margin-right: 10px;
+  margin-right: 0px;
   font-weight: bold;
-  font-size: 1.15em;
+  font-size: 1rem;
   color: var(--dark-color-three);
   text-decoration: none;
 }
@@ -175,12 +195,15 @@ html, button, input, select, textarea, .pure-g [class *="pure-u"] {
 .author-handle {
   font-style: italic;
   color: var(--dark-color-two);
+  font-size: 0.8rem;
 }
 
 .author-bio {
+  margin-top: 0.2rem;
+  text-align: left;
+  font-size: 0.9rem;
   color: var(--dark-color-three);
-  font-size: 0.88em;
-  text-align: justify;
+  font-family: 'Raleway', sans-serif;
 }
 
 .author-handle:hover {

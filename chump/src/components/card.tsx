@@ -76,7 +76,7 @@ export class Card extends RootComponent<ICardProps, {}> {
     let tags;
     if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
       tags = (
-        <div className="pure-g">
+        <div className="pure-g article-tags">
           <div className="pure-u-3-24" key={-1}>
             <p>Tags:</p>
           </div>
@@ -91,16 +91,17 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-10-24">
+	<div className="article-divider" />
         {customStyle}
-        <p className="article-byline">
-          {`${config.published} ${post.parsed_date.toLocaleString()}`}
-        </p>
         <Link
           to={`/@${post.author}/${post.global_id}`}
           className="article-title"
         >
           {post.title}
         </Link>
+        <p className="article-byline">
+          {`${config.published} ${post.parsed_date.toLocaleString()}`}
+        </p>
         <p className="article-body">{post.summary}</p>
         {tags}
       </div>
@@ -114,6 +115,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-3-24">
+	<div className="article-divider" />
         <div className="author-about">
           <img
             src={`/assets/user_${this.props.blogPost.author_id}`}
