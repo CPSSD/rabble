@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export const About: React.StatelessComponent<{}> = () => {
   return (
     <div>
-      <div className="pure-u-5-24"/>
+      <div className="pure-u-7-24"/>
       <div className="pure-u-10-24">
         <h4>Welcome to Rabble!</h4>
         <p>Rabble is a new federated blogging platform that aims to be easy to use, trustworthy, and lightweight.</p>
