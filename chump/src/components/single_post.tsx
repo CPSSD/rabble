@@ -85,11 +85,16 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
       },
     };
     return (
-      <User
-        username={this.props.username}
-        blogUser={user}
-        display="inline"
-      />
+      <div className="pure-g">
+        <div className="pure-u-4-24"/>
+        <div className="pure-u-16-24">
+          <User
+            username={this.props.username}
+            blogUser={user}
+            display="inline"
+          />
+        </div>
+      </div>
     );
   }
 
