@@ -63,7 +63,7 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
         type="submit"
         className="pure-button pure-button-primary primary-button"
       >
-        {this.state.sharesCount} <Repeat size="1em"/> | Reblog
+        {this.state.sharesCount} <Repeat size="1em"/> Reblog
       </button>
     );
   }

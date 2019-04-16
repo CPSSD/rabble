@@ -40,7 +40,7 @@ export class EditButton extends RootComponent<IEditProps, IEditState> {
           className="pure-button pure-input-1-3 pure-button-primary primary-button"
           onClick={this.handleEdit}
         >
-          <Edit/> | Edit
+          <Edit/> Edit
         </button>
       </div>
     );
