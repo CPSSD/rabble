@@ -44,7 +44,7 @@ export class Card extends RootComponent<ICardProps, {}> {
     if (IsSharedPost(this.props.blogPost)) {
       const rebloggedPost = post as IParsedSharedPost;
       let reblogger = "@" + rebloggedPost.sharer;
-      const host = post.sharer_host;
+      const host = rebloggedPost.sharer_host;
 
       if (host !== null && host !== "" && typeof host !== "undefined") {
         reblogger = "@" + rebloggedPost.sharer + "@" + RemoveProtocol(rebloggedPost.sharer_host);
