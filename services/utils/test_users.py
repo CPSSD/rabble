@@ -38,7 +38,7 @@ class UsersUtilTest(unittest.TestCase):
         self.assertEqual(b, 'neopets.com')
 
     def test_parse_actor(self):
-        a, b, _ = self.util.parse_actor('https://neopets.com/@cianlr')
+        a, b = self.util.parse_actor('https://neopets.com/@cianlr')
         self.assertEqual(a, 'https://neopets.com')
         self.assertEqual(b, 'cianlr')
 

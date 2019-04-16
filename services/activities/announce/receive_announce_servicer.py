@@ -123,10 +123,11 @@ class ReceiveAnnounceServicer:
             result_type=announce_pb2.AnnounceResponse.OK)
 
         # Parse announcer, author and target ids
-        author_tuple = self._users_util.parse_actor(req.author_ap_id)
+        author_tuple = self._users_util.parse_actor_details(req.author_ap_id)
         if author_tuple[0] is None:
             return parse_actor_error("author", req.author_ap_id)
-        announcer_tuple = self._users_util.parse_actor(req.announcer_id)
+        announcer_tuple = self._users_util.parse_actor_details(
+            req.announcer_id)
         if announcer_tuple[0] is None:
             return parse_actor_error("announcer", req.announcer_id)
 

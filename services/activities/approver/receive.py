@@ -10,7 +10,7 @@ class ReceiveApprovalServicer:
 
     def _get_users(self, resp, req):
         # TODO(devoxel): figure out if we should validate req.follower.host
-        _, handle, _ = self._users_util.parse_actor(req.follow.follower)
+        _, handle = self._users_util.parse_actor(req.follow.follower)
         follower = self._users_util.get_user_from_db(handle=handle,
                                                      host_is_null=True)
         if follower is None:
@@ -20,7 +20,7 @@ class ReceiveApprovalServicer:
             resp.result_type = approver_pb2.ApprovalResponse.ERROR
             return None, None
 
-        host, foreign_handle, _ = self._users_util.parse_actor(
+        host, foreign_handle = self._users_util.parse_actor(
             req.follow.followed)
 
         # TODO(devoxel): This should probably be in a util function.

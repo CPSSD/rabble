@@ -26,7 +26,7 @@ class ReceiveLikeUndoServicer:
         )
 
     def get_user(self, user_ap):
-        host, handle, _ = self._users_util.parse_actor(user_ap)
+        host, handle = self._users_util.parse_actor(user_ap)
         host = self._activ_util.get_host_name_param(host, self._hostname)
         if handle is None:
             self._logger.error("Could not parse user: " + user_ap)

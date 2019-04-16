@@ -30,15 +30,23 @@ class UsersUtil:
         return None, None
 
     def get_actor_details(self, handle, host):
-        normalised_host = self._activ_util.normalise_hostname(host)
-
-        # Get the URL of this user's actor document.
-        actor_url = self._activ_util._get_activitypub_actor_url(
-            normalised_host, handle)
-
-        return self.parse_actor(actor_url)
+        actor_url = self._activ_util.build_actor(handle, host)
+        return self.parse_actor_details(actor_url)
 
     def parse_actor(self, actor_uri):
+        """
+        Given an actor URI, return the (host, handle) tuple for this
+        actor.
+        """
+        actor_doc = self._activ_util.fetch_actor(actor_uri)
+        if actor_doc is None:
+            self._logger.warning(f'No actor doc found for user {actor_uri}.')
+            return None, None
+        handle = actor_doc['preferredUsername']
+        host = self._activ_util.normalise_hostname(urlparse(actor_uri).netloc)
+        return host, handle
+
+    def parse_actor_details(self, actor_uri):
         """
         Given an actor URI, return the (host, handle, bio) tuple for this
         actor.

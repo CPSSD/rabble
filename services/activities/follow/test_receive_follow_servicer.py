@@ -11,7 +11,7 @@ class ReceiveFollowServicerTest(unittest.TestCase):
     def setUp(self):
         self.servicer = ReceiveFollowServicer(Mock(), Mock(), Mock())
         self.servicer._users_util.parse_actor = lambda x: (
-            'host', 'handle', 'bio')
+            'host', 'handle')
 
     def test_s2s_req_to_follows_req(self):
         req = s2s_follow_pb2.ReceivedFollowDetails()
