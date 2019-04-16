@@ -82,18 +82,19 @@ export class Reblog extends RootComponent<IReblogProps, IReblogState> {
 
   private handleReblog() {
     SendReblog(this.props.blogPost.global_id)
-      .then((res: any) => {
+      .then((res: Response) => {
+        if (res.status !== 200) {
+          this.errorToast({ statusCode: res.status });
+          return;
+        }
+        this.successToast(config.reblog_success);
         this.setState({
           isReblogged: true,
           sharesCount: this.state.sharesCount + 1,
         });
       })
-      .catch((err: any) => {
-        let message = err.message;
-        if (err.response) {
-          message = err.response.text;
-        }
-        this.errorToast({ debug: message });
+      .catch((err: Error) => {
+        this.errorToast({ debug: err });
       });
   }
 }
