@@ -46,7 +46,7 @@ CREATE TRIGGER IF NOT EXISTS UniqueUserHostInsertConstraint
 CREATE TRIGGER IF NOT EXISTS UniqueUserHostUpdateConstraint
   BEFORE UPDATE
   ON users
-  WHEN NEW.host IS NULL
+  WHEN NEW.host IS NULL AND NEW.handle != OLD.handle
   BEGIN
     SELECT CASE WHEN((
       SELECT 1
