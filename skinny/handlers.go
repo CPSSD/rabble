@@ -24,7 +24,7 @@ import (
 
 const (
 	staticAssets              = "/repo/build_out/chump_dist"
-	timeoutDuration           = time.Minute * 5
+	defaultTimeoutDuration    = time.Second * 5
 	invalidJSONError          = "Invalid JSON"
 	invalidJSONErrorWithPrint = "Invalid JSON, error: %v\n"
 	loginRequired             = "Login Required"
@@ -102,7 +102,7 @@ func (s *serverWrapper) getSessionGlobalID(r *http.Request) (int64, error) {
 
 func (s *serverWrapper) handleFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		v := mux.Vars(r)
@@ -148,7 +148,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 		pb.FeedResponse_UNAUTHORIZED:   401,
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		v := mux.Vars(r)
@@ -189,7 +189,7 @@ func (s *serverWrapper) handleFeedPerUser() http.HandlerFunc {
 
 func (s *serverWrapper) handleRssPerUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		v := mux.Vars(r)
@@ -243,7 +243,7 @@ func (s *serverWrapper) handleUserCSS() http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest) // Bad Request.
 			return
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.users.GetCss(ctx, &pb.GetCssRequest{
 			UserId: userID,
@@ -265,7 +265,7 @@ func (s *serverWrapper) handleUserCSS() http.HandlerFunc {
 
 func (s *serverWrapper) handlePerArticlePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		log.Println("Per Article page called")
 
@@ -378,7 +378,7 @@ func (s *serverWrapper) handleFollow() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.follows.SendFollowRequest(ctx, &j)
 		if err != nil {
@@ -431,7 +431,7 @@ func (s *serverWrapper) handleUnfollow() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		j.Datetime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.follows.SendUnfollow(ctx, &j)
 		if err != nil {
@@ -555,7 +555,7 @@ func (s *serverWrapper) handleCreateArticle() http.HandlerFunc {
 			Tags:             t.Tags,
 			Summary:          t.Summary,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		resp, err := s.article.CreateNewArticle(ctx, na)
@@ -622,7 +622,7 @@ func (s *serverWrapper) handleEditArticle() http.HandlerFunc {
 			Title:     t.Title,
 			Summary:   t.Summary,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		resp, err := s.s2sUpdate.SendUpdateActivity(ctx, ud)
@@ -687,7 +687,7 @@ func (s *serverWrapper) handleDeleteArticle() http.HandlerFunc {
 			UserId:    globalID,
 			ArticleId: t.ArticleID,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		resp, err := s.s2sDelete.SendDeleteActivity(ctx, delpb)
@@ -758,7 +758,7 @@ func (s *serverWrapper) handlePreviewArticle() http.HandlerFunc {
 			Title:            t.Title,
 			CreationDatetime: protoTimestamp,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		resp, err := s.article.PreviewArticle(ctx, na)
@@ -798,7 +798,7 @@ func (s *serverWrapper) handlePendingFollows() http.HandlerFunc {
 		pr := &pb.PendingFollowRequest{
 			Handle: handle,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		resp, err := s.database.PendingFollows(ctx, pr)
@@ -851,7 +851,7 @@ func (s *serverWrapper) handleAcceptFollow() http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.follows.AcceptFollow(ctx, &af)
 		if err != nil {
@@ -911,7 +911,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 				ArticleId:   t.ArticleID,
 				LikerHandle: handle,
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 			defer cancel()
 			resp, err := s.s2sLike.SendLikeActivity(ctx, like)
 			if err != nil {
@@ -933,7 +933,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 				ArticleId:   t.ArticleID,
 				LikerHandle: handle,
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 			defer cancel()
 			resp, err := s.s2sUndo.SendLikeUndoActivity(ctx, del)
 			if err != nil {
@@ -957,7 +957,7 @@ func (s *serverWrapper) handleLike() http.HandlerFunc {
 
 func (s *serverWrapper) handleRecommendFollows() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		v := mux.Vars(r)
@@ -1000,7 +1000,7 @@ type SearchResult struct {
 
 func (s *serverWrapper) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		query := r.URL.Query().Get("query")
@@ -1072,7 +1072,7 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 
 		log.Printf("Sending request for user: @%s@%s", ur.Match.Handle, ur.Match.Host)
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.database.Users(ctx, ur)
 		if err != nil {
@@ -1116,7 +1116,7 @@ func (s *serverWrapper) handleTrackView() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		v.Datetime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		_, err = s.database.AddView(ctx, &v)
 		if err != nil {
@@ -1145,7 +1145,7 @@ func (s *serverWrapper) handleAddLog() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		v.Datetime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		_, err = s.database.AddLog(ctx, &v)
 		if err != nil {
@@ -1183,7 +1183,7 @@ func (s *serverWrapper) handleAnnounce() http.HandlerFunc {
 		ts := ptypes.TimestampNow()
 		v.AnnounceTime = ts
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		resp, err := s.announce.SendAnnounceActivity(ctx, &v)
 		if err != nil {
@@ -1212,7 +1212,7 @@ func (s *serverWrapper) handleGetFollows(f FollowGetter) http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 		fq := &pb.GetFollowsRequest{
 			Username: username,
@@ -1251,7 +1251,7 @@ func (s *serverWrapper) handleGetFollowing() http.HandlerFunc {
 
 func (s *serverWrapper) handlePostRecommendations() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 		defer cancel()
 
 		uid, err := s.getSessionGlobalID(r)

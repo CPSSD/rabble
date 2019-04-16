@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	pb "github.com/cpssd/rabble/services/proto"
 	util "github.com/cpssd/rabble/services/utils"
@@ -73,7 +72,7 @@ func (wf *wfResolver) genLinks(user *pb.UsersEntry) []webfinger.Link {
 
 // FindUser finds the user given the username and hostname
 func (wf *wfResolver) FindUser(handle string, host, requestHost string, r []webfinger.Rel) (*webfinger.Resource, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutDuration)
 	defer cancel()
 
 	// We only support looking up hosts that exist on our server.
