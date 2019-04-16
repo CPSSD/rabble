@@ -30,6 +30,33 @@ CREATE TABLE IF NOT EXISTS users (
   UNIQUE (handle, host)
 );
 
+CREATE TRIGGER IF NOT EXISTS UniqueUserHostInsertConstraint
+  BEFORE INSERT
+  ON users
+  WHEN NEW.host IS NULL
+  BEGIN
+    SELECT CASE WHEN((
+      SELECT 1
+      FROM users
+      WHERE host IS NULL AND handle = NEW.handle
+      )
+      NOTNULL) THEN RAISE(ABORT, 'User already exists'  ) END;
+  END;
+
+CREATE TRIGGER IF NOT EXISTS UniqueUserHostUpdateConstraint
+  BEFORE UPDATE
+  ON users
+  WHEN NEW.host IS NULL
+  BEGIN
+    SELECT CASE WHEN((
+      SELECT 1
+      FROM users
+      WHERE host IS NULL AND handle = NEW.handle
+      )
+      NOTNULL) THEN RAISE(ABORT, 'User already exists'  ) END;
+  END;
+
+
 /* follower and followed both match global_id in entries in users table. */
 CREATE TABLE IF NOT EXISTS follows (
   follower          integer NOT NULL,
