@@ -24,11 +24,11 @@ export function GenerateUserLinks(author: string, host: string, displayName: str
   );
 
   if (host !== null && host !== "" && typeof host !== "undefined") {
-    let normal_host = RemoveProtocol(host)
-    userAddress = `/@${author}@${normal_host}`;
+    const normalHost = RemoveProtocol(host);
+    userAddress = `/@${author}@${normalHost}`;
     userHandleHost = (
       <Link to={userAddress} className="author-handle">
-        @{author}@{normal_host}
+        @{author}@{normalHost}
       </Link>
     );
   }
