@@ -69,8 +69,8 @@ func ParseUsername(fqu string) (string, string, error) {
 	return split[0], host, nil
 }
 
-// NormaliseHost takes a hostname like "jim@jimjim.dev" and it returns
-// https://jim@jimjim.dev.
+// NormaliseHost takes a hostname like "jimjim.dev" and it returns
+// https://jimjim.dev.
 //
 // If the host is a development host, like skinny_1:1916, it returns http://skinny_1:1916
 func NormaliseHost(host string) string {
