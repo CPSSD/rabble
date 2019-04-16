@@ -249,6 +249,9 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 	if err != nil {
 		return nil, fmt.Errorf("feed.PerUser failed: %v", err)
 	}
+
+	host = utils.NormaliseHost(host)
+
 	hostIsNull := host == ""
 	author, err := utils.GetAuthorFromDb(ctx, handle, host, hostIsNull, 0, s.db)
 	if err != nil {

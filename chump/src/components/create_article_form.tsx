@@ -28,7 +28,7 @@ interface IFormProps {
 
 const defaultBio = "Nowadays everybody wanna talk like they got something to say. \
 But nothing comes out when they move their lips; just a bunch of gibberish.";
-const defaultImage = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp";
+const defaultImage = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
 const EMPTY_TITLE_ERROR = "A post cannot have an empty title";
 
 export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
@@ -115,6 +115,7 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
                 blogPost={this.state.post}
                 preview={true}
                 customCss={true}
+                showBio={true}
                 deleteSuccessCallback={empty}
               />
             </HashRouter>

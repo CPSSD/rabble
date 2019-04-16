@@ -422,15 +422,38 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		nfa := &pb.NewForeignArticle{
-			AttributedTo: t.Object.AttributedTo,
-			Content:      t.Object.Content,
-			Published:    protoTimestamp,
-			Recipient:    recipient,
-			Title:        t.Object.Name,
-			Id:           t.Object.ID,
-			Summary:      summary,
+		var nfa *pb.NewForeignArticle
+
+		switch strings.ToLower(t.Object.Type) {
+		case "note":
+			src := "Source: " + t.Object.URL
+			nfa = &pb.NewForeignArticle{
+				AttributedTo: t.Object.AttributedTo,
+				Content:      t.Object.Content + "\n\n" + src,
+				Published:    protoTimestamp,
+				Recipient:    recipient,
+				Title:        "Received A Note",
+				Id:           t.Object.ID,
+				Summary:      src,
+			}
+		case "article":
+			nfa = &pb.NewForeignArticle{
+				AttributedTo: t.Object.AttributedTo,
+				Content:      t.Object.Content,
+				Published:    protoTimestamp,
+				Recipient:    recipient,
+				Title:        t.Object.Name,
+				Id:           t.Object.ID,
+				Summary:      summary,
+			}
+		default:
+			log.Printf("Received unknown ActivityPub type: %s: %#v",
+				t.Object.Type, t)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Cannot handle Create %s activity\n", t.Object.Type)
+			return
 		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 

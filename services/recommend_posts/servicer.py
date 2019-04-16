@@ -19,7 +19,7 @@ class PostRecommendationsServicer(recommend_posts_pb2_grpc.PostRecommendationsSe
     DEFAULT_RECOMMENDER = 'random'
     ENV_VAR = 'POSTS_RECOMMENDER_METHOD'
     MAX_RECOMMENDATIONS = 50
-    DEFAULT_IMAGE = "https://qph.fs.quoracdn.net/main-qimg-8aff684700be1b8c47fa370b6ad9ca13.webp"
+    DEFAULT_IMAGE = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 
     def __init__(self, users_util, logger, db_stub):
         self._logger = logger

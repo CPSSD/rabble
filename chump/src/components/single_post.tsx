@@ -2,8 +2,10 @@ import * as React from "react";
 import { RouteProps } from "react-router-dom";
 
 import { GetSinglePost, IParsedPost } from "../models/posts";
+import { IParsedUser } from "../models/user";
 import { Post } from "./post";
 import { RootComponent } from "./root_component";
+import { User } from "./user";
 
 interface ISinglePostState {
   posts: IParsedPost[];
@@ -44,7 +46,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
     if (this.state.posts.length === 0) {
       return (
         <div>
-          <div className="pure-u-5-24"/>
+          <div className="pure-u-7-24"/>
           <div className="pure-u-10-24">
             <p>404: Article not found</p>
           </div>
@@ -59,16 +61,49 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
           blogPost={this.state.posts[0]}
           preview={false}
           customCss={true}
+          showBio={false}
           deleteSuccessCallback={this.props.history.goBack}
         />
       </div>
     );
   }
 
+  public renderUserHeader() {
+    if (this.state.posts.length === 0) {
+      return null;
+    }
+    const user: IParsedUser = {
+      bio: this.state.posts[0].bio,
+      custom_css: "",  // Unused.
+      display_name: this.state.posts[0].author_display,
+      global_id: this.state.posts[0].author_id,
+      handle: this.state.posts[0].author,
+      host: this.state.posts[0].author_host,
+      is_followed: this.state.posts[0].is_followed,
+      private: {
+        value: false,  // Unused.
+      },
+    };
+    return (
+      <div className="pure-g">
+        <div className="pure-u-4-24"/>
+        <div className="pure-u-16-24">
+          <User
+            username={this.props.username}
+            blogUser={user}
+            display="inline"
+          />
+        </div>
+      </div>
+    );
+  }
+
   public render() {
     const blogPost = this.renderPost();
+    const userHeader = this.renderUserHeader();
     return (
       <div>
+        {userHeader}
         {blogPost}
       </div>
     );

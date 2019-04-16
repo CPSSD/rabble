@@ -109,6 +109,7 @@ export class SearchResults extends RootComponent<ISearchResultsProps, ISearchRes
             blogPost={e}
             preview={false}
             customCss={false}
+            showBio={true}
             deleteSuccessCallback={empty}
           />
         </div>

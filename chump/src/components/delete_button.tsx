@@ -26,8 +26,13 @@ export class DeleteButton extends RootComponent<IDeleteProps, {}> {
       return null;
     }
     return (
-      <div onClick={this.handleDelete} className="pure-u-3-24">
-        <Trash2 className="sub-post-icon"/>
+      <div className="pure-u-5-24">
+        <button
+          className="pure-button pure-input-1-3 pure-button-primary primary-button"
+          onClick={this.handleDelete}
+        >
+          <Trash2/> Delete
+        </button>
       </div>
     );
   }

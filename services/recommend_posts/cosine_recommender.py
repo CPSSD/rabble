@@ -154,8 +154,8 @@ class CosineRecommender:
 
         # update user model with post tags
         for t in tags:
-            self.user_tag_freq[tag] += 1
-            self.user_models[user_id][tag] += 1
+            self.user_tag_freq[t] += 1
+            self.user_models[user_id][t] += 1
 
         self.user_tag_ifs = self._calculate_based_itf(
             self.user_tag_freq, len(self.user_models))

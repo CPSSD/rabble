@@ -14,6 +14,7 @@ interface IErrorToastArgs {
 function genMessageFromStatus(code: number) {
   switch (code) {
     case 400: return config.bad_request;
+    case 401: return config.incorrect_credentials;
     case 403: return config.forbidden_error;
     case 404: return config.not_found;
     case 418: return config.im_a_teapot;
@@ -25,6 +26,9 @@ function genMessageFromStatus(code: number) {
 export class RootComponent<T, U> extends React.Component<T, U> {
   constructor(props: T) {
     super(props);
+
+    this.errorToast = this.errorToast.bind(this);
+    this.handleGeneralErr = this.handleGeneralErr.bind(this);
   }
 
   protected handleGeneralErr(error: ResponseError) {

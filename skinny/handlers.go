@@ -24,8 +24,6 @@ import (
 
 const (
 	staticAssets              = "/repo/build_out/chump_dist"
-	timeParseFormat           = "2006-01-02T15:04:05.000Z"
-	protoTimeParseFormat      = "2006-01-02T15:04:05.000000000Z"
 	timeoutDuration           = time.Minute * 5
 	invalidJSONError          = "Invalid JSON"
 	invalidJSONErrorWithPrint = "Invalid JSON, error: %v\n"
@@ -41,21 +39,35 @@ type clientResp struct {
 
 func parseTimestamp(w http.ResponseWriter, published string, resp *clientResp) (*tspb.Timestamp, error) {
 	invalidCreationTimeMessage := "Invalid creation time\n"
-	parseFormat := timeParseFormat
-	if len(published) == 30 {
-		parseFormat = protoTimeParseFormat
-	}
-	parsedCreationDatetime, timeErr := time.Parse(parseFormat, published)
-	if timeErr != nil {
-		log.Printf("Error: %s\n", timeErr)
-		w.WriteHeader(http.StatusBadRequest)
-		resp.Error = invalidCreationTimeMessage
-		return nil, fmt.Errorf(invalidCreationTimeMessage)
+
+	// We accept standard AP dates in a variety of resolutions.
+	formats := []string{
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05.000Z",
+		"2006-01-02T15:04:05.000000000Z",
 	}
 
-	protoTimestamp, protoTimeErr := ptypes.TimestampProto(parsedCreationDatetime)
-	if protoTimeErr != nil {
-		log.Printf("Error: %s\n", protoTimeErr)
+	var (
+		protoTimestamp *tspb.Timestamp
+		success        bool
+	)
+
+	for _, format := range formats {
+		parsedCreationDatetime, err := time.Parse(format, published)
+		if err != nil {
+			continue
+		}
+
+		protoTimestamp, err = ptypes.TimestampProto(parsedCreationDatetime)
+		if err != nil {
+			continue
+		}
+
+		success = true
+		break
+	}
+
+	if !success {
 		w.WriteHeader(http.StatusBadRequest)
 		resp.Error = invalidCreationTimeMessage
 		return nil, fmt.Errorf(invalidCreationTimeMessage)
@@ -1048,7 +1060,7 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 			RequestType: pb.UsersRequest_FIND,
 			Match: &pb.UsersEntry{
 				Handle:     handle,
-				Host:       host,
+				Host:       util.NormaliseHost(host),
 				HostIsNull: host == "",
 			},
 		}
@@ -1057,6 +1069,8 @@ func (s *serverWrapper) handleUserDetails() http.HandlerFunc {
 		if uid, _ := s.getSessionGlobalID(r); uid != 0 {
 			ur.UserGlobalId = &wrapperpb.Int64Value{Value: uid}
 		}
+
+		log.Printf("Sending request for user: @%s@%s", ur.Match.Handle, ur.Match.Host)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
