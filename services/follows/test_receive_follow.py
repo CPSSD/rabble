@@ -14,11 +14,14 @@ class FakeDatabase:
         # users_dict keeps what users have been added in memory
         # (username, host) = global_id
         self.users_dict = {
-            ('exists', None, True): 1,
-            ('also_exists', None, True): 2,
+            ('exists', None, True, None): 1,
+            ('also_exists', None, True, None): 2,
         }
         self.current_id = 2
         self.reset()
+
+    def _fake_get_actor_details(self, handle, host):
+        return 'cianlr', "cianlr_host", 'cianlr is here'
 
     def reset(self):
         # Since we're directly hooking in functions into the test, we cant
@@ -34,18 +37,18 @@ class FakeDatabase:
             return None
         return database_pb2.UsersEntry(global_id=self.users_dict[user])
 
-    def get_user(self, handle=None, host=None, host_is_null=False):
-        self.get_user_called_with = (handle, host, host_is_null)
+    def get_user(self, handle=None, host=None, host_is_null=False, bio=None):
+        self.get_user_called_with = (handle, host, host_is_null, bio)
         if handle == None:
             return None
-        return self.lookup_user((handle, host, host_is_null))
+        return self.lookup_user((handle, host, host_is_null, bio))
 
-    def get_or_create_user(self, handle=None, host=None, host_is_null=False):
+    def get_or_create_user(self, handle=None, host=None, host_is_null=False, bio=None):
         # we should never be creating local users here, so we check that here.
-        self.get_or_create_user_called_with = (handle, host, host_is_null)
+        self.get_or_create_user_called_with = (handle, host, host_is_null, bio)
         if handle == None or host == None:
             return None
-        user = (handle, host, host_is_null)
+        user = (handle, host, host_is_null, bio)
         self.current_id += 1
         self.users_dict[user] = self.current_id
         return self.lookup_user(user)
@@ -85,6 +88,7 @@ class ReceiveFollowTest(unittest.TestCase):
         user_util = Mock()
         user_util.get_user_from_db = self.db.get_user
         user_util.get_or_create_user_from_db = self.db.get_or_create_user
+        user_util.get_actor_details = self.db._fake_get_actor_details
 
         util = Util(Mock(), self.db, Mock(), user_util)
         util.create_follow_in_db = self.db.add_follow
