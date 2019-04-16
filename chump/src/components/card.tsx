@@ -12,6 +12,7 @@ interface ICardProps {
   blogPost: IAnyParsedPost;
   username: string;
   customCss: boolean;
+  showDivider: boolean;
 }
 
 const userLinksClassName = "username-holder";
@@ -25,7 +26,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
   public render() {
     if (IsSharedPost(this.props.blogPost)) {
-      return this.renderSharedCard();
+      //return this.renderSharedCard();
     }
     return this.renderFull();
   }
@@ -73,6 +74,18 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     const customStyle = GetCustomCSS(post.author_id, this.props.customCss);
 
+    let reblogLine = "";
+    if (IsSharedPost(this.props.blogPost)) {
+      const post = this.props.blogPost as IParsedSharedPost;
+      let reblogger = post.sharer;
+      const host = post.sharer_host;
+
+      if (host !== null && host !== "" && typeof host !== "undefined") {
+        reblogger = "@" + post.sharer + "@" + RemoveProtocol(post.sharer_host);
+      }
+      reblogLine = `<br/>Reblogged by ${reblogger} at ${post.parsed_share_date.toLocaleString()}`;
+    }
+
     let tags;
     if (typeof post.tags !== "undefined" && post.tags.length !== 0) {
       tags = (
@@ -90,7 +103,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-10-24">
-	<div className="article-divider" />
+	{this.props.showDivider ? <div className="article-divider" /> : null }
         {customStyle}
         <Link
           to={`/@${post.author}/${post.global_id}`}
@@ -100,8 +113,15 @@ export class Card extends RootComponent<ICardProps, {}> {
         </Link>
         <p className="article-byline">
           {`${config.published} ${post.parsed_date.toLocaleString()}`}
+	  {reblogLine}
         </p>
         <p className="article-body">{post.summary}</p>
+        <Link
+          to={`/@${post.author}/${post.global_id}`}
+          className="article-read-more"
+        >
+          {config.read_more_text}
+	</Link>
         {tags}
       </div>
     );
@@ -114,7 +134,7 @@ export class Card extends RootComponent<ICardProps, {}> {
 
     return (
       <div className="pure-u-3-24">
-	<div className="article-divider" />
+	{this.props.showDivider ? <div className="article-divider" /> : null }
         <div className="author-about">
           <img
             src={`/assets/user_${this.props.blogPost.author_id}`}

@@ -374,7 +374,8 @@ button.follow-button svg {
   padding: 1px 5px;
   margin: 3px;
   display: inline-block;
-  font-family: 'Raleway', sans-serif
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.7rem;
 }
 
 .profile-item {
@@ -386,11 +387,14 @@ button.follow-button svg {
 }
 
 .profile-list {
- border-bottom-width: 2px;
- border-bottom-color: var(--primary-bg-color);
- border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: var(--primary-bg-color);
+  border-bottom-style: solid;
 }
 
-.reblog-holder {
+.article-read-more {
+  text-align: center;
   width: 100%;
+  display: block;
+  color: var(--dark-color-one);
 }
