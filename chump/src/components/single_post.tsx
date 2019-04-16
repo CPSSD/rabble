@@ -46,7 +46,7 @@ export class SinglePost extends RootComponent<ISinglePostProps, ISinglePostState
     if (this.state.posts.length === 0) {
       return (
         <div>
-          <div className="pure-u-5-24"/>
+          <div className="pure-u-7-24"/>
           <div className="pure-u-10-24">
             <p>404: Article not found</p>
           </div>

@@ -33,7 +33,7 @@ export class Post extends RootComponent<IPostProps, {}> {
   public render() {
     return (
       <div className="blog-post-holder">
-        <div className="pure-u-5-24"/>
+        <div className="pure-u-7-24"/>
         {this.renderPost()}
         <div className="pure-u-1-24"/>
         {this.renderBio()}
