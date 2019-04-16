@@ -31,7 +31,7 @@ class UsersUtil:
 
     def parse_actor(self, actor_uri):
         """
-        Given an actor URI, return the (host, handle) tuple for this
+        Given an actor URI, return the (host, handle, bio) tuple for this
         actor.
         """
         actor_doc = self._activ_util.fetch_actor(actor_uri)
