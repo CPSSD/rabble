@@ -13,7 +13,6 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
 
     RECOMMENDERS = {
         'surprise': SurpriseRecommender,
-        'none': NoopRecommender,
         'cn': CNRecommender,
         'graphdist': GraphDistanceRecommender,
     }
@@ -73,4 +72,10 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             user_obj.bio = a.bio
             user_obj.image = self.DEFAULT_IMAGE
             user_obj.global_id = a.global_id
+        return resp
+
+    def UpdateFollowRecommendations(self, request, context):
+        resp = recommend_follows_pb2.UpdateFollowRecommendationsResponse()
+        for r in self.active_recommenders:
+            r.update_recommendations(user_id)
         return resp
