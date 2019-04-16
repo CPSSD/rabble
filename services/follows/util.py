@@ -74,8 +74,8 @@ class Util:
             follow_user.host = db_user.host
             follow_user.display_name = db_user.display_name
         except Exception as e:
-            self._logger.warning('Error converting db user to follow user: ' +
-                                 str(e))
+            self._logger.warning('Error converting db user to follow user: '
+                                 + str(e))
             return False
         return True
 
@@ -133,7 +133,9 @@ class Util:
             resp.error = error
             return None, None
 
-        fu_details = self._users_util.parse_actor(request.followed)
+        fu_details = self._users_util.get_actor_details(
+            request.follower_handle, request.follower_host)
+
         foreign_user = self._users_util.get_or_create_user_from_db(
             handle=from_handle,
             host=from_host,

@@ -97,8 +97,10 @@ class SendFollowServicer:
             host_is_null=is_local)
         if not is_local:
             created_user = True
+            fu_details = self._users_util.get_actor_details(
+                to_handle, to_instance)
             followed_entry = self._users_util.get_or_create_user_from_db(
-                handle=to_handle, host=to_instance)
+                handle=to_handle, host=to_instance, bio=fu_details[2])
 
         if followed_entry is None:
             error = 'Could not find or create user {}@{}'.format(to_handle,
