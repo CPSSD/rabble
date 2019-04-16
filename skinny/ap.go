@@ -117,7 +117,7 @@ func (s *serverWrapper) handleActor() http.HandlerFunc {
 		req := &pb.ActorRequest{
 			Username: u,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.actors.Get(ctx, req)
@@ -186,7 +186,7 @@ func (s *serverWrapper) handleFollowingCollection() http.HandlerFunc {
 		v := mux.Vars(r)
 		u := v["username"]
 		req := &pb.ActorRequest{Username: u}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.actors.GetFollowing(ctx, req)
@@ -214,7 +214,7 @@ func (s *serverWrapper) handleFollowersCollection() http.HandlerFunc {
 		v := mux.Vars(r)
 		u := v["username"]
 		req := &pb.ActorRequest{Username: u}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.actors.GetFollowers(ctx, req)
@@ -293,7 +293,7 @@ func (s *serverWrapper) handleAPArticle() http.HandlerFunc {
 			ArticleId: articleID,
 			Username:  u,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.actors.GetArticle(ctx, req)
@@ -454,7 +454,7 @@ func (s *serverWrapper) handleCreateActivity() http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.create.ReceiveCreate(ctx, nfa)
@@ -507,7 +507,7 @@ func (s *serverWrapper) handleUpdateActivity() http.HandlerFunc {
 			Title:   t.Object.Name,
 			Summary: summary,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sUpdate.ReceiveUpdateActivity(ctx, ud)
@@ -560,7 +560,7 @@ func (s *serverWrapper) handleFollowActivity() http.HandlerFunc {
 			Followed: t.Object,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sFollow.ReceiveFollowActivity(ctx, f)
@@ -599,7 +599,7 @@ func (s *serverWrapper) handleFollowUndoActivity() http.HandlerFunc {
 			Followed: t.Object.Object,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sFollow.ReceiveUnfollowActivity(ctx, f)
@@ -652,7 +652,7 @@ func (s *serverWrapper) handleLikeActivity() http.HandlerFunc {
 			LikerId:     t.Actor.ID,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sLike.ReceiveLikeActivity(ctx, f)
@@ -705,7 +705,7 @@ func (s *serverWrapper) handleDeleteActivity() http.HandlerFunc {
 			ApId: t.Object,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sDelete.ReceiveDeleteActivity(ctx, f)
@@ -791,7 +791,7 @@ func (s *serverWrapper) handleApprovalActivity() http.HandlerFunc {
 			Accept: t.Type == "accept",
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.approver.ReceiveApproval(ctx, ap)
@@ -891,7 +891,7 @@ func (s *serverWrapper) handleLikeUndoActivity() http.HandlerFunc {
 			LikingUserApId:  t.Object.Actor.ID,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.s2sUndo.ReceiveLikeUndoActivity(ctx, f)
@@ -980,7 +980,7 @@ func (s *serverWrapper) handleAnnounceActivity() http.HandlerFunc {
 			TargetId:        t.TargetID,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.announce.ReceiveAnnounceActivity(ctx, f)

@@ -73,7 +73,7 @@ func (wf *wfResolver) genLinks(user *pb.UsersEntry) []webfinger.Link {
 
 // FindUser finds the user given the username and hostname
 func (wf *wfResolver) FindUser(handle string, host, requestHost string, r []webfinger.Rel) (*webfinger.Resource, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	// We only support looking up hosts that exist on our server.

@@ -29,6 +29,7 @@ func createDatabaseClient() (*grpc.ClientConn, pb.DatabaseClient) {
 	return conn, client
 }
 
+// Server struct holds the db connection to be passed between server function
 type Server struct {
 	dbConn *grpc.ClientConn
 	db     pb.DatabaseClient
@@ -44,9 +45,11 @@ func newServer() *Server {
 	x.CreateIndices()
 	return x
 }
+
+// CreateIndices calls the database to create indexes for each searchable table
 func (s *Server) CreateIndices() {
 	log.Println("Creating Indices")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	_, postErr := s.db.CreatePostsIndex(ctx, &pb.DatabaseSearchRequest{})
 	if postErr != nil {
@@ -58,11 +61,13 @@ func (s *Server) CreateIndices() {
 	}
 }
 
+// Index Simple search does not need to be called to index so this is a no-op
 func (s *Server) Index(ctx context.Context, r *pb.IndexRequest) (*pb.IndexResponse, error) {
 	// hey there, i'm all good, i dont need to index, thanks for asking
 	return &pb.IndexResponse{}, nil
 }
 
+// Search is the handler for all search calls to the simple-search
 func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
 	log.Printf("Query: %s\n", r.Query.QueryText)
 	if r.Query.QueryText == "" {
@@ -75,7 +80,7 @@ func (s *Server) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchRes
 		UserGlobalId: r.UserGlobalId,
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second*2)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
 	pResp, pErr := s.db.SearchArticles(ctx, sReq)

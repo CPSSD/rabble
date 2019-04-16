@@ -43,7 +43,7 @@ func (s *server) getFollows(ctx context.Context, u *pb.UsersEntry) ([]*pb.Follow
 		Match:       &pb.Follow{Follower: u.GlobalId},
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
 	resp, err := s.db.Follow(ctx, r)
@@ -85,7 +85,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 			UserGlobalId: r.UserGlobalId,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.db.Posts(ctx, pr)
@@ -108,7 +108,7 @@ func (s *server) GetUserFeed(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRe
 			UserGlobalId: r.UserGlobalId,
 		}
 
-		ctx, cancel = context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		sharesResp, err := s.db.SharedPosts(ctx, spr)
@@ -143,7 +143,7 @@ func (s *server) Get(ctx context.Context, r *pb.FeedRequest) (*pb.FeedResponse, 
 		UserGlobalId: r.UserGlobalId,
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
 	resp, err := s.db.InstanceFeed(ctx, pr)
@@ -225,7 +225,7 @@ func (s *server) checkFollowing(follower_id int64, followed_id int64) (bool, err
 			State:    pb.Follow_ACTIVE,
 		},
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	resp, err := s.db.Follow(ctx, fr)
 	followErrFmt := "Checking follower of private account failed: %v"
@@ -281,7 +281,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 			AuthorId: authorID,
 		},
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	resp, err := s.db.Posts(ctx, pr)
 	postsErrFmt := "feed.PerUser failed: db.Posts(%v) error: %v"
@@ -298,7 +298,7 @@ func (s *server) PerUser(ctx context.Context, r *pb.FeedRequest) (*pb.FeedRespon
 		UserGlobalId: r.UserGlobalId,
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	shareResp, err := s.db.SharedPosts(ctx, spr)

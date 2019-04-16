@@ -60,7 +60,7 @@ func (s *serverWrapper) handleLogin() http.HandlerFunc {
 			Handle:   t.Handle,
 			Password: t.Password,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.users.Login(ctx, lr)
@@ -154,7 +154,7 @@ func (s *serverWrapper) handleRegister() http.HandlerFunc {
 			Password:    req.Password,
 			Bio:         req.Bio,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		resp, err := s.users.Create(ctx, u)
@@ -223,7 +223,7 @@ func (s *serverWrapper) handleUserUpdate() http.HandlerFunc {
 		req.Handle = handle
 
 		log.Printf("Trying to update user %#v.\n", req.Handle)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		updateResp, err := s.users.Update(ctx, &req)
