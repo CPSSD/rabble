@@ -77,6 +77,7 @@ export class UserProfile extends RootComponent<IUserProfileProps, IUserProfileSt
     this.resetViewing = this.resetViewing.bind(this);
     this.renderTab = this.renderTab.bind(this);
     this.getViewable = this.getViewable.bind(this);
+    this.handleGetError = this.handleGetError.bind(this);
   }
 
   // getViewable returns the tabs that render on a given profile page.
