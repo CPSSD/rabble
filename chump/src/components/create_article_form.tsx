@@ -158,6 +158,10 @@ export class CreateArticleForm extends RootComponent<IFormProps, IFormState> {
               onChange={this.handleTagInputChange}
               onlyUnique={true}
               maxTags={7}
+              inputProps={{
+                className: 'react-tagsinput-input',
+                placeholder: config.add_tag,
+              }}
             />
             <textarea
               name="blogText"

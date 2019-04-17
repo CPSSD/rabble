@@ -140,7 +140,7 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
         </li>
         <li className="pure-menu-item">
           <Link to="/follow" className="pure-menu-link nav-action">
-            <UserPlus size="1em"/> {config.follow_text}
+            <UserPlus size="1em"/> {config.follow_nav}
           </Link>
         </li>
       </ul>
@@ -173,7 +173,7 @@ class Header extends React.Component<IHeaderProps, IHeaderState> {
         <ul id="dropdown" className="menu-dropdown pure-menu-children" style={{display: this.state.display}}>
           <li className="pure-menu-item">
             <Link to={`/@${this.props.username}`} className="pure-menu-link" onClick={this.resetDropdown}>
-              Profile
+              {config.profile}
             </Link>
           </li>
           <li className="pure-menu-item">
