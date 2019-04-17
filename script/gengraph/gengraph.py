@@ -19,7 +19,7 @@ ENGINE = "all"
 
 # dot - "hierarchical"
 # neato - "spring model"
-# fdp - "spring model''
+# fdp - "spring model"
 # sfdp - multiscale version of fdp
 # twopi - radial layouts
 # circo - circular layout
