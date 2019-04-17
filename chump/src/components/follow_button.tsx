@@ -58,12 +58,12 @@ export class FollowButton extends RootComponent<IFormProps, IFormState> {
 
   public render() {
     const noFollower = (typeof this.props.follower === "undefined" ||
-                        this.props.follower === "")
+                        this.props.follower === "");
 
     const noHost =  (typeof this.props.followed_host === "undefined" ||
-                     this.props.followed_host === "")
+                     this.props.followed_host === "");
 
-    if (noFollower || (this.props.follower === this.props.followed && noHost )) {
+    if (noFollower || (this.props.follower === this.props.followed && noHost)) {
         return null;
     }
     return (
