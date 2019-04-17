@@ -56,7 +56,9 @@ class UsersUtil:
             self._logger.warning(f'No actor doc found for user {actor_uri}.')
             return None, None, None
         handle = actor_doc['preferredUsername']
-        summary = actor_doc['summary']
+        summary = ""
+        if 'summary' in actor_doc:
+            summary = actor_doc['summary']
         host = self._activ_util.normalise_hostname(urlparse(actor_uri).netloc)
         return host, handle, summary
 
