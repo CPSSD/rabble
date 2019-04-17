@@ -18,7 +18,7 @@ To render none, set ENGINE to "".
 ENGINE = "all"
 
 # dot - "hierarchical"
-# neato - "spring model''
+# neato - "spring model"
 # fdp - "spring model''
 # sfdp - multiscale version of fdp
 # twopi - radial layouts
