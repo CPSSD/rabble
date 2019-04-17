@@ -54,7 +54,7 @@ class SurpriseRecommender:
         # This is necessary as the problem is an example of PU-learning, where
         # we have no negative samples to "drag down" the recommendation
         # confidence. That's to say, without zeros, the model will never have
-        # incentive not to recommend everyone, as it is never told that an 
+        # incentive not to recommend everyone, as it is never told that an
         # unsuitable recommendation is bad.
         self._logger.debug('Assigning zeros randomly.')
 
@@ -152,3 +152,9 @@ class SurpriseRecommender:
         if user_id not in self._predictions:
             return []
         return self._predictions[user_id]
+
+    def update_recommendations(self, follower_id, followed_id, following):
+        # Must recompute the entire matrix for Surprise recommender,
+        # as it trains a model based on the whole follow graph that
+        # can't be incrementally updated.
+        self._compute_recommendations()

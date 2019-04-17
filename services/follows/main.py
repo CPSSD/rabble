@@ -9,6 +9,7 @@ import time
 from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
+from utils.recommenders import RecommendersUtil
 from servicer import FollowsServicer
 from util import Util
 
@@ -26,6 +27,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def main():
     args = get_args()
     logger = get_logger('follows_service', args.v)
@@ -37,9 +39,9 @@ def main():
     rss_env = 'RSS_SERVICE_HOST'
 
     with get_service_channel(logger, db_env, 1798) as db_chan, \
-         get_service_channel(logger, follow_env, 1922) as follow_chan, \
-         get_service_channel(logger, approver_env, 2077) as approver_chan, \
-         get_service_channel(logger, rss_env, 1973) as rss_chan:
+            get_service_channel(logger, follow_env, 1922) as follow_chan, \
+            get_service_channel(logger, approver_env, 2077) as approver_chan, \
+            get_service_channel(logger, rss_env, 1973) as rss_chan:
 
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         rss_stub = rss_pb2_grpc.RSSStub(rss_chan)
@@ -50,8 +52,12 @@ def main():
         util = Util(logger, db_stub, approver_stub, users_util)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
+        recommender_util = RecommendersUtil(logger, db_stub)
+        follow_recommender_stub = recommender_util.get_follow_recommender_stub()
+
         follows_servicer = FollowsServicer(logger, util, users_util, db_stub,
-                                           follow_stub, approver_stub, rss_stub)
+                                           follow_stub, approver_stub, rss_stub,
+                                           follow_recommender_stub)
         follows_pb2_grpc.add_FollowsServicer_to_server(follows_servicer,
                                                        server)
 
@@ -63,6 +69,7 @@ def main():
                 time.sleep(60 * 60 * 24)  # One day
         except KeyboardInterrupt:
             pass
+
 
 if __name__ == '__main__':
     main()

@@ -26,7 +26,8 @@ class SendUnfollowTest(unittest.TestCase):
                                              util,
                                              user_util,
                                              database_stub,
-                                             s2s_stub)
+                                             s2s_stub,
+                                             Mock())
 
     def tearDown(self):
         del os.environ["HOST_NAME"]

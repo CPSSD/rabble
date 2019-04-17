@@ -3,6 +3,7 @@ import json
 import time
 from services.proto import database_pb2
 from services.proto import recommend_posts_pb2_grpc
+from services.proto import recommend_follows_pb2_grpc 
 from utils.users import UsersUtil
 from utils.connect import get_service_channel
 
@@ -76,4 +77,18 @@ class RecommendersUtil:
                 self._logger, "POST_RECOMMENDATIONS_SERVICE_HOST", 1814)
             return recommend_posts_pb2_grpc.PostRecommendationsStub(chan)
         self._logger.info("Recommender service is NO-OP.")
+        return None
+
+    def get_follow_recommender_stub(self):
+        follow_recommender_location = os.environ.get(
+            "FOLLOW_RECOMMENDATIONS_NO_OP")
+        if not follow_recommender_location:
+            self._logger.error(
+                "Environment variable FOLLOW_RECOMMENDATIONS_NO_OP not set.")
+            return None
+        if follow_recommender_location != "./services/noop":
+            chan = get_service_channel(
+                self._logger, "FOLLOW_RECOMMENDATIONS_SERVICE_HOST", 1973)
+            return recommend_follows_pb2_grpc.FollowRecommendationsStub(chan)
+        self._logger.info("Follow recommender service is NO-OP.")
         return None

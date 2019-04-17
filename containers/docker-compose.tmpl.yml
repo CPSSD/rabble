@@ -177,6 +177,8 @@ services:
       - FOLLOW_ACTIVITY_SERVICE_HOST=follow_activity_service_[[INSTANCE_ID]]
       - APPROVER_SERVICE_HOST=approver_service_[[INSTANCE_ID]]
       - HOST_NAME=[[EXTERNAL_ADDRESS]]
+      - FOLLOW_RECOMMENDATIONS_SERVICE_HOST=recommend_follows_service_[[INSTANCE_ID]]
+      - FOLLOW_RECOMMENDATIONS_NO_OP=[[FOLLOWS_SERVICE_LOCATION]]
   logger_service_[[INSTANCE_ID]]:
     build:
       context: ./services/logger

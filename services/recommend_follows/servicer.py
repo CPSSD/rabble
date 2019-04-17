@@ -1,5 +1,4 @@
 from surprise_recommender import SurpriseRecommender
-from noop_recommender import NoopRecommender
 from cn_recommender import CNRecommender
 from gd_recommender import GraphDistanceRecommender
 
@@ -13,11 +12,10 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
 
     RECOMMENDERS = {
         'surprise': SurpriseRecommender,
-        'none': NoopRecommender,
         'cn': CNRecommender,
         'graphdist': GraphDistanceRecommender,
     }
-    DEFAULT_RECOMMENDER = 'none'
+    DEFAULT_RECOMMENDER = 'graphdist'
     ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
     DEFAULT_IMAGE = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 
@@ -73,4 +71,16 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
             user_obj.bio = a.bio
             user_obj.image = self.DEFAULT_IMAGE
             user_obj.global_id = a.global_id
+        return resp
+
+    def UpdateFollowRecommendations(self, request, context):
+        self._logger.debug('UpdateFollowRecommendations, %d following %d: %s',
+                           request.follower,
+                           request.followed,
+                           request.following)
+        resp = recommend_follows_pb2.UpdateFollowRecommendationsResponse()
+        for r in self.active_recommenders:
+            r.update_recommendations(request.follower,
+                                     request.followed,
+                                     request.following)
         return resp

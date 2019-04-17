@@ -34,17 +34,16 @@ class RssFollowServicer:
     def _create_rss_user(self, feed_url):
         # send to rss service to be created
         rss_entry = rss_pb2.NewRssFeed(
-            rss_url = feed_url
+            rss_url=feed_url
         )
         rss_resp = self._rss_stub.NewRssFollow(rss_entry)
 
         # check response for new/rss service id
         if (rss_resp.result_type == rss_pb2.NewRssFeedResponse.ERROR or
-            rss_resp.result_type == rss_pb2.NewRssFeedResponse.DENIED):
+                rss_resp.result_type == rss_pb2.NewRssFeedResponse.DENIED):
             self._logger.error("Rss service couldn't follow url: %s", feed_url)
             return None, rss_resp.message
         return rss_resp.global_id, None
-
 
     def RssFollowRequest(self, req, context):
         resp = follows_pb2.FollowResponse()
