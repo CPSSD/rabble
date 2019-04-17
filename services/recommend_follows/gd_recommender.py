@@ -100,22 +100,11 @@ class GraphDistanceRecommender:
             # For efficiency, we always choose the smaller set between S
             # and D to expand.
             if len(d) < len(s):
-                old_size = len(d)
                 # Expand D by adding in the inverse follows.
                 self.expand(d, inverse=True)
-                new_size = len(d)
-                if old_size == new_size:
-                    # Set didn't change, so we can exit early.
-                    break
             else:
-                old_size = len(s)
                 # Expand S by adding the directly followed users.
                 self.expand(s)
-                new_size = len(s)
-                if old_size == new_size:
-                    # Set didn't change, so we can exit early.
-                        break
-
         return dist
 
     def _compute_similarity_matrix(self, users):
@@ -151,7 +140,6 @@ class GraphDistanceRecommender:
                     # follow themselves too.
                     continue
                 similarity = similarity_matrix[u_id][v_id]
-                self._logger.debug('{} -> {}: {}'.format(u_id, v_id, similarity))
                 if similarity == -1:
                     # Already following
                     continue
@@ -183,7 +171,12 @@ class GraphDistanceRecommender:
         return []
 
     def update_recommendations(self, follower_id, followed_id, following):
-        self._logger.debug('GD: {} following {} ??? {}'.format(follower_id, followed_id, following))
+        user_id_set = set(u_id for u_id, _ in self._users)
+        if follower_id not in user_id_set or followed_id not in user_id_set:
+            # We have a new user, so should reload all the data.
+            self._compute_recommendations()
+            return
+
         # Update the similarities of all user combos involving follower_id
         # and followed_id.
         self._similarity[follower_id][followed_id] = \
