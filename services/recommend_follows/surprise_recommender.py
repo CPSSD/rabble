@@ -153,5 +153,8 @@ class SurpriseRecommender:
             return []
         return self._predictions[user_id]
 
-    def update_recommendations(self, user_id):
-        return
+    def update_recommendations(self, follower_id, followed_id, following):
+        # Must recompute the entire matrix for Surprise recommender,
+        # as it trains a model based on the whole follow graph that
+        # can't be incrementally updated.
+        self._compute_recommendations()

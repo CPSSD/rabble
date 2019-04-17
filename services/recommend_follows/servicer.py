@@ -15,7 +15,7 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         'cn': CNRecommender,
         'graphdist': GraphDistanceRecommender,
     }
-    DEFAULT_RECOMMENDER = 'none'
+    DEFAULT_RECOMMENDER = 'graphdist'
     ENV_VAR = 'FOLLOW_RECOMMENDER_METHOD'
     DEFAULT_IMAGE = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 
