@@ -12,7 +12,7 @@ message FollowRecommendationUser {
 }
 
 message FollowRecommendationRequest {
-    /* Eg. "admin", "weeura@samsoniuk.ua", "@jose" */
+    /* The Rabble integer ID of the user. */
     int64 user_id = 1;
 }
 
@@ -32,6 +32,12 @@ message FollowRecommendationResponse {
     repeated FollowRecommendationUser results = 3;
 }
 
+message UpdateFollowRecommendationsResponse {
+    /* Don't return any error, the caller doesn't really care.
+       Just log it in the recommender service. */
+}
+
 service FollowRecommendations {
   rpc GetFollowRecommendations(FollowRecommendationRequest) returns (FollowRecommendationResponse);
+  rpc UpdateFollowRecommendations(FollowRecommendationRequest) returns (UpdateFollowRecommendationsResponse);
 }

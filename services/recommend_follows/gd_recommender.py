@@ -180,3 +180,6 @@ class GraphDistanceRecommender:
         if user_id in self._recommendations:
             return self._recommendations[user_id]
         return []
+
+    def update_recommendations(self, user_id):
+        return

@@ -1,5 +1,4 @@
 from surprise_recommender import SurpriseRecommender
-from noop_recommender import NoopRecommender
 from cn_recommender import CNRecommender
 from gd_recommender import GraphDistanceRecommender
 
@@ -75,7 +74,9 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         return resp
 
     def UpdateFollowRecommendations(self, request, context):
+        self._logger.debug('UpdateFollowRecommendations, user_id = %s',
+                           request.user_id)
         resp = recommend_follows_pb2.UpdateFollowRecommendationsResponse()
         for r in self.active_recommenders:
-            r.update_recommendations(user_id)
+            r.update_recommendations(request.user_id)
         return resp

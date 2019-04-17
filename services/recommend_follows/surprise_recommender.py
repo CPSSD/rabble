@@ -152,3 +152,6 @@ class SurpriseRecommender:
         if user_id not in self._predictions:
             return []
         return self._predictions[user_id]
+
+    def update_recommendations(self, user_id):
+        return
