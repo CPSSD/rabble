@@ -127,7 +127,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
           onSubmit={this.handleUpdate}
         >
           <fieldset>
-            <legend>Blank fields are left unchanged</legend>
+            <legend>{config.blank_fields}</legend>
             <div className="pure-control-group">
                 <label htmlFor="newPassword">{config.new_password}</label>
                 <input
@@ -170,7 +170,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
                 />
             </div>
             <div className="pure-control-group">
-                <label htmlFor="name">{"Custom CSS"}</label>
+                <label htmlFor="name">{config.custom_css}</label>
                 <textarea
                   id="custom_css"
                   placeholder=".article-title { color: red }"
@@ -191,7 +191,7 @@ export class AccountEdit extends RootComponent<IAccountEditProps, IAccountEditSt
               />
             </div>
 
-            <legend>Enter your current user account</legend>
+            <legend>{config.current_password}</legend>
             <div className="pure-control-group">
                 <label htmlFor="name">{config.password}</label>
                 <input

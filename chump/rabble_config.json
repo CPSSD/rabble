@@ -60,5 +60,16 @@
   "denied_follow": "Follow denied",
   "read_more_text": "Read more",
   "reblog_success": "Post reblogged",
-  "incorrect_credentials": "Incorrect credentials"
+  "incorrect_credentials": "Incorrect credentials",
+  "profile": "Profile",
+  "follow_nav": "Follow",
+  "like": "Like",
+  "unlike": "Unlike",
+  "reblog": "Reblog",
+  "reblogged": "Reblogged",
+  "add_tag": "Add a tag",
+  "blank_fields": "Blank fields are left unchanged",
+  "current_password": "Enter your current password",
+  "custom_css": "Custom CSS",
+  "edit": "Edit"
 }
