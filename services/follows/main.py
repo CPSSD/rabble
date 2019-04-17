@@ -9,6 +9,7 @@ import time
 from utils.connect import get_service_channel
 from utils.logger import get_logger
 from utils.users import UsersUtil
+from utils.recommenders import RecommendersUtil
 from servicer import FollowsServicer
 from util import Util
 
@@ -50,8 +51,12 @@ def main():
         util = Util(logger, db_stub, approver_stub, users_util)
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
+        recommender_util = RecommendersUtil(logger, db_stub)
+        follow_recommender_stub = recommender_util.get_follow_recommender_stub()
+
         follows_servicer = FollowsServicer(logger, util, users_util, db_stub,
-                                           follow_stub, approver_stub, rss_stub)
+                                           follow_stub, approver_stub, rss_stub,
+                                           follow_recommender_stub)
         follows_pb2_grpc.add_FollowsServicer_to_server(follows_servicer,
                                                        server)
 

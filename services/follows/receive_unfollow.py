@@ -8,11 +8,13 @@ from services.proto import s2s_follow_pb2
 
 class ReceiveUnfollowServicer:
 
-    def __init__(self, logger, util, users_util, database_stub):
+    def __init__(self, logger, util, users_util, database_stub,
+                 recommender_stub):
         self._logger = logger
         self._util = util
         self._users_util = users_util
         self._database_stub = database_stub
+        self._recommender_stub = recommender_stub
         self._host_name = os.environ.get("HOST_NAME")
         if not self._host_name:
             print("Please set HOST_NAME env variable")
@@ -38,6 +40,10 @@ class ReceiveUnfollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = 'Could not delete requested follow from database'
             return resp
+
+        if self._recommender_stub is not None:
+            # TODO
+            pass
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp

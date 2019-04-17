@@ -4,15 +4,17 @@ import sys
 from services.proto import database_pb2
 from services.proto import follows_pb2
 from services.proto import s2s_follow_pb2
+from services.proto import recommend_follows_pb2
 
 
 class ReceiveFollowServicer:
 
-    def __init__(self, logger, util, users_util, database_stub):
+    def __init__(self, logger, util, users_util, database_stub, recommender_stub):
         self._logger = logger
         self._util = util
         self._users_util = users_util
         self._database_stub = database_stub
+        self._recommender_stub = recommender_stub
         self._host_name = os.environ.get("HOST_NAME")
         if not self._host_name:
             print("Please set HOST_NAME env variable")
@@ -47,6 +49,11 @@ class ReceiveFollowServicer:
             resp.result_type = follows_pb2.FollowResponse.ERROR
             resp.error = 'Could not add requested follow to database'
             return resp
+
+        if self._recommender_stub is not None:
+            req = recommend_follows_pb2.FollowRecommendationRequest(
+                user_id=local_user.global_id)
+            self._recommender_stub.UpdateFollowRecommendations(req)
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp
