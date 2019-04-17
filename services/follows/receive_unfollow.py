@@ -4,6 +4,7 @@ import sys
 from services.proto import database_pb2
 from services.proto import follows_pb2
 from services.proto import s2s_follow_pb2
+from services.proto import recommend_follows_pb2
 
 
 class ReceiveUnfollowServicer:
@@ -42,8 +43,11 @@ class ReceiveUnfollowServicer:
             return resp
 
         if self._recommender_stub is not None:
-            # TODO
-            pass
+            req = recommend_follows_pb2.UpdateFollowRecommendationsRequest(
+                follower=foreign_user.global_id,
+                followed=local_user.global_id,
+                following=False)
+            self._recommender_stub.UpdateFollowRecommendations(req)
 
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp

@@ -74,9 +74,13 @@ class FollowRecommendationsServicer(follows_pb2_grpc.FollowsServicer):
         return resp
 
     def UpdateFollowRecommendations(self, request, context):
-        self._logger.debug('UpdateFollowRecommendations, user_id = %s',
-                           request.user_id)
+        self._logger.debug('UpdateFollowRecommendations, %d following %d: %s',
+                           request.follower,
+                           request.followed,
+                           request.following)
         resp = recommend_follows_pb2.UpdateFollowRecommendationsResponse()
         for r in self.active_recommenders:
-            r.update_recommendations(request.user_id)
+            r.update_recommendations(request.follower,
+                                     request.followed,
+                                     request.following)
         return resp

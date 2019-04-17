@@ -4,6 +4,7 @@ import sys
 from services.proto import database_pb2
 from services.proto import follows_pb2
 from services.proto import s2s_follow_pb2
+from services.proto import recommend_follows_pb2
 
 
 class SendUnfollowServicer:
@@ -103,7 +104,11 @@ class SendUnfollowServicer:
             self._s2s_stub.SendUnfollowActivity(s2s_req)
 
         if self._recommender_stub is not None:
-            # TODO
-            pass
+            req = recommend_follows_pb2.UpdateFollowRecommendationsRequest(
+                follower=follower_entry.global_id,
+                followed=followed_entry.global_id,
+                following=False)
+            self._recommender_stub.UpdateFollowRecommendations(req)
+
         resp.result_type = follows_pb2.FollowResponse.OK
         return resp

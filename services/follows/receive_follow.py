@@ -51,8 +51,10 @@ class ReceiveFollowServicer:
             return resp
 
         if self._recommender_stub is not None:
-            req = recommend_follows_pb2.FollowRecommendationRequest(
-                user_id=local_user.global_id)
+            req = recommend_follows_pb2.UpdateFollowRecommendationsRequest(
+                follower=foreign_user.global_id,
+                followed=local_user.global_id,
+                following=True)
             self._recommender_stub.UpdateFollowRecommendations(req)
 
         resp.result_type = follows_pb2.FollowResponse.OK

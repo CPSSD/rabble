@@ -123,19 +123,25 @@ class CNRecommender:
                 recommendations[u] = r
         return recommendations
 
-
-    def _compute_recommendations(self):
+    def _recompute_recommendations(self):
         self._logger.debug(
             'Recomputing recommendations. This may take some time.')
+        self._similarity = self._compute_similarity_matrix(self._users,
+                                                           self._out_links,
+                                                           self._in_links)
+        self._recommendations = self._get_recommendations(self._users,
+                                                          self._similarity,
+                                                          self._out_links)
+
+
+    def _compute_recommendations(self):
         try:
             # It is necessary to reload data each time, as it may have changed.
             users, out_links, in_links = self._convert_data(self._load_data())
-            self._similarity = self._compute_similarity_matrix(users,
-                                                               out_links,
-                                                               in_links)
-            self._recommendations = self._get_recommendations(users,
-                                                              self._similarity,
-                                                              out_links)
+            self._users = users
+            self._in_links = in_links
+            self._out_links = out_links
+            self._recompute_recommendations()
             self._logger.debug('Finished computing recommendations.')
         except Exception as e:
             self._logger.error('Could not compute recommendations:')
@@ -147,5 +153,14 @@ class CNRecommender:
             return self._recommendations[user_id]
         return []
 
-    def update_recommendations(self, user_id):
-        return
+    def update_recommendations(self, follower_id, followed_id, following):
+        if following:
+            # new follow
+            self._in_links[followed_id].add(follower_id)
+            self._out_links[follower_id].add(followed_id)
+        else:
+            if follower_id in self._in_links[followed_id]:
+                self._in_links[followed_id].remove(follower_id)
+            if followed_id in self._out_links[follower_id]:
+                self._out_links[follower_id].remove(followed_id)
+        self._recompute_recommendations()
