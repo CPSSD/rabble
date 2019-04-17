@@ -4,7 +4,7 @@ import sys
 from services.proto import database_pb2
 from services.proto import follows_pb2
 from services.proto import s2s_follow_pb2
-from services.proto import recommend_follows_pb2 
+from services.proto import recommend_follows_pb2
 
 
 class SendFollowServicer:
@@ -131,7 +131,6 @@ class SendFollowServicer:
                 resp.result_type = follows_pb2.FollowResponse.ERROR
                 resp.error = err
                 return resp
-
 
         if self._recommender_stub is not None:
             req = recommend_follows_pb2.UpdateFollowRecommendationsRequest(

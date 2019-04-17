@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from services.proto import database_pb2
 
+
 class CNRecommender:
     '''Recommend based on the "common neighbours" similarity metric. This metric
     uses the number of friends two users have in common to suggest if they
@@ -28,7 +29,7 @@ class CNRecommender:
         self._db = database_stub
 
         if (self.THRESHOLD_ENV_VAR in os.environ and
-            len(os.environ[self.THRESHOLD_ENV_VAR])):
+                len(os.environ[self.THRESHOLD_ENV_VAR])):
             try:
                 self.THRESHOLD = int(os.environ[self.THRESHOLD_ENV_VAR])
             except e:
@@ -118,7 +119,7 @@ class CNRecommender:
                 r.append((v, similarity))
 
             # Sort by similarity (the most confident recommendation first).
-            r.sort(key=lambda x:-x[1])
+            r.sort(key=lambda x: -x[1])
             if len(r):
                 recommendations[u] = r
         return recommendations
@@ -133,7 +134,6 @@ class CNRecommender:
                                                           self._similarity,
                                                           self._out_links)
 
-
     def _compute_recommendations(self):
         try:
             # It is necessary to reload data each time, as it may have changed.
@@ -146,7 +146,6 @@ class CNRecommender:
         except Exception as e:
             self._logger.error('Could not compute recommendations:')
             self._logger.error(str(e))
-
 
     def get_recommendations(self, user_id):
         if user_id in self._recommendations:

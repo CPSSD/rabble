@@ -27,6 +27,7 @@ def get_args():
         help='Log more verbosely.')
     return parser.parse_args()
 
+
 def main():
     args = get_args()
     logger = get_logger('follows_service', args.v)
@@ -38,9 +39,9 @@ def main():
     rss_env = 'RSS_SERVICE_HOST'
 
     with get_service_channel(logger, db_env, 1798) as db_chan, \
-         get_service_channel(logger, follow_env, 1922) as follow_chan, \
-         get_service_channel(logger, approver_env, 2077) as approver_chan, \
-         get_service_channel(logger, rss_env, 1973) as rss_chan:
+            get_service_channel(logger, follow_env, 1922) as follow_chan, \
+            get_service_channel(logger, approver_env, 2077) as approver_chan, \
+            get_service_channel(logger, rss_env, 1973) as rss_chan:
 
         db_stub = database_pb2_grpc.DatabaseStub(db_chan)
         rss_stub = rss_pb2_grpc.RSSStub(rss_chan)
@@ -68,6 +69,7 @@ def main():
                 time.sleep(60 * 60 * 24)  # One day
         except KeyboardInterrupt:
             pass
+
 
 if __name__ == '__main__':
     main()

@@ -114,7 +114,6 @@ class GraphDistanceRecommender:
         recommending u should follow v. In this directed graph, S[u][v] may not
         be equal to S[v][u].'''
 
-
         # Create a 2D matrix to hold the similarity of all user pairs.
         similarity = defaultdict(lambda: defaultdict(int))
         for u_id, u_is_local in users:

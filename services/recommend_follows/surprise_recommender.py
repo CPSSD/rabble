@@ -54,7 +54,7 @@ class SurpriseRecommender:
         # This is necessary as the problem is an example of PU-learning, where
         # we have no negative samples to "drag down" the recommendation
         # confidence. That's to say, without zeros, the model will never have
-        # incentive not to recommend everyone, as it is never told that an 
+        # incentive not to recommend everyone, as it is never told that an
         # unsuitable recommendation is bad.
         self._logger.debug('Assigning zeros randomly.')
 

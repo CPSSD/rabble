@@ -81,18 +81,18 @@ class Util:
 
     def attempt_to_accept(self, local_user, foreign_user, host_name, is_accepted):
         s2s_follow = s2s_follow_pb2.FollowDetails(
-            follower = s2s_follow_pb2.FollowActivityUser(
-                handle = foreign_user.handle,
-                host = foreign_user.host,
+            follower=s2s_follow_pb2.FollowActivityUser(
+                handle=foreign_user.handle,
+                host=foreign_user.host,
             ),
-            followed = s2s_follow_pb2.FollowActivityUser(
-                handle = local_user.handle,
-                host = host_name,
+            followed=s2s_follow_pb2.FollowActivityUser(
+                handle=local_user.handle,
+                host=host_name,
             ),
         )
         req = approver_pb2.Approval(
-                accept=is_accepted,
-                follow=s2s_follow,
+            accept=is_accepted,
+            follow=s2s_follow,
         )
         # TODO(devoxel): Add response logic
         print(self._approver_stub.SendApproval(req))

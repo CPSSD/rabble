@@ -4,6 +4,7 @@ import sys
 from services.proto import database_pb2
 from services.proto import follows_pb2
 
+
 class AcceptFollowServicer:
     def __init__(self, logger, util, users_util, db_stub):
         self._logger = logger
@@ -25,7 +26,7 @@ class AcceptFollowServicer:
             return None, None
 
         follower = self._users_util.get_user_from_db(handle=request.follower.handle,
-                                                    host=request.follower.host)
+                                                     host=request.follower.host)
         if not follower:
             self._logger.error('Could not find follower.')
             resp.result_type = follows_pb2.FollowResponse.ERROR
